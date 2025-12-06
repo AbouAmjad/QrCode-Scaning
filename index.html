@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    input[type="text"] { width: 100%; padding: 12px; font-size: 16px; margin: 10px 0; }
+    button { width: 100%; padding: 12px; font-size: 16px; background: #0066cc; color: white; border: none; }
+  </style>
+</head>
+<body>
+  <h2>Scan Input</h2>
+  <input type="text" id="scanInput" placeholder="Scan QR Code Here" autofocus>
+  <button onclick="submitScan()">Submit</button>
+
+  <script>
+    const SCRIPT_URL = "YOUR_DEPLOYED_APPS_SCRIPT_URL"; // Replace with your deployed URL
+
+    document.getElementById("scanInput").addEventListener("keypress", function(e) {
+      if (e.key === "Enter") submitScan();
+    });
+
+    function submitScan() {
+      const input = document.getElementById("scanInput");
+      fetch(SCRIPT_URL, {
+        method: 'POST',
+        body: `scanData=${encodeURIComponent(input.value)}`,
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+      })
+      .then(() => {
+        input.value = "";
+        input.focus();
+      });
+    }
+  </script>
+</body>
+</html>
