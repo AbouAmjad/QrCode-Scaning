@@ -15,43 +15,46 @@
 
   <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyrScJh7k84wwIpEAr4MqSrnsyvPBMp3BYhPpM1hPyG_V7RPBPtQ_um3YYcCw0JLmc/exec";
-    const scanQueue = []; // Sequential processing queue
+    let scanQueue = [];
     let isProcessing = false;
 
-    // Add scan to queue
     function submitScan() {
       const input = document.getElementById("scanInput");
       const scanData = input.value.trim();
       
       if (!scanData) return;
       
-      scanQueue.push(scanData); // Add to queue
-      input.value = "";         // Clear immediately
-      input.focus();            // Focus for next scan
+      scanQueue.push(scanData);
+      input.value = "";
+      input.focus();
       
-      processQueue(); // Start processing if not already
+      if (!isProcessing) {
+        processQueue();
+      }
     }
 
-    // Process queue sequentially
-    function processQueue() {
-      if (isProcessing || scanQueue.length === 0) return;
+    async function processQueue() {
+      if (scanQueue.length === 0) {
+        isProcessing = false;
+        return;
+      }
       
       isProcessing = true;
-      const data = scanQueue.shift(); // Get first item
+      const data = scanQueue.shift();
       
-      fetch(SCRIPT_URL + "?scanData=" + encodeURIComponent(data), { method: 'GET' })
-        .then(() => {
-          isProcessing = false;
-          processQueue(); // Process next item
-        })
-        .catch(() => {
-          scanQueue.unshift(data); // Re-add failed item
-          isProcessing = false;
-          processQueue(); // Retry
-        });
+      try {
+        await fetch(SCRIPT_URL + "?scanData=" + encodeURIComponent(data), { method: 'GET' });
+        processQueue(); // Process next item
+      } catch (error) {
+        console.error("Failed to submit:", error);
+        // Retry failed item
+        setTimeout(() => {
+          scanQueue.unshift(data);
+          processQueue();
+        }, 1000);
+      }
     }
 
-    // Handle Enter key
     document.getElementById("scanInput").addEventListener("keypress", function(e) {
       if (e.key === "Enter") submitScan();
     });
