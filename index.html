@@ -3,32 +3,111 @@
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    input[type="text"] { width: 100%; padding: 12px; font-size: 16px; margin: 10px 0; }
-    button { width: 100%; padding: 12px; font-size: 16px; background: #0066cc; color: white; border: none; }
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      max-width: 600px;
+      margin: 0 auto;
+      background-color: #f5f5f5;
+    }
+    .container {
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 15px;
+      font-size: 18px;
+      border: 2px solid #ddd;
+      border-radius: 4px;
+      margin: 10px 0;
+      box-sizing: border-box;
+    }
+    button {
+      width: 100%;
+      padding: 15px;
+      font-size: 18px;
+      background: #0066cc;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #0052a3;
+    }
+    .logs-container {
+      margin-top: 20px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .log-item {
+      padding: 10px;
+      border-bottom: 1px solid #eee;
+      display: flex;
+      justify-content: space-between;
+    }
+    .log-item:last-child {
+      border-bottom: none;
+    }
+    .log-code {
+      font-weight: bold;
+      color: #0066cc;
+    }
+    .log-desc {
+      color: #666;
+      font-size: 14px;
+    }
+    .log-time {
+      color: #999;
+      font-size: 12px;
+    }
+    .title {
+      text-align: center;
+      color: #333;
+      margin-bottom: 20px;
+    }
   </style>
 </head>
 <body>
-  <h2>Scan Input</h2>
-  <input type="text" id="scanInput" placeholder="Scan QR Code Here" autofocus>
-  <button onclick="submitScan()">Submit</button>
+  <div class="container">
+    <h2 class="title">QR Scanner</h2>
+    <input type="text" id="scanInput" placeholder="Scan QR Code Here" autofocus>
+    <button onclick="submitScan()">Submit</button>
+    
+    <div class="logs-container">
+      <h3>Scan Logs</h3>
+      <div id="logs"></div>
+    </div>
+  </div>
 
   <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyrScJh7k84wwIpEAr4MqSrnsyvPBMp3BYhPpM1hPyG_V7RPBPtQ_um3YYcCw0JLmc/exec";
     let queue = [];
     let processing = false;
+    const logs = [];
 
-    function submitScan() {
+    async function submitScan() {
       const input = document.getElementById("scanInput");
       const data = input.value.trim();
       
       if (!data) return;
       
-      // Instant UI feedback
-      queue.push(data);
+      // Add to UI log immediately
+      addLogItem(data, "Scanning...");
       input.value = "";
       input.focus();
       
+      // Get description from sheet
+      const description = await getDescription(data);
+      updateLastLogDescription(description);
+      
+      // Add to processing queue
+      queue.push(data);
       if (!processing) processQueue();
     }
 
@@ -41,13 +120,58 @@
       processing = true;
       const data = queue.shift();
       
-      // Fire and forget (no await for speed)
       fetch(SCRIPT_URL + "?scanData=" + encodeURIComponent(data), { method: 'GET' })
-        .then(() => processQueue()) // Process next
+        .then(() => processQueue())
         .catch(() => {
-          queue.unshift(data); // Retry failed item
+          queue.unshift(data);
           setTimeout(processQueue, 100);
         });
+    }
+
+    // Get description from column G
+    async function getDescription(code) {
+      try {
+        const sheetId = "1Yg7aYVp5AD8bTC6YCM6v3KXIii6_m378QZOkyB_2ibA";
+        const range = `Logs!A:G`; // Assuming data is in Logs sheet
+        const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?key=AQ.Ab8RN6KO81vWQhyRvEZBbG7qCHb3G3ANPtDFb9MDxVx1vwePYw;
+        
+        const response = await fetch(url);
+        const result = await response.json();
+        
+        if (result.values) {
+          for (let row of result.values) {
+            if (row[0] === code && row[6]) { // Column A matches code and G exists
+              return row[6]; // Return column G value
+            }
+          }
+        }
+        return "No description found";
+      } catch (error) {
+        console.error("Error fetching description:", error);
+        return "Error loading description";
+      }
+    }
+
+    function addLogItem(code, desc) {
+      const logItem = document.createElement("div");
+      logItem.className = "log-item";
+      logItem.innerHTML = `
+        <div>
+          <div class="log-code">${code}</div>
+          <div class="log-desc">${desc}</div>
+        </div>
+        <div class="log-time">${new Date().toLocaleTimeString()}</div>
+      `;
+      document.getElementById("logs").prepend(logItem);
+      logs.unshift({code, desc, time: new Date()});
+    }
+
+    function updateLastLogDescription(desc) {
+      const logItems = document.getElementById("logs").children;
+      if (logItems.length > 0) {
+        const descDiv = logItems[0].querySelector('.log-desc');
+        if (descDiv) descDiv.textContent = desc;
+      }
     }
 
     document.getElementById("scanInput").addEventListener("keypress", e => {
