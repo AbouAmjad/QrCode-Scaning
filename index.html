@@ -14,40 +14,47 @@
   <button onclick="submitScan()">Submit</button>
 
   <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyrScJh7k84wwIpEAr4MqSrnsyvPBMp3BYhPpM1hPyG_V7RPBPtQ_um3YYcCw0JLmc/exec"; // Replace with your deployed URL
-    let isProcessing = false; // Prevent duplicate submissions
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyrScJh7k84wwIpEAr4MqSrnsyvPBMp3BYhPpM1hPyG_V7RPBPtQ_um3YYcCw0JLmc/exec";
+    const scanQueue = []; // Sequential processing queue
+    let isProcessing = false;
 
-    document.getElementById("scanInput").addEventListener("keypress", function(e) {
-      if (e.key === "Enter" && !isProcessing) submitScan();
-    });
-
+    // Add scan to queue
     function submitScan() {
       const input = document.getElementById("scanInput");
       const scanData = input.value.trim();
       
-      if (!scanData || isProcessing) return; // Skip if empty or processing
+      if (!scanData) return;
       
-      isProcessing = true; // Lock during submission
+      scanQueue.push(scanData); // Add to queue
+      input.value = "";         // Clear immediately
+      input.focus();            // Focus for next scan
       
-      fetch(SCRIPT_URL + "?scanData=" + encodeURIComponent(scanData), {
-        method: 'GET'
-      })
-      .then(response => {
-        if (response.ok) {
-          input.value = ""; // Clear input
-          input.focus();   // Refocus for next scan
-        } else {
-          alert("Error: " + response.status);
-        }
-      })
-      .catch(error => {
-        console.error("Error:", error);
-        alert("Network error. Please try again.");
-      })
-      .finally(() => {
-        isProcessing = false; // Unlock after completion
-      });
+      processQueue(); // Start processing if not already
     }
+
+    // Process queue sequentially
+    function processQueue() {
+      if (isProcessing || scanQueue.length === 0) return;
+      
+      isProcessing = true;
+      const data = scanQueue.shift(); // Get first item
+      
+      fetch(SCRIPT_URL + "?scanData=" + encodeURIComponent(data), { method: 'GET' })
+        .then(() => {
+          isProcessing = false;
+          processQueue(); // Process next item
+        })
+        .catch(() => {
+          scanQueue.unshift(data); // Re-add failed item
+          isProcessing = false;
+          processQueue(); // Retry
+        });
+    }
+
+    // Handle Enter key
+    document.getElementById("scanInput").addEventListener("keypress", function(e) {
+      if (e.key === "Enter") submitScan();
+    });
   </script>
 </body>
 </html>
