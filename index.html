@@ -15,47 +15,42 @@
 
   <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyrScJh7k84wwIpEAr4MqSrnsyvPBMp3BYhPpM1hPyG_V7RPBPtQ_um3YYcCw0JLmc/exec";
-    let scanQueue = [];
-    let isProcessing = false;
+    let queue = [];
+    let processing = false;
 
     function submitScan() {
       const input = document.getElementById("scanInput");
-      const scanData = input.value.trim();
+      const data = input.value.trim();
       
-      if (!scanData) return;
+      if (!data) return;
       
-      scanQueue.push(scanData);
+      // Instant UI feedback
+      queue.push(data);
       input.value = "";
       input.focus();
       
-      if (!isProcessing) {
-        processQueue();
-      }
+      if (!processing) processQueue();
     }
 
     async function processQueue() {
-      if (scanQueue.length === 0) {
-        isProcessing = false;
+      if (queue.length === 0) {
+        processing = false;
         return;
       }
       
-      isProcessing = true;
-      const data = scanQueue.shift();
+      processing = true;
+      const data = queue.shift();
       
-      try {
-        await fetch(SCRIPT_URL + "?scanData=" + encodeURIComponent(data), { method: 'GET' });
-        processQueue(); // Process next item
-      } catch (error) {
-        console.error("Failed to submit:", error);
-        // Retry failed item
-        setTimeout(() => {
-          scanQueue.unshift(data);
-          processQueue();
-        }, 1000);
-      }
+      // Fire and forget (no await for speed)
+      fetch(SCRIPT_URL + "?scanData=" + encodeURIComponent(data), { method: 'GET' })
+        .then(() => processQueue()) // Process next
+        .catch(() => {
+          queue.unshift(data); // Retry failed item
+          setTimeout(processQueue, 100);
+        });
     }
 
-    document.getElementById("scanInput").addEventListener("keypress", function(e) {
+    document.getElementById("scanInput").addEventListener("keypress", e => {
       if (e.key === "Enter") submitScan();
     });
   </script>
