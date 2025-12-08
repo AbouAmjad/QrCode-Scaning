@@ -117,13 +117,16 @@
       
       isProcessing = true;
       const data = scanQueue.shift(); // Get first item (FIFO)
+
+    // Get submit to sheet first
+      await fetch(SCRIPT_URL + "?scanData=" + encodeURIComponent(data), { method: 'GET' });
       
-      // Get description first
+      
+      // Then Submit the description
       const description = await getDescription(data);
       updateLastLogDescription(description);
       
-      // Then submit to sheet
-      await fetch(SCRIPT_URL + "?scanData=" + encodeURIComponent(data), { method: 'GET' });
+  
       
       // Process next item
       processQueue();
