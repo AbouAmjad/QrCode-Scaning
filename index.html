@@ -87,11 +87,10 @@
 
   <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyrScJh7k84wwIpEAr4MqSrnsyvPBMp3BYhPpM1hPyG_V7RPBPtQ_um3YYcCw0JLmc/exec";
-    let queue = [];
-    let processing = false;
-    const logs = [];
+    let scanQueue = [];
+    let isProcessing = false;
 
-    async function submitScan() {
+    function submitScan() {
       const input = document.getElementById("scanInput");
       const data = input.value.trim();
       
@@ -102,30 +101,32 @@
       input.value = "";
       input.focus();
       
-      // Get description from sheet
-      const description = await getDescription(data);
-      updateLastLogDescription(description);
-      
       // Add to processing queue
-      queue.push(data);
-      if (!processing) processQueue();
+      scanQueue.push(data);
+      
+      if (!isProcessing) {
+        processQueue();
+      }
     }
 
     async function processQueue() {
-      if (queue.length === 0) {
-        processing = false;
+      if (scanQueue.length === 0) {
+        isProcessing = false;
         return;
       }
       
-      processing = true;
-      const data = queue.shift();
+      isProcessing = true;
+      const data = scanQueue.shift(); // Get first item (FIFO)
       
-      fetch(SCRIPT_URL + "?scanData=" + encodeURIComponent(data), { method: 'GET' })
-        .then(() => processQueue())
-        .catch(() => {
-          queue.unshift(data);
-          setTimeout(processQueue, 100);
-        });
+      // Get description first
+      const description = await getDescription(data);
+      updateLastLogDescription(description);
+      
+      // Then submit to sheet
+      await fetch(SCRIPT_URL + "?scanData=" + encodeURIComponent(data), { method: 'GET' });
+      
+      // Process next item
+      processQueue();
     }
 
     // Get description using the same Apps Script
@@ -150,7 +151,6 @@
         <div class="log-time">${new Date().toLocaleTimeString()}</div>
       `;
       document.getElementById("logs").prepend(logItem);
-      logs.unshift({code, desc, time: new Date()});
     }
 
     function updateLastLogDescription(desc) {
