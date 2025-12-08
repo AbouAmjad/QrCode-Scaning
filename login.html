@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      background: linear-gradient(135deg, #2d5016 0%, #4a7c2f 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    #loginBox {
+      background: white;
+      width: 350px;
+      padding: 25px;
+      border-radius: 20px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      animation: fade 0.5s ease-out;
+    }
+
+    @keyframes fade { from {opacity:0;} to {opacity:1;} }
+
+    input {
+      width: 100%;
+      padding: 14px;
+      margin-bottom: 15px;
+      border: 2px solid #4a7c2f;
+      border-radius: 10px;
+      font-size: 16px;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      background: #2d5016;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 18px;
+      font-weight: 600;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="loginBox">
+    <h2 style="text-align:center; margin-bottom:20px; color:#2d5016;">Login</h2>
+
+    <input id="loginUser" placeholder="Username">
+    <input id="loginPass" type="password" placeholder="Password">
+
+    <button onclick="login()">Login</button>
+  </div>
+
+  <script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyrScJh7k84wwIpEAr4MqSrnsyvPBMp3BYhPpM1hPyG_V7RPBPtQ_um3YYcCw0JLmc/exec";
+
+    async function login() {
+      const user = document.getElementById("loginUser").value;
+      const pass = document.getElementById("loginPass").value;
+
+      const res = await fetch(`${SCRIPT_URL}?action=login&user=${user}&pass=${pass}`);
+      const data = await res.json();
+
+      if (data.success) {
+        localStorage.setItem("token", data.token);
+        window.location = "index.html";
+      } else {
+        alert("Invalid username or password");
+      }
+    }
+  </script>
+
+</body>
+</html>
