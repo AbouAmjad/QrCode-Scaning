@@ -129,7 +129,7 @@
       processQueue();
     }
 
-    // Get description using the same Apps Script
+    // Get description from appropriate spreadsheet
     async function getDescription(code) {
       try {
         const response = await fetch(`${SCRIPT_URL}?action=getDescription&scanData=${encodeURIComponent(code)}`);
