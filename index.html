@@ -98,7 +98,7 @@
       if (!data) return;
       
       // Add to UI log immediately
-      addLogItem(data, "Scanning...");
+      addLogItem(data, "Loading description...");
       input.value = "";
       input.focus();
       
@@ -128,24 +128,11 @@
         });
     }
 
-    // Get description from column G
+    // Get description using the same Apps Script
     async function getDescription(code) {
       try {
-        const sheetId = "1Yg7aYVp5AD8bTC6YCM6v3KXIii6_m378QZOkyB_2ibA";
-        const range = `Logs!A:G`; // Assuming data is in Logs sheet
-        const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?key=AIzaSyAb8RN6KO81vWQhyRvEZBbG7qCHb3G3ANPtDFb9MDxVx1vwePYw`;
-        
-        const response = await fetch(url);
-        const result = await response.json();
-        
-        if (result.values) {
-          for (let row of result.values) {
-            if (row[0] === code && row[6]) { // Column A matches code and G exists
-              return row[6]; // Return column G value
-            }
-          }
-        }
-        return "No description found";
+        const response = await fetch(`${SCRIPT_URL}?action=getDescription&scanData=${encodeURIComponent(code)}`);
+        return await response.text();
       } catch (error) {
         console.error("Error fetching description:", error);
         return "Error loading description";
