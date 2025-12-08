@@ -3,103 +3,399 @@
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
     body {
-      background: linear-gradient(135deg, #2d5016 0%, #4a7c2f 100%);
+      background: linear-gradient(135deg, #2d5016 0%, #4a7c2f 50%, #2d5016 100%);
       min-height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      overflow: hidden;
+      position: relative;
+      animation: bgShift 8s ease-in-out infinite;
+    }
+
+    /* Animated background particles */
+    .particles {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    .particle {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      animation: floatParticle linear infinite;
+    }
+
+    @keyframes bgShift {
+      0%, 100% { background: linear-gradient(135deg, #2d5016 0%, #4a7c2f 50%, #2d5016 100%); }
+      50% { background: linear-gradient(135deg, #4a7c2f 0%, #2d5016 50%, #4a7c2f 100%); }
+    }
+
+    @keyframes floatParticle {
+      to { transform: translateY(-100px) rotate(360deg); opacity: 0; }
     }
 
     #loginBox {
-      background: white;
-      width: 350px;
-      padding: 25px;
-      border-radius: 20px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-      animation: fade 0.5s ease-out;
+      background: rgba(255, 255, 255, 0.95);
+      width: 380px;
+      padding: 40px 35px;
+      border-radius: 25px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3), 0 0 0 1px rgba(74, 124, 47, 0.2);
+      animation: slideUp 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(74, 124, 47, 0.3);
     }
 
-    @keyframes fade { from {opacity:0;} to {opacity:1;} }
+    #loginBox::before {
+      content: '';
+      position: absolute;
+      top: -2px;
+      left: -2px;
+      right: -2px;
+      bottom: -2px;
+      background: linear-gradient(45deg, #2d5016, #4a7c2f, #2d5016, #4a7c2f);
+      z-index: -1;
+      border-radius: 27px;
+      animation: borderRotate 4s linear infinite;
+      background-size: 400% 400%;
+    }
+
+    @keyframes borderRotate {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(50px) scale(0.9);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .logo {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .logo h1 {
+      color: #2d5016;
+      font-size: 32px;
+      font-weight: 800;
+      margin-bottom: 8px;
+      text-shadow: 0 2px 4px rgba(45, 80, 22, 0.2);
+      position: relative;
+    }
+
+    .logo h1::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80px;
+      height: 4px;
+      background: linear-gradient(90deg, #2d5016, #4a7c2f);
+      border-radius: 2px;
+    }
+
+    .logo p {
+      color: #666;
+      font-size: 14px;
+    }
+
+    .input-group {
+      position: relative;
+      margin-bottom: 25px;
+    }
 
     input {
       width: 100%;
-      padding: 14px;
-      margin-bottom: 15px;
-      border: 2px solid #4a7c2f;
-      border-radius: 10px;
+      padding: 16px 20px;
+      border: 2px solid #e1e5e9;
+      border-radius: 15px;
       font-size: 16px;
+      background: #f8fff8;
+      transition: all 0.3s ease;
+      outline: none;
     }
 
-    button {
+    input:focus {
+      border-color: #2d5016;
+      background: white;
+      box-shadow: 0 0 0 4px rgba(45, 80, 22, 0.2);
+      transform: translateY(-2px);
+    }
+
+    input::placeholder {
+      color: #999;
+    }
+
+    .input-icon {
+      position: absolute;
+      right: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #4a7c2f;
+      font-size: 18px;
+    }
+
+    .login-btn {
       width: 100%;
-      padding: 14px;
-      background: #2d5016;
+      padding: 16px;
+      background: linear-gradient(135deg, #2d5016 0%, #4a7c2f 100%);
       color: white;
       border: none;
-      border-radius: 10px;
+      border-radius: 15px;
       cursor: pointer;
       font-size: 18px;
       font-weight: 600;
+      transition: all 0.4s ease;
+      box-shadow: 0 5px 15px rgba(45, 80, 22, 0.3);
+      position: relative;
+      overflow: hidden;
+      margin-top: 10px;
     }
 
-    async function login() {
-  const user = document.getElementById("loginUser").value;
-  const pass = document.getElementById("loginPass").value;
-
-  if (!user || !pass) {
-    alert("Please enter both username and password");
-    return;
-  }
-
-  try {
-    const res = await fetch(`${SCRIPT_URL}?action=login&user=${user}&pass=${pass}`);
-    const data = await res.json();
-
-    if (data.success) {
-      localStorage.setItem("token", data.token);
-      window.location = "index.html";
-    } else {
-      alert("Invalid username or password");
+    .login-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+      transition: left 0.6s;
     }
-  } catch (error) {
-    alert("Network error - please try again");
-  }
-}
-  
+
+    .login-btn:hover {
+      transform: translateY(-3px) scale(1.02);
+      box-shadow: 0 8px 25px rgba(45, 80, 22, 0.4);
+    }
+
+    .login-btn:hover::before {
+      left: 100%;
+    }
+
+    .login-btn:active {
+      transform: translateY(0) scale(0.98);
+    }
+
+    .login-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .error-message {
+      color: #dc3545;
+      font-size: 14px;
+      text-align: center;
+      margin-top: 15px;
+      padding: 10px;
+      background: #f8d7da;
+      border-radius: 10px;
+      border: 1px solid #f5c6cb;
+      display: none;
+    }
+
+    .floating-label {
+      position: absolute;
+      top: 16px;
+      left: 20px;
+      color: #999;
+      transition: all 0.3s ease;
+      pointer-events: none;
+      font-size: 16px;
+    }
+
+    input:focus + .floating-label,
+    input:not(:placeholder-shown) + .floating-label {
+      top: -25px;
+      left: 0;
+      font-size: 14px;
+      color: #2d5016;
+      font-weight: 600;
+    }
+
+    /* Responsive */
+    @media (max-width: 480px) {
+      #loginBox {
+        width: 90%;
+        padding: 30px 25px;
+      }
+      
+      .logo h1 {
+        font-size: 28px;
+      }
+    }
+
+    /* Pulse animation for input focus */
+    input:focus {
+      animation: pulseInput 2s infinite;
+    }
+
+    @keyframes pulseInput {
+      0% { box-shadow: 0 0 0 0 rgba(45, 80, 22, 0.2); }
+      70% { box-shadow: 0 0 0 10px rgba(45, 80, 22, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(45, 80, 22, 0); }
+    }
   </style>
 </head>
 
 <body>
+  <!-- Animated background particles -->
+  <div class="particles" id="particles"></div>
 
   <div id="loginBox">
-    <h2 style="text-align:center; margin-bottom:20px; color:#2d5016;">Login</h2>
+    <div class="logo">
+      <h1>👑 ABU AMJAD 👑</h1>
+      <p>Secure Access Portal</p>
+    </div>
 
-    <input id="loginUser" placeholder="Username">
-    <input id="loginPass" type="password" placeholder="Password">
+    <div class="input-group">
+      <input type="text" id="loginUser" placeholder=" " autocomplete="off">
+      <label class="floating-label">Username</label>
+      <span class="input-icon">👤</span>
+    </div>
 
-    <button onclick="login()">Login</button>
+    <div class="input-group">
+      <input type="password" id="loginPass" placeholder=" " autocomplete="off">
+      <label class="floating-label">Password</label>
+      <span class="input-icon">🔒</span>
+    </div>
+
+    <button class="login-btn" onclick="login()">Secure Login</button>
+    
+    <div class="error-message" id="errorMessage">
+      Ya Ayri! Put Currect Information
+    </div>
   </div>
 
   <script>
+    // Create animated particles
+    function createParticles() {
+      const particlesContainer = document.getElementById('particles');
+      const particleCount = 30;
+      
+      for (let i = 0; i < particleCount; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        particle.style.left = Math.random() * 100 + '%';
+        particle.style.top = Math.random() * 100 + '%';
+        particle.style.animationDuration = (Math.random() * 3 + 2) + 's';
+        particle.style.animationDelay = Math.random() * 5 + 's';
+        particle.style.width = (Math.random() * 4 + 2) + 'px';
+        particle.style.height = particle.style.width;
+        particlesContainer.appendChild(particle);
+      }
+    }
+
+    // Initialize particles
+    createParticles();
+
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyrScJh7k84wwIpEAr4MqSrnsyvPBMp3BYhPpM1hPyG_V7RPBPtQ_um3YYcCw0JLmc/exec";
 
     async function login() {
       const user = document.getElementById("loginUser").value;
       const pass = document.getElementById("loginPass").value;
+      const button = document.querySelector('.login-btn');
+      const errorDiv = document.getElementById('errorMessage');
 
-      const res = await fetch(`${SCRIPT_URL}?action=login&user=${user}&pass=${pass}`);
-      const data = await res.json();
+      // Reset error message
+      errorDiv.style.display = 'none';
 
-      if (data.success) {
-        localStorage.setItem("token", data.token);
-        window.location = "index.html";
-      } else {
-        alert("Ya Ayri! Put Currect Information");
+      if (!user || !pass) {
+        showError("Please enter both username and password");
+        return;
+      }
+
+      // Disable button and show loading state
+      button.disabled = true;
+      button.textContent = "Authenticating...";
+      button.style.background = 'linear-gradient(135deg, #6c757d 0%, #495057 100%)';
+
+      try {
+        const res = await fetch(`${SCRIPT_URL}?action=login&user=${user}&pass=${pass}`);
+        const data = await res.json();
+
+        if (data.success) {
+          localStorage.setItem("token", data.token);
+          button.textContent = "Success! Redirecting...";
+          button.style.background = 'linear-gradient(135deg, #28a745 0%, #20c997 100%)';
+          
+          // Redirect after success animation
+          setTimeout(() => {
+            window.location = "index.html";
+          }, 1000);
+        } else {
+          showError("Ya Ayri! Put Currect Information");
+          button.disabled = false;
+          button.textContent = "Secure Login";
+          button.style.background = 'linear-gradient(135deg, #2d5016 0%, #4a7c2f 100%)';
+        }
+      } catch (error) {
+        showError("Network error - please try again");
+        button.disabled = false;
+        button.textContent = "Secure Login";
+        button.style.background = 'linear-gradient(135deg, #2d5016 0%, #4a7c2f 100%)';
       }
     }
-  </script>
 
+    function showError(message) {
+      const errorDiv = document.getElementById('errorMessage');
+      errorDiv.textContent = message;
+      errorDiv.style.display = 'block';
+      
+      // Add shake animation
+      errorDiv.style.animation = 'shake 0.5s';
+      setTimeout(() => {
+        errorDiv.style.animation = '';
+      }, 500);
+    }
+
+    // Add shake animation for errors
+    const shakeStyle = document.createElement('style');
+    shakeStyle.textContent = `
+      @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        20%, 60% { transform: translateX(-10px); }
+        40%, 80% { transform: translateX(10px); }
+      }
+    `;
+    document.head.appendChild(shakeStyle);
+
+    // Add enter key support
+    document.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        login();
+      }
+    });
+
+    // Focus first input on load
+    window.onload = function() {
+      document.getElementById('loginUser').focus();
+    };
+  </script>
 </body>
 </html>
