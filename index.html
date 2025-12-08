@@ -10,23 +10,8 @@
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     }
 
-    /* Theme Variables */
-    :root {
-      /* Green Theme */
-      --bg-gradient: linear-gradient(135deg, #2d5016 0%, #4a7c2f 50%, #2d5016 100%);
-      --primary: #2d5016;
-      --secondary: #4a7c2f;
-      --text: #2d5016;
-      --text-light: #666;
-      --bg-light: #f8fff8;
-      --bg-container: rgba(255, 255, 255, 0.97);
-      --border: rgba(74, 124, 47, 0.4);
-      --shadow: rgba(0,0,0,0.3);
-      --input-bg: linear-gradient(135deg, #f8fff8 0%, #e8f5e8 100%);
-    }
-
     /* Dark Theme */
-    .dark-theme {
+    :root {
       --bg-gradient: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%);
       --primary: #ffffff;
       --secondary: #666666;
@@ -37,20 +22,6 @@
       --border: rgba(102, 102, 102, 0.4);
       --shadow: rgba(0,0,0,0.5);
       --input-bg: linear-gradient(135deg, #2d2d2d 0%, #3a3a3a 100%);
-    }
-
-    /* Light Theme */
-    .light-theme {
-      --bg-gradient: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 50%, #f8f9fa 100%);
-      --primary: #212529;
-      --secondary: #495057;
-      --text: #212529;
-      --text-light: #6c757d;
-      --bg-light: #ffffff;
-      --bg-container: rgba(255, 255, 255, 0.97);
-      --border: rgba(108, 117, 125, 0.4);
-      --shadow: rgba(0,0,0, 0.1);
-      --input-bg: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
     }
 
     body {
@@ -134,36 +105,6 @@
       to { opacity: 1; transform: translateY(0) scale(1); }
     }
 
-    .theme-selector {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      background: var(--bg-container);
-      padding: 10px;
-      border-radius: 15px;
-      box-shadow: 0 5px 15px var(--shadow);
-      z-index: 1000;
-      border: 1px solid var(--border);
-    }
-
-    .theme-btn {
-      width: 30px;
-      height: 30px;
-      border: none;
-      border-radius: 50%;
-      margin: 0 3px;
-      cursor: pointer;
-      transition: transform 0.3s ease;
-    }
-
-    .theme-btn:hover {
-      transform: scale(1.2);
-    }
-
-    .theme-btn.green { background: linear-gradient(135deg, #2d5016, #4a7c2f); }
-    .theme-btn.dark { background: linear-gradient(135deg, #1a1a1a, #2d2d2d); }
-    .theme-btn.light { background: linear-gradient(135deg, #f8f9fa, #e9ecef); }
-
     .header {
       text-align: center;
       margin-bottom: 30px;
@@ -175,7 +116,7 @@
       font-size: 32px;
       font-weight: 800;
       margin-bottom: 10px;
-      text-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      text-shadow: 0 4px 8px rgba(0,0,0,0.3);
       position: relative;
       display: inline-block;
     }
@@ -190,7 +131,7 @@
       height: 5px;
       background: linear-gradient(90deg, var(--primary), var(--secondary));
       border-radius: 3px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
     }
 
     .subtitle {
@@ -209,15 +150,15 @@
       outline: none;
       background: var(--input-bg);
       transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      box-shadow: inset 0 4px 12px rgba(0,0,0,0.05), 0 4px 15px var(--shadow);
+      box-shadow: inset 0 4px 12px rgba(0,0,0,0.2), 0 4px 15px var(--shadow);
       position: relative;
       z-index: 1;
     }
 
     .scan-input:focus {
       border-color: var(--primary);
-      background: linear-gradient(135deg, var(--bg-light) 0%, #f8fff8 100%);
-      box-shadow: 0 0 0 5px rgba(74, 124, 47, 0.3), inset 0 4px 12px rgba(0,0,0,0.05);
+      background: linear-gradient(135deg, #3a3a3a 0%, #4a4a4a 100%);
+      box-shadow: 0 0 0 5px rgba(102, 102, 102, 0.3), inset 0 4px 12px rgba(0,0,0,0.3);
       transform: translateY(-3px) scale(1.02);
     }
 
@@ -247,13 +188,13 @@
       padding: 22px;
       font-size: 19px;
       background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-      color: white;
+      color: #1a1a1a;
       border: none;
       border-radius: 20px;
       cursor: pointer;
       font-weight: 700;
       transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+      box-shadow: 0 8px 25px var(--shadow);
       position: relative;
       overflow: hidden;
       margin: 25px 0;
@@ -273,7 +214,7 @@
 
     .submit-btn:hover {
       transform: translateY(-4px) scale(1.03);
-      box-shadow: 0 12px 35px rgba(0,0,0,0.3);
+      box-shadow: 0 12px 35px var(--shadow);
     }
 
     .submit-btn:hover::before {
@@ -287,12 +228,12 @@
     .stats-bar {
       display: flex;
       justify-content: space-between;
-      background: linear-gradient(135deg, var(--bg-light) 0%, #d4edda 100%);
+      background: linear-gradient(135deg, var(--bg-light) 0%, #3a3a3a 100%);
       padding: 15px;
       border-radius: 15px;
       margin: 20px 0;
       border: 1px solid var(--secondary);
-      box-shadow: inset 0 2px 8px rgba(0,0,0,0.05);
+      box-shadow: inset 0 2px 8px rgba(0,0,0,0.2);
     }
 
     .stat-item {
@@ -314,24 +255,24 @@
 
     .logs-container {
       margin-top: 25px;
-      background: linear-gradient(135deg, var(--bg-light) 0%, #e8f5e8 100%);
+      background: linear-gradient(135deg, var(--bg-light) 0%, #3a3a3a 100%);
       border-radius: 20px;
       border: 2px solid var(--secondary);
       max-height: 50vh;
       overflow-y: auto;
-      box-shadow: inset 0 4px 15px rgba(0,0,0,0.05);
+      box-shadow: inset 0 4px 15px rgba(0,0,0,0.2);
       position: relative;
     }
 
     .logs-header {
       padding: 20px;
       background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-      color: white;
+      color: #1a1a1a;
       border-radius: 18px 18px 0 0;
       font-weight: 700;
       font-size: 19px;
       text-align: center;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      box-shadow: 0 4px 15px var(--shadow);
       position: sticky;
       top: 0;
       z-index: 10;
@@ -406,7 +347,7 @@
       border-radius: 10px;
       border-left: 4px solid var(--secondary);
       margin: 8px 0;
-      box-shadow: inset 0 2px 6px rgba(0,0,0,0.05);
+      box-shadow: inset 0 2px 6px rgba(0,0,0,0.2);
     }
 
     .log-time {
@@ -426,7 +367,7 @@
       height: 60px;
       border-radius: 50%;
       background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-      color: white;
+      color: #1a1a1a;
       border: none;
       font-size: 24px;
       cursor: pointer;
@@ -449,7 +390,7 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(45, 80, 22, 0.1);
+      background: rgba(102, 102, 102, 0.1);
       border-radius: 20px;
       opacity: 0;
       pointer-events: none;
@@ -507,16 +448,10 @@
         flex-direction: column;
         gap: 10px;
       }
-      
-      .theme-selector {
-        top: 10px;
-        right: 10px;
-        padding: 8px;
-      }
     }
 
     .loading-desc {
-      background: linear-gradient(90deg, var(--bg-light) 25%, #e8f5e8 50%, var(--bg-light) 75%);
+      background: linear-gradient(90deg, var(--bg-light) 25%, #3a3a3a 50%, var(--bg-light) 75%);
       background-size: 200% 100%;
       animation: loading 1.5s infinite;
     }
@@ -529,13 +464,6 @@
 </head>
 
 <body>
-  <!-- Theme Selector -->
-  <div class="theme-selector">
-    <button class="theme-btn green" onclick="setTheme('green')" title="Green Theme"></button>
-    <button class="theme-btn dark" onclick="setTheme('dark')" title="Dark Theme"></button>
-    <button class="theme-btn light" onclick="setTheme('light')" title="Light Theme"></button>
-  </div>
-
   <!-- Animated background elements -->
   <div class="bg-elements" id="bgElements"></div>
 
@@ -601,20 +529,6 @@
     }
 
     createBgElements();
-
-    // Theme management
-    function setTheme(theme) {
-      document.body.className = theme === 'green' ? '' : theme + '-theme';
-      localStorage.setItem('selectedTheme', theme);
-    }
-
-    // Load saved theme
-    function loadTheme() {
-      const savedTheme = localStorage.getItem('selectedTheme') || 'green';
-      setTheme(savedTheme);
-    }
-
-    loadTheme();
 
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyrScJh7k84wwIpEAr4MqSrnsyvPBMp3BYhPpM1hPyG_V7RPBPtQ_um3YYcCw0JLmc/exec";
     const tokenValue = localStorage.getItem("token");
