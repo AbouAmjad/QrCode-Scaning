@@ -11,115 +11,157 @@
     }
     
     body {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(135deg, #2d5016 0%, #4a7c2f 100%);
       min-height: 100vh;
       padding: 10px;
+      animation: gradientShift 10s ease-in-out infinite;
+    }
+    
+    @keyframes gradientShift {
+      0%, 100% { background: linear-gradient(135deg, #2d5016 0%, #4a7c2f 100%); }
+      50% { background: linear-gradient(135deg, #4a7c2f 0%, #2d5016 100%); }
     }
     
     .container {
-      background: white;
-      border-radius: 16px;
-      padding: 20px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 20px;
+      padding: 25px;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.2);
       max-width: 100%;
       margin: 0 auto;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(74, 124, 47, 0.2);
+      animation: slideUp 0.8s ease-out;
+    }
+    
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
     
     .title {
       text-align: center;
-      color: #333;
-      font-size: 24px;
-      margin-bottom: 20px;
-      font-weight: 600;
+      color: #2d5016;
+      font-size: 28px;
+      margin-bottom: 25px;
+      font-weight: 700;
+      position: relative;
+      text-shadow: 0 2px 4px rgba(74, 124, 47, 0.1);
+    }
+    
+    .title::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60px;
+      height: 3px;
+      background: linear-gradient(90deg, #2d5016, #4a7c2f);
+      border-radius: 2px;
     }
     
     .scan-input {
       width: 100%;
-      padding: 18px 15px;
+      padding: 20px 15px;
       font-size: 18px;
-      border: 2px solid #e1e5e9;
-      border-radius: 12px;
+      border: 2px solid #4a7c2f;
+      border-radius: 15px;
       outline: none;
-      background: #f8f9fa;
+      background: #f8fff8;
       transition: all 0.3s ease;
+      box-shadow: inset 0 2px 8px rgba(74, 124, 47, 0.1);
     }
     
     .scan-input:focus {
-      border-color: #0066cc;
+      border-color: #2d5016;
       background: white;
-      box-shadow: 0 0 0 3px rgba(0,102,204,0.1);
+      box-shadow: 0 0 0 4px rgba(74, 124, 47, 0.2), inset 0 2px 8px rgba(74, 124, 47, 0.1);
+      transform: scale(1.02);
     }
     
     .submit-btn {
       width: 100%;
-      padding: 18px;
+      padding: 20px;
       font-size: 18px;
-      background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%);
+      background: linear-gradient(135deg, #2d5016 0%, #4a7c2f 100%);
       color: white;
       border: none;
-      border-radius: 12px;
-      margin: 15px 0;
+      border-radius: 15px;
+      margin: 20px 0;
       cursor: pointer;
       font-weight: 600;
-      transition: all 0.3s ease;
+      transition: all 0.4s ease;
+      box-shadow: 0 5px 15px rgba(45, 80, 22, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .submit-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transition: left 0.5s;
     }
     
     .submit-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(0,102,204,0.3);
+      transform: translateY(-3px) scale(1.02);
+      box-shadow: 0 8px 25px rgba(45, 80, 22, 0.4);
+    }
+    
+    .submit-btn:hover::before {
+      left: 100%;
+    }
+    
+    .submit-btn:active {
+      transform: translateY(0) scale(0.98);
     }
     
     .logs-container {
-      margin-top: 20px;
-      background: #f8f9fa;
-      border-radius: 12px;
-      border: 1px solid #e1e5e9;
+      margin-top: 25px;
+      background: linear-gradient(135deg, #f8fff8 0%, #e8f5e8 100%);
+      border-radius: 15px;
+      border: 1px solid #4a7c2f;
       max-height: 50vh;
       overflow-y: auto;
+      box-shadow: inset 0 2px 10px rgba(74, 124, 47, 0.1);
     }
     
     .logs-header {
-      padding: 15px;
-      background: #0066cc;
+      padding: 18px;
+      background: linear-gradient(135deg, #2d5016 0%, #4a7c2f 100%);
       color: white;
-      border-radius: 12px 12px 0 0;
+      border-radius: 15px 15px 0 0;
       font-weight: 600;
-      font-size: 16px;
+      font-size: 18px;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(45, 80, 22, 0.3);
     }
     
     .log-item {
-      padding: 15px;
-      border-bottom: 1px solid #e1e5e9;
-      animation: slideIn 0.3s ease;
+      padding: 18px;
+      border-bottom: 1px solid #e8f5e8;
+      animation: slideInRight 0.4s ease-out;
+      background: white;
+      margin: 5px 10px;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(74, 124, 47, 0.1);
     }
     
-    .log-item:last-child {
-      border-bottom: none;
-    }
-    
-    .log-code {
-      font-weight: 600;
-      color: #0066cc;
-      font-size: 16px;
-      margin-bottom: 5px;
-    }
-    
-    .log-desc {
-      color: #666;
-      font-size: 14px;
-      line-height: 1.4;
-    }
-    
-    .log-time {
-      color: #999;
-      font-size: 12px;
-      margin-top: 5px;
-    }
-    
-    @keyframes slideIn {
+    @keyframes slideInRight {
       from {
         opacity: 0;
-        transform: translateX(20px);
+        transform: translateX(30px);
       }
       to {
         opacity: 1;
@@ -127,39 +169,98 @@
       }
     }
     
+    .log-item:last-child {
+      border-bottom: none;
+    }
+    
+    .log-code {
+      font-weight: 700;
+      color: #2d5016;
+      font-size: 17px;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+    }
+    
+    .log-code::before {
+      content: '●';
+      color: #4a7c2f;
+      margin-right: 8px;
+      font-size: 12px;
+    }
+    
+    .log-desc {
+      color: #4a7c2f;
+      font-size: 14px;
+      line-height: 1.5;
+      background: #f8fff8;
+      padding: 8px;
+      border-radius: 6px;
+      border-left: 3px solid #4a7c2f;
+    }
+    
+    .log-time {
+      color: #666;
+      font-size: 11px;
+      margin-top: 8px;
+      text-align: right;
+      opacity: 0.7;
+    }
+    
+    /* Pulse animation for active input */
+    .scan-input:focus {
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(74, 124, 47, 0.4); }
+      70% { box-shadow: 0 0 0 10px rgba(74, 124, 47, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(74, 124, 47, 0); }
+    }
+    
     /* Scrollbar styling */
     .logs-container::-webkit-scrollbar {
-      width: 6px;
+      width: 8px;
     }
     
     .logs-container::-webkit-scrollbar-track {
-      background: #f1f1f1;
-      border-radius: 3px;
+      background: #e8f5e8;
+      border-radius: 4px;
     }
     
     .logs-container::-webkit-scrollbar-thumb {
-      background: #0066cc;
-      border-radius: 3px;
+      background: linear-gradient(135deg, #2d5016, #4a7c2f);
+      border-radius: 4px;
+    }
+    
+    /* Floating effect for container */
+    .container {
+      animation: float 6s ease-in-out infinite;
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
     }
     
     /* Responsive adjustments */
     @media (max-width: 480px) {
       .container {
-        padding: 15px;
+        padding: 20px 15px;
         margin: 5px;
       }
       
       .title {
-        font-size: 20px;
+        font-size: 24px;
       }
       
       .scan-input, .submit-btn {
-        padding: 16px 12px;
+        padding: 18px 12px;
         font-size: 16px;
       }
       
       .log-code {
-        font-size: 15px;
+        font-size: 16px;
       }
       
       .log-desc {
@@ -170,7 +271,7 @@
 </head>
 <body>
   <div class="container">
-    <h1 class="title">QR Scanner</h1>
+    <h1 class="title">Abou Amjad-QR Scanner</h1>
     <input type="text" id="scanInput" class="scan-input" placeholder="Scan QR Code Here" autofocus>
     <button onclick="submitScan()" class="submit-btn">Submit Scan</button>
     
@@ -245,6 +346,11 @@
         <div class="log-time">${new Date().toLocaleTimeString()}</div>
       `;
       document.getElementById("logs").prepend(logItem);
+      
+      // Add subtle bounce effect to new log items
+      setTimeout(() => {
+        logItem.style.animation = 'bounce 0.3s ease';
+      }, 10);
     }
 
     function updateLastLogDescription(desc) {
@@ -258,6 +364,17 @@
     document.getElementById("scanInput").addEventListener("keypress", e => {
       if (e.key === "Enter") submitScan();
     });
+    
+    // Add bounce animation for new log items
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes bounce {
+        0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+        40% {transform: translateY(-5px);}
+        60% {transform: translateY(-3px);}
+      }
+    `;
+    document.head.appendChild(style);
   </script>
 </body>
 </html>
