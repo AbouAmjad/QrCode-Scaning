@@ -3,84 +3,179 @@
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-      max-width: 600px;
-      margin: 0 auto;
-      background-color: #f5f5f5;
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     }
+    
+    body {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 10px;
+    }
+    
     .container {
       background: white;
-      border-radius: 8px;
+      border-radius: 16px;
       padding: 20px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+      max-width: 100%;
+      margin: 0 auto;
     }
-    input[type="text"] {
-      width: 100%;
-      padding: 15px;
-      font-size: 18px;
-      border: 2px solid #ddd;
-      border-radius: 4px;
-      margin: 10px 0;
-      box-sizing: border-box;
-    }
-    button {
-      width: 100%;
-      padding: 15px;
-      font-size: 18px;
-      background: #0066cc;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #0052a3;
-    }
-    .logs-container {
-      margin-top: 20px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      max-height: 400px;
-      overflow-y: auto;
-    }
-    .log-item {
-      padding: 10px;
-      border-bottom: 1px solid #eee;
-      display: flex;
-      justify-content: space-between;
-    }
-    .log-item:last-child {
-      border-bottom: none;
-    }
-    .log-code {
-      font-weight: bold;
-      color: #0066cc;
-    }
-    .log-desc {
-      color: #666;
-      font-size: 14px;
-    }
-    .log-time {
-      color: #999;
-      font-size: 12px;
-    }
+    
     .title {
       text-align: center;
       color: #333;
+      font-size: 24px;
       margin-bottom: 20px;
+      font-weight: 600;
+    }
+    
+    .scan-input {
+      width: 100%;
+      padding: 18px 15px;
+      font-size: 18px;
+      border: 2px solid #e1e5e9;
+      border-radius: 12px;
+      outline: none;
+      background: #f8f9fa;
+      transition: all 0.3s ease;
+    }
+    
+    .scan-input:focus {
+      border-color: #0066cc;
+      background: white;
+      box-shadow: 0 0 0 3px rgba(0,102,204,0.1);
+    }
+    
+    .submit-btn {
+      width: 100%;
+      padding: 18px;
+      font-size: 18px;
+      background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      margin: 15px 0;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+    
+    .submit-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0,102,204,0.3);
+    }
+    
+    .logs-container {
+      margin-top: 20px;
+      background: #f8f9fa;
+      border-radius: 12px;
+      border: 1px solid #e1e5e9;
+      max-height: 50vh;
+      overflow-y: auto;
+    }
+    
+    .logs-header {
+      padding: 15px;
+      background: #0066cc;
+      color: white;
+      border-radius: 12px 12px 0 0;
+      font-weight: 600;
+      font-size: 16px;
+    }
+    
+    .log-item {
+      padding: 15px;
+      border-bottom: 1px solid #e1e5e9;
+      animation: slideIn 0.3s ease;
+    }
+    
+    .log-item:last-child {
+      border-bottom: none;
+    }
+    
+    .log-code {
+      font-weight: 600;
+      color: #0066cc;
+      font-size: 16px;
+      margin-bottom: 5px;
+    }
+    
+    .log-desc {
+      color: #666;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+    
+    .log-time {
+      color: #999;
+      font-size: 12px;
+      margin-top: 5px;
+    }
+    
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateX(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+    
+    /* Scrollbar styling */
+    .logs-container::-webkit-scrollbar {
+      width: 6px;
+    }
+    
+    .logs-container::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 3px;
+    }
+    
+    .logs-container::-webkit-scrollbar-thumb {
+      background: #0066cc;
+      border-radius: 3px;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 480px) {
+      .container {
+        padding: 15px;
+        margin: 5px;
+      }
+      
+      .title {
+        font-size: 20px;
+      }
+      
+      .scan-input, .submit-btn {
+        padding: 16px 12px;
+        font-size: 16px;
+      }
+      
+      .log-code {
+        font-size: 15px;
+      }
+      
+      .log-desc {
+        font-size: 13px;
+      }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h2 class="title">Abou Amjad QR Scanner</h2>
-    <input type="text" id="scanInput" placeholder="Scan QR Code Here" autofocus>
-    <button onclick="submitScan()">Submit</button>
+    <h1 class="title">QR Scanner</h1>
+    <input type="text" id="scanInput" class="scan-input" placeholder="Scan QR Code Here" autofocus>
+    <button onclick="submitScan()" class="submit-btn">Submit Scan</button>
     
     <div class="logs-container">
-      <h3>Scan Logs</h3>
+      <div class="logs-header">Scan Logs</div>
       <div id="logs"></div>
     </div>
   </div>
@@ -117,16 +212,13 @@
       
       isProcessing = true;
       const data = scanQueue.shift(); // Get first item (FIFO)
-
-    // Get submit to sheet first
-      await fetch(SCRIPT_URL + "?scanData=" + encodeURIComponent(data), { method: 'GET' });
       
-      
-      // Then Submit the description
+      // Get description first
       const description = await getDescription(data);
       updateLastLogDescription(description);
       
-  
+      // Then submit to sheet
+      await fetch(SCRIPT_URL + "?scanData=" + encodeURIComponent(data), { method: 'GET' });
       
       // Process next item
       processQueue();
@@ -148,10 +240,8 @@
       const logItem = document.createElement("div");
       logItem.className = "log-item";
       logItem.innerHTML = `
-        <div>
-          <div class="log-code">${code}</div>
-          <div class="log-desc">${desc}</div>
-        </div>
+        <div class="log-code">${code}</div>
+        <div class="log-desc">${desc}</div>
         <div class="log-time">${new Date().toLocaleTimeString()}</div>
       `;
       document.getElementById("logs").prepend(logItem);
