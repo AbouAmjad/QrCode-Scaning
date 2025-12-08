@@ -43,6 +43,31 @@
       font-size: 18px;
       font-weight: 600;
     }
+
+    async function login() {
+  const user = document.getElementById("loginUser").value;
+  const pass = document.getElementById("loginPass").value;
+
+  if (!user || !pass) {
+    alert("Please enter both username and password");
+    return;
+  }
+
+  try {
+    const res = await fetch(`${SCRIPT_URL}?action=login&user=${user}&pass=${pass}`);
+    const data = await res.json();
+
+    if (data.success) {
+      localStorage.setItem("token", data.token);
+      window.location = "index.html";
+    } else {
+      alert("Invalid username or password");
+    }
+  } catch (error) {
+    alert("Network error - please try again");
+  }
+}
+  
   </style>
 </head>
 
