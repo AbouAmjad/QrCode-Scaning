@@ -133,10 +133,11 @@
     async function getDescription(code) {
       try {
         const response = await fetch(`${SCRIPT_URL}?action=getDescription&scanData=${encodeURIComponent(code)}`);
-        return await response.text();
+        const text = await response.text();
+        return text;
       } catch (error) {
         console.error("Error fetching description:", error);
-        return "Error loading description";
+        return "Network error - please try again";
       }
     }
 
