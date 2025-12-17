@@ -592,7 +592,7 @@
     let totalScans = 0;
     let todayScans = 0;
 
-    // Offline storage
+    // Offline storage functions
     function saveOfflineScan(code, description) {
       const offlineScans = JSON.parse(localStorage.getItem('offlineScans') || '[]');
       offlineScans.push({
@@ -615,44 +615,49 @@
       document.getElementById('offlineCount').textContent = pending;
     }
 
-    // Check connection status
-    function checkConnection() {
-      fetch(SCRIPT_URL, { method: 'HEAD' })
-        .then(() => {
-          document.getElementById('onlineIndicator').style.display = 'block';
-          document.getElementById('offlineIndicator').style.display = 'none';
-          // Try to sync offline scans
-          syncOfflineScans();
-        })
-        .catch(() => {
-          document.getElementById('offlineIndicator').style.display = 'block';
-          document.getElementById('onlineIndicator').style.display = 'none';
-        });
+    // Check connection and sync offline scans
+    async function checkConnection() {
+      try {
+        // Test connection
+        await fetch(SCRIPT_URL, { method: 'HEAD', cache: 'no-store' });
+        
+        document.getElementById('onlineIndicator').style.display = 'block';
+        document.getElementById('offlineIndicator').style.display = 'none';
+        
+        // Sync offline scans
+        await syncOfflineScans();
+      } catch (error) {
+        document.getElementById('offlineIndicator').style.display = 'block';
+        document.getElementById('onlineIndicator').style.display = 'none';
+      }
     }
 
-    // Sync offline scans when online
+    // Sync all offline scans
     async function syncOfflineScans() {
       const offlineScans = getOfflineScans();
       const pendingScans = offlineScans.filter(scan => !scan.submitted);
       
       for (let scan of pendingScans) {
         try {
-          await fetch(`${SCRIPT_URL}?scanData=${encodeURIComponent(scan.code)}&token=${tokenValue}`);
+          await fetch(`${SCRIPT_URL}?scanData=${encodeURIComponent(scan.code)}&token=${tokenValue}`, {
+            cache: 'no-store'
+          });
+          
           // Mark as submitted
           const allScans = getOfflineScans();
           const updatedScans = allScans.map(s => 
             s.code === scan.code ? {...s, submitted: true} : s
           );
           localStorage.setItem('offlineScans', JSON.stringify(updatedScans));
+          updateOfflineCount();
         } catch (error) {
           console.error('Failed to sync scan:', scan.code);
         }
       }
-      updateOfflineCount();
     }
 
-    // Check connection every 5 seconds
-    setInterval(checkConnection, 5000);
+    // Check connection every 3 seconds
+    setInterval(checkConnection, 3000);
     checkConnection(); // Initial check
 
     function submitScan() {
@@ -671,26 +676,29 @@
       todayScans++;
       updateStats();
       
-      // Try to get description
+      // Get description and submit
       getDescription(data).then(description => {
         updateLastLogDescription(description);
         
-        // Check connection and submit
-        fetch(SCRIPT_URL, { method: 'HEAD' })
-          .then(() => {
-            // Online - submit immediately
-            fetch(`${SCRIPT_URL}?scanData=${encodeURIComponent(data)}&token=${tokenValue}`);
-          })
-          .catch(() => {
-            // Offline - save locally
-            saveOfflineScan(data, description);
-          });
+        // Try to submit online first
+        fetch(`${SCRIPT_URL}?scanData=${encodeURIComponent(data)}&token=${tokenValue}`, {
+          cache: 'no-store'
+        })
+        .then(response => {
+          if (!response.ok) throw new Error('Network error');
+        })
+        .catch(error => {
+          // If online submission fails, save offline
+          saveOfflineScan(data, description);
+        });
       });
     }
 
     async function getDescription(code) {
       try {
-        const response = await fetch(`${SCRIPT_URL}?action=getDescription&scanData=${encodeURIComponent(code)}&token=${tokenValue}`);
+        const response = await fetch(`${SCRIPT_URL}?action=getDescription&scanData=${encodeURIComponent(code)}&token=${tokenValue}`, {
+          cache: 'no-store'
+        });
         return await response.text();
       } catch (error) {
         console.error("Error fetching description:", error);
