@@ -101,12 +101,13 @@ button {
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyrScJh7k84wwIpEAr4MqSrnsyvPBMp3BYhPpM1hPyG_V7RPBPtQ_um3YYcCw0JLmc/exec";
 const tokenValue = localStorage.getItem("token") || "";
 
-let syncing = false;
+let isProcessing = false;
 let scanSeq = Number(localStorage.getItem("scanSeq") || 1);
 
 function loadScans() {
   return JSON.parse(localStorage.getItem("offlineScans") || "[]");
 }
+
 function saveScans(scans) {
   localStorage.setItem("offlineScans", JSON.stringify(scans));
   localStorage.setItem("scanSeq", scanSeq);
@@ -148,7 +149,13 @@ function submitScan() {
   const logId = addLog(code);
 
   const scans = loadScans();
-  scans.push({ code, seq: scanSeq++, sent: false, logId });
+  scans.push({ 
+    code, 
+    seq: scanSeq++, 
+    sent: false, 
+    logId,
+    timestamp: Date.now() // Added for sequence
+  });
   saveScans(scans);
   updateCounter();
 
@@ -156,49 +163,68 @@ function submitScan() {
 }
 
 async function processQueue() {
-  if (syncing) return;
-  syncing = true;
+  if (isProcessing) return; // Prevent concurrent processing
+  isProcessing = true;
 
-  let scans = loadScans();
-  scans.sort((a, b) => a.seq - b.seq);
+  try {
+    let scans = loadScans();
+    // Sort by sequence number to maintain order
+    scans.sort((a, b) => a.seq - b.seq);
 
-  for (const scan of scans) {
-    if (scan.sent) continue;
+    for (const scan of scans) {
+      if (scan.sent) continue;
 
-    try {
-      const res = await fetch(
-        `${SCRIPT_URL}?scanData=${encodeURIComponent(scan.code)}&token=${tokenValue}`,
-        { cache: "no-store" }
-      );
+      try {
+        const res = await fetch(
+          `${SCRIPT_URL}?scanData=${encodeURIComponent(scan.code)}&token=${tokenValue}`,
+          { 
+            cache: "no-store",
+            method: "GET"
+          }
+        );
 
-      const txt = await res.text();
-      if (txt !== "OK") throw new Error();
+        const txt = await res.text();
+        if (txt !== "OK") throw new Error("Sync failed");
 
-      scan.sent = true;
-      saveScans(scans);
-      markSynced(scan.logId);
-      updateCounter();
+        // Mark as sent in localStorage
+        const allScans = loadScans();
+        const updatedScans = allScans.map(s => 
+          s.seq === scan.seq ? {...s, sent: true} : s
+        );
+        saveScans(updatedScans);
+        
+        markSynced(scan.logId);
+        updateCounter();
 
-      await new Promise(r => setTimeout(r, 300));
+        // Small delay to prevent overwhelming the server
+        await new Promise(r => setTimeout(r, 200));
 
-    } catch {
-      document.getElementById("status").className = "status offline";
-      document.getElementById("status").innerText = "OFFLINE — scans saved";
-      syncing = false;
-      return;
+      } catch (error) {
+        console.error("Sync error:", error);
+        document.getElementById("status").className = "status offline";
+        document.getElementById("status").innerText = "OFFLINE — scans saved";
+        return; // Stop processing on error
+      }
     }
-  }
 
-  document.getElementById("status").className = "status online";
-  document.getElementById("status").innerText = "ONLINE — syncing scans";
-  syncing = false;
+    // If we got here, all scans were processed
+    document.getElementById("status").className = "status online";
+    document.getElementById("status").innerText = "ONLINE — syncing scans";
+
+  } finally {
+    isProcessing = false;
+  }
 }
 
-setInterval(processQueue, 3000);
+// Process queue every 2 seconds
+setInterval(processQueue, 2000);
 
 document.getElementById("scanInput").addEventListener("keydown", e => {
   if (e.key === "Enter") submitScan();
 });
+
+// Initial check
+updateCounter();
 </script>
 
 </body>
