@@ -604,7 +604,8 @@
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyrScJh7k84wwIpEAr4MqSrnsyvPBMp3BYhPpM1hPyG_V7RPBPtQ_um3YYcCw0JLmc/exec";
     const tokenValue = localStorage.getItem("token");
 
-    let isSyncing = false; // Prevent duplicate syncs
+    let isSyncing = false;
+    let sequenceCounter = 1; // For ordering offline scans
 
     // Proper offline storage functions
     function saveOfflineScan(code, description, isSubmitted = false) {
@@ -613,6 +614,7 @@
         code: code,
         description: description,
         timestamp: Date.now(),
+        sequence: sequenceCounter++,
         submitted: isSubmitted
       });
       localStorage.setItem('offlineScans', JSON.stringify(offlineScans));
@@ -645,9 +647,9 @@
       }
     }
 
-    // Connection check with sync - FIXED WITH LOCK
+    // Connection check with sync - FIXED WITH LOCK AND SEQUENCE
     async function checkConnectionAndSync() {
-      if (isSyncing) return; // Prevent duplicate syncs
+      if (isSyncing) return;
       isSyncing = true;
       
       try {
@@ -661,7 +663,7 @@
           document.getElementById('onlineIndicator').style.display = 'block';
           document.getElementById('offlineIndicator').style.display = 'none';
           
-          // Sync all offline scans
+          // Sync all offline scans in sequence order
           await syncOfflineScans();
         } else {
           throw new Error('Connection failed');
@@ -674,17 +676,17 @@
       }
     }
 
-    // Sync all offline scans sequentially - FIXED
+    // Sync all offline scans in SEQUENCE ORDER - FIXED
     async function syncOfflineScans() {
       const offlineScans = getOfflineScans();
-      const pendingScans = offlineScans.filter(scan => !scan.submitted);
+      let pendingScans = offlineScans.filter(scan => !scan.submitted);
       
       if (pendingScans.length === 0) return;
       
-      console.log(`Syncing ${pendingScans.length} offline scans...`);
+      console.log(`Syncing ${pendingScans.length} offline scans in sequence...`);
       
-      // Sort by timestamp to maintain sequence
-      pendingScans.sort((a, b) => a.timestamp - b.timestamp);
+      // Sort by sequence number to maintain order
+      pendingScans.sort((a, b) => a.sequence - b.sequence);
       
       for (let i = 0; i < pendingScans.length; i++) {
         const scan = pendingScans[i];
@@ -705,13 +707,13 @@
             );
             localStorage.setItem('offlineScans', JSON.stringify(updatedScans));
             updateOfflineCount();
-            console.log(`Synced: ${scan.code}`);
+            console.log(`Synced: ${scan.code} (sequence: ${scan.sequence})`);
           } else {
             console.error(`Failed to sync: ${scan.code}`);
           }
         } catch (error) {
           console.error(`Error syncing: ${scan.code}`, error);
-          break;
+          break; // Stop if connection fails during sync
         }
       }
     }
