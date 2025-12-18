@@ -1,859 +1,218 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QR Scanner</title>
 
-    /* Dark Theme */
-    :root {
-      --bg-gradient: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%);
-      --primary: #ffffff;
-      --secondary: #666666;
-      --text: #ffffff;
-      --text-light: #cccccc;
-      --bg-light: #2d2d2d;
-      --bg-container: rgba(45, 45, 45, 0.97);
-      --border: rgba(102, 102, 102, 0.4);
-      --shadow: rgba(0,0,0,0.5);
-      --input-bg: linear-gradient(135deg, #2d2d2d 0%, #3a3a3a 100%);
-    }
-
-    body {
-      background: var(--bg-gradient);
-      min-height: 100vh;
-      padding: 30px;
-      overflow-x: hidden;
-      position: relative;
-      animation: bgShift 12s ease-in-out infinite;
-    }
-
-    @keyframes bgShift {
-      0%, 100% { background: var(--bg-gradient); }
-      33% { background: var(--bg-gradient); }
-      66% { background: var(--bg-gradient); }
-    }
-
-    .bg-elements {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      z-index: -1;
-    }
-
-    .bg-circle {
-      position: absolute;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-      animation: floatCircle infinite linear;
-    }
-
-    @keyframes floatCircle {
-      0% { transform: translate(0, 0) rotate(0deg); opacity: 0.3; }
-      25% { transform: translate(20px, 15px) rotate(90deg); }
-      50% { transform: translate(40px, 30px) rotate(180deg); opacity: 0.1; }
-      75% { transform: translate(20px, 15px) rotate(270deg); }
-      100% { transform: translate(0, 0) rotate(360deg); opacity: 0.3; }
-    }
-
-    .container {
-      background: var(--bg-container);
-      border-radius: 25px;
-      padding: 40px;
-      box-shadow: 0 25px 50px var(--shadow), 0 0 0 2px var(--border);
-      max-width: 1400px;
-      margin: 0 auto;
-      backdrop-filter: blur(20px);
-      border: 2px solid var(--border);
-      animation: slideUp 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .container::before {
-      content: '';
-      position: absolute;
-      top: -2px;
-      left: -2px;
-      right: -2px;
-      bottom: -2px;
-      background: linear-gradient(45deg, var(--primary), var(--secondary), var(--primary), var(--secondary));
-      z-index: -1;
-      border-radius: 27px;
-      animation: borderAnimate 6s linear infinite;
-      background-size: 400% 400%;
-    }
-
-    @keyframes borderAnimate {
-      0% { background-position: 0% 50%; }
-      25% { background-position: 100% 50%; }
-      50% { background-position: 0% 50%; }
-      75% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
-    }
-
-    @keyframes slideUp {
-      from { opacity: 0; transform: translateY(60px) scale(0.9); }
-      to { opacity: 1; transform: translateY(0) scale(1); }
-    }
-
-    .header {
-      text-align: center;
-      margin-bottom: 40px;
-      position: relative;
-    }
-
-    .title {
-      color: var(--text);
-      font-size: 36px;
-      font-weight: 800;
-      margin-bottom: 12px;
-      text-shadow: 0 4px 8px rgba(0,0,0,0.3);
-      position: relative;
-      display: inline-block;
-    }
-
-    .title::after {
-      content: '';
-      position: absolute;
-      bottom: -15px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 120px;
-      height: 6px;
-      background: linear-gradient(90deg, var(--primary), var(--secondary));
-      border-radius: 3px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-    }
-
-    .subtitle {
-      color: var(--secondary);
-      font-size: 18px;
-      margin-top: 10px;
-      opacity: 0.8;
-    }
-
-    .main-content {
-      display: grid;
-      grid-template-columns: 1fr 2fr;
-      gap: 30px;
-      align-items: start;
-    }
-
-    .left-panel {
-      display: flex;
-      flex-direction: column;
-      gap: 25px;
-    }
-
-    .right-panel {
-      display: flex;
-      flex-direction: column;
-      gap: 25px;
-    }
-
-    .scan-section {
-      background: linear-gradient(135deg, var(--bg-light) 0%, #3a3a3a 100%);
-      padding: 30px;
-      border-radius: 20px;
-      border: 1px solid var(--border);
-      box-shadow: inset 0 4px 15px rgba(0,0,0,0.2);
-    }
-
-    .scan-input {
-      width: 100%;
-      padding: 25px 20px;
-      font-size: 20px;
-      border: 3px solid var(--secondary);
-      border-radius: 15px;
-      outline: none;
-      background: var(--input-bg);
-      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      box-shadow: inset 0 4px 12px rgba(0,0,0,0.2), 0 4px 15px var(--shadow);
-      position: relative;
-      z-index: 1;
-    }
-
-    .scan-input:focus {
-      border-color: var(--primary);
-      background: linear-gradient(135deg, #3a3a3a 0%, #4a4a4a 100%);
-      box-shadow: 0 0 0 5px rgba(102, 102, 102, 0.3), inset 0 4px 12px rgba(0,0,0,0.3);
-      transform: translateY(-3px) scale(1.02);
-    }
-
-    .scan-input::placeholder {
-      color: var(--text-light);
-      opacity: 0.7;
-    }
-
-    .input-icon {
-      position: absolute;
-      right: 25px;
-      top: 50%;
-      transform: translateY(-50%);
-      font-size: 28px;
-      color: var(--secondary);
-      opacity: 0.6;
-      transition: all 0.3s ease;
-    }
-
-    .scan-input:focus + .input-icon {
-      opacity: 1;
-      transform: translateY(-50%) scale(1.2);
-    }
-
-    .submit-btn {
-      width: 100%;
-      padding: 25px;
-      font-size: 20px;
-      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-      color: #1a1a1a;
-      border: none;
-      border-radius: 15px;
-      cursor: pointer;
-      font-weight: 700;
-      transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      box-shadow: 0 8px 25px var(--shadow);
-      position: relative;
-      overflow: hidden;
-      letter-spacing: 0.5px;
-      margin-top: 15px;
-    }
-
-    .submit-btn::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-      transition: left 0.8s;
-    }
-
-    .submit-btn:hover {
-      transform: translateY(-4px) scale(1.03);
-      box-shadow: 0 12px 35px var(--shadow);
-    }
-
-    .submit-btn:hover::before {
-      left: 100%;
-    }
-
-    .submit-btn:active {
-      transform: translateY(0) scale(0.98);
-    }
-
-    .stats-section {
-      background: linear-gradient(135deg, var(--bg-light) 0%, #3a3a3a 100%);
-      padding: 25px;
-      border-radius: 20px;
-      border: 1px solid var(--border);
-      box-shadow: inset 0 4px 15px rgba(0,0,0,0.2);
-    }
-
-    .stats-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 20px;
-    }
-
-    .stat-item {
-      text-align: center;
-      padding: 15px;
-      background: rgba(102, 102, 102, 0.1);
-      border-radius: 12px;
-      border: 1px solid var(--border);
-    }
-
-    .stat-value {
-      font-size: 24px;
-      font-weight: 700;
-      color: var(--text);
-      margin-bottom: 5px;
-    }
-
-    .stat-label {
-      font-size: 14px;
-      color: var(--secondary);
-      opacity: 0.9;
-    }
-
-    .logs-section {
-      background: linear-gradient(135deg, var(--bg-light) 0%, #3a3a3a 100%);
-      border-radius: 20px;
-      border: 2px solid var(--secondary);
-      max-height: 700px;
-      overflow-y: auto;
-      box-shadow: inset 0 4px 15px rgba(0,0,0,0.2);
-      position: relative;
-    }
-
-    .logs-header {
-      padding: 20px;
-      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-      color: #1a1a1a;
-      border-radius: 18px 18px 0 0;
-      font-weight: 700;
-      font-size: 20px;
-      text-align: center;
-      box-shadow: 0 4px 15px var(--shadow);
-      position: sticky;
-      top: 0;
-      z-index: 10;
-    }
-
-    .log-item {
-      padding: 20px;
-      border-bottom: 2px solid var(--bg-light);
-      animation: slideInRight 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      background: var(--bg-container);
-      margin: 8px 15px;
-      border-radius: 15px;
-      box-shadow: 0 4px 12px var(--shadow);
-      transition: all 0.3s ease;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .log-item:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px var(--shadow);
-    }
-
-    .log-item::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      height: 100%;
-      width: 4px;
-      background: linear-gradient(180deg, var(--primary), var(--secondary));
-    }
-
-    @keyframes slideInRight {
-      from { opacity: 0; transform: translateX(50px) scale(0.95); }
-      to { opacity: 1; transform: translateX(0) scale(1); }
-    }
-
-    .log-item:last-child {
-      border-bottom: none;
-    }
-
-    .log-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 8px;
-    }
-
-    .log-code {
-      font-weight: 800;
-      color: var(--text);
-      font-size: 18px;
-      display: flex;
-      align-items: center;
-      position: relative;
-    }
-
-    .log-code::before {
-      content: '●';
-      color: var(--secondary);
-      margin-right: 10px;
-      font-size: 16px;
-      animation: pulseDot 2s infinite;
-    }
-
-    .sync-status {
-      font-size: 20px;
-      margin-left: 10px;
-    }
-
-    .status-synced {
-      color: #28a745;
-    }
-
-    .status-pending {
-      color: #ffc107;
-      animation: pulse 1s infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.5; }
-    }
-
-    @keyframes pulseDot {
-      0%, 100% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.2); opacity: 0.7; }
-    }
-
-    .log-desc {
-      color: var(--secondary);
-      font-size: 15px;
-      line-height: 1.6;
-      background: var(--input-bg);
-      padding: 12px;
-      border-radius: 10px;
-      border-left: 4px solid var(--secondary);
-      margin: 8px 0;
-      box-shadow: inset 0 2px 6px rgba(0,0,0,0.2);
-    }
-
-    .log-time {
-      color: var(--text-light);
-      font-size: 12px;
-      margin-top: 10px;
-      text-align: right;
-      opacity: 0.8;
-      font-style: italic;
-    }
-
-    .floating-btn {
-      position: fixed;
-      bottom: 30px;
-      right: 30px;
-      width: 70px;
-      height: 70px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-      color: #1a1a1a;
-      border: none;
-      font-size: 28px;
-      cursor: pointer;
-      box-shadow: 0 8px 25px var(--shadow);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-      animation: floatBtn 3s ease-in-out infinite;
-    }
-
-    @keyframes floatBtn {
-      0%, 100% { transform: translateY(0px); }
-      50% { transform: translateY(-10px); }
-    }
-
-    .scan-animation {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(102, 102, 102, 0.1);
-      border-radius: 20px;
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    .scan-input:focus ~ .scan-animation {
-      animation: scanPulse 1.5s infinite;
-    }
-
-    @keyframes scanPulse {
-      0%, 100% { opacity: 0; transform: scale(1); }
-      50% { opacity: 0.1; transform: scale(1.1); }
-    }
-
-    .logs-container::-webkit-scrollbar {
-      width: 12px;
-    }
-
-    .logs-container::-webkit-scrollbar-track {
-      background: var(--input-bg);
-      border-radius: 6px;
-    }
-
-    .logs-container::-webkit-scrollbar-thumb {
-      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-      border-radius: 6px;
-      border: 3px solid var(--bg-light);
-    }
-
-    .offline-indicator {
-      position: fixed;
-      top: 30px;
-      left: 30px;
-      padding: 10px 20px;
-      background: #dc3545;
-      color: white;
-      border-radius: 10px;
-      font-weight: 600;
-      box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
-      display: none;
-      z-index: 1000;
-    }
-
-    .online-indicator {
-      position: fixed;
-      top: 30px;
-      left: 30px;
-      padding: 10px 20px;
-      background: #28a745;
-      color: white;
-      border-radius: 10px;
-      font-weight: 600;
-      box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
-      display: none;
-      z-index: 1000;
-    }
-
-    @media (max-width: 1200px) {
-      .main-content {
-        grid-template-columns: 1fr;
-      }
-      
-      .stats-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .loading-desc {
-      background: linear-gradient(90deg, var(--bg-light) 25%, #3a3a3a 50%, var(--bg-light) 75%);
-      background-size: 200% 100%;
-      animation: loading 1.5s infinite;
-    }
-
-    @keyframes loading {
-      0% { background-position: 200% 0; }
-      100% { background-position: -200% 0; }
-    }
-  </style>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #111;
+  color: #fff;
+  margin: 0;
+  padding: 20px;
+}
+.container {
+  max-width: 800px;
+  margin: auto;
+  background: #1e1e1e;
+  padding: 20px;
+  border-radius: 12px;
+}
+h1 {
+  text-align: center;
+}
+input {
+  width: 100%;
+  padding: 18px;
+  font-size: 18px;
+  border-radius: 8px;
+  border: none;
+  outline: none;
+}
+button {
+  margin-top: 15px;
+  width: 100%;
+  padding: 18px;
+  font-size: 18px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  background: #4caf50;
+  color: #000;
+  font-weight: bold;
+}
+.log {
+  margin-top: 25px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+.log-item {
+  background: #2a2a2a;
+  margin-bottom: 10px;
+  padding: 10px;
+  border-radius: 6px;
+}
+.pending {
+  color: #ffc107;
+}
+.synced {
+  color: #4caf50;
+}
+.offline {
+  background: #c62828;
+  padding: 8px;
+  text-align: center;
+  border-radius: 6px;
+  display: none;
+}
+.online {
+  background: #2e7d32;
+  padding: 8px;
+  text-align: center;
+  border-radius: 6px;
+  display: none;
+}
+</style>
 </head>
 
 <body>
-  <!-- Animated background elements -->
-  <div class="bg-elements" id="bgElements"></div>
 
-  <!-- Connection indicators -->
-  <div class="offline-indicator" id="offlineIndicator">🔴 OFFLINE - Scans stored locally</div>
-  <div class="online-indicator" id="onlineIndicator">🟢 ONLINE - Syncing scans</div>
+<div class="offline" id="offline">OFFLINE — scans saved</div>
+<div class="online" id="online">ONLINE — syncing</div>
 
-  <!-- Floating logout button -->
-  <button class="floating-btn" onclick="logout()" title="Logout">🚪</button>
+<div class="container">
+  <h1>QR Scanner</h1>
 
-  <!-- Login check -->
-  <script>
-    const token = localStorage.getItem("token");
-    if (!token) {
-      window.location = "login.html";
+  <input id="scanInput" placeholder="Scan code here" autofocus>
+  <button onclick="submitScan()">Submit</button>
+
+  <div class="log" id="log"></div>
+</div>
+
+<script>
+/* ===============================
+   CONFIG
+=============================== */
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyrScJh7k84wwIpEAr4MqSrnsyvPBMp3BYhPpM1hPyG_V7RPBPtQ_um3YYcCw0JLmc/exec";
+const tokenValue = localStorage.getItem("token");
+
+/* ===============================
+   STATE
+=============================== */
+let syncing = false;
+
+/* ===============================
+   HELPERS
+=============================== */
+function loadScans() {
+  return JSON.parse(localStorage.getItem("offlineScans") || "[]");
+}
+function saveScans(scans) {
+  localStorage.setItem("offlineScans", JSON.stringify(scans));
+}
+function show(id) {
+  document.getElementById(id).style.display = "block";
+}
+function hide(id) {
+  document.getElementById(id).style.display = "none";
+}
+
+/* ===============================
+   LOG UI
+=============================== */
+function addLog(code, status) {
+  const div = document.createElement("div");
+  div.className = "log-item";
+  div.id = "log_" + code;
+  div.innerHTML = `
+    <b>${code}</b>
+    <span class="${status}">${status}</span>
+  `;
+  document.getElementById("log").prepend(div);
+}
+
+function updateLog(code, status) {
+  const el = document.getElementById("log_" + code);
+  if (el) {
+    el.querySelector("span").className = status;
+    el.querySelector("span").innerText = status;
+  }
+}
+
+/* ===============================
+   CORE LOGIC
+=============================== */
+function submitScan() {
+  const input = document.getElementById("scanInput");
+  const code = input.value.trim();
+  if (!code) return;
+
+  input.value = "";
+  input.focus();
+
+  const scans = loadScans();
+  scans.push({
+    code,
+    sent: false,
+    time: Date.now()
+  });
+  saveScans(scans);
+
+  addLog(code, "pending");
+  processQueue();
+}
+
+async function processQueue() {
+  if (syncing) return;
+  syncing = true;
+
+  let scans = loadScans();
+
+  for (let i = 0; i < scans.length; i++) {
+    if (scans[i].sent) continue;
+
+    try {
+      show("online");
+      hide("offline");
+
+      const res = await fetch(
+        `${SCRIPT_URL}?scanData=${encodeURIComponent(scans[i].code)}&token=${tokenValue}`,
+        { cache: "no-store", mode: "cors" }
+      );
+
+      if (!res.ok) throw new Error();
+
+      scans[i].sent = true;
+      saveScans(scans);
+      updateLog(scans[i].code, "synced");
+
+      // 🔥 VERY IMPORTANT — keep order
+      await new Promise(r => setTimeout(r, 200));
+
+    } catch {
+      hide("online");
+      show("offline");
+      break;
     }
-  </script>
+  }
 
-  <div class="container">
-    <div class="header">
-      <h1 class="title">👑 ABU AMJAD 👑</h1>
-      <p class="subtitle">Advanced QR Scanner System</p>
-    </div>
+  syncing = false;
+}
 
-    <div class="main-content">
-      <div class="left-panel">
-        <div class="scan-section">
-          <input type="text" id="scanInput" class="scan-input" placeholder="Scan QR Code Here" autofocus>
-          <span class="input-icon">📱</span>
-          <div class="scan-animation"></div>
-          <button onclick="submitScan()" class="submit-btn">Submit Scan</button>
-        </div>
+/* ===============================
+   AUTO SYNC WHEN ONLINE
+=============================== */
+setInterval(processQueue, 3000);
 
-        <div class="stats-section">
-          <div class="stats-grid">
-            <div class="stat-item">
-              <div class="stat-value" id="offlineCount">0</div>
-              <div class="stat-label">Pending Scans</div>
-            </div>
-          </div>
-        </div>
-      </div>
+/* ===============================
+   ENTER KEY SUPPORT
+=============================== */
+document.getElementById("scanInput").addEventListener("keydown", e => {
+  if (e.key === "Enter") submitScan();
+});
+</script>
 
-      <div class="right-panel">
-        <div class="logs-section">
-          <div class="logs-header">Scan Logs</div>
-          <div id="logs"></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    // Create animated background elements
-    function createBgElements() {
-      const container = document.getElementById('bgElements');
-      for (let i = 0; i < 12; i++) {
-        const circle = document.createElement('div');
-        circle.className = 'bg-circle';
-        circle.style.width = (Math.random() * 100 + 40) + 'px';
-        circle.style.height = circle.style.width;
-        circle.style.left = (Math.random() * 100) + '%';
-        circle.style.top = (Math.random() * 100) + '%';
-        circle.style.animationDuration = (Math.random() * 10 + 5) + 's';
-        circle.style.animationDelay = (Math.random() * 3) + 's';
-        container.appendChild(circle);
-      }
-    }
-
-    createBgElements();
-
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyrScJh7k84wwIpEAr4MqSrnsyvPBMp3BYhPpM1hPyG_V7RPBPtQ_um3YYcCw0JLmc/exec";
-    const tokenValue = localStorage.getItem("token");
-
-    let isSyncing = false;
-    let scanQueue = []; // Queue for rapid scans
-    let isProcessingQueue = false;
-    let sequenceCounter = 1;
-
-    // Proper offline storage functions
-    function saveOfflineScan(code, description, isSubmitted = false) {
-      const offlineScans = JSON.parse(localStorage.getItem('offlineScans') || '[]');
-      offlineScans.push({
-        code: code,
-        description: description,
-        timestamp: Date.now(),
-        sequence: sequenceCounter++,
-        submitted: isSubmitted
-      });
-      localStorage.setItem('offlineScans', JSON.stringify(offlineScans));
-      updateOfflineCount();
-    }
-
-    function getOfflineScans() {
-      return JSON.parse(localStorage.getItem('offlineScans') || '[]');
-    }
-
-    function updateOfflineCount() {
-      const offlineScans = getOfflineScans();
-      const pending = offlineScans.filter(scan => !scan.submitted).length;
-      document.getElementById('offlineCount').textContent = pending;
-    }
-
-    // Update log item with sync status
-    function updateLogItemStatus(code, isSynced) {
-      const logItems = document.getElementById("logs").children;
-      for (let i = 0; i < logItems.length; i++) {
-        const logCode = logItems[i].querySelector('.log-code span');
-        if (logCode && logCode.textContent === code) {
-          const statusIcon = logItems[i].querySelector('.sync-status');
-          if (statusIcon) {
-            statusIcon.textContent = isSynced ? '✓' : '●';
-            statusIcon.className = `sync-status ${isSynced ? 'status-synced' : 'status-pending'}`;
-          }
-          break;
-        }
-      }
-    }
-
-    // Process rapid scans in sequence - FIXED
-    async function processScanQueue() {
-      if (isProcessingQueue || scanQueue.length === 0) return;
-      isProcessingQueue = true;
-      
-      while (scanQueue.length > 0) {
-        const scanData = scanQueue.shift();
-        const { code, description } = scanData;
-        
-        try {
-          const response = await fetch(`${SCRIPT_URL}?action=test&token=${tokenValue}`, {
-            method: 'GET',
-            cache: 'no-store',
-            mode: 'cors'
-          });
-          
-          if (response.ok) {
-            // Online - submit immediately to separate cell
-            await fetch(`${SCRIPT_URL}?scanData=${encodeURIComponent(code)}&token=${tokenValue}`, {
-              cache: 'no-store',
-              mode: 'cors'
-            });
-            updateLogItemStatus(code, true);
-          } else {
-            // Offline - save to localStorage
-            saveOfflineScan(code, description, false);
-          }
-        } catch (error) {
-          // Offline - save to localStorage
-          saveOfflineScan(code, description, false);
-        }
-      }
-      
-      isProcessingQueue = false;
-    }
-
-    // Connection check with sync - FIXED WITH QUEUE PROCESSING
-    async function checkConnectionAndSync() {
-      if (isSyncing) return;
-      isSyncing = true;
-      
-      try {
-        const response = await fetch(`${SCRIPT_URL}?action=test&token=${tokenValue}`, {
-          method: 'GET',
-          cache: 'no-store',
-          mode: 'cors'
-        });
-        
-        if (response.ok) {
-          document.getElementById('onlineIndicator').style.display = 'block';
-          document.getElementById('offlineIndicator').style.display = 'none';
-          
-          // Sync all offline scans in sequence order
-          await syncOfflineScans();
-        } else {
-          throw new Error('Connection failed');
-        }
-      } catch (error) {
-        document.getElementById('offlineIndicator').style.display = 'block';
-        document.getElementById('onlineIndicator').style.display = 'none';
-      } finally {
-        isSyncing = false;
-      }
-    }
-
-    // Sync all offline scans in SEQUENCE ORDER - FIXED
-    async function syncOfflineScans() {
-      const offlineScans = getOfflineScans();
-      let pendingScans = offlineScans.filter(scan => !scan.submitted);
-      
-      if (pendingScans.length === 0) return;
-      
-      console.log(`Syncing ${pendingScans.length} offline scans in sequence...`);
-      
-      // Sort by sequence number to maintain order
-      pendingScans.sort((a, b) => a.sequence - b.sequence);
-      
-      for (let i = 0; i < pendingScans.length; i++) {
-        const scan = pendingScans[i];
-        try {
-          const submitResponse = await fetch(`${SCRIPT_URL}?scanData=${encodeURIComponent(scan.code)}&token=${tokenValue}`, {
-            cache: 'no-store',
-            mode: 'cors'
-          });
-          
-          if (submitResponse.ok) {
-            // Update log item status
-            updateLogItemStatus(scan.code, true);
-            
-            // Remove this specific scan from localStorage
-            const allScans = getOfflineScans();
-            const updatedScans = allScans.filter(s => 
-              !(s.code === scan.code && s.timestamp === scan.timestamp)
-            );
-            localStorage.setItem('offlineScans', JSON.stringify(updatedScans));
-            updateOfflineCount();
-            console.log(`Synced: ${scan.code} (sequence: ${scan.sequence})`);
-          } else {
-            console.error(`Failed to sync: ${scan.code}`);
-          }
-        } catch (error) {
-          console.error(`Error syncing: ${scan.code}`, error);
-          break; // Stop if connection fails during sync
-        }
-      }
-    }
-
-    // Check connection every 5 seconds
-    setInterval(checkConnectionAndSync, 5000);
-    checkConnectionAndSync(); // Initial check
-
-    function submitScan() {
-      const input = document.getElementById("scanInput");
-      const data = input.value.trim();
-      
-      if (!data) return;
-      
-      // Add to UI log immediately with pending status
-      addLogItem(data, "Loading description...", true, false);
-      input.value = "";
-      input.focus();
-      
-      // Get description and add to queue
-      getDescription(data).then(description => {
-        updateLastLogDescription(description);
-        
-        // Add to processing queue
-        scanQueue.push({ code: data, description: description });
-        
-        // Process queue immediately
-        processScanQueue();
-      });
-    }
-
-    async function getDescription(code) {
-      try {
-        const response = await fetch(`${SCRIPT_URL}?action=getDescription&scanData=${encodeURIComponent(code)}&token=${tokenValue}`, {
-          cache: 'no-store',
-          mode: 'cors'
-        });
-        return await response.text();
-      } catch (error) {
-        console.error("Error fetching description:", error);
-        return "Network error - please try again";
-      }
-    }
-
-    function addLogItem(code, desc, isLoading = false, isSynced = false) {
-      const logItem = document.createElement("div");
-      logItem.className = "log-item";
-      
-      const loadingClass = isLoading ? 'loading-desc' : '';
-      
-      logItem.innerHTML = `
-        <div class="log-header">
-          <div class="log-code">
-            <span>${code}</span>
-            <span class="sync-status ${isSynced ? 'status-synced' : 'status-pending'}">${isSynced ? '✓' : '●'}</span>
-          </div>
-        </div>
-        <div class="log-desc ${loadingClass}">${desc}</div>
-        <div class="log-time">${new Date().toLocaleTimeString()}</div>
-      `;
-      
-      document.getElementById("logs").prepend(logItem);
-      
-      // Add subtle bounce effect
-      setTimeout(() => {
-        logItem.style.animation = 'bounce 0.4s ease';
-      }, 10);
-    }
-
-    function updateLastLogDescription(desc) {
-      const logItems = document.getElementById("logs").children;
-      if (logItems.length > 0) {
-        const descDiv = logItems[0].querySelector('.log-desc');
-        if (descDiv) {
-          descDiv.textContent = desc;
-          descDiv.classList.remove('loading-desc');
-        }
-      }
-    }
-
-    function logout() {
-      localStorage.removeItem("token");
-      window.location = "login.html";
-    }
-
-    document.getElementById("scanInput").addEventListener("keypress", e => {
-      if (e.key === "Enter") submitScan();
-    });
-
-    // Add bounce animation
-    const bounceStyle = document.createElement('style');
-    bounceStyle.textContent = `
-      @keyframes bounce {
-        0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-        40% { transform: translateY(-8px); }
-        60% { transform: translateY(-4px); }
-      }
-    `;
-    document.head.appendChild(bounceStyle);
-
-    // Initialize offline count
-    updateOfflineCount();
-  </script>
 </body>
 </html>
