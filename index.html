@@ -69,7 +69,7 @@
       border-radius: 25px;
       padding: 40px;
       box-shadow: 0 25px 50px var(--shadow), 0 0 0 2px var(--border);
-      max-width: 1200px;
+      max-width: 1400px;
       margin: 0 auto;
       backdrop-filter: blur(20px);
       border: 2px solid var(--border);
@@ -143,7 +143,7 @@
 
     .main-content {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1fr 2fr; /* Logs section is 2x bigger */
       gap: 30px;
       align-items: start;
     }
@@ -291,7 +291,7 @@
       background: linear-gradient(135deg, var(--bg-light) 0%, #3a3a3a 100%);
       border-radius: 20px;
       border: 2px solid var(--secondary);
-      max-height: 500px;
+      max-height: 700px; /* Much larger logs section */
       overflow-y: auto;
       box-shadow: inset 0 4px 15px rgba(0,0,0,0.2);
       position: relative;
@@ -587,12 +587,10 @@
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyrScJh7k84wwIpEAr4MqSrnsyvPBMp3BYhPpM1hPyG_V7RPBPtQ_um3YYcCw0JLmc/exec";
     const tokenValue = localStorage.getItem("token");
 
-    let scanQueue = [];
-    let isProcessing = false;
     let totalScans = 0;
     let todayScans = 0;
 
-    // Proper offline storage functions
+    // Proper offline storage functions with better logic
     function saveOfflineScan(code, description) {
       const offlineScans = JSON.parse(localStorage.getItem('offlineScans') || '[]');
       offlineScans.push({
@@ -615,10 +613,9 @@
       document.getElementById('offlineCount').textContent = pending;
     }
 
-    // Connection check with sync
+    // Connection check with sync - FIXED LOGIC
     async function checkConnectionAndSync() {
       try {
-        // Test connection by fetching a small response
         const response = await fetch(`${SCRIPT_URL}?action=test&token=${tokenValue}`, {
           method: 'GET',
           cache: 'no-store',
@@ -640,7 +637,7 @@
       }
     }
 
-    // Sync all offline scans sequentially
+    // Sync all offline scans sequentially - FIXED
     async function syncOfflineScans() {
       const offlineScans = getOfflineScans();
       const pendingScans = offlineScans.filter(scan => !scan.submitted);
@@ -652,17 +649,16 @@
       for (let i = 0; i < pendingScans.length; i++) {
         const scan = pendingScans[i];
         try {
-          // Submit to Google Sheets
           const submitResponse = await fetch(`${SCRIPT_URL}?scanData=${encodeURIComponent(scan.code)}&token=${tokenValue}`, {
             cache: 'no-store',
             mode: 'cors'
           });
           
           if (submitResponse.ok) {
-            // Mark as submitted in localStorage
+            // Remove this specific scan from localStorage
             const allScans = getOfflineScans();
-            const updatedScans = allScans.map(s => 
-              s.code === scan.code ? {...s, submitted: true} : s
+            const updatedScans = allScans.filter(s => 
+              !(s.code === scan.code && s.timestamp === scan.timestamp)
             );
             localStorage.setItem('offlineScans', JSON.stringify(updatedScans));
             updateOfflineCount();
@@ -672,7 +668,7 @@
           }
         } catch (error) {
           console.error(`Error syncing: ${scan.code}`, error);
-          break; // Stop if connection fails again
+          break;
         }
       }
     }
