@@ -6,98 +6,369 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
+:root {
+  --primary: #43a047;
+  --primary-dark: #2e7d32;
+  --secondary: #66bb6a;
+  --danger: #c62828;
+  --danger-dark: #8e0000;
+  --warning: #ffb300;
+  --bg-dark: #121212;
+  --bg-card: #1f1f1f;
+  --text-light: #ffffff;
+  --text-gray: #cccccc;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 body {
-  background: radial-gradient(circle at top, #1b1b1b, #000);
-  font-family: system-ui, Arial;
-  color: #fff;
-  padding: 20px;
-}
-
-.status {
-  padding: 12px;
-  border-radius: 12px;
-  font-weight: 600;
-  text-align: center;
-  margin-bottom: 20px;
-}
-
-.online { 
-  background: linear-gradient(90deg,#2e7d32,#4caf50); 
-  color: white;
-}
-.offline { 
-  background: linear-gradient(90deg,#8e0000,#c62828); 
-  color: white;
+  background: linear-gradient(135deg, #1a1a1a 0%, #0d0d0d 100%);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: var(--text-light);
+  padding: 30px;
+  min-height: 100vh;
+  overflow-x: hidden;
 }
 
 .container {
-  max-width: 420px;
-  margin: auto;
-  background: #121212;
-  padding: 25px;
-  border-radius: 18px;
-  box-shadow: 0 20px 40px rgba(0,0,0,.6);
+  max-width: 1400px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 30px;
+  align-items: start;
 }
 
-h2 {
+/* Left Panel */
+.left-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.scan-section {
+  background: var(--bg-card);
+  padding: 30px;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  border: 1px solid rgba(67, 160, 71, 0.2);
+}
+
+.scan-section h2 {
   text-align: center;
-  margin-top: 0;
+  margin-bottom: 25px;
+  font-size: 24px;
+  color: var(--text-light);
 }
 
-input {
+.scan-input {
   width: 100%;
-  padding: 16px;
+  padding: 20px 15px;
   font-size: 18px;
+  border: 2px solid var(--primary);
   border-radius: 12px;
-  border: none;
   outline: none;
+  background: rgba(31, 31, 31, 0.8);
+  color: var(--text-light);
+  transition: all 0.3s ease;
 }
 
-button {
+.scan-input:focus {
+  border-color: var(--secondary);
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: 0 0 0 4px rgba(67, 160, 71, 0.3);
+  transform: scale(1.02);
+}
+
+.scan-input::placeholder {
+  color: var(--text-gray);
+}
+
+.submit-btn {
   width: 100%;
-  margin-top: 14px;
-  padding: 16px;
+  margin-top: 20px;
+  padding: 20px;
   font-size: 18px;
   border-radius: 12px;
   border: none;
   cursor: pointer;
-  background: linear-gradient(90deg,#43a047,#66bb6a);
-  font-weight: bold;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  color: white;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.submit-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  transition: left 0.5s;
+}
+
+.submit-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(67, 160, 71, 0.4);
+}
+
+.submit-btn:hover::before {
+  left: 100%;
+}
+
+.submit-btn:active {
+  transform: translateY(0);
+}
+
+.stats-section {
+  background: var(--bg-card);
+  padding: 25px;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  border: 1px solid rgba(67, 160, 71, 0.2);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+.stat-item {
+  text-align: center;
+  padding: 20px;
+  background: rgba(67, 160, 71, 0.1);
+  border-radius: 15px;
+  border: 1px solid rgba(67, 160, 71, 0.2);
+}
+
+.stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 5px;
+}
+
+.stat-label {
+  font-size: 14px;
+  color: var(--text-gray);
+  opacity: 0.9;
+}
+
+.logout-btn {
+  width: 100%;
+  padding: 15px;
+  background: linear-gradient(135deg, var(--danger-dark) 0%, var(--danger) 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 16px;
+  transition: all 0.3s ease;
+}
+
+.logout-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(198, 40, 40, 0.4);
+}
+
+/* Right Panel */
+.right-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.logs-section {
+  background: var(--bg-card);
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  border: 1px solid rgba(67, 160, 71, 0.2);
+  max-height: 800px;
+  overflow-y: auto;
+}
+
+.logs-header {
+  padding: 20px;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  color: white;
+  border-radius: 20px 20px 0 0;
+  font-weight: 600;
+  font-size: 18px;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(67, 160, 71, 0.3);
+}
+
+.log-item {
+  padding: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  animation: slideIn 0.3s ease;
+  background: rgba(255, 255, 255, 0.02);
+  margin: 10px 15px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
+}
+
+.log-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+}
+
+.log-item:last-child {
+  border-bottom: none;
+}
+
+.log-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.log-code {
+  font-weight: 700;
+  color: var(--text-light);
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+}
+
+.log-code::before {
+  content: '●';
+  color: var(--primary);
+  margin-right: 10px;
+  font-size: 12px;
+}
+
+.sync-status {
+  font-size: 18px;
+  margin-left: 10px;
+}
+
+.status-synced {
+  color: var(--primary);
+}
+
+.status-pending {
+  color: var(--warning);
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(30px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.status {
+  padding: 15px;
+  border-radius: 12px;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 16px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+
+.online { 
+  background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%); 
+  color: white;
+}
+.offline { 
+  background: linear-gradient(135deg, var(--danger-dark) 0%, var(--danger) 100%); 
+  color: white;
 }
 
 .counter {
   margin-top: 15px;
   text-align: center;
   font-size: 16px;
+  padding: 10px;
+  background: rgba(67, 160, 71, 0.1);
+  border-radius: 10px;
 }
 
 .log {
-  margin-top: 15px;
-  max-height: 260px;
+  max-height: 650px;
   overflow-y: auto;
 }
 
-.log-item {
-  background: #1f1f1f;
-  margin-bottom: 8px;
-  padding: 10px 14px;
-  border-radius: 10px;
+.log::-webkit-scrollbar {
+  width: 8px;
+}
+
+.log::-webkit-scrollbar-track {
+  background: rgba(31, 31, 31, 0.5);
+  border-radius: 4px;
+}
+
+.log::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 4px;
+}
+
+/* Floating logout button */
+.floating-logout {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--danger-dark) 0%, var(--danger) 100%);
+  color: white;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  box-shadow: 0 8px 25px rgba(198, 40, 40, 0.4);
   display: flex;
-  justify-content: space-between;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  transition: all 0.3s ease;
 }
 
-.pending { color: #ffb300; }
-.synced { color: #4caf50; }
-
-/* Add loading indicator */
-.loading {
-  animation: pulse 1s infinite;
+.floating-logout:hover {
+  transform: translateY(-3px) scale(1.1);
+  box-shadow: 0 12px 35px rgba(198, 40, 40, 0.5);
 }
 
-@keyframes pulse {
-  0% { opacity: 1; }
-  50% { opacity: 0.5; }
-  100% { opacity: 1; }
+@media (max-width: 1200px) {
+  .container {
+    grid-template-columns: 1fr;
+  }
+  
+  .left-panel, .right-panel {
+    grid-column: 1;
+  }
+}
+
+@media (max-width: 768px) {
+  body {
+    padding: 15px;
+  }
+  
+  .floating-logout {
+    bottom: 15px;
+    right: 15px;
+    width: 50px;
+    height: 50px;
+    font-size: 20px;
+  }
 }
 </style>
 </head>
@@ -107,12 +378,33 @@ button {
 <div id="status" class="status online">ONLINE — syncing scans</div>
 
 <div class="container">
-  <h2>QR Scanner</h2>
-  <input id="scanInput" placeholder="Scan code here" autofocus>
-  <button onclick="submitScan()">Submit Scan</button>
-  <div id="counter" class="counter">0 pending scans</div>
-  <div id="log" class="log"></div>
+  <div class="left-panel">
+    <div class="scan-section">
+      <h2>QR Scanner</h2>
+      <input id="scanInput" class="scan-input" placeholder="Scan code here" autofocus>
+      <button onclick="submitScan()" class="submit-btn">Submit Scan</button>
+    </div>
+
+    <div class="stats-section">
+      <div class="stats-grid">
+        <div class="stat-item">
+          <div class="stat-value" id="counter">0</div>
+          <div class="stat-label">Pending Scans</div>
+        </div>
+      </div>
+      <button onclick="logout()" class="logout-btn">Logout</button>
+    </div>
+  </div>
+
+  <div class="right-panel">
+    <div class="logs-section">
+      <div class="logs-header">Scan Logs</div>
+      <div id="log" class="log"></div>
+    </div>
+  </div>
 </div>
+
+<button class="floating-logout" onclick="logout()">🚪</button>
 
 <script>
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyrScJh7k84wwIpEAr4MqSrnsyvPBMp3BYhPpM1hPyG_V7RPBPtQ_um3YYcCw0JLmc/exec";
@@ -171,8 +463,7 @@ function saveScans(scans) {
 function updateCounter() {
   const scans = loadScans();
   const pending = scans.filter(s => !s.sent).length;
-  document.getElementById("counter").innerText =
-    pending ? `${pending} pending scans` : "All scans synced ✅";
+  document.getElementById("counter").innerText = pending;
 }
 
 function addLog(code) {
@@ -180,7 +471,13 @@ function addLog(code) {
   const div = document.createElement("div");
   div.className = "log-item";
   div.id = id;
-  div.innerHTML = `<span>${code}</span><span class="pending">pending</span>`;
+  div.innerHTML = `
+    <div class="log-header">
+      <div class="log-code">${code}</div>
+      <span class="sync-status status-pending">●</span>
+    </div>
+    <div class="log-time">${new Date().toLocaleTimeString()}</div>
+  `;
   document.getElementById("log").prepend(div);
   return id;
 }
@@ -188,8 +485,11 @@ function addLog(code) {
 function markSynced(id) {
   const el = document.getElementById(id);
   if (el) {
-    el.querySelector("span:last-child").className = "synced";
-    el.querySelector("span:last-child").innerText = "synced";
+    const statusSpan = el.querySelector(".sync-status");
+    if (statusSpan) {
+      statusSpan.textContent = '✓';
+      statusSpan.className = "sync-status status-synced";
+    }
   }
 }
 
@@ -336,6 +636,11 @@ setInterval(async () => {
 document.getElementById("scanInput").addEventListener("keydown", e => {
   if (e.key === "Enter") submitScan();
 });
+
+function logout() {
+  localStorage.removeItem("token");
+  window.location = "login.html";
+}
 
 // Initial checks
 checkAuth().then(isValid => {
