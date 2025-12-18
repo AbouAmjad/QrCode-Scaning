@@ -429,8 +429,6 @@ body {
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyrScJh7k84wwIpEAr4MqSrnsyvPBMp3BYhPpM1hPyG_V7RPBPtQ_um3YYcCw0JLmc/exec";
 
 let isProcessing = false;
-let scanQueue = []; // Queue for rapid scans
-let isProcessingQueue = false;
 let scanSeq = Number(localStorage.getItem("scanSeq") || 1);
 let tokenValue = localStorage.getItem("token") || "";
 
@@ -497,6 +495,7 @@ async function getDescription(code) {
       return "Unknown code type";
     }
 
+    // Use the same endpoint as before
     const response = await fetch(`${SCRIPT_URL}?action=getDescription&scanData=${encodeURIComponent(code)}&token=${tokenValue}`, {
       method: 'GET',
       cache: 'no-store',
@@ -591,128 +590,41 @@ function submitScan() {
   });
 
   // Add to processing queue
-  scanQueue.push({ 
+  const scans = loadScans();
+  scans.push({ 
     code, 
+    seq: scanSeq++, 
+    sent: false, 
     logId,
-    seq: scanSeq++,
-    timestamp: Date.now()
+    timestamp: Date.now(),
+    submitted: false
   });
-  
+  saveScans(scans);
   updateCounter();
-  
-  // Process queue immediately
-  processScanQueue();
+
+  // Process immediately
+  processQueue();
 }
 
-// Process scan queue sequentially to prevent duplicates
-async function processScanQueue() {
-  if (isProcessingQueue || scanQueue.length === 0) return;
-  isProcessingQueue = true;
-  
-  while (scanQueue.length > 0) {
-    const scanData = scanQueue.shift();
-    const { code, logId, seq } = scanData;
-    
-    try {
-      // Check authentication
-      if (!isLoggedIn()) {
-        window.location = "login.html";
-        return;
-      }
-      
-      // Test connection
-      const isOnline = await testConnection();
-      
-      if (isOnline) {
-        // Submit to server
-        const res = await fetch(
-          `${SCRIPT_URL}?scanData=${encodeURIComponent(code)}&token=${tokenValue}`,
-          { 
-            cache: "no-store",
-            method: "GET"
-          }
-        );
-        
-        const txt = await res.text();
-        if (txt === "OK") {
-          markSynced(logId);
-          
-          // Save to localStorage as sent
-          const scans = loadScans();
-          scans.push({ 
-            code, 
-            seq, 
-            sent: true, 
-            logId,
-            timestamp: Date.now(),
-            submitted: true
-          });
-          saveScans(scans);
-        } else {
-          throw new Error("Sync failed");
-        }
-      } else {
-        // Save offline
-        const scans = loadScans();
-        scans.push({ 
-          code, 
-          seq, 
-          sent: false, 
-          logId,
-          timestamp: Date.now(),
-          submitted: false
-        });
-        saveScans(scans);
-        document.getElementById("status").className = "status offline";
-        document.getElementById("status").innerText = "OFFLINE — scans saved";
-        return;
-      }
-    } catch (error) {
-      console.error("Sync error:", error);
-      // Save offline on error
-      const scans = loadScans();
-      scans.push({ 
-        code, 
-        seq, 
-        sent: false, 
-        logId,
-        timestamp: Date.now(),
-        submitted: false
-      });
-      saveScans(scans);
-      document.getElementById("status").className = "status offline";
-      document.getElementById("status").innerText = "OFFLINE — scans saved";
-      return;
-    }
-  }
-  
-  // Update status and counter
-  document.getElementById("status").className = "status online";
-  document.getElementById("status").innerText = "ONLINE — syncing scans";
-  updateCounter();
-  isProcessingQueue = false;
-}
-
-// Process offline scans periodically
-async function processOfflineScans() {
+async function processQueue() {
   if (isProcessing) return;
   isProcessing = true;
-  
+
   try {
     let scans = loadScans();
     // Sort by sequence number to maintain order
     scans.sort((a, b) => a.seq - b.seq);
-    
+
     for (const scan of scans) {
-      if (scan.sent) continue;
-      
+      if (scan.sent || scan.submitted) continue;
+
       try {
-        // Check authentication
+        // Check if user is logged in (no session expiration)
         if (!isLoggedIn()) {
           window.location = "login.html";
           return;
         }
-        
+
         // Test connection
         const isOnline = await testConnection();
         
@@ -721,8 +633,15 @@ async function processOfflineScans() {
           document.getElementById("status").innerText = "OFFLINE — scans saved";
           return;
         }
-        
-        // Submit to server
+
+        // Mark as submitted to prevent duplicates
+        const allScans = loadScans();
+        const updatedScans = allScans.map(s => 
+          s.seq === scan.seq ? {...s, submitted: true} : s
+        );
+        saveScans(updatedScans);
+
+        // Submit scan to server
         const res = await fetch(
           `${SCRIPT_URL}?scanData=${encodeURIComponent(scan.code)}&token=${tokenValue}`,
           { 
@@ -730,40 +649,48 @@ async function processOfflineScans() {
             method: "GET"
           }
         );
-        
+
         const txt = await res.text();
-        if (txt === "OK") {
-          // Mark as sent in localStorage
-          const allScans = loadScans();
-          const updatedScans = allScans.map(s => 
-            s.seq === scan.seq ? {...s, sent: true, submitted: true} : s
+        if (txt !== "OK") {
+          // Revert submitted flag on failure
+          const revertScans = loadScans();
+          const revertedScans = revertScans.map(s => 
+            s.seq === scan.seq ? {...s, submitted: false} : s
           );
-          saveScans(updatedScans);
-          
-          markSynced(scan.logId);
-          updateCounter();
-          
-          await new Promise(r => setTimeout(r, 200)); // Small delay
-        } else {
+          saveScans(revertedScans);
           throw new Error("Sync failed");
         }
+
+        // Mark as fully sent
+        const finalScans = loadScans();
+        const finalUpdatedScans = finalScans.map(s => 
+          s.seq === scan.seq ? {...s, sent: true, submitted: true} : s
+        );
+        saveScans(finalUpdatedScans);
+        
+        markSynced(scan.logId);
+        updateCounter();
+
+        await new Promise(r => setTimeout(r, 200));
+
       } catch (error) {
-        console.error("Offline sync error:", error);
+        console.error("Sync error:", error);
         document.getElementById("status").className = "status offline";
         document.getElementById("status").innerText = "OFFLINE — scans saved";
         return;
       }
     }
-    
+
     document.getElementById("status").className = "status online";
     document.getElementById("status").innerText = "ONLINE — syncing scans";
+
   } finally {
     isProcessing = false;
   }
 }
 
-// Process offline scans every 2 seconds
-setInterval(processOfflineScans, 2000);
+// Process queue every 2 seconds
+setInterval(processQueue, 2000);
 
 // Check connection every 3 seconds
 setInterval(async () => {
