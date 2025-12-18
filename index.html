@@ -615,11 +615,11 @@
       document.getElementById('offlineCount').textContent = pending;
     }
 
-    // Proper connection check with sync
+    // Connection check with sync
     async function checkConnectionAndSync() {
       try {
-        // Test connection with a simple fetch
-        const response = await fetch(SCRIPT_URL, {
+        // Test connection by fetching a small response
+        const response = await fetch(`${SCRIPT_URL}?action=test&token=${tokenValue}`, {
           method: 'GET',
           cache: 'no-store',
           mode: 'cors'
@@ -701,19 +701,26 @@
       getDescription(data).then(description => {
         updateLastLogDescription(description);
         
-        // Try to submit online first
-        fetch(`${SCRIPT_URL}?scanData=${encodeURIComponent(data)}&token=${tokenValue}`, {
+        // Check connection first, then submit
+        fetch(`${SCRIPT_URL}?action=test&token=${tokenValue}`, {
+          method: 'GET',
           cache: 'no-store',
           mode: 'cors'
         })
         .then(response => {
-          if (!response.ok) {
-            // If online submission fails, save offline
+          if (response.ok) {
+            // Online - submit immediately
+            fetch(`${SCRIPT_URL}?scanData=${encodeURIComponent(data)}&token=${tokenValue}`, {
+              cache: 'no-store',
+              mode: 'cors'
+            });
+          } else {
+            // Offline - save locally
             saveOfflineScan(data, description);
           }
         })
         .catch(error => {
-          // If network error, save offline
+          // Offline - save locally
           saveOfflineScan(data, description);
         });
       });
