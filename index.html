@@ -264,6 +264,25 @@ body {
   animation: pulse 1s infinite;
 }
 
+.log-description {
+  background: rgba(67, 160, 71, 0.1);
+  padding: 12px;
+  border-radius: 8px;
+  margin: 8px 0;
+  border-left: 3px solid var(--primary);
+  font-size: 14px;
+  color: var(--text-gray);
+  line-height: 1.5;
+}
+
+.log-time {
+  color: var(--text-gray);
+  font-size: 12px;
+  margin-top: 10px;
+  text-align: right;
+  opacity: 0.7;
+}
+
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.5; }
@@ -451,6 +470,38 @@ async function testConnection() {
   }
 }
 
+// Get description from column G based on code prefix
+async function getDescription(code) {
+  try {
+    let sheetId = "";
+    
+    // Determine spreadsheet based on prefix
+    if (code.startsWith("p") || code.startsWith("P")) {
+      sheetId = "1ksoy_NdnNXhg4BgXL3wVx0qkUmUGvobOs3W21SnYpp4"; // Person codes
+    } else if (code.startsWith("e") || code.startsWith("E")) {
+      sheetId = "12zEn9gBBcBpdX63bWYwJmByStcK4vSDeywlUxF8bYCk"; // PowerTools
+    } else if (code.startsWith("i") || code.startsWith("I")) {
+      sheetId = "1yLktdyZjImjSNaO5klc-8rSsene5PGL_VGD4hR5gz9c"; // Items
+    } else if (code.startsWith("c") || code.startsWith("C")) {
+      sheetId = "1PHnVgDpP9IbSdmzLJKQwIvopzMGQ5wWLq0chevzQVeU"; // Consumables
+    } else {
+      return "Unknown code type";
+    }
+
+    const response = await fetch(`${SCRIPT_URL}?action=getDescription&scanData=${encodeURIComponent(code)}&token=${tokenValue}`, {
+      method: 'GET',
+      cache: 'no-store',
+      mode: 'cors'
+    });
+    
+    const description = await response.text();
+    return description;
+  } catch (error) {
+    console.error("Error fetching description:", error);
+    return "Description not found";
+  }
+}
+
 function loadScans() {
   return JSON.parse(localStorage.getItem("offlineScans") || "[]");
 }
@@ -466,7 +517,7 @@ function updateCounter() {
   document.getElementById("counter").innerText = pending;
 }
 
-function addLog(code) {
+function addLog(code, description = "Loading...") {
   const id = "log_" + Date.now();
   const div = document.createElement("div");
   div.className = "log-item";
@@ -476,10 +527,21 @@ function addLog(code) {
       <div class="log-code">${code}</div>
       <span class="sync-status status-pending">●</span>
     </div>
+    <div class="log-description">${description}</div>
     <div class="log-time">${new Date().toLocaleTimeString()}</div>
   `;
   document.getElementById("log").prepend(div);
   return id;
+}
+
+function updateLogDescription(logId, description) {
+  const el = document.getElementById(logId);
+  if (el) {
+    const descDiv = el.querySelector(".log-description");
+    if (descDiv) {
+      descDiv.textContent = description;
+    }
+  }
 }
 
 function markSynced(id) {
@@ -511,7 +573,13 @@ function submitScan() {
   input.value = "";
   input.focus();
 
-  const logId = addLog(code);
+  // Add to UI with loading description
+  const logId = addLog(code, "Loading description...");
+  
+  // Get description and update UI
+  getDescription(code).then(description => {
+    updateLogDescription(logId, description);
+  });
 
   const scans = loadScans();
   scans.push({ 
