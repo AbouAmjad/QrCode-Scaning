@@ -21,8 +21,14 @@ body {
   margin-bottom: 20px;
 }
 
-.online { background: linear-gradient(90deg,#2e7d32,#4caf50); }
-.offline { background: linear-gradient(90deg,#8e0000,#c62828); }
+.online { 
+  background: linear-gradient(90deg,#2e7d32,#4caf50); 
+  color: white;
+}
+.offline { 
+  background: linear-gradient(90deg,#8e0000,#c62828); 
+  color: white;
+}
 
 .container {
   max-width: 420px;
@@ -82,6 +88,17 @@ button {
 
 .pending { color: #ffb300; }
 .synced { color: #4caf50; }
+
+/* Add loading indicator */
+.loading {
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
 </style>
 </head>
 
@@ -103,6 +120,22 @@ const tokenValue = localStorage.getItem("token") || "";
 
 let isProcessing = false;
 let scanSeq = Number(localStorage.getItem("scanSeq") || 1);
+
+// Test connection function
+async function testConnection() {
+  try {
+    const response = await fetch(`${SCRIPT_URL}?action=test&token=${tokenValue}`, {
+      method: 'GET',
+      cache: 'no-store',
+      mode: 'cors'
+    });
+    
+    return response.ok;
+  } catch (error) {
+    console.log("Connection test failed:", error);
+    return false;
+  }
+}
 
 function loadScans() {
   return JSON.parse(localStorage.getItem("offlineScans") || "[]");
@@ -154,7 +187,7 @@ function submitScan() {
     seq: scanSeq++, 
     sent: false, 
     logId,
-    timestamp: Date.now() // Added for sequence
+    timestamp: Date.now()
   });
   saveScans(scans);
   updateCounter();
@@ -163,7 +196,7 @@ function submitScan() {
 }
 
 async function processQueue() {
-  if (isProcessing) return; // Prevent concurrent processing
+  if (isProcessing) return;
   isProcessing = true;
 
   try {
@@ -175,6 +208,16 @@ async function processQueue() {
       if (scan.sent) continue;
 
       try {
+        // First, test connection
+        const isOnline = await testConnection();
+        
+        if (!isOnline) {
+          document.getElementById("status").className = "status offline";
+          document.getElementById("status").innerText = "OFFLINE — scans saved";
+          return;
+        }
+
+        // If online, submit scan
         const res = await fetch(
           `${SCRIPT_URL}?scanData=${encodeURIComponent(scan.code)}&token=${tokenValue}`,
           { 
@@ -218,6 +261,18 @@ async function processQueue() {
 
 // Process queue every 2 seconds
 setInterval(processQueue, 2000);
+
+// Check connection every 3 seconds
+setInterval(async () => {
+  const isOnline = await testConnection();
+  if (isOnline) {
+    document.getElementById("status").className = "status online";
+    document.getElementById("status").innerText = "ONLINE — syncing scans";
+  } else {
+    document.getElementById("status").className = "status offline";
+    document.getElementById("status").innerText = "OFFLINE — scans saved";
+  }
+}, 3000);
 
 document.getElementById("scanInput").addEventListener("keydown", e => {
   if (e.key === "Enter") submitScan();
