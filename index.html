@@ -605,6 +605,8 @@
     const tokenValue = localStorage.getItem("token");
 
     let isSyncing = false;
+    let scanQueue = []; // Queue for rapid scans
+    let isProcessingQueue = false;
     let sequenceCounter = 1;
 
     // Proper offline storage functions
@@ -647,7 +649,43 @@
       }
     }
 
-    // Connection check with sync - FIXED WITH LOCK AND SEQUENCE
+    // Process rapid scans in sequence - FIXED
+    async function processScanQueue() {
+      if (isProcessingQueue || scanQueue.length === 0) return;
+      isProcessingQueue = true;
+      
+      while (scanQueue.length > 0) {
+        const scanData = scanQueue.shift();
+        const { code, description } = scanData;
+        
+        try {
+          const response = await fetch(`${SCRIPT_URL}?action=test&token=${tokenValue}`, {
+            method: 'GET',
+            cache: 'no-store',
+            mode: 'cors'
+          });
+          
+          if (response.ok) {
+            // Online - submit immediately to separate cell
+            await fetch(`${SCRIPT_URL}?scanData=${encodeURIComponent(code)}&token=${tokenValue}`, {
+              cache: 'no-store',
+              mode: 'cors'
+            });
+            updateLogItemStatus(code, true);
+          } else {
+            // Offline - save to localStorage
+            saveOfflineScan(code, description, false);
+          }
+        } catch (error) {
+          // Offline - save to localStorage
+          saveOfflineScan(code, description, false);
+        }
+      }
+      
+      isProcessingQueue = false;
+    }
+
+    // Connection check with sync - FIXED WITH QUEUE PROCESSING
     async function checkConnectionAndSync() {
       if (isSyncing) return;
       isSyncing = true;
@@ -663,7 +701,7 @@
           document.getElementById('onlineIndicator').style.display = 'block';
           document.getElementById('offlineIndicator').style.display = 'none';
           
-          // Sync all offline scans in sequence order - ONE BY ONE
+          // Sync all offline scans in sequence order
           await syncOfflineScans();
         } else {
           throw new Error('Connection failed');
@@ -676,7 +714,7 @@
       }
     }
 
-    // Sync all offline scans in SEQUENCE ORDER - ONE BY ONE - FIXED
+    // Sync all offline scans in SEQUENCE ORDER - FIXED
     async function syncOfflineScans() {
       const offlineScans = getOfflineScans();
       let pendingScans = offlineScans.filter(scan => !scan.submitted);
@@ -691,7 +729,6 @@
       for (let i = 0; i < pendingScans.length; i++) {
         const scan = pendingScans[i];
         try {
-          // Submit ONE scan at a time to separate cells
           const submitResponse = await fetch(`${SCRIPT_URL}?scanData=${encodeURIComponent(scan.code)}&token=${tokenValue}`, {
             cache: 'no-store',
             mode: 'cors'
@@ -734,34 +771,15 @@
       input.value = "";
       input.focus();
       
-      // Get description and submit
+      // Get description and add to queue
       getDescription(data).then(description => {
         updateLastLogDescription(description);
         
-        // Check connection first, then submit
-        fetch(`${SCRIPT_URL}?action=test&token=${tokenValue}`, {
-          method: 'GET',
-          cache: 'no-store',
-          mode: 'cors'
-        })
-        .then(response => {
-          if (response.ok) {
-            // Online - submit immediately to separate cell
-            fetch(`${SCRIPT_URL}?scanData=${encodeURIComponent(data)}&token=${tokenValue}`, {
-              cache: 'no-store',
-              mode: 'cors'
-            }).then(() => {
-              updateLogItemStatus(data, true);
-            });
-          } else {
-            // Offline - save locally with pending status
-            saveOfflineScan(data, description, false);
-          }
-        })
-        .catch(error => {
-          // Offline - save locally with pending status
-          saveOfflineScan(data, description, false);
-        });
+        // Add to processing queue
+        scanQueue.push({ code: data, description: description });
+        
+        // Process queue immediately
+        processScanQueue();
       });
     }
 
