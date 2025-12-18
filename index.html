@@ -116,10 +116,33 @@ button {
 
 <script>
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyrScJh7k84wwIpEAr4MqSrnsyvPBMp3BYhPpM1hPyG_V7RPBPtQ_um3YYcCw0JLmc/exec";
-const tokenValue = localStorage.getItem("token") || "";
 
 let isProcessing = false;
 let scanSeq = Number(localStorage.getItem("scanSeq") || 1);
+let tokenValue = localStorage.getItem("token") || "";
+
+// Check if user is logged in
+function isLoggedIn() {
+  return tokenValue && tokenValue.length > 0;
+}
+
+// Validate token function (only for login check)
+async function validateToken() {
+  if (!isLoggedIn()) return false;
+  
+  try {
+    const response = await fetch(`${SCRIPT_URL}?action=validate&token=${tokenValue}`, {
+      method: 'GET',
+      cache: 'no-store',
+      mode: 'cors'
+    });
+    
+    const text = await response.text();
+    return text !== "UNAUTHORIZED";
+  } catch (error) {
+    return false;
+  }
+}
 
 // Test connection function
 async function testConnection() {
@@ -132,7 +155,6 @@ async function testConnection() {
     
     return response.ok;
   } catch (error) {
-    console.log("Connection test failed:", error);
     return false;
   }
 }
@@ -171,6 +193,16 @@ function markSynced(id) {
   }
 }
 
+// Check authentication on page load
+async function checkAuth() {
+  const isValid = await validateToken();
+  if (!isValid) {
+    window.location = "login.html";
+    return false;
+  }
+  return true;
+}
+
 function submitScan() {
   const input = document.getElementById("scanInput");
   const code = input.value.trim();
@@ -188,7 +220,7 @@ function submitScan() {
     sent: false, 
     logId,
     timestamp: Date.now(),
-    submitted: false // NEW: Track if submitted to server
+    submitted: false
   });
   saveScans(scans);
   updateCounter();
@@ -206,10 +238,16 @@ async function processQueue() {
     scans.sort((a, b) => a.seq - b.seq);
 
     for (const scan of scans) {
-      if (scan.sent || scan.submitted) continue; // Skip if already processed
+      if (scan.sent || scan.submitted) continue;
 
       try {
-        // First, test connection
+        // Check if user is logged in (no session expiration)
+        if (!isLoggedIn()) {
+          window.location = "login.html";
+          return;
+        }
+
+        // Test connection
         const isOnline = await testConnection();
         
         if (!isOnline) {
@@ -218,7 +256,7 @@ async function processQueue() {
           return;
         }
 
-        // Mark as submitted (but not yet confirmed) to prevent duplicates
+        // Mark as submitted to prevent duplicates
         const allScans = loadScans();
         const updatedScans = allScans.map(s => 
           s.seq === scan.seq ? {...s, submitted: true} : s
@@ -236,7 +274,7 @@ async function processQueue() {
 
         const txt = await res.text();
         if (txt !== "OK") {
-          // If submission failed, unmark submitted flag
+          // Revert submitted flag on failure
           const revertScans = loadScans();
           const revertedScans = revertScans.map(s => 
             s.seq === scan.seq ? {...s, submitted: false} : s
@@ -245,7 +283,7 @@ async function processQueue() {
           throw new Error("Sync failed");
         }
 
-        // Mark as fully sent (confirmed by server)
+        // Mark as fully sent
         const finalScans = loadScans();
         const finalUpdatedScans = finalScans.map(s => 
           s.seq === scan.seq ? {...s, sent: true, submitted: true} : s
@@ -255,18 +293,16 @@ async function processQueue() {
         markSynced(scan.logId);
         updateCounter();
 
-        // Small delay to prevent overwhelming the server
         await new Promise(r => setTimeout(r, 200));
 
       } catch (error) {
         console.error("Sync error:", error);
         document.getElementById("status").className = "status offline";
         document.getElementById("status").innerText = "OFFLINE — scans saved";
-        return; // Stop processing on error
+        return;
       }
     }
 
-    // If we got here, all scans were processed
     document.getElementById("status").className = "status online";
     document.getElementById("status").innerText = "ONLINE — syncing scans";
 
@@ -290,12 +326,23 @@ setInterval(async () => {
   }
 }, 3000);
 
+// Check authentication every 10 seconds (only if not logged in)
+setInterval(async () => {
+  if (!isLoggedIn()) {
+    window.location = "login.html";
+  }
+}, 10000);
+
 document.getElementById("scanInput").addEventListener("keydown", e => {
   if (e.key === "Enter") submitScan();
 });
 
-// Initial check
-updateCounter();
+// Initial checks
+checkAuth().then(isValid => {
+  if (isValid) {
+    updateCounter();
+  }
+});
 </script>
 
 </body>
