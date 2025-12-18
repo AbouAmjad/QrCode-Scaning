@@ -143,7 +143,7 @@
 
     .main-content {
       display: grid;
-      grid-template-columns: 1fr 2fr; /* Logs section is 2x bigger */
+      grid-template-columns: 1fr 2fr;
       gap: 30px;
       align-items: start;
     }
@@ -291,7 +291,7 @@
       background: linear-gradient(135deg, var(--bg-light) 0%, #3a3a3a 100%);
       border-radius: 20px;
       border: 2px solid var(--secondary);
-      max-height: 700px; /* Much larger logs section */
+      max-height: 700px;
       overflow-y: auto;
       box-shadow: inset 0 4px 15px rgba(0,0,0,0.2);
       position: relative;
@@ -589,14 +589,15 @@
 
     let totalScans = 0;
     let todayScans = 0;
+    let isSyncing = false; // Prevent duplicate syncs
 
-    // Proper offline storage functions with better logic
+    // Proper offline storage functions
     function saveOfflineScan(code, description) {
       const offlineScans = JSON.parse(localStorage.getItem('offlineScans') || '[]');
       offlineScans.push({
         code: code,
         description: description,
-        timestamp: new Date().toISOString(),
+        timestamp: Date.now(), // Use timestamp instead of ISO string
         submitted: false
       });
       localStorage.setItem('offlineScans', JSON.stringify(offlineScans));
@@ -613,8 +614,11 @@
       document.getElementById('offlineCount').textContent = pending;
     }
 
-    // Connection check with sync - FIXED LOGIC
+    // Connection check with sync - FIXED WITH LOCK
     async function checkConnectionAndSync() {
+      if (isSyncing) return; // Prevent duplicate syncs
+      isSyncing = true;
+      
       try {
         const response = await fetch(`${SCRIPT_URL}?action=test&token=${tokenValue}`, {
           method: 'GET',
@@ -634,6 +638,8 @@
       } catch (error) {
         document.getElementById('offlineIndicator').style.display = 'block';
         document.getElementById('onlineIndicator').style.display = 'none';
+      } finally {
+        isSyncing = false;
       }
     }
 
@@ -645,6 +651,9 @@
       if (pendingScans.length === 0) return;
       
       console.log(`Syncing ${pendingScans.length} offline scans...`);
+      
+      // Sort by timestamp to maintain sequence
+      pendingScans.sort((a, b) => a.timestamp - b.timestamp);
       
       for (let i = 0; i < pendingScans.length; i++) {
         const scan = pendingScans[i];
