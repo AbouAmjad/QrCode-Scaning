@@ -1,102 +1,109 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>QR Scanner</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
 body {
-  background: #111;
+  background: radial-gradient(circle at top, #1b1b1b, #000);
+  font-family: system-ui, Arial;
   color: #fff;
-  font-family: Arial, sans-serif;
   padding: 20px;
 }
-.container {
-  max-width: 900px;
-  margin: auto;
-  background: #1c1c1c;
-  padding: 25px;
+
+.status {
+  padding: 12px;
   border-radius: 12px;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 20px;
 }
+
+.online { background: linear-gradient(90deg,#2e7d32,#4caf50); }
+.offline { background: linear-gradient(90deg,#8e0000,#c62828); }
+
+.container {
+  max-width: 420px;
+  margin: auto;
+  background: #121212;
+  padding: 25px;
+  border-radius: 18px;
+  box-shadow: 0 20px 40px rgba(0,0,0,.6);
+}
+
+h2 {
+  text-align: center;
+  margin-top: 0;
+}
+
 input {
   width: 100%;
-  padding: 18px;
+  padding: 16px;
   font-size: 18px;
-  border-radius: 8px;
+  border-radius: 12px;
   border: none;
   outline: none;
 }
+
 button {
-  margin-top: 15px;
   width: 100%;
-  padding: 18px;
+  margin-top: 14px;
+  padding: 16px;
   font-size: 18px;
-  border-radius: 8px;
+  border-radius: 12px;
   border: none;
   cursor: pointer;
-  background: #4caf50;
-  color: #000;
+  background: linear-gradient(90deg,#43a047,#66bb6a);
   font-weight: bold;
 }
+
+.counter {
+  margin-top: 15px;
+  text-align: center;
+  font-size: 16px;
+}
+
 .log {
-  margin-top: 25px;
-  max-height: 400px;
+  margin-top: 15px;
+  max-height: 260px;
   overflow-y: auto;
 }
+
 .log-item {
-  background: #2a2a2a;
-  margin-bottom: 10px;
-  padding: 10px;
-  border-radius: 6px;
+  background: #1f1f1f;
+  margin-bottom: 8px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  display: flex;
+  justify-content: space-between;
 }
-.pending { color: #ffc107; }
+
+.pending { color: #ffb300; }
 .synced { color: #4caf50; }
-.offline {
-  background: #c62828;
-  padding: 8px;
-  text-align: center;
-  border-radius: 6px;
-  display: none;
-}
-.online {
-  background: #2e7d32;
-  padding: 8px;
-  text-align: center;
-  border-radius: 6px;
-  display: none;
-}
 </style>
 </head>
 
 <body>
 
-<div class="offline" id="offline">OFFLINE — scans saved</div>
-<div class="online" id="online">ONLINE — syncing scans</div>
+<div id="status" class="status online">ONLINE — syncing scans</div>
 
 <div class="container">
   <h2>QR Scanner</h2>
   <input id="scanInput" placeholder="Scan code here" autofocus>
   <button onclick="submitScan()">Submit Scan</button>
-  <div class="log" id="log"></div>
+  <div id="counter" class="counter">0 pending scans</div>
+  <div id="log" class="log"></div>
 </div>
 
 <script>
-/* ===============================
-   CONFIG
-=============================== */
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyrScJh7k84wwIpEAr4MqSrnsyvPBMp3BYhPpM1hPyG_V7RPBPtQ_um3YYcCw0JLmc/exec";
-const tokenValue = localStorage.getItem("token");
+const tokenValue = localStorage.getItem("token") || "";
 
-/* ===============================
-   STATE
-=============================== */
 let syncing = false;
 let scanSeq = Number(localStorage.getItem("scanSeq") || 1);
 
-/* ===============================
-   STORAGE
-=============================== */
 function loadScans() {
   return JSON.parse(localStorage.getItem("offlineScans") || "[]");
 }
@@ -105,29 +112,31 @@ function saveScans(scans) {
   localStorage.setItem("scanSeq", scanSeq);
 }
 
-/* ===============================
-   UI
-=============================== */
-function addLog(code) {
-  const div = document.createElement("div");
-  div.className = "log-item";
-  div.id = "log_" + code + "_" + Date.now();
-  div.innerHTML = `<b>${code}</b> <span class="pending">pending</span>`;
-  document.getElementById("log").prepend(div);
-  return div.id;
+function updateCounter() {
+  const scans = loadScans();
+  const pending = scans.filter(s => !s.sent).length;
+  document.getElementById("counter").innerText =
+    pending ? `${pending} pending scans` : "All scans synced ✅";
 }
 
-function updateLog(id) {
+function addLog(code) {
+  const id = "log_" + Date.now();
+  const div = document.createElement("div");
+  div.className = "log-item";
+  div.id = id;
+  div.innerHTML = `<span>${code}</span><span class="pending">pending</span>`;
+  document.getElementById("log").prepend(div);
+  return id;
+}
+
+function markSynced(id) {
   const el = document.getElementById(id);
   if (el) {
-    el.querySelector("span").className = "synced";
-    el.querySelector("span").innerText = "synced";
+    el.querySelector("span:last-child").className = "synced";
+    el.querySelector("span:last-child").innerText = "synced";
   }
 }
 
-/* ===============================
-   SUBMIT
-=============================== */
 function submitScan() {
   const input = document.getElementById("scanInput");
   const code = input.value.trim();
@@ -139,20 +148,13 @@ function submitScan() {
   const logId = addLog(code);
 
   const scans = loadScans();
-  scans.push({
-    code,
-    seq: scanSeq++,
-    sent: false,
-    logId
-  });
+  scans.push({ code, seq: scanSeq++, sent: false, logId });
   saveScans(scans);
+  updateCounter();
 
   processQueue();
 }
 
-/* ===============================
-   SYNC QUEUE (ORDER SAFE)
-=============================== */
 async function processQueue() {
   if (syncing) return;
   syncing = true;
@@ -164,41 +166,36 @@ async function processQueue() {
     if (scan.sent) continue;
 
     try {
-      document.getElementById("online").style.display = "block";
-      document.getElementById("offline").style.display = "none";
-
       const res = await fetch(
         `${SCRIPT_URL}?scanData=${encodeURIComponent(scan.code)}&token=${tokenValue}`,
-        { cache: "no-store", mode: "cors" }
+        { cache: "no-store" }
       );
 
-      if (!res.ok) throw new Error();
+      const txt = await res.text();
+      if (txt !== "OK") throw new Error();
 
       scan.sent = true;
       saveScans(scans);
-      updateLog(scan.logId);
+      markSynced(scan.logId);
+      updateCounter();
 
-      // 🔥 keep strict order
-      await new Promise(r => setTimeout(r, 200));
+      await new Promise(r => setTimeout(r, 300));
 
     } catch {
-      document.getElementById("online").style.display = "none";
-      document.getElementById("offline").style.display = "block";
-      break;
+      document.getElementById("status").className = "status offline";
+      document.getElementById("status").innerText = "OFFLINE — scans saved";
+      syncing = false;
+      return;
     }
   }
 
+  document.getElementById("status").className = "status online";
+  document.getElementById("status").innerText = "ONLINE — syncing scans";
   syncing = false;
 }
 
-/* ===============================
-   AUTO RESUME
-=============================== */
 setInterval(processQueue, 3000);
 
-/* ===============================
-   ENTER KEY
-=============================== */
 document.getElementById("scanInput").addEventListener("keydown", e => {
   if (e.key === "Enter") submitScan();
 });
