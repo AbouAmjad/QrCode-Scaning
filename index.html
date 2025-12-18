@@ -473,29 +473,6 @@ async function testConnection() {
 // Get description from appropriate column based on code prefix
 async function getDescription(code) {
   try {
-    let sheetId = "";
-    let column = "G"; // Default column
-    
-    // Determine spreadsheet and column based on prefix
-    const firstChar = code.charAt(0).toUpperCase();
-    
-    if (firstChar === "P") {
-      sheetId = "1ksoy_NdnNXhg4BgXL3wVx0qkUmUGvobOs3W21SnYpp4"; // Person codes
-      column = "F"; // Column F for person codes
-    } else if (firstChar === "E") {
-      sheetId = "12zEn9gBBcBpdX63bWYwJmByStcK4vSDeywlUxF8bYCk"; // PowerTools
-      column = "G"; // Column G for PowerTools
-    } else if (firstChar === "I") {
-      sheetId = "1yLktdyZjImjSNaO5klc-8rSsene5PGL_VGD4hR5gz9c"; // Items
-      column = "G"; // Column G for Items
-    } else if (firstChar === "C") {
-      sheetId = "1PHnVgDpP9IbSdmzLJKQwIvopzMGQ5wWLq0chevzQVeU"; // Consumables
-      column = "G"; // Column G for Consumables
-    } else {
-      return "Unknown code type";
-    }
-
-    // Use the same endpoint as before
     const response = await fetch(`${SCRIPT_URL}?action=getDescription&scanData=${encodeURIComponent(code)}&token=${tokenValue}`, {
       method: 'GET',
       cache: 'no-store',
