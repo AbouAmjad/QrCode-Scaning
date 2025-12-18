@@ -605,7 +605,7 @@
     const tokenValue = localStorage.getItem("token");
 
     let isSyncing = false;
-    let sequenceCounter = 1; // For ordering offline scans
+    let sequenceCounter = 1;
 
     // Proper offline storage functions
     function saveOfflineScan(code, description, isSubmitted = false) {
@@ -663,7 +663,7 @@
           document.getElementById('onlineIndicator').style.display = 'block';
           document.getElementById('offlineIndicator').style.display = 'none';
           
-          // Sync all offline scans in sequence order
+          // Sync all offline scans in sequence order - ONE BY ONE
           await syncOfflineScans();
         } else {
           throw new Error('Connection failed');
@@ -676,7 +676,7 @@
       }
     }
 
-    // Sync all offline scans in SEQUENCE ORDER - FIXED
+    // Sync all offline scans in SEQUENCE ORDER - ONE BY ONE - FIXED
     async function syncOfflineScans() {
       const offlineScans = getOfflineScans();
       let pendingScans = offlineScans.filter(scan => !scan.submitted);
@@ -691,6 +691,7 @@
       for (let i = 0; i < pendingScans.length; i++) {
         const scan = pendingScans[i];
         try {
+          // Submit ONE scan at a time to separate cells
           const submitResponse = await fetch(`${SCRIPT_URL}?scanData=${encodeURIComponent(scan.code)}&token=${tokenValue}`, {
             cache: 'no-store',
             mode: 'cors'
@@ -745,7 +746,7 @@
         })
         .then(response => {
           if (response.ok) {
-            // Online - submit immediately
+            // Online - submit immediately to separate cell
             fetch(`${SCRIPT_URL}?scanData=${encodeURIComponent(data)}&token=${tokenValue}`, {
               cache: 'no-store',
               mode: 'cors'
