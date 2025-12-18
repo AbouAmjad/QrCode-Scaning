@@ -592,7 +592,7 @@
     let totalScans = 0;
     let todayScans = 0;
 
-    // Offline storage functions
+    // Proper offline storage functions
     function saveOfflineScan(code, description) {
       const offlineScans = JSON.parse(localStorage.getItem('offlineScans') || '[]');
       offlineScans.push({
@@ -615,50 +615,71 @@
       document.getElementById('offlineCount').textContent = pending;
     }
 
-    // Check connection and sync offline scans
-    async function checkConnection() {
+    // Proper connection check with sync
+    async function checkConnectionAndSync() {
       try {
-        // Test connection
-        await fetch(SCRIPT_URL, { method: 'HEAD', cache: 'no-store' });
+        // Test connection with a simple fetch
+        const response = await fetch(SCRIPT_URL, {
+          method: 'GET',
+          cache: 'no-store',
+          mode: 'cors'
+        });
         
-        document.getElementById('onlineIndicator').style.display = 'block';
-        document.getElementById('offlineIndicator').style.display = 'none';
-        
-        // Sync offline scans
-        await syncOfflineScans();
+        if (response.ok) {
+          document.getElementById('onlineIndicator').style.display = 'block';
+          document.getElementById('offlineIndicator').style.display = 'none';
+          
+          // Sync all offline scans
+          await syncOfflineScans();
+        } else {
+          throw new Error('Connection failed');
+        }
       } catch (error) {
         document.getElementById('offlineIndicator').style.display = 'block';
         document.getElementById('onlineIndicator').style.display = 'none';
       }
     }
 
-    // Sync all offline scans
+    // Sync all offline scans sequentially
     async function syncOfflineScans() {
       const offlineScans = getOfflineScans();
       const pendingScans = offlineScans.filter(scan => !scan.submitted);
       
-      for (let scan of pendingScans) {
+      if (pendingScans.length === 0) return;
+      
+      console.log(`Syncing ${pendingScans.length} offline scans...`);
+      
+      for (let i = 0; i < pendingScans.length; i++) {
+        const scan = pendingScans[i];
         try {
-          await fetch(`${SCRIPT_URL}?scanData=${encodeURIComponent(scan.code)}&token=${tokenValue}`, {
-            cache: 'no-store'
+          // Submit to Google Sheets
+          const submitResponse = await fetch(`${SCRIPT_URL}?scanData=${encodeURIComponent(scan.code)}&token=${tokenValue}`, {
+            cache: 'no-store',
+            mode: 'cors'
           });
           
-          // Mark as submitted
-          const allScans = getOfflineScans();
-          const updatedScans = allScans.map(s => 
-            s.code === scan.code ? {...s, submitted: true} : s
-          );
-          localStorage.setItem('offlineScans', JSON.stringify(updatedScans));
-          updateOfflineCount();
+          if (submitResponse.ok) {
+            // Mark as submitted in localStorage
+            const allScans = getOfflineScans();
+            const updatedScans = allScans.map(s => 
+              s.code === scan.code ? {...s, submitted: true} : s
+            );
+            localStorage.setItem('offlineScans', JSON.stringify(updatedScans));
+            updateOfflineCount();
+            console.log(`Synced: ${scan.code}`);
+          } else {
+            console.error(`Failed to sync: ${scan.code}`);
+          }
         } catch (error) {
-          console.error('Failed to sync scan:', scan.code);
+          console.error(`Error syncing: ${scan.code}`, error);
+          break; // Stop if connection fails again
         }
       }
     }
 
-    // Check connection every 3 seconds
-    setInterval(checkConnection, 3000);
-    checkConnection(); // Initial check
+    // Check connection every 5 seconds
+    setInterval(checkConnectionAndSync, 5000);
+    checkConnectionAndSync(); // Initial check
 
     function submitScan() {
       const input = document.getElementById("scanInput");
@@ -682,13 +703,17 @@
         
         // Try to submit online first
         fetch(`${SCRIPT_URL}?scanData=${encodeURIComponent(data)}&token=${tokenValue}`, {
-          cache: 'no-store'
+          cache: 'no-store',
+          mode: 'cors'
         })
         .then(response => {
-          if (!response.ok) throw new Error('Network error');
+          if (!response.ok) {
+            // If online submission fails, save offline
+            saveOfflineScan(data, description);
+          }
         })
         .catch(error => {
-          // If online submission fails, save offline
+          // If network error, save offline
           saveOfflineScan(data, description);
         });
       });
@@ -697,7 +722,8 @@
     async function getDescription(code) {
       try {
         const response = await fetch(`${SCRIPT_URL}?action=getDescription&scanData=${encodeURIComponent(code)}&token=${tokenValue}`, {
-          cache: 'no-store'
+          cache: 'no-store',
+          mode: 'cors'
         });
         return await response.text();
       } catch (error) {
