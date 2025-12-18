@@ -262,7 +262,7 @@
 
     .stats-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: 1fr;
       gap: 20px;
     }
 
@@ -348,11 +348,17 @@
       border-bottom: none;
     }
 
+    .log-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
     .log-code {
       font-weight: 800;
       color: var(--text);
       font-size: 18px;
-      margin-bottom: 8px;
       display: flex;
       align-items: center;
       position: relative;
@@ -364,6 +370,25 @@
       margin-right: 10px;
       font-size: 16px;
       animation: pulseDot 2s infinite;
+    }
+
+    .sync-status {
+      font-size: 20px;
+      margin-left: 10px;
+    }
+
+    .status-synced {
+      color: #28a745;
+    }
+
+    .status-pending {
+      color: #ffc107;
+      animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
     }
 
     @keyframes pulseDot {
@@ -487,7 +512,7 @@
       }
       
       .stats-grid {
-        grid-template-columns: repeat(1, 1fr);
+        grid-template-columns: 1fr;
       }
     }
 
@@ -541,16 +566,8 @@
         <div class="stats-section">
           <div class="stats-grid">
             <div class="stat-item">
-              <div class="stat-value" id="totalScans">0</div>
-              <div class="stat-label">Total Scans</div>
-            </div>
-            <div class="stat-item">
-              <div class="stat-value" id="todayScans">0</div>
-              <div class="stat-label">Today</div>
-            </div>
-            <div class="stat-item">
               <div class="stat-value" id="offlineCount">0</div>
-              <div class="stat-label">Offline</div>
+              <div class="stat-label">Pending Scans</div>
             </div>
           </div>
         </div>
@@ -587,18 +604,16 @@
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyrScJh7k84wwIpEAr4MqSrnsyvPBMp3BYhPpM1hPyG_V7RPBPtQ_um3YYcCw0JLmc/exec";
     const tokenValue = localStorage.getItem("token");
 
-    let totalScans = 0;
-    let todayScans = 0;
     let isSyncing = false; // Prevent duplicate syncs
 
     // Proper offline storage functions
-    function saveOfflineScan(code, description) {
+    function saveOfflineScan(code, description, isSubmitted = false) {
       const offlineScans = JSON.parse(localStorage.getItem('offlineScans') || '[]');
       offlineScans.push({
         code: code,
         description: description,
-        timestamp: Date.now(), // Use timestamp instead of ISO string
-        submitted: false
+        timestamp: Date.now(),
+        submitted: isSubmitted
       });
       localStorage.setItem('offlineScans', JSON.stringify(offlineScans));
       updateOfflineCount();
@@ -612,6 +627,22 @@
       const offlineScans = getOfflineScans();
       const pending = offlineScans.filter(scan => !scan.submitted).length;
       document.getElementById('offlineCount').textContent = pending;
+    }
+
+    // Update log item with sync status
+    function updateLogItemStatus(code, isSynced) {
+      const logItems = document.getElementById("logs").children;
+      for (let i = 0; i < logItems.length; i++) {
+        const logCode = logItems[i].querySelector('.log-code span');
+        if (logCode && logCode.textContent === code) {
+          const statusIcon = logItems[i].querySelector('.sync-status');
+          if (statusIcon) {
+            statusIcon.textContent = isSynced ? '✓' : '●';
+            statusIcon.className = `sync-status ${isSynced ? 'status-synced' : 'status-pending'}`;
+          }
+          break;
+        }
+      }
     }
 
     // Connection check with sync - FIXED WITH LOCK
@@ -664,6 +695,9 @@
           });
           
           if (submitResponse.ok) {
+            // Update log item status
+            updateLogItemStatus(scan.code, true);
+            
             // Remove this specific scan from localStorage
             const allScans = getOfflineScans();
             const updatedScans = allScans.filter(s => 
@@ -692,15 +726,10 @@
       
       if (!data) return;
       
-      // Add to UI log immediately
-      addLogItem(data, "Loading description...", true);
+      // Add to UI log immediately with pending status
+      addLogItem(data, "Loading description...", true, false);
       input.value = "";
       input.focus();
-      
-      // Update stats
-      totalScans++;
-      todayScans++;
-      updateStats();
       
       // Get description and submit
       getDescription(data).then(description => {
@@ -718,15 +747,17 @@
             fetch(`${SCRIPT_URL}?scanData=${encodeURIComponent(data)}&token=${tokenValue}`, {
               cache: 'no-store',
               mode: 'cors'
+            }).then(() => {
+              updateLogItemStatus(data, true);
             });
           } else {
-            // Offline - save locally
-            saveOfflineScan(data, description);
+            // Offline - save locally with pending status
+            saveOfflineScan(data, description, false);
           }
         })
         .catch(error => {
-          // Offline - save locally
-          saveOfflineScan(data, description);
+          // Offline - save locally with pending status
+          saveOfflineScan(data, description, false);
         });
       });
     }
@@ -744,14 +775,19 @@
       }
     }
 
-    function addLogItem(code, desc, isLoading = false) {
+    function addLogItem(code, desc, isLoading = false, isSynced = false) {
       const logItem = document.createElement("div");
       logItem.className = "log-item";
       
       const loadingClass = isLoading ? 'loading-desc' : '';
       
       logItem.innerHTML = `
-        <div class="log-code">${code}</div>
+        <div class="log-header">
+          <div class="log-code">
+            <span>${code}</span>
+            <span class="sync-status ${isSynced ? 'status-synced' : 'status-pending'}">${isSynced ? '✓' : '●'}</span>
+          </div>
+        </div>
         <div class="log-desc ${loadingClass}">${desc}</div>
         <div class="log-time">${new Date().toLocaleTimeString()}</div>
       `;
@@ -773,11 +809,6 @@
           descDiv.classList.remove('loading-desc');
         }
       }
-    }
-
-    function updateStats() {
-      document.getElementById('totalScans').textContent = totalScans;
-      document.getElementById('todayScans').textContent = todayScans;
     }
 
     function logout() {
