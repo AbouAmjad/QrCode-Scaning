@@ -187,7 +187,8 @@ function submitScan() {
     seq: scanSeq++, 
     sent: false, 
     logId,
-    timestamp: Date.now()
+    timestamp: Date.now(),
+    submitted: false // NEW: Track if submitted to server
   });
   saveScans(scans);
   updateCounter();
@@ -205,7 +206,7 @@ async function processQueue() {
     scans.sort((a, b) => a.seq - b.seq);
 
     for (const scan of scans) {
-      if (scan.sent) continue;
+      if (scan.sent || scan.submitted) continue; // Skip if already processed
 
       try {
         // First, test connection
@@ -217,7 +218,14 @@ async function processQueue() {
           return;
         }
 
-        // If online, submit scan
+        // Mark as submitted (but not yet confirmed) to prevent duplicates
+        const allScans = loadScans();
+        const updatedScans = allScans.map(s => 
+          s.seq === scan.seq ? {...s, submitted: true} : s
+        );
+        saveScans(updatedScans);
+
+        // Submit scan to server
         const res = await fetch(
           `${SCRIPT_URL}?scanData=${encodeURIComponent(scan.code)}&token=${tokenValue}`,
           { 
@@ -227,14 +235,22 @@ async function processQueue() {
         );
 
         const txt = await res.text();
-        if (txt !== "OK") throw new Error("Sync failed");
+        if (txt !== "OK") {
+          // If submission failed, unmark submitted flag
+          const revertScans = loadScans();
+          const revertedScans = revertScans.map(s => 
+            s.seq === scan.seq ? {...s, submitted: false} : s
+          );
+          saveScans(revertedScans);
+          throw new Error("Sync failed");
+        }
 
-        // Mark as sent in localStorage
-        const allScans = loadScans();
-        const updatedScans = allScans.map(s => 
-          s.seq === scan.seq ? {...s, sent: true} : s
+        // Mark as fully sent (confirmed by server)
+        const finalScans = loadScans();
+        const finalUpdatedScans = finalScans.map(s => 
+          s.seq === scan.seq ? {...s, sent: true, submitted: true} : s
         );
-        saveScans(updatedScans);
+        saveScans(finalUpdatedScans);
         
         markSynced(scan.logId);
         updateCounter();
