@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PROFESSIONAL TOOL TRACKING DASHBOARD</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --success: #4cc9f0;
+            --danger: #f72585;
+            --warning: #f8961e;
+            --info: #4895ef;
+            --dark: #1d3557;
+            --light: #f8f9fa;
+            --white: #ffffff;
+            --gray-100: #f8f9fa;
+            --gray-200: #e9ecef;
+            --gray-300: #dee2e6;
+            --gray-600: #6c757d;
+            --shadow: 0 4px 20px rgba(0,0,0,0.15);
+            --shadow-lg: 0 10px 40px rgba(0,0,0,0.2);
+            --border-radius: 16px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: var(--gray-600);
+        }
+
+        .dashboard {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: var(--white);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: var(--white);
+            padding: 30px 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            width: 200px;
+            height: 200px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+        }
+
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: -80px;
+            left: -80px;
+            width: 300px;
+            height: 300px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 50%;
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header-title i {
+            font-size: 2.5em;
+            background: rgba(255,255,255,0.2);
+            padding: 15px;
+            border-radius: 50%;
+        }
+
+        .header-title h1 {
+            font-size: 2.2em;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .header-subtitle {
+            font-size: 1em;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.95em;
+            box-shadow: var(--shadow);
+        }
+
+        .btn-primary {
+            background: var(--white);
+            color: var(--primary);
+        }
+
+        .btn-primary:hover {
+            background: rgba(255,255,255,0.9);
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: var(--white);
+        }
+
+        .btn-success:hover {
+            background: #3fb4d9;
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: var(--white);
+        }
+
+        .btn-danger:hover {
+            background: #d92072;
+            transform: translateY(-2px);
+        }
+
+        .controls-section {
+            padding: 30px 40px;
+            background: var(--gray-100);
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .section-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title i {
+            color: var(--primary);
+        }
+
+        .filters-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .filter-group label {
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 0.95em;
+        }
+
+        .filter-select {
+            padding: 14px 16px;
+            border: 2px solid var(--gray-300);
+            border-radius: 12px;
+            font-size: 1em;
+            background: var(--white);
+            transition: var(--transition);
+            font-weight: 500;
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        }
+
+        .stats-section {
+            padding: 30px 40px;
+            background: var(--white);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: var(--white);
+            padding: 25px;
+            border-radius: var(--border-radius);
+            position: relative;
+            overflow: hidden;
+            transition: var(--transition);
+            box-shadow: var(--shadow);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #ff9a9e, #fecfef);
+        }
+
+        .stat-icon {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+            opacity: 0.9;
+        }
+
+        .stat-title {
+            font-size: 1em;
+            font-weight: 500;
+            margin-bottom: 8px;
+            opacity: 0.9;
+        }
+
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .results-section {
+            padding: 0 40px 40px;
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .results-title {
+            font-size: 1.4em;
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .results-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .table-container {
+            background: var(--white);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--gray-200);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+
+        thead {
+            background: linear-gradient(135deg, var(--dark), #2a3f54);
+            color: var(--white);
+        }
+
+        th {
+            padding: 18px 20px;
+            font-weight: 600;
+            text-align: left;
+            font-size: 0.95em;
+            letter-spacing: 0.5px;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid var(--gray-200);
+            transition: var(--transition);
+        }
+
+        tbody tr:last-child {
+            border-bottom: none;
+        }
+
+        tbody tr:hover {
+            background: rgba(67, 97, 238, 0.05);
+        }
+
+        td {
+            padding: 16px 20px;
+            font-size: 0.95em;
+        }
+
+        .qty-cell {
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 1.1em;
+        }
+
+        .date-cell {
+            background: rgba(76, 201, 240, 0.1);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-family: monospace;
+            font-size: 0.85em;
+            border: 1px solid rgba(76, 201, 240, 0.3);
+        }
+
+        .person-code {
+            background: rgba(67, 97, 238, 0.1);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+
+        .tool-code {
+            background: rgba(247, 37, 133, 0.1);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.9em;
+            color: var(--danger);
+        }
+
+        .loading-container {
+            text-align: center;
+            padding: 60px;
+            color: var(--gray-600);
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(67, 97, 238, 0.3);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 80px 20px;
+            color: var(--gray-600);
+        }
+
+        .no-results i {
+            font-size: 4em;
+            color: var(--gray-300);
+            margin-bottom: 20px;
+        }
+
+        .no-results h3 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+            color: var(--dark);
+        }
+
+        .no-results p {
+            font-size: 1.1em;
+            max-width: 500px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-weight: 500;
+        }
+
+        .alert-error {
+            background: rgba(247, 37, 133, 0.1);
+            color: var(--danger);
+            border-left: 4px solid var(--danger);
+        }
+
+        .alert-info {
+            background: rgba(76, 201, 240, 0.1);
+            color: var(--info);
+            border-left: 4px solid var(--info);
+        }
+
+        .alert-success {
+            background: rgba(76, 201, 240, 0.1);
+            color: var(--success);
+            border-left: 4px solid var(--success);
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .header-actions {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .filters-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .results-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .results-actions {
+                justify-content: center;
+            }
+            
+            th, td {
+                padding: 12px 15px;
+                font-size: 0.9em;
+            }
+            
+            .stat-value {
+                font-size: 2em;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header {
+                padding: 20px;
+            }
+            
+            .header-title h1 {
+                font-size: 1.8em;
+            }
+            
+            .controls-section, .stats-section, .results-section {
+                padding: 20px;
+            }
+            
+            .btn {
+                padding: 10px 16px;
+                font-size: 0.9em;
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <div class="header">
+            <div class="header-content">
+                <div class="header-title">
+                    <i class="fas fa-tools"></i>
+                    <div>
+                        <h1>PROFESSIONAL TOOL TRACKING DASHBOARD</h1>
+                        <div class="header-subtitle">Real-time monitoring of unreturned tools and equipment</div>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-success" onclick="exportData()">
+                        <i class="fas fa-file-export"></i> Export CSV
+                    </button>
+                    <button class="btn btn-primary" onclick="loadUnreturnedTools()">
+                        <i class="fas fa-sync-alt"></i> Refresh Data
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls-section">
+            <h2 class="section-title"><i class="fas fa-filter"></i> Advanced Filtering</h2>
+            <div class="filters-container">
+                <div class="filter-group">
+                    <label for="dateFilter">📅 Filter by Checkout Date</label>
+                    <select id="dateFilter" class="filter-select">
+                        <option value="">All Dates</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="personFilter">👤 Filter by Person Code</label>
+                    <select id="personFilter" class="filter-select">
+                        <option value="">All People</option>
+                    </select>
+                </div>
+            </div>
+            <div style="text-align: center;">
+                <button class="btn btn-danger" onclick="clearFilters()">
+                    <i class="fas fa-broom"></i> Clear All Filters
+                </button>
+            </div>
+        </div>
+
+        <div class="stats-section">
+            <h2 class="section-title"><i class="fas fa-chart-line"></i> Real-time Statistics</h2>
+            <div class="stats-grid">
+                <div class="stat-card fade-in">
+                    <div class="stat-icon">
+                        <i class="fas fa-boxes"></i>
+                    </div>
+                    <div class="stat-title">TOTAL UNRETURNED ITEMS</div>
+                    <div class="stat-value" id="totalItems">0</div>
+                </div>
+                <div class="stat-card fade-in">
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-title">PEOPLE WITH OUTSTANDING ITEMS</div>
+                    <div class="stat-value" id="totalPeople">0</div>
+                </div>
+                <div class="stat-card fade-in">
+                    <div class="stat-icon">
+                        <i class="fas fa-toolbox"></i>
+                    </div>
+                    <div class="stat-title">UNIQUE TOOLS</div>
+                    <div class="stat-value" id="uniqueTools">0</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="results-section">
+            <div class="results-header">
+                <h2 class="results-title">🔍 Unreturned Tools Report</h2>
+                <div class="results-actions" id="results-count"></div>
+            </div>
+            
+            <div id="alerts-container"></div>
+            
+            <div class="table-container">
+                <div id="loading" style="display: none;">
+                    <div class="loading-container">
+                        <div class="loading-spinner"></div>
+                        <div>Loading unreturned tools data...</div>
+                    </div>
+                </div>
+                
+                <div id="error" style="display: none;"></div>
+                
+                <div id="results"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 🔴🔴🔴 REPLACE THIS WITH YOUR GOOGLE APPS SCRIPT WEB APP URL AFTER DEPLOYMENT 🔴🔴🔴
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyyn9X9jbpTZbUnxZyZfxYevmapG0zfxdS1zF1q-VNSaQ1NHXwaH_24TQecoGb_FoFG/exec";
+
+        let allData = [];
+        let isLoading = false;
+
+        async function callServer(action, params = {}) {
+            const url = new URL(WEB_APP_URL);
+            url.searchParams.append('action', action);
+            Object.keys(params).forEach(key => 
+                url.searchParams.append(key, params[key])
+            );
+            
+            const response = await fetch(url);
+            const text = await response.text();
+            
+            try {
+                return JSON.parse(text);
+            } catch {
+                return { error: "Server error: " + text };
+            }
+        }
+
+        async function loadUnreturnedTools() {
+            if (isLoading) return;
+            isLoading = true;
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('results').innerHTML = '';
+            hideAlerts();
+
+            try {
+                const data = await callServer('getUnreturnedTools');
+                if (data.error) {
+                    showError(data);
+                    return;
+                }
+                allData = data;
+                await updateFilters();
+                applyFilters();
+            } catch (error) {
+                showError({error: 'Network error: ' + error.message});
+            } finally {
+                isLoading = false;
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+
+        async function updateFilters() {
+            try {
+                const dates = await callServer('getUniqueDates');
+                const personCodes = await callServer('getUniquePersonCodes');
+                
+                const dateFilter = document.getElementById('dateFilter');
+                dateFilter.innerHTML = '<option value="">All Dates</option>';
+                (dates || []).forEach(date => {
+                    const option = document.createElement('option');
+                    option.value = date;
+                    option.textContent = date;
+                    dateFilter.appendChild(option);
+                });
+
+                const personFilter = document.getElementById('personFilter');
+                personFilter.innerHTML = '<option value="">All People</option>';
+                (personCodes || []).forEach(code => {
+                    const option = document.createElement('option');
+                    option.value = code;
+                    option.textContent = code;
+                    personFilter.appendChild(option);
+                });
+            } catch (error) {
+                showError({error: 'Failed to load filters'});
+            }
+        }
+
+        function applyFilters() {
+            if (!allData || allData.error) return;
+            
+            const dateFilter = document.getElementById('dateFilter').value;
+            const personFilter = document.getElementById('personFilter').value;
+            
+            let filteredData = allData;
+            
+            if (dateFilter) {
+                filteredData = filteredData.filter(item => item.timestamp === dateFilter);
+            }
+            
+            if (personFilter) {
+                filteredData = filteredData.filter(item => item.personCode === personFilter);
+            }
+            
+            displayResults(filteredData);
+            updateStats(filteredData);
+        }
+
+        function displayResults(data) {
+            if (!data || data.length === 0) {
+                document.getElementById('results').innerHTML = 
+                    '<div class="no-results">' +
+                        '<i class="fas fa-inbox"></i>' +
+                        '<h3>No Unreturned Tools Found</h3>' +
+                        '<p>Based on your current filters, all tools have been returned or no records match your criteria.</p>' +
+                    '</div>';
+                document.getElementById('results-count').textContent = '';
+                return;
+            }
+            
+            document.getElementById('results-count').textContent = 
+                `${data.length} record${data.length !== 1 ? 's' : ''} found`;
+            
+            let html = '<table class="fade-in">' +
+                '<thead>' +
+                    '<tr>' +
+                        '<th><i class="fas fa-id-badge"></i> Person Code</th>' +
+                        '<th><i class="fas fa-user"></i> Person Name</th>' +
+                        '<th><i class="fas fa-barcode"></i> Tool Code</th>' +
+                        '<th><i class="fas fa-tag"></i> Tool Description</th>' +
+                        '<th><i class="fas fa-hashtag"></i> Quantity</th>' +
+                        '<th><i class="fas fa-calendar"></i> Checkout Date</th>' +
+                        '<th><i class="fas fa-map-marker-alt"></i> Row</th>' +
+                    '</tr>' +
+                '</thead>' +
+                '<tbody>';
+            
+            data.forEach(function(item) {
+                html += '<tr>' +
+                    '<td><span class="person-code">' + (item.personCode || 'N/A') + '</span></td>' +
+                    '<td>' + (item.personName || item.personCode || 'N/A') + '</td>' +
+                    '<td><span class="tool-code">' + (item.toolCode || 'N/A') + '</span></td>' +
+                    '<td>' + (item.toolDescription || item.toolCode || 'N/A') + '</td>' +
+                    '<td class="qty-cell">' + (item.count || 1) + '</td>' +
+                    '<td class="date-cell">' + (item.timestamp || 'N/A') + '</td>' +
+                    '<td>' + (item.rowIndex || 'N/A') + '</td>' +
+                    '</tr>';
+            });
+            
+            html += '</tbody></table>';
+            document.getElementById('results').innerHTML = html;
+        }
+
+        function updateStats(data) {
+            const totalItems = data.reduce((sum, item) => sum + (item.count || 0), 0);
+            const uniquePeople = [...new Set(data.map(item => item.personCode))].length;
+            const uniqueTools = [...new Set(data.map(item => item.toolCode))].length;
+            
+            document.getElementById('totalItems').textContent = totalItems;
+            document.getElementById('totalPeople').textContent = uniquePeople;
+            document.getElementById('uniqueTools').textContent = uniqueTools;
+        }
+
+        function clearFilters() {
+            document.getElementById('dateFilter').value = '';
+            document.getElementById('personFilter').value = '';
+            applyFilters();
+            showAlert('Filters cleared successfully!', 'success');
+        }
+
+        async function exportData() {
+            try {
+                const csvData = await callServer('exportToCSV');
+                if (csvData.error) {
+                    showError({error: csvData.error});
+                    return;
+                }
+                const blob = new Blob([csvData], { type: 'text/csv' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'unreturned_tools_report.csv';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                showAlert('Export completed!', 'success');
+            } catch (error) {
+                showError({error: 'Export failed'});
+            }
+        }
+
+        function showError(error) {
+            const errorDiv = document.getElementById('error');
+            errorDiv.innerHTML = '<div class="alert alert-error">' +
+                '<i class="fas fa-exclamation-circle"></i>' +
+                '<div>' + (error.error || 'Unknown error') + '</div>' +
+            '</div>';
+            errorDiv.style.display = 'block';
+        }
+
+        function showAlert(message, type) {
+            const alertsContainer = document.getElementById('alerts-container');
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} fade-in`;
+            const icon = type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle';
+            alertDiv.innerHTML = `<i class="fas fa-${icon}"></i><div>${message}</div>`;
+            alertsContainer.appendChild(alertDiv);
+            setTimeout(() => {
+                if (alertDiv.parentNode) alertDiv.parentNode.removeChild(alertDiv);
+            }, 5000);
+        }
+
+        function hideAlerts() {
+            document.getElementById('alerts-container').innerHTML = '';
+        }
+
+        document.getElementById('dateFilter').addEventListener('change', applyFilters);
+        document.getElementById('personFilter').addEventListener('change', applyFilters);
+
+        window.onload = () => {
+            // Check if URL is configured
+            if (WEB_APP_URL.includes('YOUR_WEB_APP_ID')) {
+                document.getElementById('error').innerHTML = 
+                    '<div class="alert alert-error">' +
+                    '<i class="fas fa-exclamation-triangle"></i>' +
+                    '<div>Please update WEB_APP_URL in index.html with your Google Apps Script Web App URL!</div>' +
+                    '</div>';
+                document.getElementById('error').style.display = 'block';
+                return;
+            }
+            loadUnreturnedTools();
+        };
+    </script>
+</body>
+</html>
