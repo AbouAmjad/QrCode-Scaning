@@ -506,12 +506,20 @@
             font-weight: 500;
         }
 
+        /* Fixed Quantity Display */
         .qty-cell {
-            font-weight: 800;
             font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.4em;
+            font-weight: 800;
+            text-align: center;
+            padding: 12px 20px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, rgba(76, 201, 240, 0.2), rgba(76, 201, 240, 0.1));
             color: var(--success);
-            font-size: 1.2em;
-            text-shadow: 0 0 10px rgba(76, 201, 240, 0.3);
+            box-shadow: 0 0 15px rgba(76, 201, 240, 0.3);
+            border: 1px solid rgba(76, 201, 240, 0.4);
+            backdrop-filter: blur(5px);
+            display: inline-block;
         }
 
         .date-cell {
@@ -747,35 +755,6 @@
             0% { box-shadow: 0 0 0 0 rgba(67, 97, 238, 0.4); }
             70% { box-shadow: 0 0 0 15px rgba(67, 97, 238, 0); }
             100% { box-shadow: 0 0 0 0 rgba(67, 97, 238, 0); }
-        }
-
-        /* Status Indicators */
-        .status-indicator {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 6px 12px;
-            border-radius: 12px;
-            font-weight: 600;
-            font-size: 0.85em;
-        }
-
-        .status-critical {
-            background: rgba(247, 37, 133, 0.2);
-            color: var(--danger);
-            border: 1px solid rgba(247, 37, 133, 0.4);
-        }
-
-        .status-warning {
-            background: rgba(248, 150, 30, 0.2);
-            color: var(--warning);
-            border: 1px solid rgba(248, 150, 30, 0.4);
-        }
-
-        .status-normal {
-            background: rgba(76, 201, 240, 0.2);
-            color: var(--success);
-            border: 1px solid rgba(76, 201, 240, 0.4);
         }
     </style>
 </head>
@@ -1033,20 +1012,12 @@
                 '<tbody>';
             
             data.forEach(function(item) {
-                // Determine status based on quantity
-                const statusClass = item.count > 5 ? 'status-critical' : 
-                                  item.count > 2 ? 'status-warning' : 'status-normal';
-                const statusText = item.count > 5 ? 'High Volume' : 
-                                 item.count > 2 ? 'Multiple Items' : 'Normal';
-                
                 html += '<tr>' +
                     '<td><span class="person-code">' + (item.personCode || 'N/A') + '</span></td>' +
                     '<td>' + (item.personName || item.personCode || 'N/A') + '</td>' +
                     '<td><span class="tool-code">' + (item.toolCode || 'N/A') + '</span></td>' +
                     '<td>' + (item.toolDescription || item.toolCode || 'N/A') + '</td>' +
-                    '<td class="qty-cell">' + (item.count || 1) + 
-                        '<span class="status-indicator ' + statusClass + '">' + statusText + '</span>' +
-                    '</td>' +
+                    '<td class="qty-cell">' + (item.count || 1) + '</td>' +
                     '<td class="date-cell">' + (item.timestamp || 'N/A') + '</td>' +
                     '<td>Row ' + (item.rowIndex || 'N/A') + '</td>' +
                     '</tr>';
