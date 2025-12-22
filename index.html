@@ -23,6 +23,7 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  text-transform: uppercase;
 }
 
 body {
@@ -75,6 +76,7 @@ body {
   background: rgba(31, 31, 31, 0.8);
   color: var(--text-light);
   transition: all 0.3s ease;
+  text-transform: uppercase;
 }
 
 .scan-input:focus {
@@ -102,6 +104,7 @@ body {
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
+  text-transform: uppercase;
 }
 
 .submit-btn::before {
@@ -174,6 +177,7 @@ body {
   font-weight: 600;
   font-size: 16px;
   transition: all 0.3s ease;
+  text-transform: uppercase;
 }
 
 .logout-btn:hover {
@@ -193,6 +197,7 @@ body {
   font-size: 16px;
   transition: all 0.3s ease;
   margin-bottom: 10px;
+  text-transform: uppercase;
 }
 
 .results-btn:hover {
@@ -260,6 +265,7 @@ body {
   font-size: 16px;
   display: flex;
   align-items: center;
+  text-transform: uppercase;
 }
 
 .log-code::before {
@@ -292,6 +298,7 @@ body {
   font-size: 14px;
   color: var(--text-gray);
   line-height: 1.5;
+  text-transform: uppercase;
 }
 
 .log-time {
@@ -320,6 +327,7 @@ body {
   margin-bottom: 20px;
   font-size: 16px;
   box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  text-transform: uppercase;
 }
 
 .online { 
@@ -338,6 +346,7 @@ body {
   padding: 10px;
   background: rgba(67, 160, 71, 0.1);
   border-radius: 10px;
+  text-transform: uppercase;
 }
 
 .log {
@@ -378,6 +387,7 @@ body {
   justify-content: center;
   z-index: 1000;
   transition: all 0.3s ease;
+  text-transform: uppercase;
 }
 
 .floating-logout:hover {
@@ -419,25 +429,25 @@ body {
   <div class="left-panel">
     <div class="scan-section">
       <h2>QR Scanner</h2>
-      <input id="scanInput" class="scan-input" placeholder="Scan code here" autofocus>
-      <button onclick="submitScan()" class="submit-btn">Submit Scan</button>
+      <input id="scanInput" class="scan-input" placeholder="SCAN CODE HERE" autofocus>
+      <button onclick="submitScan()" class="submit-btn">SUBMIT SCAN</button>
     </div>
 
     <div class="stats-section">
       <div class="stats-grid">
         <div class="stat-item">
           <div class="stat-value" id="counter">0</div>
-          <div class="stat-label">Pending Scans</div>
+          <div class="stat-label">PENDING SCANS</div>
         </div>
       </div>
-      <button onclick="viewResults()" class="results-btn">View Results</button>
-      <button onclick="logout()" class="logout-btn">Logout</button>
+      <button onclick="viewResults()" class="results-btn">VIEW RESULTS</button>
+      <button onclick="logout()" class="logout-btn">LOGOUT</button>
     </div>
   </div>
 
   <div class="right-panel">
     <div class="logs-section">
-      <div class="logs-header">Scan Logs</div>
+      <div class="logs-header">SCAN LOGS</div>
       <div id="log" class="log"></div>
     </div>
   </div>
@@ -493,7 +503,7 @@ async function testConnection() {
 // Get description from appropriate column based on code prefix
 async function getDescription(code) {
   try {
-    const response = await fetch(`${SCRIPT_URL}?action=getDescription&scanData=${encodeURIComponent(code)}&token=${tokenValue}`, {
+    const response = await fetch(`${SCRIPT_URL}?action=getDescription&scanData=${encodeURIComponent(code.toUpperCase())}&token=${tokenValue}`, {
       method: 'GET',
       cache: 'no-store',
       mode: 'cors'
@@ -503,7 +513,7 @@ async function getDescription(code) {
     return description;
   } catch (error) {
     console.error("Error fetching description:", error);
-    return "Description not found";
+    return "DESCRIPTION NOT FOUND";
   }
 }
 
@@ -522,18 +532,18 @@ function updateCounter() {
   document.getElementById("counter").innerText = pending;
 }
 
-function addLog(code, description = "Loading...") {
+function addLog(code, description = "LOADING...") {
   const id = "log_" + Date.now();
   const div = document.createElement("div");
   div.className = "log-item";
   div.id = id;
   div.innerHTML = `
     <div class="log-header">
-      <div class="log-code">${code}</div>
+      <div class="log-code">${code.toUpperCase()}</div>
       <span class="sync-status status-pending">●</span>
     </div>
-    <div class="log-description">${description}</div>
-    <div class="log-time">${new Date().toLocaleTimeString()}</div>
+    <div class="log-description">${description.toUpperCase()}</div>
+    <div class="log-time">${new Date().toLocaleTimeString().toUpperCase()}</div>
   `;
   document.getElementById("log").prepend(div);
   return id;
@@ -544,7 +554,7 @@ function updateLogDescription(logId, description) {
   if (el) {
     const descDiv = el.querySelector(".log-description");
     if (descDiv) {
-      descDiv.textContent = description;
+      descDiv.textContent = description.toUpperCase();
     }
   }
 }
@@ -572,14 +582,14 @@ async function checkAuth() {
 
 function submitScan() {
   const input = document.getElementById("scanInput");
-  const code = input.value.trim();
+  const code = input.value.trim().toUpperCase(); // Convert to uppercase
   if (!code) return;
 
   input.value = "";
   input.focus();
 
   // Add to UI with loading description
-  const logId = addLog(code, "Loading description...");
+  const logId = addLog(code, "LOADING DESCRIPTION...");
   
   // Get description and update UI
   getDescription(code).then(description => {
@@ -627,7 +637,7 @@ async function processQueue() {
         
         if (!isOnline) {
           document.getElementById("status").className = "status offline";
-          document.getElementById("status").innerText = "OFFLINE — scans saved";
+          document.getElementById("status").innerText = "OFFLINE — SCANS SAVED";
           return;
         }
 
@@ -638,9 +648,9 @@ async function processQueue() {
         );
         saveScans(updatedScans);
 
-        // Submit scan to server
+        // Submit scan to server (convert to uppercase)
         const res = await fetch(
-          `${SCRIPT_URL}?scanData=${encodeURIComponent(scan.code)}&token=${tokenValue}`,
+          `${SCRIPT_URL}?scanData=${encodeURIComponent(scan.code.toUpperCase())}&token=${tokenValue}`,
           { 
             cache: "no-store",
             method: "GET"
@@ -655,7 +665,7 @@ async function processQueue() {
             s.seq === scan.seq ? {...s, submitted: false} : s
           );
           saveScans(revertedScans);
-          throw new Error("Sync failed");
+          throw new Error("SYNC FAILED");
         }
 
         // Mark as fully sent
@@ -671,15 +681,15 @@ async function processQueue() {
         await new Promise(r => setTimeout(r, 200));
 
       } catch (error) {
-        console.error("Sync error:", error);
+        console.error("SYNC ERROR:", error);
         document.getElementById("status").className = "status offline";
-        document.getElementById("status").innerText = "OFFLINE — scans saved";
+        document.getElementById("status").innerText = "OFFLINE — SCANS SAVED";
         return;
       }
     }
 
     document.getElementById("status").className = "status online";
-    document.getElementById("status").innerText = "ONLINE — syncing scans";
+    document.getElementById("status").innerText = "ONLINE — SYNCING SCANS";
 
   } finally {
     isProcessing = false;
@@ -694,10 +704,10 @@ setInterval(async () => {
   const isOnline = await testConnection();
   if (isOnline) {
     document.getElementById("status").className = "status online";
-    document.getElementById("status").innerText = "ONLINE — syncing scans";
+    document.getElementById("status").innerText = "ONLINE — SYNCING SCANS";
   } else {
     document.getElementById("status").className = "status offline";
-    document.getElementById("status").innerText = "OFFLINE — scans saved";
+    document.getElementById("status").innerText = "OFFLINE — SCANS SAVED";
   }
 }, 3000);
 
