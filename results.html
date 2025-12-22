@@ -613,8 +613,8 @@
     </div>
 
     <script>
-        // 🔴🔴🔴 REPLACE THIS WITH YOUR GOOGLE APPS SCRIPT WEB APP URL AFTER DEPLOYMENT 🔴🔴🔴
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyyn9X9jbpTZbUnxZyZfxYevmapG0zfxdS1zF1q-VNSaQ1NHXwaH_24TQecoGb_FoFG/exec?action=getUnreturnedTools";
+        // 🔴🔴🔴 YOUR GOOGLE APPS SCRIPT WEB APP URL 🔴🔴🔴
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyyn9X9jbpTZbUnxZyZfxYevmapG0zfxdS1zF1q-VNSaQ1NHXwaH_24TQecoGb_FoFG/exec";
 
         let allData = [];
         let isLoading = false;
@@ -644,14 +644,22 @@
             hideAlerts();
 
             try {
-                const data = await callServer('getUnreturnedTools');
-                if (data.error) {
-                    showError(data);
+                // SINGLE CALL that gets all data at once (much faster!)
+                const response = await callServer('getAllData');
+                if (response.error) {
+                    showError(response);
                     return;
                 }
-                allData = data;
-                await updateFilters();
+                
+                // Extract all data from single response
+                allData = response.unreturnedTools || [];
+                const uniqueDates = response.uniqueDates || [];
+                const uniquePersonCodes = response.uniquePersonCodes || [];
+                
+                // Update filter dropdowns
+                updateFiltersUI(uniqueDates, uniquePersonCodes);
                 applyFilters();
+                
             } catch (error) {
                 showError({error: 'Network error: ' + error.message});
             } finally {
@@ -660,31 +668,24 @@
             }
         }
 
-        async function updateFilters() {
-            try {
-                const dates = await callServer('getUniqueDates');
-                const personCodes = await callServer('getUniquePersonCodes');
-                
-                const dateFilter = document.getElementById('dateFilter');
-                dateFilter.innerHTML = '<option value="">All Dates</option>';
-                (dates || []).forEach(date => {
-                    const option = document.createElement('option');
-                    option.value = date;
-                    option.textContent = date;
-                    dateFilter.appendChild(option);
-                });
+        function updateFiltersUI(uniqueDates, uniquePersonCodes) {
+            const dateFilter = document.getElementById('dateFilter');
+            dateFilter.innerHTML = '<option value="">All Dates</option>';
+            uniqueDates.forEach(date => {
+                const option = document.createElement('option');
+                option.value = date;
+                option.textContent = date;
+                dateFilter.appendChild(option);
+            });
 
-                const personFilter = document.getElementById('personFilter');
-                personFilter.innerHTML = '<option value="">All People</option>';
-                (personCodes || []).forEach(code => {
-                    const option = document.createElement('option');
-                    option.value = code;
-                    option.textContent = code;
-                    personFilter.appendChild(option);
-                });
-            } catch (error) {
-                showError({error: 'Failed to load filters'});
-            }
+            const personFilter = document.getElementById('personFilter');
+            personFilter.innerHTML = '<option value="">All People</option>';
+            uniquePersonCodes.forEach(code => {
+                const option = document.createElement('option');
+                option.value = code;
+                option.textContent = code;
+                personFilter.appendChild(option);
+            });
         }
 
         function applyFilters() {
@@ -786,7 +787,7 @@
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
                 showAlert('Export completed!', 'success');
-            } catch (error) {
+            } catch ( error) {
                 showError({error: 'Export failed'});
             }
         }
@@ -820,7 +821,7 @@
         document.getElementById('personFilter').addEventListener('change', applyFilters);
 
         window.onload = () => {
-            // Check if URL is configured
+            // Check if URL is configured (remove this check once you've updated the URL)
             if (WEB_APP_URL.includes('YOUR_WEB_APP_ID')) {
                 document.getElementById('error').innerHTML = 
                     '<div class="alert alert-error">' +
