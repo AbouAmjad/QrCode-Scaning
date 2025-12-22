@@ -181,6 +181,25 @@ body {
   box-shadow: 0 8px 25px rgba(198, 40, 40, 0.4);
 }
 
+.results-btn {
+  width: 100%;
+  padding: 15px;
+  background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  margin-bottom: 10px;
+}
+
+.results-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(67, 160, 71, 0.4);
+}
+
 /* Right Panel */
 .right-panel {
   display: flex;
@@ -411,6 +430,7 @@ body {
           <div class="stat-label">Pending Scans</div>
         </div>
       </div>
+      <button onclick="viewResults()" class="results-btn">View Results</button>
       <button onclick="logout()" class="logout-btn">Logout</button>
     </div>
   </div>
@@ -695,6 +715,10 @@ document.getElementById("scanInput").addEventListener("keydown", e => {
 function logout() {
   localStorage.removeItem("token");
   window.location = "login.html";
+}
+
+function viewResults() {
+  window.location = "results.html";
 }
 
 // Initial checks
