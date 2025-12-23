@@ -1017,7 +1017,7 @@
                     '<td>' + (item.personName || item.personCode || 'N/A') + '</td>' +
                     '<td><span class="tool-code">' + (item.toolCode || 'N/A') + '</span></td>' +
                     '<td>' + (item.toolDescription || item.toolCode || 'N/A') + '</td>' +
-                    '<td class="qty-cell">' + (item.count || 1) + '</td>' +
+                    '<td class="qty-cell">' + (item.count ?? 0) + '</td>' +
                     '<td class="date-cell">' + (item.timestamp || 'N/A') + '</td>' +
                     '<td>Row ' + (item.rowIndex || 'N/A') + '</td>' +
                     '</tr>';
