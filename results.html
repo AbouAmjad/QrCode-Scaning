@@ -884,219 +884,183 @@
         </div>
     </div>
 
-    <script>
-        // Your Google Apps Script Web App URL
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyyn9X9jbpTZbUnxZyZfxYevmapG0zfxdS1zF1q-VNSaQ1NHXwaH_24TQecoGb_FoFG/exec";
+  <script>
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyyn9X9jbpTZbUnxZyZfxYevmapG0zfxdS1zF1q-VNSaQ1NHXwaH_24TQecoGb_FoFG/exec";
 
-        let allData = [];
-        let isLoading = false;
+    let allData = [];
+    let isLoading = false;
 
-        async function callServer(action, params = {}) {
-            const url = new URL(WEB_APP_URL);
-            url.searchParams.append('action', action);
-            Object.keys(params).forEach(key => 
-                url.searchParams.append(key, params[key])
-            );
-            
-            const response = await fetch(url);
-            const text = await response.text();
-            
-            try {
-                return JSON.parse(text);
-            } catch {
-                return { error: "Server error: " + text };
-            }
+    async function callServer(action, params = {}) {
+        const url = new URL(WEB_APP_URL);
+        url.searchParams.append('action', action);
+        Object.keys(params).forEach(key =>
+            url.searchParams.append(key, params[key])
+        );
+
+        const response = await fetch(url);
+        const text = await response.text();
+
+        try {
+            return JSON.parse(text);
+        } catch {
+            return { error: "Server error: " + text };
         }
+    }
 
-        async function loadUnreturnedTools() {
-            if (isLoading) return;
-            isLoading = true;
-            document.getElementById('loading').style.display = 'block';
-            document.getElementById('results').innerHTML = '';
-            hideAlerts();
-            document.getElementById('results-count').textContent = 'Analyzing data...';
+    async function loadUnreturnedTools() {
+        if (isLoading) return;
+        isLoading = true;
+        document.getElementById('loading').style.display = 'block';
+        document.getElementById('results').innerHTML = '';
+        hideAlerts();
+        document.getElementById('results-count').textContent = 'Analyzing data...';
 
-            try {
-                const response = await callServer('getAllData');
-                if (response.error) {
-                    showError(response);
-                    return;
-                }
-                
-                allData = response.unreturnedTools || [];
-                const uniqueDates = response.uniqueDates || [];
-                const uniquePersonCodes = response.uniquePersonCodes || [];
-                
-                updateFiltersUI(uniqueDates, uniquePersonCodes);
-                applyFilters();
-                
-            } catch (error) {
-                showError({error: 'Network error: ' + error.message});
-            } finally {
-                isLoading = false;
-                if (!document.getElementById('results').innerHTML) {
-                    document.getElementById('loading').style.display = 'none';
-                }
-            }
-        }
-
-        function updateFiltersUI(uniqueDates, uniquePersonCodes) {
-            const dateFilter = document.getElementById('dateFilter');
-            dateFilter.innerHTML = '<option value="">All Dates</option>';
-            uniqueDates.forEach(date => {
-                const option = document.createElement('option');
-                option.value = date;
-                option.textContent = date;
-                dateFilter.appendChild(option);
-            });
-
-            const personFilter = document.getElementById('personFilter');
-            personFilter.innerHTML = '<option value="">All Personnel</option>';
-            uniquePersonCodes.forEach(code => {
-                const option = document.createElement('option');
-                option.value = code;
-                option.textContent = code;
-                personFilter.appendChild(option);
-            });
-        }
-
-        function applyFilters() {
-            if (!allData || allData.error) return;
-            
-            const dateFilter = document.getElementById('dateFilter').value;
-            const personFilter = document.getElementById('personFilter').value;
-            
-            let filteredData = allData;
-            
-            if (dateFilter) {
-                filteredData = filteredData.filter(item => item.timestamp === dateFilter);
-            }
-            
-            if (personFilter) {
-                filteredData = filteredData.filter(item => item.personCode === personFilter);
-            }
-            
-            displayResults(filteredData);
-            updateStats(filteredData);
-        }
-
-        function displayResults(data) {
-            document.getElementById('loading').style.display = 'none';
-            
-            if (!data || data.length === 0) {
-                document.getElementById('results').innerHTML = 
-                    '<div class="no-results">' +
-                        '<i class="fas fa-inbox"></i>' +
-                        '<h3>Intelligence Report: No Outstanding Assets</h3>' +
-                        '<p>All tools and equipment have been successfully returned. The asset tracking system shows 100% compliance with return protocols.</p>' +
-                    '</div>';
-                document.getElementById('results-count').textContent = '0 records found';
+        try {
+            const response = await callServer('getAllData');
+            if (response.error) {
+                showError(response);
                 return;
             }
-            
-            const recordText = data.length === 1 ? 'record' : 'records';
-            document.getElementById('results-count').textContent = `${data.length} ${recordText} found`;
-            
-            let html = '<table class="fade-in">' +
-                '<thead>' +
-                    '<tr>' +
-                        '<th><i class="fas fa-id-badge"></i> Personnel ID</th>' +
-                        '<th><i class="fas fa-user"></i> Full Name</th>' +
-                        '<th><i class="fas fa-barcode"></i> Asset Code</th>' +
-                        '<th><i class="fas fa-tag"></i> Asset Description</th>' +
-                        '<th><i class="fas fa-hashtag"></i> Quantity</th>' +
-                        '<th><i class="fas fa-calendar"></i> Checkout Date</th>' +
-                        '<th><i class="fas fa-map-marker-alt"></i> Location</th>' +
-                    '</tr>' +
-                '</thead>' +
-                '<tbody>';
-            
-            data.forEach(function(item) {
-                html += '<tr>' +
-                    '<td><span class="person-code">' + (item.personCode || 'N/A') + '</span></td>' +
-                    '<td>' + (item.personName || item.personCode || 'N/A') + '</td>' +
-                    '<td><span class="tool-code">' + (item.toolCode || 'N/A') + '</span></td>' +
-                    '<td>' + (item.toolDescription || item.toolCode || 'N/A') + '</td>' +
-                    '<td class="qty-cell">' + (item.count ?? 0) + '</td>' +
-                    '<td class="date-cell">' + (item.timestamp || 'N/A') + '</td>' +
-                    '<td>Row ' + (item.rowIndex || 'N/A') + '</td>' +
-                    '</tr>';
-            });
-            
-            html += '</tbody></table>';
-            document.getElementById('results').innerHTML = html;
-        }
 
-        function updateStats(data) {
-            const totalItems = data.reduce((sum, item) => sum + (item.count || 0), 0);
-            const uniquePeople = [...new Set(data.map(item => item.personCode))].length;
-            const uniqueTools = [...new Set(data.map(item => item.toolCode))].length;
-            
-            document.getElementById('totalItems').textContent = totalItems;
-            document.getElementById('totalPeople').textContent = uniquePeople;
-            document.getElementById('uniqueTools').textContent = uniqueTools;
-        }
-
-        function clearFilters() {
-            document.getElementById('dateFilter').value = '';
-            document.getElementById('personFilter').value = '';
+            allData = response.unreturnedTools || [];
+            updateFiltersUI(response.uniqueDates || [], response.uniquePersonCodes || []);
             applyFilters();
-            showAlert('All intelligence filters have been cleared successfully!', 'success');
-        }
 
-        async function exportData() {
-            try {
-                const csvData = await callServer('exportToCSV');
-                if (csvData.error) {
-                    showError({error: csvData.error});
-                    return;
-                }
-                const blob = new Blob([csvData], { type: 'text/csv' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'enterprise_tool_intelligence_report.csv';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-                showAlert('Intelligence report exported successfully!', 'success');
-            } catch (error) {
-                showError({error: 'Export failed: ' + error.message});
+        } catch (error) {
+            showError({ error: 'Network error: ' + error.message });
+        } finally {
+            isLoading = false;
+            if (!document.getElementById('results').innerHTML) {
+                document.getElementById('loading').style.display = 'none';
             }
         }
+    }
 
-        function showError(error) {
-            const errorDiv = document.getElementById('error');
-            errorDiv.innerHTML = '<div class="alert alert-error">' +
-                '<i class="fas fa-exclamation-triangle"></i>' +
-                '<div>Intelligence System Error: ' + (error.error || 'Unknown error occurred') + '</div>' +
-            '</div>';
-            errorDiv.style.display = 'block';
+    function updateFiltersUI(uniqueDates, uniquePersonCodes) {
+        const dateFilter = document.getElementById('dateFilter');
+        dateFilter.innerHTML = '<option value="">All Dates</option>';
+        uniqueDates.forEach(date => {
+            const option = document.createElement('option');
+            option.value = date;
+            option.textContent = date;
+            dateFilter.appendChild(option);
+        });
+
+        const personFilter = document.getElementById('personFilter');
+        personFilter.innerHTML = '<option value="">All Personnel</option>';
+        uniquePersonCodes.forEach(code => {
+            const option = document.createElement('option');
+            option.value = code;
+            option.textContent = code;
+            personFilter.appendChild(option);
+        });
+    }
+
+    function applyFilters() {
+        if (!allData || allData.error) return;
+
+        const dateFilter = document.getElementById('dateFilter').value;
+        const personFilter = document.getElementById('personFilter').value;
+
+        let filteredData = allData;
+
+        if (dateFilter) {
+            filteredData = filteredData.filter(item => item.timestamp === dateFilter);
         }
 
-        function showAlert(message, type) {
-            const alertsContainer = document.getElementById('alerts-container');
-            const alertDiv = document.createElement('div');
-            alertDiv.className = `alert alert-${type} fade-in`;
-            const icon = type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-triangle' : 'info-circle';
-            alertDiv.innerHTML = `<i class="fas fa-${icon}"></i><div>${message}</div>`;
-            alertsContainer.appendChild(alertDiv);
-            setTimeout(() => {
-                if (alertDiv.parentNode) alertDiv.parentNode.removeChild(alertDiv);
-            }, 6000);
+        if (personFilter) {
+            filteredData = filteredData.filter(item => item.personCode === personFilter);
         }
 
-        function hideAlerts() {
-            document.getElementById('alerts-container').innerHTML = '';
+        displayResults(filteredData);
+        updateStats(filteredData);
+    }
+
+    function displayResults(data) {
+        document.getElementById('loading').style.display = 'none';
+
+        if (!data || data.length === 0) {
+            document.getElementById('results').innerHTML =
+                '<div class="no-results">' +
+                '<i class="fas fa-inbox"></i>' +
+                '<h3>No Outstanding Assets</h3>' +
+                '<p>All tools have been returned.</p>' +
+                '</div>';
+            document.getElementById('results-count').textContent = '0 records found';
+            return;
         }
 
-        document.getElementById('dateFilter').addEventListener('change', applyFilters);
-        document.getElementById('personFilter').addEventListener('change', applyFilters);
+        const totalQty = data.reduce((s, i) => s + (i.count ?? 0), 0);
+        document.getElementById('results-count').textContent =
+            `${data.length} records • ${totalQty} total items`;
 
-        window.onload = () => {
-            loadUnreturnedTools();
-        };
-    </script>
+        let html = '<table>' +
+            '<thead><tr>' +
+            '<th>Personnel</th><th>Name</th><th>Tool</th><th>Description</th>' +
+            '<th>Qty</th><th>Date</th><th>Row</th>' +
+            '</tr></thead><tbody>';
+
+        data.forEach(item => {
+            html += '<tr>' +
+                `<td>${item.personCode ?? 'N/A'}</td>` +
+                `<td>${item.personName ?? 'N/A'}</td>` +
+                `<td>${item.toolCode ?? 'N/A'}</td>` +
+                `<td>${item.toolDescription ?? 'N/A'}</td>` +
+                `<td class="qty-cell">${item.count ?? 0}</td>` +
+                `<td>${item.timestamp ?? 'N/A'}</td>` +
+                `<td>${item.rowIndex ?? 'N/A'}</td>` +
+                '</tr>';
+        });
+
+        html += '</tbody></table>';
+        document.getElementById('results').innerHTML = html;
+    }
+
+    function updateStats(data) {
+        const totalItems = data.reduce((sum, item) => sum + (item.count ?? 0), 0);
+        const uniquePeople = new Set(data.map(i => i.personCode)).size;
+        const uniqueTools = new Set(data.map(i => i.toolCode)).size;
+
+        document.getElementById('totalItems').textContent = totalItems;
+        document.getElementById('totalPeople').textContent = uniquePeople;
+        document.getElementById('uniqueTools').textContent = uniqueTools;
+    }
+
+    function clearFilters() {
+        document.getElementById('dateFilter').value = '';
+        document.getElementById('personFilter').value = '';
+        applyFilters();
+    }
+
+    async function exportData() {
+        const csv = await callServer('exportToCSV');
+        if (csv.error) return showError(csv);
+
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'tool_report.csv';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    function showError(error) {
+        document.getElementById('results').innerHTML =
+            `<div class="alert alert-error">${error.error}</div>`;
+    }
+
+    function hideAlerts() {
+        document.getElementById('alerts-container').innerHTML = '';
+    }
+
+    document.getElementById('dateFilter').addEventListener('change', applyFilters);
+    document.getElementById('personFilter').addEventListener('change', applyFilters);
+
+    window.onload = loadUnreturnedTools;
+</script>
+
 </body>
 </html>
