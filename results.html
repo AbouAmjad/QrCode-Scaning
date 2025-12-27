@@ -110,6 +110,10 @@
             border-left: 4px solid #3498db;
             font-weight: 500;
         }
+        .today-highlight {
+            background: #d4edda;
+            border-color: #28a745;
+        }
     </style>
 </head>
 <body>
@@ -118,7 +122,7 @@
         
         <div class="info-banner">
             <strong>How it works:</strong> This dashboard shows tools that were checked out <strong>on the selected date</strong> 
-            and have <strong>not been returned yet</strong>. Select a date to view daily activity.
+            and have <strong>not been returned yet</strong>. By default, it shows today's activity.
         </div>
         
         <div class="controls">
@@ -138,34 +142,46 @@
             <button onclick="clearFilters()" style="background: #e74c3c;">❌ Clear</button>
         </div>
         
-        <div id="loading" class="loading">Loading daily tool data...</div>
+        <div id="loading" class="loading">Loading today's tool data...</div>
         <div id="error" style="display:none;"></div>
         <div id="results"></div>
     </div>
 
     <script>
         // REPLACE WITH YOUR ACTUAL WEB APP URL
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyyn9X9jbpTZbUnxZyZfxYevmapG0zfxdS1zF1q-VNSaQ1NHXwaH_24TQecoGb_FoFG/exec";
+        const WEB_APP_URL = "https://script.google.com/macros/s/YOUR_WEB_APP_ID/exec";
         
         let allData = [];
         let uniqueDates = [];
         let uniquePersons = [];
 
+        // Function to format today's date in your custom format
+        function getTodayCustomFormat() {
+            const today = new Date();
+            const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+            
+            const dayName = days[today.getDay()];
+            const dayNumber = today.getDate();
+            const monthName = months[today.getMonth()];
+            const monthNumber = today.getMonth() + 1;
+            const year = today.getFullYear();
+            
+            return '{ ' + dayName + '-' + dayNumber + ' | ' + monthName + '-' + monthNumber + ' | ' + year + ' }';
+        }
+
         async function loadData() {
             const selectedDate = document.getElementById('dateFilter').value;
             
-            // If no date selected, don't load data
-            if (!selectedDate) {
-                document.getElementById('results').innerHTML = '<p style="text-align:center;padding:40px;color:#7f8c8d;">Please select a date to view daily tool activity.</p>';
-                return;
-            }
+            // If no date selected, use today's date
+            const dateToLoad = selectedDate || getTodayCustomFormat();
             
             document.getElementById('loading').style.display = 'block';
             document.getElementById('results').innerHTML = '';
             document.getElementById('error').style.display = 'none';
             
             try {
-                const response = await fetch(WEB_APP_URL + '?action=getAllData&selectedDate=' + encodeURIComponent(selectedDate));
+                const response = await fetch(WEB_APP_URL + '?action=getAllData&selectedDate=' + encodeURIComponent(dateToLoad));
                 const data = await response.json();
                 
                 if (data.error) {
@@ -176,8 +192,12 @@
                 allData = data.unreturnedTools || [];
                 uniquePersons = data.uniquePersonCodes || [];
                 
+                // Update person filter only if we have data
                 updatePersonFilter();
                 applyPersonFilter();
+                
+                // Highlight today's date in the dropdown
+                highlightTodayInDropdown();
                 
             } catch (error) {
                 showError('Error loading  ' + error.message);
@@ -198,6 +218,33 @@
                 
                 uniqueDates = data.uniqueDates || [];
                 updateDateFilter();
+                
+                // Auto-select today's date after loading
+                setTimeout(() => {
+                    const today = getTodayCustomFormat();
+                    const dateSelect = document.getElementById('dateFilter');
+                    
+                    // Check if today exists in the dropdown
+                    let todayExists = false;
+                    for (let option of dateSelect.options) {
+                        if (option.value === today) {
+                            todayExists = true;
+                            break;
+                        }
+                    }
+                    
+                    if (todayExists) {
+                        dateSelect.value = today;
+                    } else {
+                        // If today doesn't exist, select the most recent date
+                        if (dateSelect.options.length > 1) {
+                            dateSelect.selectedIndex = 1; // First actual date (index 1, since index 0 is "Loading...")
+                        }
+                    }
+                    
+                    // Load data for the selected date
+                    loadData();
+                }, 100);
                 
             } catch (error) {
                 showError('Error loading  ' + error.message);
@@ -256,10 +303,32 @@
             displayResults(filtered);
         }
 
+        function highlightTodayInDropdown() {
+            const today = getTodayCustomFormat();
+            const dateSelect = document.getElementById('dateFilter');
+            
+            // Remove highlight from all options
+            for (let option of dateSelect.options) {
+                option.classList.remove('today-highlight');
+                option.style.fontWeight = 'normal';
+            }
+            
+            // Highlight today's option if it exists
+            for (let option of dateSelect.options) {
+                if (option.value === today) {
+                    option.style.fontWeight = 'bold';
+                    option.style.backgroundColor = '#d4edda';
+                    option.style.color = '#155724';
+                    break;
+                }
+            }
+        }
+
         function displayResults(data) {
             if (!data || data.length === 0) {
+                const selectedDate = document.getElementById('dateFilter').value || getTodayCustomFormat();
                 document.getElementById('results').innerHTML = 
-                    '<p style="text-align:center;padding:40px;color:#7f8c8d;">No unreturned tools found for the selected date.</p>';
+                    '<p style="text-align:center;padding:40px;color:#7f8c8d;">No unreturned tools found for ' + selectedDate + '.</p>';
                 return;
             }
             
@@ -292,7 +361,12 @@
         function clearFilters() {
             document.getElementById('dateFilter').value = '';
             document.getElementById('personFilter').value = '';
-            document.getElementById('results').innerHTML = '<p style="text-align:center;padding:40px;color:#7f8c8d;">Please select a date to view daily tool activity.</p>';
+            // Reset to today's date
+            setTimeout(() => {
+                const today = getTodayCustomFormat();
+                document.getElementById('dateFilter').value = today;
+                loadData();
+            }, 100);
         }
 
         function showError(message) {
@@ -304,7 +378,7 @@
         document.getElementById('dateFilter').addEventListener('change', loadData);
         document.getElementById('personFilter').addEventListener('change', applyPersonFilter);
 
-        // Load data on page load
+        // Load data on page load - automatically shows today
         window.onload = function() {
             loadDates();
             loadPersons();
