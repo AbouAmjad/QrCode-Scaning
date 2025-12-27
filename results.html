@@ -1,1025 +1,287 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ENTERPRISE TOOL INTELLIGENCE DASHBOARD</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>Daily Tool Tracking Dashboard</title>
     <style>
-        :root {
-            --primary: #4361ee;
-            --primary-dark: #3a56d4;
-            --secondary: #7209b7;
-            --secondary-dark: #5e0795;
-            --success: #4cc9f0;
-            --success-dark: #2fb1d4;
-            --danger: #f72585;
-            --danger-dark: #d11f72;
-            --warning: #f8961e;
-            --warning-dark: #d47a15;
-            --info: #4895ef;
-            --dark: #14213d;
-            --darker: #0d1526;
-            --light: #f8f9fa;
-            --white: #ffffff;
-            --gray-100: #f8f9fa;
-            --gray-200: #e9ecef;
-            --gray-300: #dee2e6;
-            --gray-400: #ced4da;
-            --gray-500: #adb5bd;
-            --gray-600: #6c757d;
-            --gray-700: #495057;
-            --gray-800: #343a40;
-            --gray-900: #212529;
-            --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
-            --shadow: 0 4px 12px rgba(0,0,0,0.15);
-            --shadow-md: 0 8px 24px rgba(0,0,0,0.2);
-            --shadow-lg: 0 16px 40px rgba(0,0,0,0.25);
-            --shadow-xl: 0 24px 60px rgba(0,0,0,0.3);
-            --border-radius: 18px;
-            --border-radius-lg: 24px;
-            --border-radius-xl: 32px;
-            --transition-fast: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            --transition-slow: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #14213d 0%, #1d3557 100%);
+        body { 
+            font-family: 'Segoe UI', Arial, sans-serif; 
+            margin: 0; 
+            padding: 20px; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            padding: 20px;
-            color: var(--gray-100);
-            overflow-x: hidden;
         }
-
-        .dashboard {
-            max-width: 1800px;
-            margin: 0 auto;
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(20px);
-            border-radius: var(--border-radius-xl);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: var(--shadow-xl);
-            overflow: hidden;
-            position: relative;
+        .container { 
+            max-width: 1400px; 
+            margin: 0 auto; 
+            background: white; 
+            padding: 30px; 
+            border-radius: 15px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
-
-        .dashboard::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 4px;
-            background: linear-gradient(90deg, var(--primary), var(--secondary), var(--success), var(--danger));
+        h1 { 
+            color: #2c3e50; 
+            text-align: center; 
+            margin-bottom: 30px;
+            font-size: 2.2em;
         }
-
-        /* Header Styles */
-        .header {
-            background: linear-gradient(135deg, rgba(20, 33, 61, 0.95), rgba(29, 53, 87, 0.95));
-            padding: 40px 60px;
-            position: relative;
-            overflow: hidden;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .header-gradient {
-            position: absolute;
-            top: -50%;
-            right: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(67, 97, 238, 0.1) 0%, transparent 70%);
-            animation: rotate 20s linear infinite;
-        }
-
-        @keyframes rotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
-        .header-content {
-            position: relative;
-            z-index: 2;
+        .controls { 
+            background: #f8f9fa; 
+            padding: 20px; 
+            border-radius: 10px; 
+            margin-bottom: 25px;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            gap: 15px;
             flex-wrap: wrap;
-            gap: 30px;
-        }
-
-        .header-title {
-            display: flex;
             align-items: center;
-            gap: 25px;
         }
-
-        .header-icon {
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            border-radius: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: var(--shadow-lg);
+        .filter-group { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 5px; 
+            min-width: 200px;
         }
-
-        .header-icon i {
-            font-size: 2.8em;
-            color: var(--white);
+        .filter-group label { 
+            font-weight: bold; 
+            color: #495057; 
         }
-
-        .header-text {
-            display: flex;
-            flex-direction: column;
+        select, button { 
+            padding: 10px 15px; 
+            border: 2px solid #ced4da; 
+            border-radius: 6px; 
+            font-size: 14px;
         }
-
-        .header-text h1 {
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 2.8em;
-            font-weight: 800;
-            background: linear-gradient(90deg, #ffffff, #a8d8ff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            letter-spacing: -1px;
-        }
-
-        .header-text .subtitle {
-            font-size: 1.1em;
-            color: rgba(255, 255, 255, 0.8);
-            font-weight: 400;
-            margin-top: 8px;
-        }
-
-        .header-actions {
-            display: flex;
-            gap: 16px;
-            flex-wrap: wrap;
-        }
-
-        .btn {
-            padding: 14px 32px;
-            border: none;
-            border-radius: 16px;
-            font-weight: 600;
+        button { 
+            background: #27ae60; 
+            color: white; 
+            border: none; 
             cursor: pointer;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 1.05em;
-            box-shadow: var(--shadow-md);
-            position: relative;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+        button:hover { 
+            background: #219a52; 
+        }
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-top: 20px;
+            background: white;
+            border-radius: 10px;
             overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
-
-        .btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: left 0.5s;
+        th, td { 
+            padding: 15px; 
+            text-align: left; 
+            border-bottom: 1px solid #e9ecef;
         }
-
-        .btn:hover::before {
-            left: 100%;
+        th { 
+            background: linear-gradient(135deg, #34495e, #2c3e50);
+            color: white;
+            font-weight: bold;
         }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: var(--white);
+        tr:nth-child(even) { 
+            background-color: #f8f9fa; 
         }
-
-        .btn-primary:hover {
-            transform: translateY(-3px);
-            box-shadow: var(--shadow-lg);
-        }
-
-        .btn-success {
-            background: linear-gradient(135deg, var(--success), var(--success-dark));
-            color: var(--white);
-        }
-
-        .btn-success:hover {
-            transform: translateY(-3px);
-            box-shadow: var(--shadow-lg);
-        }
-
-        .btn-danger {
-            background: linear-gradient(135deg, var(--danger), var(--danger-dark));
-            color: var(--white);
-        }
-
-        .btn-danger:hover {
-            transform: translateY(-3px);
-            box-shadow: var(--shadow-lg);
-        }
-
-        /* Controls Section */
-        .controls-section {
-            padding: 40px 60px;
-            background: rgba(13, 21, 38, 0.7);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
-
-        .section-title {
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 1.6em;
-            font-weight: 700;
-            color: var(--white);
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .section-title i {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            width: 40px;
-            height: 40px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--white);
-        }
-
-        .filters-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 25px;
-            margin-bottom: 25px;
-        }
-
-        .filter-group {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .filter-group label {
-            font-weight: 600;
-            color: var(--white);
-            font-size: 1.05em;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .filter-group label i {
-            color: var(--primary);
+        .qty { 
+            font-weight: bold; 
+            color: #27ae60; 
             font-size: 1.1em;
         }
-
-        .filter-select {
-            padding: 16px 20px;
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            border-radius: 16px;
-            font-size: 1.05em;
-            background: rgba(255, 255, 255, 0.08);
-            color: var(--white);
-            transition: var(--transition);
-            font-weight: 500;
-            backdrop-filter: blur(10px);
-        }
-
-        .filter-select:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.3);
-        }
-
-        .filter-select option {
-            background: var(--darker);
-            color: var(--white);
-        }
-
-        /* Stats Section */
-        .stats-section {
-            padding: 40px 60px;
-            background: rgba(20, 33, 61, 0.6);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-        }
-
-        .stat-card {
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.04));
-            color: var(--white);
-            padding: 35px;
-            border-radius: var(--border-radius-lg);
-            position: relative;
-            overflow: hidden;
-            transition: var(--transition);
-            box-shadow: var(--shadow-md);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .stat-card:hover {
-            transform: translateY(-8px);
-            box-shadow: var(--shadow-lg);
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.08));
-        }
-
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 4px;
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
-        }
-
-        .stat-content {
-            display: flex;
-            align-items: center;
-            gap: 25px;
-        }
-
-        .stat-icon {
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            border-radius: 18px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.8em;
-        }
-
-        .stat-info {
-            flex: 1;
-        }
-
-        .stat-title {
-            font-size: 1.1em;
-            font-weight: 600;
-            margin-bottom: 10px;
-            color: rgba(255, 255, 255, 0.9);
-        }
-
-        .stat-value {
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 3.2em;
-            font-weight: 800;
-            background: linear-gradient(90deg, var(--white), #a8d8ff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            line-height: 1;
-        }
-
-        /* Results Section */
-        .results-section {
-            padding: 0 60px 60px;
-        }
-
-        .results-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
-
-        .results-title {
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 1.8em;
-            font-weight: 800;
-            color: var(--white);
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .results-title i {
-            background: linear-gradient(135deg, var(--success), var(--info));
-            width: 45px;
-            height: 45px;
-            border-radius: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--white);
-        }
-
-        .results-actions {
-            display: flex;
-            gap: 15px;
-            align-items: center;
-        }
-
-        .results-count {
-            background: rgba(76, 201, 240, 0.15);
-            padding: 8px 20px;
-            border-radius: 14px;
-            font-weight: 600;
-            color: var(--white);
-            font-size: 1.1em;
-            border: 1px solid rgba(76, 201, 240, 0.3);
-        }
-
-        /* Table Styles */
-        .table-container {
-            background: rgba(13, 21, 38, 0.8);
-            border-radius: var(--border-radius-lg);
-            overflow: hidden;
-            box-shadow: var(--shadow-lg);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            min-width: 900px;
-        }
-
-        thead {
-            background: linear-gradient(135deg, var(--dark), var(--darker));
-        }
-
-        th {
-            padding: 22px 25px;
-            font-weight: 700;
-            text-align: left;
-            font-size: 1.05em;
-            letter-spacing: 0.5px;
-            color: var(--white);
-            position: sticky;
-            top: 0;
-            backdrop-filter: blur(10px);
-            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
-        }
-
-        th:first-child {
-            border-top-left-radius: 18px;
-        }
-
-        th:last-child {
-            border-top-right-radius: 18px;
-        }
-
-        tbody tr {
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-            transition: var(--transition);
-        }
-
-        tbody tr:last-child {
-            border-bottom: none;
-        }
-
-        tbody tr:hover {
-            background: rgba(67, 97, 238, 0.1);
-            transform: scale(1.01);
-        }
-
-        td {
-            padding: 20px 25px;
-            font-size: 1.02em;
-            color: rgba(255, 255, 255, 0.95);
-            font-weight: 500;
-        }
-
-        /* Fixed Quantity Display */
-        .qty-cell {
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 1.4em;
-            font-weight: 800;
-            text-align: center;
-            padding: 12px 20px;
-            border-radius: 12px;
-            background: linear-gradient(135deg, rgba(76, 201, 240, 0.2), rgba(76, 201, 240, 0.1));
-            color: var(--success);
-            box-shadow: 0 0 15px rgba(76, 201, 240, 0.3);
-            border: 1px solid rgba(76, 201, 240, 0.4);
-            backdrop-filter: blur(5px);
-            display: inline-block;
-        }
-
-        .date-cell {
-            background: linear-gradient(135deg, rgba(76, 201, 240, 0.2), rgba(76, 201, 240, 0.1));
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-family: monospace;
-            font-size: 0.9em;
-            border: 1px solid rgba(76, 201, 240, 0.3);
-            backdrop-filter: blur(5px);
-        }
-
-        .person-code {
-            background: linear-gradient(135deg, rgba(67, 97, 238, 0.3), rgba(67, 97, 238, 0.2));
-            padding: 6px 14px;
-            border-radius: 16px;
-            font-weight: 700;
-            font-size: 0.95em;
-            color: var(--white);
-            border: 1px solid rgba(67, 97, 238, 0.4);
-        }
-
-        .tool-code {
-            background: linear-gradient(135deg, rgba(247, 37, 133, 0.3), rgba(247, 37, 133, 0.2));
-            padding: 6px 14px;
-            border-radius: 16px;
-            font-weight: 700;
-            font-size: 0.95em;
-            color: var(--white);
-            border: 1px solid rgba(247, 37, 133, 0.4);
-        }
-
-        /* Loading States */
-        .loading-container {
-            text-align: center;
-            padding: 80px;
-            color: var(--gray-300);
-        }
-
-        .loading-spinner {
-            width: 60px;
-            height: 60px;
-            border: 4px solid rgba(67, 97, 238, 0.3);
-            border-top: 4px solid var(--primary);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 25px;
-            box-shadow: 0 0 20px rgba(67, 97, 238, 0.2);
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .loading-text {
+        .loading { 
+            text-align: center; 
+            padding: 60px; 
+            color: #7f8c8d;
             font-size: 1.2em;
+        }
+        .error { 
+            color: #e74c3c; 
+            background: #fadbd8; 
+            padding: 15px; 
+            border-radius: 8px; 
+            margin: 10px 0;
+        }
+        .info-banner {
+            background: #e8f4f8;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #3498db;
             font-weight: 500;
-            color: var(--white);
-            margin-top: 15px;
-        }
-
-        .no-results {
-            text-align: center;
-            padding: 100px 40px;
-            color: var(--gray-300);
-        }
-
-        .no-results i {
-            font-size: 5em;
-            color: rgba(255, 255, 255, 0.2);
-            margin-bottom: 30px;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .no-results h3 {
-            font-size: 1.8em;
-            margin-bottom: 15px;
-            color: var(--white);
-            font-weight: 700;
-        }
-
-        .no-results p {
-            font-size: 1.2em;
-            max-width: 600px;
-            margin: 0 auto;
-            line-height: 1.7;
-            color: rgba(255, 255, 255, 0.8);
-        }
-
-        /* Alerts */
-        .alert {
-            padding: 20px 25px;
-            border-radius: 18px;
-            margin-bottom: 25px;
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            font-weight: 600;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .alert-error {
-            background: rgba(247, 37, 133, 0.15);
-            color: var(--danger);
-            border-left: 4px solid var(--danger);
-        }
-
-        .alert-info {
-            background: rgba(76, 201, 240, 0.15);
-            color: var(--info);
-            border-left: 4px solid var(--info);
-        }
-
-        .alert-success {
-            background: rgba(76, 201, 240, 0.15);
-            color: var(--success);
-            border-left: 4px solid var(--success);
-        }
-
-        /* Responsive Design */
-        @media (max-width: 1200px) {
-            .header {
-                padding: 30px 40px;
-            }
-            
-            .controls-section, .stats-section, .results-section {
-                padding: 30px 40px;
-            }
-            
-            .filters-container {
-                grid-template-columns: 1fr;
-            }
-            
-            .stats-grid {
-                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            }
-            
-            .header-text h1 {
-                font-size: 2.2em;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .header-content {
-                flex-direction: column;
-                text-align: center;
-            }
-            
-            .header-title {
-                justify-content: center;
-            }
-            
-            .header-actions {
-                justify-content: center;
-                width: 100%;
-            }
-            
-            .section-header {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            
-            .results-header {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            
-            .results-actions {
-                justify-content: center;
-            }
-            
-            th, td {
-                padding: 15px 18px;
-                font-size: 0.95em;
-            }
-            
-            .stat-value {
-                font-size: 2.5em;
-            }
-            
-            .btn {
-                padding: 12px 24px;
-                font-size: 0.95em;
-            }
-        }
-
-        @media (max-width: 480px) {
-            body {
-                padding: 15px;
-            }
-            
-            .dashboard {
-                border-radius: 16px;
-            }
-            
-            .header, .controls-section, .stats-section, .results-section {
-                padding: 25px;
-            }
-            
-            .header-text h1 {
-                font-size: 1.8em;
-            }
-            
-            .stat-value {
-                font-size: 2em;
-            }
-            
-            table {
-                min-width: 700px;
-            }
-        }
-
-        /* Animation Classes */
-        .fade-in {
-            animation: fadeIn 0.6s ease-out;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .pulse {
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(67, 97, 238, 0.4); }
-            70% { box-shadow: 0 0 0 15px rgba(67, 97, 238, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(67, 97, 238, 0); }
         }
     </style>
 </head>
 <body>
-    <div class="dashboard">
-        <!-- Header -->
-        <div class="header">
-            <div class="header-gradient"></div>
-            <div class="header-content">
-                <div class="header-title">
-                    <div class="header-icon">
-                        <i class="fas fa-tools"></i>
-                    </div>
-                    <div class="header-text">
-                        <h1>ENTERPRISE TOOL INTELLIGENCE</h1>
-                        <div class="subtitle">AI-Powered Asset Tracking & Management System</div>
-                    </div>
-                </div>
-                <div class="header-actions">
-                    <button class="btn btn-success" onclick="exportData()">
-                        <i class="fas fa-file-export"></i> Export Report
-                    </button>
-                    <button class="btn btn-primary" onclick="loadUnreturnedTools()">
-                        <i class="fas fa-sync-alt"></i> Refresh Live Data
-                    </button>
-                </div>
-            </div>
+    <div class="container">
+        <h1>📅 Daily Tool Tracking Dashboard</h1>
+        
+        <div class="info-banner">
+            <strong>How it works:</strong> This dashboard shows tools that were checked out <strong>on the selected date</strong> 
+            and have <strong>not been returned yet</strong>. Select a date to view daily activity.
         </div>
-
-        <!-- Controls Section -->
-        <div class="controls-section">
-            <div class="section-header">
-                <h2 class="section-title">
-                    <i class="fas fa-filter"></i> Advanced Intelligence Filters
-                </h2>
-                <button class="btn btn-danger" onclick="clearFilters()">
-                    <i class="fas fa-broom"></i> Clear All Filters
-                </button>
+        
+        <div class="controls">
+            <div class="filter-group">
+                <label for="dateFilter">Select Date:</label>
+                <select id="dateFilter">
+                    <option value="">Loading dates...</option>
+                </select>
             </div>
-            <div class="filters-container">
-                <div class="filter-group">
-                    <label for="dateFilter">
-                        <i class="fas fa-calendar-day"></i> Filter by Checkout Date
-                    </label>
-                    <select id="dateFilter" class="filter-select">
-                        <option value="">All Dates</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label for="personFilter">
-                        <i class="fas fa-user-tag"></i> Filter by Person Code
-                    </label>
-                    <select id="personFilter" class="filter-select">
-                        <option value="">All Personnel</option>
-                    </select>
-                </div>
+            <div class="filter-group">
+                <label for="personFilter">Filter by Person:</label>
+                <select id="personFilter">
+                    <option value="">All Persons</option>
+                </select>
             </div>
+            <button onclick="loadData()">🔄 Refresh</button>
+            <button onclick="clearFilters()" style="background: #e74c3c;">❌ Clear</button>
         </div>
-
-        <!-- Stats Section -->
-        <div class="stats-section">
-            <h2 class="section-title">
-                <i class="fas fa-chart-line"></i> Real-time Intelligence Metrics
-            </h2>
-            <div class="stats-grid">
-                <div class="stat-card fade-in">
-                    <div class="stat-content">
-                        <div class="stat-icon">
-                            <i class="fas fa-boxes"></i>
-                        </div>
-                        <div class="stat-info">
-                            <div class="stat-title">TOTAL OUTSTANDING ITEMS</div>
-                            <div class="stat-value" id="totalItems">0</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="stat-card fade-in">
-                    <div class="stat-content">
-                        <div class="stat-icon">
-                            <i class="fas fa-users"></i>
-                        </div>
-                        <div class="stat-info">
-                            <div class="stat-title">ACTIVE PERSONNEL</div>
-                            <div class="stat-value" id="totalPeople">0</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="stat-card fade-in">
-                    <div class="stat-content">
-                        <div class="stat-icon">
-                            <i class="fas fa-toolbox"></i>
-                        </div>
-                        <div class="stat-info">
-                            <div class="stat-title">UNIQUE ASSETS</div>
-                            <div class="stat-value" id="uniqueTools">0</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Results Section -->
-        <div class="results-section">
-            <div class="results-header">
-                <h2 class="results-title">
-                    <i class="fas fa-search"></i> Intelligence Report: Unreturned Assets
-                </h2>
-                <div class="results-actions">
-                    <span class="results-count" id="results-count">Loading...</span>
-                </div>
-            </div>
-            
-            <div id="alerts-container"></div>
-            
-            <div class="table-container">
-                <div id="loading" style="display: none;">
-                    <div class="loading-container">
-                        <div class="loading-spinner"></div>
-                        <div class="loading-text">Analyzing asset data intelligence...</div>
-                    </div>
-                </div>
-                
-                <div id="error" style="display: none;"></div>
-                
-                <div id="results"></div>
-            </div>
-        </div>
+        
+        <div id="loading" class="loading">Loading daily tool data...</div>
+        <div id="error" style="display:none;"></div>
+        <div id="results"></div>
     </div>
 
     <script>
-        // Your Google Apps Script Web App URL
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyyn9X9jbpTZbUnxZyZfxYevmapG0zfxdS1zF1q-VNSaQ1NHXwaH_24TQecoGb_FoFG/exec";
-
+        // REPLACE WITH YOUR ACTUAL WEB APP URL
+        const WEB_APP_URL = "https://script.google.com/macros/s/YOUR_WEB_APP_ID/exec";
+        
         let allData = [];
-        let isLoading = false;
+        let uniqueDates = [];
+        let uniquePersons = [];
 
-        async function callServer(action, params = {}) {
-            const url = new URL(WEB_APP_URL);
-            url.searchParams.append('action', action);
-            Object.keys(params).forEach(key => 
-                url.searchParams.append(key, params[key])
-            );
+        async function loadData() {
+            const selectedDate = document.getElementById('dateFilter').value;
             
-            const response = await fetch(url);
-            const text = await response.text();
-            
-            try {
-                return JSON.parse(text);
-            } catch {
-                return { error: "Server error: " + text };
+            // If no date selected, don't load data
+            if (!selectedDate) {
+                document.getElementById('results').innerHTML = '<p style="text-align:center;padding:40px;color:#7f8c8d;">Please select a date to view daily tool activity.</p>';
+                return;
             }
-        }
-
-        async function loadUnreturnedTools() {
-            if (isLoading) return;
-            isLoading = true;
+            
             document.getElementById('loading').style.display = 'block';
             document.getElementById('results').innerHTML = '';
-            hideAlerts();
-            document.getElementById('results-count').textContent = 'Analyzing data...';
-
+            document.getElementById('error').style.display = 'none';
+            
             try {
-                const response = await callServer('getAllData');
-                if (response.error) {
-                    showError(response);
+                const response = await fetch(WEB_APP_URL + '?action=getAllData&selectedDate=' + encodeURIComponent(selectedDate));
+                const data = await response.json();
+                
+                if (data.error) {
+                    showError(data.error);
                     return;
                 }
                 
-                allData = response.unreturnedTools || [];
-                const uniqueDates = response.uniqueDates || [];
-                const uniquePersonCodes = response.uniquePersonCodes || [];
+                allData = data.unreturnedTools || [];
+                uniquePersons = data.uniquePersonCodes || [];
                 
-                updateFiltersUI(uniqueDates, uniquePersonCodes);
-                applyFilters();
+                updatePersonFilter();
+                applyPersonFilter();
                 
             } catch (error) {
-                showError({error: 'Network error: ' + error.message});
+                showError('Error loading  ' + error.message);
             } finally {
-                isLoading = false;
-                if (!document.getElementById('results').innerHTML) {
-                    document.getElementById('loading').style.display = 'none';
-                }
+                document.getElementById('loading').style.display = 'none';
             }
         }
 
-        function updateFiltersUI(uniqueDates, uniquePersonCodes) {
-            const dateFilter = document.getElementById('dateFilter');
-            dateFilter.innerHTML = '<option value="">All Dates</option>';
+        async function loadDates() {
+            try {
+                const response = await fetch(WEB_APP_URL + '?action=getUniqueDates');
+                const data = await response.json();
+                
+                if (data.error) {
+                    showError(data.error);
+                    return;
+                }
+                
+                uniqueDates = data.uniqueDates || [];
+                updateDateFilter();
+                
+            } catch (error) {
+                showError('Error loading  ' + error.message);
+            }
+        }
+
+        function updateDateFilter() {
+            const dateSelect = document.getElementById('dateFilter');
+            dateSelect.innerHTML = '<option value="">Select Date</option>';
             uniqueDates.forEach(date => {
                 const option = document.createElement('option');
                 option.value = date;
                 option.textContent = date;
-                dateFilter.appendChild(option);
-            });
-
-            const personFilter = document.getElementById('personFilter');
-            personFilter.innerHTML = '<option value="">All Personnel</option>';
-            uniquePersonCodes.forEach(code => {
-                const option = document.createElement('option');
-                option.value = code;
-                option.textContent = code;
-                personFilter.appendChild(option);
+                dateSelect.appendChild(option);
             });
         }
 
-        function applyFilters() {
-            if (!allData || allData.error) return;
-            
-            const dateFilter = document.getElementById('dateFilter').value;
+        async function loadPersons() {
+            try {
+                const response = await fetch(WEB_APP_URL + '?action=getUniquePersonCodes');
+                const data = await response.json();
+                
+                if (data.error) {
+                    showError(data.error);
+                    return;
+                }
+                
+                uniquePersons = data.uniquePersonCodes || [];
+                updatePersonFilter();
+                
+            } catch (error) {
+                showError('Error loading persons: ' + error.message);
+            }
+        }
+
+        function updatePersonFilter() {
+            const personSelect = document.getElementById('personFilter');
+            personSelect.innerHTML = '<option value="">All Persons</option>';
+            uniquePersons.forEach(person => {
+                const option = document.createElement('option');
+                option.value = person;
+                option.textContent = person;
+                personSelect.appendChild(option);
+            });
+        }
+
+        function applyPersonFilter() {
             const personFilter = document.getElementById('personFilter').value;
             
-            let filteredData = allData;
-            
-            if (dateFilter) {
-                filteredData = filteredData.filter(item => item.timestamp === dateFilter);
-            }
+            let filtered = allData;
             
             if (personFilter) {
-                filteredData = filteredData.filter(item => item.personCode === personFilter);
+                filtered = filtered.filter(item => item.personCode === personFilter);
             }
             
-            displayResults(filteredData);
-            updateStats(filteredData);
+            displayResults(filtered);
         }
 
         function displayResults(data) {
-            document.getElementById('loading').style.display = 'none';
-            
             if (!data || data.length === 0) {
                 document.getElementById('results').innerHTML = 
-                    '<div class="no-results">' +
-                        '<i class="fas fa-inbox"></i>' +
-                        '<h3>Intelligence Report: No Outstanding Assets</h3>' +
-                        '<p>All tools and equipment have been successfully returned. The asset tracking system shows 100% compliance with return protocols.</p>' +
-                    '</div>';
-                document.getElementById('results-count').textContent = '0 records found';
+                    '<p style="text-align:center;padding:40px;color:#7f8c8d;">No unreturned tools found for the selected date.</p>';
                 return;
             }
             
-            const recordText = data.length === 1 ? 'record' : 'records';
-            document.getElementById('results-count').textContent = `${data.length} ${recordText} found`;
+            let html = '<table><thead><tr>' +
+                '<th>Person Code</th>' +
+                '<th>Person Name</th>' +
+                '<th>Tool Code</th>' +
+                '<th>Tool Description</th>' +
+                '<th>Quantity</th>' +
+                '<th>Checkout Date</th>' +
+                '<th>Row</th>' +
+                '</tr></thead><tbody>';
             
-            let html = '<table class="fade-in">' +
-                '<thead>' +
-                    '<tr>' +
-                        '<th><i class="fas fa-id-badge"></i> Personnel ID</th>' +
-                        '<th><i class="fas fa-user"></i> Full Name</th>' +
-                        '<th><i class="fas fa-barcode"></i> Asset Code</th>' +
-                        '<th><i class="fas fa-tag"></i> Asset Description</th>' +
-                        '<th><i class="fas fa-hashtag"></i> Quantity</th>' +
-                        '<th><i class="fas fa-calendar"></i> Checkout Date</th>' +
-                        '<th><i class="fas fa-map-marker-alt"></i> Location</th>' +
-                    '</tr>' +
-                '</thead>' +
-                '<tbody>';
-            
-            data.forEach(function(item) {
+            data.forEach(item => {
                 html += '<tr>' +
-                    '<td><span class="person-code">' + (item.personCode || 'N/A') + '</span></td>' +
-                    '<td>' + (item.personName || item.personCode || 'N/A') + '</td>' +
-                    '<td><span class="tool-code">' + (item.toolCode || 'N/A') + '</span></td>' +
-                    '<td>' + (item.toolDescription || item.toolCode || 'N/A') + '</td>' +
-                    '<td class="qty-cell">' + (item.count || 1) + '</td>' +
-                    '<td class="date-cell">' + (item.timestamp || 'N/A') + '</td>' +
-                    '<td>Row ' + (item.rowIndex || 'N/A') + '</td>' +
+                    '<td>' + (item.personCode || '') + '</td>' +
+                    '<td>' + (item.personName || '') + '</td>' +
+                    '<td>' + (item.toolCode || '') + '</td>' +
+                    '<td>' + (item.toolDescription || '') + '</td>' +
+                    '<td class="qty">' + (item.count || 1) + '</td>' +
+                    '<td>' + (item.timestamp || '') + '</td>' +
+                    '<td>' + (item.rowIndex || '') + '</td>' +
                     '</tr>';
             });
             
@@ -1027,75 +289,25 @@
             document.getElementById('results').innerHTML = html;
         }
 
-        function updateStats(data) {
-            const totalItems = data.reduce((sum, item) => sum + (item.count || 0), 0);
-            const uniquePeople = [...new Set(data.map(item => item.personCode))].length;
-            const uniqueTools = [...new Set(data.map(item => item.toolCode))].length;
-            
-            document.getElementById('totalItems').textContent = totalItems;
-            document.getElementById('totalPeople').textContent = uniquePeople;
-            document.getElementById('uniqueTools').textContent = uniqueTools;
-        }
-
         function clearFilters() {
             document.getElementById('dateFilter').value = '';
             document.getElementById('personFilter').value = '';
-            applyFilters();
-            showAlert('All intelligence filters have been cleared successfully!', 'success');
+            document.getElementById('results').innerHTML = '<p style="text-align:center;padding:40px;color:#7f8c8d;">Please select a date to view daily tool activity.</p>';
         }
 
-        async function exportData() {
-            try {
-                const csvData = await callServer('exportToCSV');
-                if (csvData.error) {
-                    showError({error: csvData.error});
-                    return;
-                }
-                const blob = new Blob([csvData], { type: 'text/csv' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'enterprise_tool_intelligence_report.csv';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-                showAlert('Intelligence report exported successfully!', 'success');
-            } catch (error) {
-                showError({error: 'Export failed: ' + error.message});
-            }
+        function showError(message) {
+            document.getElementById('error').innerHTML = '<div class="error">' + message + '</div>';
+            document.getElementById('error').style.display = 'block';
         }
 
-        function showError(error) {
-            const errorDiv = document.getElementById('error');
-            errorDiv.innerHTML = '<div class="alert alert-error">' +
-                '<i class="fas fa-exclamation-triangle"></i>' +
-                '<div>Intelligence System Error: ' + (error.error || 'Unknown error occurred') + '</div>' +
-            '</div>';
-            errorDiv.style.display = 'block';
-        }
+        // Event listeners
+        document.getElementById('dateFilter').addEventListener('change', loadData);
+        document.getElementById('personFilter').addEventListener('change', applyPersonFilter);
 
-        function showAlert(message, type) {
-            const alertsContainer = document.getElementById('alerts-container');
-            const alertDiv = document.createElement('div');
-            alertDiv.className = `alert alert-${type} fade-in`;
-            const icon = type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-triangle' : 'info-circle';
-            alertDiv.innerHTML = `<i class="fas fa-${icon}"></i><div>${message}</div>`;
-            alertsContainer.appendChild(alertDiv);
-            setTimeout(() => {
-                if (alertDiv.parentNode) alertDiv.parentNode.removeChild(alertDiv);
-            }, 6000);
-        }
-
-        function hideAlerts() {
-            document.getElementById('alerts-container').innerHTML = '';
-        }
-
-        document.getElementById('dateFilter').addEventListener('change', applyFilters);
-        document.getElementById('personFilter').addEventListener('change', applyFilters);
-
-        window.onload = () => {
-            loadUnreturnedTools();
+        // Load data on page load
+        window.onload = function() {
+            loadDates();
+            loadPersons();
         };
     </script>
 </body>
