@@ -2,103 +2,162 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Daily Tool Tracker</title>
+    <title>Daily Tool Tracking</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        .container { max-width: 1200px; margin: 0 auto; }
-        select, button { padding: 10px; margin: 5px; font-size: 16px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
-        th { background: #4361ee; color: white; }
-        .qty { font-weight: bold; color: green; }
-        .loading { text-align: center; padding: 40px; color: #666; }
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px; 
+            background: #f5f5f5; 
+        }
+        .container { 
+            max-width: 1200px; 
+            margin: 0 auto; 
+            background: white; 
+            padding: 20px; 
+            border-radius: 8px; 
+        }
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-top: 20px; 
+        }
+        th, td { 
+            padding: 12px; 
+            text-align: left; 
+            border-bottom: 1px solid #ddd; 
+        }
+        th { 
+            background: #4361ee; 
+            color: white; 
+        }
+        .qty { 
+            font-weight: bold; 
+            color: #27ae60; 
+        }
+        .loading { 
+            text-align: center; 
+            padding: 40px; 
+            color: #666; 
+        }
+        .error { 
+            color: #e74c3c; 
+            background: #fadbd8; 
+            padding: 15px; 
+            border-radius: 4px; 
+            margin: 10px 0; 
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Daily Tool Tracking</h1>
+        <h1>📅 Daily Tool Tracking</h1>
         
-        <select id="dateSelect">
-            <option value="">Select Date</option>
-        </select>
-        <button onclick="loadData()">Load Data</button>
+        <div>
+            <label>Filter by Date: 
+                <select id="dateFilter" onchange="loadData()">
+                    <option value="">Loading dates...</option>
+                </select>
+            </label>
+            <button onclick="loadData()">Refresh</button>
+        </div>
         
-        <div id="loading" class="loading" style="display:none;">Loading...</div>
+        <div id="loading" class="loading">Loading daily data...</div>
+        <div id="error" style="display:none;"></div>
         <div id="results"></div>
     </div>
 
     <script>
-        const WEB_APP_URL = "https://script.google.com/macros/s/YOUR_WEB_APP_ID/exec";
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxhj5tA3dS1Z9YFpFD74J0sBdqm2UVMphtXRwLlqdNZBlZ7gGJTHMHrScrDA-PLaOEK/exec";
         
-        // Load dates on page load
-        window.onload = function() {
-            fetch(WEB_APP_URL + '?action=getDates')
-                .then(r => r.json())
-                .then(data => {
-                    const select = document.getElementById('dateSelect');
-                    data.forEach(date => {
-                        const option = document.createElement('option');
-                        option.value = date;
-                        option.textContent = date;
-                        select.appendChild(option);
-                    });
-                    // Auto-select today
-                    const today = getTodayFormat();
-                    if (data.includes(today)) {
-                        select.value = today;
-                        loadData();
-                    }
-                })
-                .catch(e => console.error(e));
-        };
-        
-        function getTodayFormat() {
-            const today = new Date();
-            const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-            const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-            return '{ ' + days[today.getDay()] + '-' + today.getDate() + ' | ' + months[today.getMonth()] + '-' + (today.getMonth() + 1) + ' | ' + today.getFullYear() + ' }';
-        }
-        
-        function loadData() {
-            const date = document.getElementById('dateSelect').value;
-            if (!date) return;
+        async function loadData() {
+            const selectedDate = document.getElementById('dateFilter').value;
+            
+            if (!selectedDate) {
+                document.getElementById('results').innerHTML = '<p>Please select a date.</p>';
+                return;
+            }
             
             document.getElementById('loading').style.display = 'block';
             document.getElementById('results').innerHTML = '';
+            document.getElementById('error').style.display = 'none';
             
-            fetch(WEB_APP_URL + '?action=getData&date=' + encodeURIComponent(date))
-                .then(r => r.json())
-                .then(data => {
-                    document.getElementById('loading').style.display = 'none';
-                    
-                    if (data.error) {
-                        document.getElementById('results').innerHTML = '<p style="color:red;">Error: ' + data.error + '</p>';
-                        return;
-                    }
-                    
-                    if (data.length === 0) {
-                        document.getElementById('results').innerHTML = '<p>No tools checked out on this date.</p>';
-                        return;
-                    }
-                    
-                    let html = '<table><thead><tr><th>Person</th><th>Tool Code</th><th>Description</th><th>Quantity</th><th>Date</th></tr></thead><tbody>';
-                    data.forEach(item => {
-                        html += `<tr>
-                            <td>${item.personCode}</td>
-                            <td>${item.toolCode}</td>
-                            <td>${item.toolDescription}</td>
-                            <td class="qty">${item.quantity}</td>
-                            <td>${item.checkoutDate}</td>
-                        </tr>`;
-                    });
-                    html += '</tbody></table>';
-                    document.getElementById('results').innerHTML = html;
-                })
-                .catch(e => {
-                    document.getElementById('loading').style.display = 'none';
-                    document.getElementById('results').innerHTML = '<p style="color:red;">Failed to load  ' + e.message + '</p>';
-                });
+            try {
+                const response = await fetch(WEB_APP_URL + '?action=getDailyData&selectedDate=' + encodeURIComponent(selectedDate));
+                const data = await response.json();
+                
+                if (data.error) {
+                    showError(data.error);
+                    return;
+                }
+                
+                displayResults(data.dailyTools);
+                
+            } catch (error) {
+                showError('Error loading  ' + error.message);
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
         }
+
+        async function loadDates() {
+            try {
+                const response = await fetch(WEB_APP_URL + '?action=getUniqueDates');
+                const data = await response.json();
+                
+                if (data.error) {
+                    showError(data.error);
+                    return;
+                }
+                
+                const dateSelect = document.getElementById('dateFilter');
+                dateSelect.innerHTML = '<option value="">Select Date</option>';
+                data.uniqueDates.forEach(date => {
+                    const option = document.createElement('option');
+                    option.value = date;
+                    option.textContent = date;
+                    dateSelect.appendChild(option);
+                });
+                
+            } catch (error) {
+                showError('Error loading  ' + error.message);
+            }
+        }
+
+        function displayResults(data) {
+            if (!data || data.length === 0) {
+                const selectedDate = document.getElementById('dateFilter').value;
+                document.getElementById('results').innerHTML = `<p>No unreturned tools for ${selectedDate}.</p>`;
+                return;
+            }
+            
+            let html = '<table><thead><tr>' +
+                '<th>Person Code</th>' +
+                '<th>Person Name</th>' +
+                '<th>Tool Code</th>' +
+                '<th>Tool Description</th>' +
+                '<th>Unreturned Quantity</th>' +
+                '</tr></thead><tbody>';
+            
+            data.forEach(item => {
+                html += '<tr>' +
+                    '<td>' + (item.personCode || '') + '</td>' +
+                    '<td>' + (item.personName || '') + '</td>' +
+                    '<td>' + (item.toolCode || '') + '</td>' +
+                    '<td>' + (item.toolDescription || '') + '</td>' +
+                    '<td class="qty">' + (item.count || 1) + '</td>' +
+                    '</tr>';
+            });
+            
+            html += '</tbody></table>';
+            document.getElementById('results').innerHTML = html;
+        }
+
+        function showError(message) {
+            document.getElementById('error').innerHTML = '<div class="error">' + message + '</div>';
+            document.getElementById('error').style.display = 'block';
+        }
+
+        window.onload = loadDates;
     </script>
 </body>
 </html>
