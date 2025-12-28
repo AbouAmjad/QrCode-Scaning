@@ -2,386 +2,103 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Daily Tool Tracking Dashboard</title>
+    <title>Daily Tool Tracker</title>
     <style>
-        body { 
-            font-family: 'Segoe UI', Arial, sans-serif; 
-            margin: 0; 
-            padding: 20px; 
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-        }
-        .container { 
-            max-width: 1400px; 
-            margin: 0 auto; 
-            background: white; 
-            padding: 30px; 
-            border-radius: 15px; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
-        h1 { 
-            color: #2c3e50; 
-            text-align: center; 
-            margin-bottom: 30px;
-            font-size: 2.2em;
-        }
-        .controls { 
-            background: #f8f9fa; 
-            padding: 20px; 
-            border-radius: 10px; 
-            margin-bottom: 25px;
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-        .filter-group { 
-            display: flex; 
-            flex-direction: column; 
-            gap: 5px; 
-            min-width: 200px;
-        }
-        .filter-group label { 
-            font-weight: bold; 
-            color: #495057; 
-        }
-        select, button { 
-            padding: 10px 15px; 
-            border: 2px solid #ced4da; 
-            border-radius: 6px; 
-            font-size: 14px;
-        }
-        button { 
-            background: #27ae60; 
-            color: white; 
-            border: none; 
-            cursor: pointer;
-            font-weight: bold;
-            transition: background 0.3s;
-        }
-        button:hover { 
-            background: #219a52; 
-        }
-        table { 
-            width: 100%; 
-            border-collapse: collapse; 
-            margin-top: 20px;
-            background: white;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-        th, td { 
-            padding: 15px; 
-            text-align: left; 
-            border-bottom: 1px solid #e9ecef;
-        }
-        th { 
-            background: linear-gradient(135deg, #34495e, #2c3e50);
-            color: white;
-            font-weight: bold;
-        }
-        tr:nth-child(even) { 
-            background-color: #f8f9fa; 
-        }
-        .qty { 
-            font-weight: bold; 
-            color: #27ae60; 
-            font-size: 1.1em;
-        }
-        .loading { 
-            text-align: center; 
-            padding: 60px; 
-            color: #7f8c8d;
-            font-size: 1.2em;
-        }
-        .error { 
-            color: #e74c3c; 
-            background: #fadbd8; 
-            padding: 15px; 
-            border-radius: 8px; 
-            margin: 10px 0;
-        }
-        .info-banner {
-            background: #e8f4f8;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            border-left: 4px solid #3498db;
-            font-weight: 500;
-        }
-        .today-highlight {
-            background: #d4edda;
-            border-color: #28a745;
-        }
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        select, button { padding: 10px; margin: 5px; font-size: 16px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background: #4361ee; color: white; }
+        .qty { font-weight: bold; color: green; }
+        .loading { text-align: center; padding: 40px; color: #666; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>📅 Daily Tool Tracking Dashboard</h1>
+        <h1>Daily Tool Tracking</h1>
         
-        <div class="info-banner">
-            <strong>How it works:</strong> This dashboard shows tools that were checked out <strong>on the selected date</strong> 
-            and have <strong>not been returned yet</strong>. By default, it shows today's activity.
-        </div>
+        <select id="dateSelect">
+            <option value="">Select Date</option>
+        </select>
+        <button onclick="loadData()">Load Data</button>
         
-        <div class="controls">
-            <div class="filter-group">
-                <label for="dateFilter">Select Date:</label>
-                <select id="dateFilter">
-                    <option value="">Loading dates...</option>
-                </select>
-            </div>
-            <div class="filter-group">
-                <label for="personFilter">Filter by Person:</label>
-                <select id="personFilter">
-                    <option value="">All Persons</option>
-                </select>
-            </div>
-            <button onclick="loadData()">🔄 Refresh</button>
-            <button onclick="clearFilters()" style="background: #e74c3c;">❌ Clear</button>
-        </div>
-        
-        <div id="loading" class="loading">Loading today's tool data...</div>
-        <div id="error" style="display:none;"></div>
+        <div id="loading" class="loading" style="display:none;">Loading...</div>
         <div id="results"></div>
     </div>
 
     <script>
-        // REPLACE WITH YOUR ACTUAL WEB APP URL
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxhj5tA3dS1Z9YFpFD74J0sBdqm2UVMphtXRwLlqdNZBlZ7gGJTHMHrScrDA-PLaOEK/exec";
+        const WEB_APP_URL = "https://script.google.com/macros/s/YOUR_WEB_APP_ID/exec";
         
-        let allData = [];
-        let uniqueDates = [];
-        let uniquePersons = [];
-
-        // Function to format today's date in your custom format
-        function getTodayCustomFormat() {
+        // Load dates on page load
+        window.onload = function() {
+            fetch(WEB_APP_URL + '?action=getDates')
+                .then(r => r.json())
+                .then(data => {
+                    const select = document.getElementById('dateSelect');
+                    data.forEach(date => {
+                        const option = document.createElement('option');
+                        option.value = date;
+                        option.textContent = date;
+                        select.appendChild(option);
+                    });
+                    // Auto-select today
+                    const today = getTodayFormat();
+                    if (data.includes(today)) {
+                        select.value = today;
+                        loadData();
+                    }
+                })
+                .catch(e => console.error(e));
+        };
+        
+        function getTodayFormat() {
             const today = new Date();
             const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
             const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-            
-            const dayName = days[today.getDay()];
-            const dayNumber = today.getDate();
-            const monthName = months[today.getMonth()];
-            const monthNumber = today.getMonth() + 1;
-            const year = today.getFullYear();
-            
-            return '{ ' + dayName + '-' + dayNumber + ' | ' + monthName + '-' + monthNumber + ' | ' + year + ' }';
+            return '{ ' + days[today.getDay()] + '-' + today.getDate() + ' | ' + months[today.getMonth()] + '-' + (today.getMonth() + 1) + ' | ' + today.getFullYear() + ' }';
         }
-
-        async function loadData() {
-            const selectedDate = document.getElementById('dateFilter').value;
-            
-            // If no date selected, use today's date
-            const dateToLoad = selectedDate || getTodayCustomFormat();
+        
+        function loadData() {
+            const date = document.getElementById('dateSelect').value;
+            if (!date) return;
             
             document.getElementById('loading').style.display = 'block';
             document.getElementById('results').innerHTML = '';
-            document.getElementById('error').style.display = 'none';
             
-            try {
-                const response = await fetch(WEB_APP_URL + '?action=getAllData&selectedDate=' + encodeURIComponent(dateToLoad));
-                const data = await response.json();
-                
-                if (data.error) {
-                    showError(data.error);
-                    return;
-                }
-                
-                allData = data.unreturnedTools || [];
-                uniquePersons = data.uniquePersonCodes || [];
-                
-                updatePersonFilter();
-                applyPersonFilter();
-                
-                // Highlight today's date in the dropdown
-                highlightTodayInDropdown();
-                
-            } catch (error) {
-                showError('Error loading  ' + error.message);
-            } finally {
-                document.getElementById('loading').style.display = 'none';
-            }
-        }
-
-        async function loadDates() {
-            try {
-                const response = await fetch(WEB_APP_URL + '?action=getUniqueDates');
-                const data = await response.json();
-                
-                if (data.error) {
-                    showError(data.error);
-                    return;
-                }
-                
-                uniqueDates = data.uniqueDates || [];
-                updateDateFilter();
-                
-                // Auto-select today's date after loading
-                setTimeout(() => {
-                    const today = getTodayCustomFormat();
-                    const dateSelect = document.getElementById('dateFilter');
+            fetch(WEB_APP_URL + '?action=getData&date=' + encodeURIComponent(date))
+                .then(r => r.json())
+                .then(data => {
+                    document.getElementById('loading').style.display = 'none';
                     
-                    // Check if today exists in the dropdown
-                    let todayExists = false;
-                    for (let option of dateSelect.options) {
-                        if (option.value === today) {
-                            todayExists = true;
-                            break;
-                        }
+                    if (data.error) {
+                        document.getElementById('results').innerHTML = '<p style="color:red;">Error: ' + data.error + '</p>';
+                        return;
                     }
                     
-                    if (todayExists) {
-                        dateSelect.value = today;
-                    } else {
-                        // If today doesn't exist, select the most recent date
-                        if (dateSelect.options.length > 1) {
-                            dateSelect.selectedIndex = 1; // First actual date (index 1, since index 0 is "Loading...")
-                        }
+                    if (data.length === 0) {
+                        document.getElementById('results').innerHTML = '<p>No tools checked out on this date.</p>';
+                        return;
                     }
                     
-                    // Load data for the selected date
-                    loadData();
-                }, 100);
-                
-            } catch (error) {
-                showError('Error loading  ' + error.message);
-            }
+                    let html = '<table><thead><tr><th>Person</th><th>Tool Code</th><th>Description</th><th>Quantity</th><th>Date</th></tr></thead><tbody>';
+                    data.forEach(item => {
+                        html += `<tr>
+                            <td>${item.personCode}</td>
+                            <td>${item.toolCode}</td>
+                            <td>${item.toolDescription}</td>
+                            <td class="qty">${item.quantity}</td>
+                            <td>${item.checkoutDate}</td>
+                        </tr>`;
+                    });
+                    html += '</tbody></table>';
+                    document.getElementById('results').innerHTML = html;
+                })
+                .catch(e => {
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('results').innerHTML = '<p style="color:red;">Failed to load  ' + e.message + '</p>';
+                });
         }
-
-        function updateDateFilter() {
-            const dateSelect = document.getElementById('dateFilter');
-            dateSelect.innerHTML = '<option value="">Select Date</option>';
-            uniqueDates.forEach(date => {
-                const option = document.createElement('option');
-                option.value = date;
-                option.textContent = date;
-                dateSelect.appendChild(option);
-            });
-        }
-
-        async function loadPersons() {
-            try {
-                const response = await fetch(WEB_APP_URL + '?action=getUniquePersonCodes');
-                const data = await response.json();
-                
-                if (data.error) {
-                    showError(data.error);
-                    return;
-                }
-                
-                uniquePersons = data.uniquePersonCodes || [];
-                updatePersonFilter();
-                
-            } catch (error) {
-                showError('Error loading persons: ' + error.message);
-            }
-        }
-
-        function updatePersonFilter() {
-            const personSelect = document.getElementById('personFilter');
-            personSelect.innerHTML = '<option value="">All Persons</option>';
-            uniquePersons.forEach(person => {
-                const option = document.createElement('option');
-                option.value = person;
-                option.textContent = person;
-                personSelect.appendChild(option);
-            });
-        }
-
-        function applyPersonFilter() {
-            const personFilter = document.getElementById('personFilter').value;
-            
-            let filtered = allData;
-            
-            if (personFilter) {
-                filtered = filtered.filter(item => item.personCode === personFilter);
-            }
-            
-            displayResults(filtered);
-        }
-
-        function highlightTodayInDropdown() {
-            const today = getTodayCustomFormat();
-            const dateSelect = document.getElementById('dateFilter');
-            
-            // Remove highlight from all options
-            for (let option of dateSelect.options) {
-                option.classList.remove('today-highlight');
-                option.style.fontWeight = 'normal';
-            }
-            
-            // Highlight today's option if it exists
-            for (let option of dateSelect.options) {
-                if (option.value === today) {
-                    option.style.fontWeight = 'bold';
-                    option.style.backgroundColor = '#d4edda';
-                    option.style.color = '#155724';
-                    break;
-                }
-            }
-        }
-
-        function displayResults(data) {
-            if (!data || data.length === 0) {
-                const selectedDate = document.getElementById('dateFilter').value || getTodayCustomFormat();
-                document.getElementById('results').innerHTML = 
-                    '<p style="text-align:center;padding:40px;color:#7f8c8d;">No unreturned tools found for ' + selectedDate + '.</p>';
-                return;
-            }
-            
-            let html = '<table><thead><tr>' +
-                '<th>Person Code</th>' +
-                '<th>Person Name</th>' +
-                '<th>Tool Code</th>' +
-                '<th>Tool Description</th>' +
-                '<th>Quantity</th>' +
-                '<th>Checkout Date</th>' +
-                '<th>Row</th>' +
-                '</tr></thead><tbody>';
-            
-            data.forEach(item => {
-                html += '<tr>' +
-                    '<td>' + (item.personCode || '') + '</td>' +
-                    '<td>' + (item.personName || '') + '</td>' +
-                    '<td>' + (item.toolCode || '') + '</td>' +
-                    '<td>' + (item.toolDescription || '') + '</td>' +
-                    '<td class="qty">' + (item.count || 1) + '</td>' +
-                    '<td>' + (item.timestamp || '') + '</td>' +
-                    '<td>' + (item.rowIndex || '') + '</td>' +
-                    '</tr>';
-            });
-            
-            html += '</tbody></table>';
-            document.getElementById('results').innerHTML = html;
-        }
-
-        function clearFilters() {
-            document.getElementById('dateFilter').value = '';
-            document.getElementById('personFilter').value = '';
-            // Reset to today's date
-            setTimeout(() => {
-                const today = getTodayCustomFormat();
-                document.getElementById('dateFilter').value = today;
-                loadData();
-            }, 100);
-        }
-
-        function showError(message) {
-            document.getElementById('error').innerHTML = '<div class="error">' + message + '</div>';
-            document.getElementById('error').style.display = 'block';
-        }
-
-        // Event listeners
-        document.getElementById('dateFilter').addEventListener('change', loadData);
-        document.getElementById('personFilter').addEventListener('change', applyPersonFilter);
-
-        // Load data on page load - automatically shows today
-        window.onload = function() {
-            loadDates();
-            loadPersons();
-        };
     </script>
 </body>
 </html>
