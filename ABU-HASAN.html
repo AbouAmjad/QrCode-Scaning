@@ -3,395 +3,699 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>معجنات الاشلان</title>
+    <title>معجنات الاشلان - فخامة التذوق</title>
     <style>
+        :root {
+            --primary-gold: #D4AF37;
+            --secondary-gold: #F4D03F;
+            --light-gold: #F7DC6F;
+            --deep-red: #A52A2A;
+            --light-red: #CD5C5C;
+            --cream: #FFF8E7;
+            --dark-brown: #5D4037;
+            --light-brown: #8D6E63;
+            --transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            --shadow-soft: 0 15px 35px rgba(0, 0, 0, 0.1);
+            --shadow-hard: 0 25px 50px rgba(0, 0, 0, 0.2);
+            --border-radius: 25px;
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', 'Tahoma', 'Geneva', 'Verdana', sans-serif;
+            font-family: 'Cairo', 'Segoe UI', sans-serif;
         }
 
         body {
-            background-color: #f8f5f0;
-            color: #333;
-            line-height: 1.6;
-            padding: 20px;
-            max-width: 1200px;
-            margin: 0 auto;
+            background-color: #fefbf4;
+            color: #5D4037;
+            line-height: 1.8;
             position: relative;
+            overflow-x: hidden;
             min-height: 100vh;
         }
 
-        body::before {
-            content: '';
+        /* خلفية متطورة مع زخارف عربية */
+        .arabic-pattern {
             position: fixed;
             top: 0;
-            left: 0;
+            right: 0;
             width: 100%;
             height: 100%;
-            background-image: url('https://images.unsplash.com/photo-1620374645498-af6bd681a0bd?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            background-attachment: fixed;
-            opacity: 0.25;
-            z-index: -1;
+            background-image: 
+                radial-gradient(circle at 20% 80%, rgba(212, 175, 55, 0.05) 0%, transparent 20%),
+                radial-gradient(circle at 80% 20%, rgba(165, 42, 42, 0.05) 0%, transparent 20%);
+            background-size: 60px 60px;
+            opacity: 0.4;
+            z-index: -3;
         }
 
-        header {
-            text-align: center;
-            padding: 30px 0;
-            margin-bottom: 40px;
-            position: relative;
-            overflow: hidden;
-            border-radius: 20px;
-            background: linear-gradient(to right, rgba(184, 28, 28, 0.9), rgba(212, 160, 23, 0.9));
-            color: white;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
-        }
-
-        .header-overlay {
-            position: absolute;
+        .floating-elements {
+            position: fixed;
             top: 0;
-            left: 0;
+            right: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.4);
-            z-index: 1;
+            z-index: -2;
+            overflow: hidden;
         }
 
-        .restaurant-name {
-            font-size: 40px;
-            font-weight: bold;
-            position: relative;
-            z-index: 2;
-            text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.5);
-            margin-bottom: 15px;
-            padding: 0 20px;
-        }
-
-        .restaurant-tagline {
-            font-size: 20px;
-            position: relative;
-            z-index: 2;
-            font-style: italic;
-            opacity: 0.9;
-            margin-bottom: 8px;
-            padding: 0 20px;
-        }
-
-        .restaurant-tagline:last-child {
-            margin-bottom: 0;
-            font-size: 18px;
-            color: #ffd700;
-        }
-
-        .menu-container {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 25px;
-            margin-bottom: 40px;
-        }
-
-        .menu-column {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 18px;
-            padding: 25px;
-            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
-            border-right: 6px solid #d4a017;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        .menu-column:hover {
-            transform: translateY(-8px) scale(1.02);
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
-        }
-
-        .column-title {
-            font-size: 28px;
-            color: #b81c1c;
-            text-align: center;
-            margin-bottom: 25px;
-            padding-bottom: 15px;
-            border-bottom: 3px solid #f0e6d3;
-            font-weight: bold;
-            position: relative;
-        }
-
-        .column-title::after {
-            content: '';
+        .floating-element {
             position: absolute;
-            bottom: -3px;
-            right: 50%;
-            transform: translateX(50%);
-            width: 80px;
-            height: 4px;
-            background: #d4a017;
-            border-radius: 2px;
+            opacity: 0.1;
+            font-size: 120px;
+            color: var(--primary-gold);
         }
 
-        .menu-item {
+        /* شريط علوي غير مثبت */
+        .top-bar {
+            position: relative;
+            width: 100%;
+            background: rgba(255, 248, 231, 0.95);
+            padding: 25px 40px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 15px 0;
-            margin: 0 10px;
-            border-bottom: 1px dashed #e0d6c2;
-            transition: all 0.3s ease;
+            z-index: 100;
+            box-shadow: 0 5px 30px rgba(0, 0, 0, 0.08);
+            border-bottom: 2px solid var(--primary-gold);
         }
 
-        .menu-item:hover {
-            padding-right: 15px;
-            background: rgba(248, 245, 240, 0.7);
-            border-radius: 10px;
-            margin: 0 5px;
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
         }
 
-        .menu-item:last-child {
-            border-bottom: none;
+        .logo-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--primary-gold), var(--secondary-gold));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: white;
+            box-shadow: 0 5px 15px rgba(212, 175, 55, 0.3);
         }
 
-        .item-name {
-            font-weight: 600;
-            font-size: 18px;
-            color: #333;
-            position: relative;
-            padding-right: 15px;
-            flex: 1;
-            transition: transform 0.3s ease;
-        }
-
-        .menu-item:hover .item-name {
-            transform: translateX(-5px);
-        }
-
-        .item-price {
-            font-weight: bold;
-            color: #b81c1c;
-            font-size: 18px;
-            text-align: center;
-            background: rgba(212, 160, 23, 0.15);
-            padding: 8px 15px;
-            border-radius: 25px;
-            border: 2px solid rgba(212, 160, 23, 0.3);
-            min-width: 130px;
-            transition: all 0.3s ease;
-        }
-
-        .menu-item:hover .item-price {
-            background: rgba(212, 160, 23, 0.25);
-            transform: scale(1.05);
-            box-shadow: 0 5px 15px rgba(212, 160, 23, 0.2);
-        }
-
-        footer {
-            text-align: center;
-            padding: 40px 30px;
-            color: #333;
-            font-size: 20px;
-            margin-top: 40px;
-            font-weight: bold;
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-            border: 2px solid rgba(212, 160, 23, 0.3);
-        }
-
-        .footer-text {
-            font-size: 24px;
-            font-weight: 700;
-            margin-bottom: 30px;
-            color: #b81c1c;
-            padding-bottom: 15px;
-            border-bottom: 2px dashed rgba(212, 160, 23, 0.3);
+        .logo-text {
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--deep-red);
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
         }
 
         .contact-info {
             display: flex;
-            justify-content: center;
-            gap: 40px;
-            margin-top: 10px;
-            flex-wrap: wrap;
+            gap: 30px;
+            align-items: center;
         }
 
         .contact-item {
             display: flex;
             align-items: center;
-            gap: 15px;
-            font-size: 20px;
-            padding: 15px 25px;
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 15px;
-            transition: all 0.3s ease;
-            border: 2px solid rgba(212, 160, 23, 0.2);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            gap: 10px;
+            color: var(--dark-brown);
+            font-weight: 600;
+            transition: var(--transition);
         }
 
         .contact-item:hover {
-            background: rgba(212, 160, 23, 0.1);
-            transform: translateY(-5px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-            border-color: rgba(212, 160, 23, 0.4);
+            color: var(--deep-red);
+            transform: translateY(-2px);
         }
 
-        .contact-icon {
-            color: #b81c1c;
-            font-size: 26px;
-            min-width: 30px;
-            text-align: center;
-        }
-
-        .contact-text {
-            font-weight: 600;
-            color: #333;
-        }
-
-        .delivery-section {
-            margin-top: 30px;
-            padding-top: 25px;
-            border-top: 2px dashed rgba(212, 160, 23, 0.3);
-        }
-
-        .delivery-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 22px;
-            font-weight: bold;
-            color: #2ecc71;
-            padding: 12px 25px;
-            background: rgba(46, 204, 113, 0.1);
-            border-radius: 50px;
-            border: 2px solid rgba(46, 204, 113, 0.3);
-            margin-bottom: 15px;
-            animation: pulse 2s infinite;
-        }
-
-        .delivery-badge i {
-            color: #2ecc71;
-        }
-
-        .delivery-area {
+        .contact-item i {
+            color: var(--primary-gold);
             font-size: 20px;
-            color: #333;
+        }
+
+        /* الهيدر الفاخر */
+        .hero-section {
+            padding: 100px 40px 80px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(135deg, rgba(255, 248, 231, 0.95) 0%, rgba(255, 243, 205, 0.9) 100%);
+            border-radius: 0 0 50px 50px;
+            clip-path: ellipse(100% 100% at 50% 0%);
+        }
+
+        .hero-decoration {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23D4AF37' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
+            opacity: 0.5;
+        }
+
+        .hero-title {
+            font-size: 68px;
+            font-weight: 900;
+            color: var(--deep-red);
+            margin-bottom: 20px;
+            text-shadow: 3px 3px 10px rgba(0, 0, 0, 0.1);
+            position: relative;
+            display: inline-block;
+        }
+
+        .hero-title::after {
+            content: '';
+            position: absolute;
+            bottom: -15px;
+            right: 50%;
+            transform: translateX(50%);
+            width: 200px;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary-gold), var(--deep-red), var(--primary-gold));
+            border-radius: 5px;
+        }
+
+        .hero-subtitle {
+            font-size: 28px;
+            color: var(--light-brown);
             font-weight: 600;
+            margin-bottom: 15px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.6;
+        }
+
+        .hero-highlight {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--primary-gold), var(--secondary-gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
+        }
+
+        /* تصميم القائمة الفاخرة */
+        .menu-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 30px;
+            margin: 80px auto;
+            padding: 0 40px;
+            max-width: 1600px;
+        }
+
+        .menu-column {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 40px 30px;
+            box-shadow: var(--shadow-soft);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(212, 175, 55, 0.2);
+        }
+
+        .menu-column::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100%;
+            height: 8px;
+            background: linear-gradient(90deg, var(--deep-red), var(--primary-gold), var(--deep-red));
+            z-index: 1;
+        }
+
+        .menu-column:hover {
+            transform: translateY(-15px);
+            box-shadow: var(--shadow-hard);
+        }
+
+        .column-header {
+            text-align: center;
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        .column-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--cream), white);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 36px;
+            color: var(--primary-gold);
+            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.2);
+            border: 5px solid white;
+        }
+
+        .column-title {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--deep-red);
+            margin-bottom: 10px;
+            position: relative;
+            padding-bottom: 15px;
+        }
+
+        .column-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: 50%;
+            transform: translateX(50%);
+            width: 80px;
+            height: 4px;
+            background: var(--primary-gold);
+            border-radius: 2px;
+        }
+
+        .column-description {
+            font-size: 16px;
+            color: var(--light-brown);
+            line-height: 1.6;
             margin-top: 10px;
         }
 
-        /* تخصيص شريط التمرير */
-        ::-webkit-scrollbar {
-            width: 12px;
+        .menu-items {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
         }
 
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1;
+        .menu-item {
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            border-radius: 15px;
+            background: var(--cream);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(212, 175, 55, 0.1);
+        }
+
+        .menu-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 8px;
+            height: 100%;
+            background: linear-gradient(to bottom, var(--primary-gold), var(--deep-red));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .menu-item:hover::before {
+            opacity: 1;
+        }
+
+        .menu-item:hover {
+            transform: translateX(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            background: white;
+        }
+
+        .item-info {
+            flex: 1;
+            margin-bottom: 15px;
+        }
+
+        .item-name {
+            font-weight: 800;
+            font-size: 20px;
+            color: var(--dark-brown);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .item-name::before {
+            content: '✦';
+            color: var(--primary-gold);
+            font-size: 16px;
+        }
+
+        .item-description {
+            font-size: 14px;
+            color: var(--light-brown);
+            line-height: 1.5;
+        }
+
+        /* تصميم خاص للبيتزا مع جدول الأحجام */
+        .pizza-prices {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .pizza-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
             border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
         }
 
-        ::-webkit-scrollbar-thumb {
-            background: linear-gradient(to bottom, #d4a017, #b81c1c);
+        .pizza-table th {
+            background: linear-gradient(135deg, var(--primary-gold), var(--secondary-gold));
+            color: white;
+            font-weight: 700;
+            font-size: 14px;
+            padding: 12px 8px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            white-space: nowrap;
+        }
+
+        .pizza-table td {
+            padding: 12px 8px;
+            text-align: center;
+            font-weight: 700;
+            color: var(--deep-red);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            background: white;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+
+        .pizza-table tr:nth-child(even) td {
+            background: rgba(248, 245, 240, 0.5);
+        }
+
+        .pizza-table tr:hover td {
+            background: rgba(212, 175, 55, 0.1);
+        }
+
+        .size-label {
+            font-weight: 800;
+            color: var(--dark-brown);
+            font-size: 13px;
+            text-align: right;
+            padding-right: 10px;
+        }
+
+        .price-value {
+            font-weight: 900;
+            color: var(--deep-red);
+            font-size: 14px;
+            direction: ltr;
+            text-align: center;
+        }
+
+        .price-value::after {
+            content: ' ل.ل.';
+            font-size: 11px;
+            opacity: 0.8;
+            margin-right: 3px;
+        }
+
+        /* تصميم خاص للبيتزا الكبيرة */
+        .pizza-full-table {
+            width: 100%;
+            border-collapse: collapse;
             border-radius: 10px;
-            border: 3px solid #f1f1f1;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            margin-top: 20px;
         }
 
-        ::-webkit-scrollbar-thumb:hover {
-            background: linear-gradient(to bottom, #b81c1c, #d4a017);
+        .pizza-full-table th {
+            background: linear-gradient(135deg, var(--primary-gold), var(--secondary-gold));
+            color: white;
+            font-weight: 700;
+            font-size: 15px;
+            padding: 15px 10px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            white-space: nowrap;
         }
 
-        /* تصميم متجاوب للهواتف */
-        @media (max-width: 900px) {
-            .menu-container {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 20px;
-            }
-            
-            .restaurant-name {
-                font-size: 34px;
-            }
-            
-            .column-title {
-                font-size: 26px;
-            }
-            
-            .contact-info {
-                gap: 20px;
-            }
-            
-            .contact-item {
-                font-size: 18px;
-                padding: 12px 20px;
-            }
-            
-            .delivery-badge {
-                font-size: 20px;
-                padding: 10px 20px;
-            }
+        .pizza-full-table td {
+            padding: 15px 10px;
+            text-align: center;
+            font-weight: 700;
+            color: var(--deep-red);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            background: white;
+            font-size: 15px;
+            white-space: nowrap;
         }
 
-        @media (max-width: 600px) {
-            .menu-container {
-                grid-template-columns: 1fr;
-                gap: 25px;
-            }
-            
-            .restaurant-name {
-                font-size: 30px;
-                padding: 0 15px;
-            }
-            
-            .restaurant-tagline {
-                font-size: 18px;
-                padding: 0 15px;
-            }
-            
-            .restaurant-tagline:last-child {
-                font-size: 16px;
-            }
-            
-            .menu-column {
-                padding: 20px;
-            }
-            
-            .column-title {
-                font-size: 24px;
-            }
-            
-            .contact-info {
-                flex-direction: column;
-                gap: 15px;
-                align-items: center;
-            }
-            
-            .contact-item {
-                width: 100%;
-                max-width: 350px;
-                justify-content: center;
-            }
-            
-            body {
-                padding: 15px;
-            }
-            
-            .delivery-badge {
-                font-size: 18px;
-                padding: 10px 15px;
-                flex-direction: column;
-                gap: 8px;
-            }
-            
-            .delivery-area {
-                font-size: 18px;
-                text-align: center;
-                padding: 0 15px;
-            }
+        .pizza-full-table tr:nth-child(even) td {
+            background: rgba(248, 245, 240, 0.5);
         }
 
-        /* تأثيرات إضافية */
-        @keyframes fadeIn {
+        .pizza-full-table tr:hover td {
+            background: rgba(212, 175, 55, 0.1);
+        }
+
+        .pizza-name {
+            font-weight: 800;
+            color: var(--dark-brown);
+            font-size: 16px;
+            text-align: right;
+            padding-right: 15px;
+        }
+
+        .pizza-price {
+            font-weight: 900;
+            color: var(--deep-red);
+            font-size: 15px;
+            direction: ltr;
+            text-align: center;
+        }
+
+        /* قسم المميزات */
+        .features-section {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            padding: 70px 40px;
+            max-width: 1400px;
+            margin: 0 auto 100px;
+        }
+
+        .feature-card {
+            background: white;
+            border-radius: 25px;
+            padding: 40px 30px;
+            text-align: center;
+            transition: var(--transition);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            box-shadow: var(--shadow-soft);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-15px);
+            box-shadow: var(--shadow-hard);
+            border-color: var(--primary-gold);
+        }
+
+        .feature-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--primary-gold), var(--secondary-gold));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 25px;
+            font-size: 36px;
+            color: white;
+        }
+
+        .feature-title {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--deep-red);
+            margin-bottom: 15px;
+        }
+
+        .feature-description {
+            font-size: 16px;
+            color: var(--light-brown);
+            line-height: 1.6;
+        }
+
+        /* الفوتر الفاخر */
+        footer {
+            background: linear-gradient(135deg, #3E2723, var(--dark-brown));
+            color: white;
+            padding: 80px 40px 40px;
+            margin-top: 100px;
+            border-radius: 50px 50px 0 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .footer-decoration {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23D4AF37' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
+            opacity: 0.3;
+        }
+
+        .footer-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 50px;
+            margin-bottom: 60px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .footer-column {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .footer-title {
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--light-gold);
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(212, 175, 55, 0.3);
+            position: relative;
+        }
+
+        .footer-title::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            right: 0;
+            width: 60px;
+            height: 2px;
+            background: var(--primary-gold);
+        }
+
+        .footer-links {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .footer-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 18px;
+            transition: var(--transition);
+        }
+
+        .footer-link:hover {
+            color: var(--light-gold);
+            transform: translateX(-5px);
+        }
+
+        .footer-link i {
+            color: var(--primary-gold);
+            font-size: 20px;
+            width: 30px;
+        }
+
+        .delivery-info {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 25px;
+            border-radius: 20px;
+            border: 2px solid rgba(212, 175, 55, 0.3);
+        }
+
+        .delivery-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            font-size: 22px;
+            font-weight: 800;
+            color: #2ecc71;
+            padding: 15px;
+            background: rgba(46, 204, 113, 0.15);
+            border-radius: 50px;
+            border: 2px solid rgba(46, 204, 113, 0.4);
+            animation: pulse 2s infinite;
+        }
+
+        .copyright {
+            text-align: center;
+            padding-top: 40px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 16px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .social-icons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .social-icon {
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            color: white;
+            transition: var(--transition);
+        }
+
+        .social-icon:hover {
+            background: var(--primary-gold);
+            color: var(--dark-brown);
+            transform: translateY(-5px);
+        }
+
+        /* زر الطلب الفاخر */
+        .floating-order {
+            position: fixed;
+            bottom: 40px;
+            left: 40px;
+            background: linear-gradient(135deg, var(--deep-red), var(--primary-gold));
+            color: white;
+            border: none;
+            padding: 20px 35px;
+            border-radius: 50px;
+            font-weight: 800;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+            box-shadow: 0 15px 35px rgba(165, 42, 42, 0.4);
+            z-index: 999;
+            transition: var(--transition);
+            animation: bounce 3s infinite;
+        }
+
+        .floating-order:hover {
+            transform: translateY(-10px) scale(1.05);
+            box-shadow: 0 20px 40px rgba(165, 42, 42, 0.6);
+        }
+
+        /* تأثيرات الحركة */
+        @keyframes fadeInUp {
             from {
                 opacity: 0;
-                transform: translateY(20px);
+                transform: translateY(50px);
             }
             to {
                 opacity: 1;
@@ -404,224 +708,775 @@
                 box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.4);
             }
             70% {
-                box-shadow: 0 0 0 10px rgba(46, 204, 113, 0);
+                box-shadow: 0 0 0 15px rgba(46, 204, 113, 0);
             }
             100% {
                 box-shadow: 0 0 0 0 rgba(46, 204, 113, 0);
             }
         }
 
-        .menu-column {
-            animation: fadeIn 0.6s ease forwards;
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-15px);
+            }
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0) rotate(0deg);
+            }
+            50% {
+                transform: translateY(-20px) rotate(5deg);
+            }
+        }
+
+        /* تصميم متجاوب */
+        @media (max-width: 1400px) {
+            .menu-container {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 1200px) {
+            .features-section {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .hero-title {
+                font-size: 56px;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .menu-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .footer-content {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .top-bar {
+                flex-direction: column;
+                gap: 20px;
+                padding: 20px;
+            }
+            
+            .contact-info {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 20px;
+            }
+            
+            .menu-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .features-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .footer-content {
+                grid-template-columns: 1fr;
+                gap: 40px;
+            }
+            
+            .hero-section {
+                padding: 80px 20px 60px;
+            }
+            
+            .hero-title {
+                font-size: 42px;
+            }
+            
+            .hero-subtitle {
+                font-size: 22px;
+            }
+            
+            .column-title {
+                font-size: 30px;
+            }
+            
+            .floating-order {
+                bottom: 20px;
+                left: 20px;
+                padding: 15px 25px;
+                font-size: 18px;
+            }
+            
+            .features-section {
+                padding: 50px 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero-title {
+                font-size: 36px;
+            }
+            
+            .hero-subtitle {
+                font-size: 20px;
+            }
+            
+            .menu-container {
+                padding-left: 20px;
+                padding-right: 20px;
+            }
+            
+            .contact-item {
+                font-size: 16px;
+            }
+            
+            .pizza-table th, .pizza-table td {
+                padding: 8px 6px;
+                font-size: 13px;
+            }
+            
+            .pizza-full-table th, .pizza-full-table td {
+                padding: 12px 6px;
+                font-size: 13px;
+            }
+        }
+
+        /* تأثيرات دخول العناصر */
+        .menu-column, .feature-card, .footer-column {
             opacity: 0;
+            animation: fadeInUp 0.8s ease forwards;
         }
 
-        .menu-column:nth-child(1) {
-            animation-delay: 0.1s;
+        .menu-column:nth-child(1) { animation-delay: 0.1s; }
+        .menu-column:nth-child(2) { animation-delay: 0.2s; }
+        .menu-column:nth-child(3) { animation-delay: 0.3s; }
+        .menu-column:nth-child(4) { animation-delay: 0.4s; }
+        .feature-card:nth-child(1) { animation-delay: 0.1s; }
+        .feature-card:nth-child(2) { animation-delay: 0.2s; }
+        .feature-card:nth-child(3) { animation-delay: 0.3s; }
+        .footer-column:nth-child(1) { animation-delay: 0.1s; }
+        .footer-column:nth-child(2) { animation-delay: 0.2s; }
+
+        /* شريط التمرير المخصص */
+        ::-webkit-scrollbar {
+            width: 14px;
         }
 
-        .menu-column:nth-child(2) {
-            animation-delay: 0.2s;
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
         }
 
-        .menu-column:nth-child(3) {
-            animation-delay: 0.3s;
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(to bottom, var(--primary-gold), var(--deep-red));
+            border-radius: 10px;
+            border: 3px solid #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(to bottom, var(--deep-red), var(--primary-gold));
         }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
 </head>
 <body>
-    <header>
-        <div class="header-overlay"></div>
-        <div class="restaurant-name">معجنات الاشلان</div>
-        <div class="restaurant-tagline">عجينة طرية</div>
-        <div class="restaurant-tagline">على القلب هنية</div>
-        <div class="restaurant-tagline">من قلب الزاهرية</div>
-        <div class="restaurant-tagline">من الصبح لعشية 😉</div>
-    </header>
-
+    <!-- الخلفية الفاخرة -->
+    <div class="arabic-pattern"></div>
+    <div class="floating-elements">
+        <div class="floating-element" style="top: 10%; right: 5%; animation: float 6s infinite ease-in-out;"><i class="fas fa-cookie-bite"></i></div>
+        <div class="floating-element" style="top: 20%; left: 10%; animation: float 8s infinite ease-in-out 1s;"><i class="fas fa-bread-slice"></i></div>
+        <div class="floating-element" style="bottom: 15%; right: 15%; animation: float 7s infinite ease-in-out 2s;"><i class="fas fa-cheese"></i></div>
+    </div>
+    
+    <!-- شريط علوي غير مثبت -->
+    <div class="top-bar">
+        <div class="logo-container">
+            <div class="logo-icon">
+                <i class="fas fa-crown"></i>
+            </div>
+            <div>
+                <div class="logo-text">معجنات الاشلان</div>
+            </div>
+        </div>
+        <div class="contact-info">
+            <div class="contact-item">
+                <i class="fas fa-phone-alt"></i>
+                <span>76/385-060</span>
+            </div>
+            <div class="contact-item">
+                <i class="fas fa-map-marker-alt"></i>
+                <span>الزاهرية، طرابلس</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- الهيدر الفاخر -->
+    <section class="hero-section">
+        <div class="hero-decoration"></div>
+        <h1 class="hero-title">معجنات الاشلان</h1>
+        <div class="hero-subtitle">عجينة <span class="hero-highlight">طرية</span> على القلب <span class="hero-highlight">هنية</span></div>
+        <div class="hero-subtitle">من قلب <span class="hero-highlight">الزاهرية</span>... من الصبح لعشية</div>
+        <div class="hero-subtitle" style="font-size: 24px; margin-top: 30px; color: var(--deep-red); font-weight: 700;">😉 اشهى المعجنات بأجود المكونات</div>
+    </section>
+    
+    <!-- القسم الرئيسي للقائمة -->
     <main>
         <div class="menu-container">
             <!-- العمود الأول: مناقيش -->
             <div class="menu-column">
-                <div class="column-title">مناقيش</div>
-                
-                <!-- أصناف الزعتر -->
-                <div class="menu-item">
-                    <div class="item-name">زعتر حلبي</div>
-                    <div class="item-price">50.000 ل.ل.</div>
+                <div class="column-header">
+                    <div class="column-icon">
+                        <i class="fas fa-pizza-slice"></i>
+                    </div>
+                    <h2 class="column-title">مناقيش</h2>
+                    <p class="column-description">أشهى المناقيش الطرية المحضرة يومياً بعجينتنا الخاصة</p>
                 </div>
-                <div class="menu-item">
-                    <div class="item-name">زعتر بلدي</div>
-                    <div class="item-price">50.000 ل.ل.</div>
-                </div>
-                <div class="menu-item">
-                    <div class="item-name">زعتر خضرا</div>
-                    <div class="item-price">70.000 ل.ل.</div>
-                </div>
-                <div class="menu-item">
-                    <div class="item-name">زعتر خضرا + جبنة</div>
-                    <div class="item-price">180.000 ل.ل.</div>
-                </div>
-                <div class="menu-item">
-                    <div class="item-name">نص جبنة نص زعتر</div>
-                    <div class="item-price">100.000 ل.ل.</div>
-                </div>
-                <div class="menu-item">
-                    <div class="item-name">تركية</div>
-                    <div class="item-price">150.000 ل.ل.</div>
-                </div>
-                <div class="menu-item">
-                    <div class="item-name">فاهيتا</div>
-                    <div class="item-price">250.000 ل.ل.</div>
-                </div>
-                <div class="menu-item">
-                    <div class="item-name">طاووق</div>
-                    <div class="item-price">250.000 ل.ل.</div>
-                </div>
-                <div class="menu-item">
-                    <div class="item-name">لحمة</div>
-                    <div class="item-price">150.000 ل.ل.</div>
-                </div>
-                <div class="menu-item">
-                    <div class="item-name">قريشة</div>
-                    <div class="item-price">100.000 ل.ل.</div>
-                </div>
-                
-                <!-- أصناف الجبنة -->
-                <div class="menu-item">
-                    <div class="item-name">جبنة</div>
-                    <div class="item-price">150.000 ل.ل.</div>
-                </div>
-                <div class="menu-item">
-                    <div class="item-name">جبنة اكسترا</div>
-                    <div class="item-price">200.000 ل.ل.</div>
-                </div>
-                <div class="menu-item">
-                    <div class="item-name">جبنة خضرا</div>
-                    <div class="item-price">180.000 ل.ل.</div>
-                </div>
-                <div class="menu-item">
-                    <div class="item-name">جبنة ذرة</div>
-                    <div class="item-price">180.000 ل.ل.</div>
-                </div>
-                <div class="menu-item">
-                    <div class="item-name">جبنة سجق</div>
-                    <div class="item-price">200.000 ل.ل.</div>
-                </div>
-                <div class="menu-item">
-                    <div class="item-name">جبنة مرتديلا</div>
-                    <div class="item-price">200.000 ل.ل.</div>
-                </div>
-                <div class="menu-item">
-                    <div class="item-name">جبنة يبيروني</div>
-                    <div class="item-price">200.000 ل.ل.</div>
-                </div>
-                <div class="menu-item">
-                    <div class="item-name">لحمة مع جبنة</div>
-                    <div class="item-price">200.000 ل.ل.</div>
-                </div>
-                <div class="menu-item">
-                    <div class="item-name">قريشة مع جبنة</div>
-                    <div class="item-price">150.000 ل.ل.</div>
+                <div class="menu-items">
+                    <!-- أصناف الزعتر -->
+                    <div class="menu-item">
+                        <div class="item-info">
+                            <div class="item-name">زعتر حلبي</div>
+                            <div class="item-description">زعتر حلبي أصلي مع زيت الزيتون والسمسم</div>
+                        </div>
+                        <div class="pizza-prices">
+                            <table class="pizza-table">
+                                <tr>
+                                    <td class="size-label">السعر</td>
+                                    <td class="price-value">50,000</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="menu-item">
+                        <div class="item-info">
+                            <div class="item-name">زعتر خضرا</div>
+                            <div class="item-description">زعتر ممزوج بقطع الطماطم والبقدونس والليمون</div>
+                        </div>
+                        <div class="pizza-prices">
+                            <table class="pizza-table">
+                                <tr>
+                                    <td class="size-label">السعر</td>
+                                    <td class="price-value">70,000</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="menu-item">
+                        <div class="item-info">
+                            <div class="item-name">زعتر خضرا + جبنة</div>
+                            <div class="item-description">مزيج لذيذ من الزعتر الأخضر والجبنة الذائبة</div>
+                        </div>
+                        <div class="pizza-prices">
+                            <table class="pizza-table">
+                                <tr>
+                                    <td class="size-label">السعر</td>
+                                    <td class="price-value">180,000</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="menu-item">
+                        <div class="item-info">
+                            <div class="item-name">تركية</div>
+                            <div class="item-description">لحم تركية مفروم مع البهارات الخاصة</div>
+                        </div>
+                        <div class="pizza-prices">
+                            <table class="pizza-table">
+                                <tr>
+                                    <td class="size-label">السعر</td>
+                                    <td class="price-value">150,000</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="menu-item">
+                        <div class="item-info">
+                            <div class="item-name">فاهيتا</div>
+                            <div class="item-description">شرائح دجاج مع الفلفل الملون والبصل</div>
+                        </div>
+                        <div class="pizza-prices">
+                            <table class="pizza-table">
+                                <tr>
+                                    <td class="size-label">السعر</td>
+                                    <td class="price-value">250,000</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="menu-item">
+                        <div class="item-info">
+                            <div class="item-name">جبنة اكسترا</div>
+                            <div class="item-description">جبنة ذائبة بكمية وفيرة مع إمكانية إضافة توابل</div>
+                        </div>
+                        <div class="pizza-prices">
+                            <table class="pizza-table">
+                                <tr>
+                                    <td class="size-label">السعر</td>
+                                    <td class="price-value">200,000</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="menu-item">
+                        <div class="item-info">
+                            <div class="item-name">جبنة خضرا</div>
+                            <div class="item-description">جبنة ذائبة مع طماطم وبقدونس وزيتون</div>
+                        </div>
+                        <div class="pizza-prices">
+                            <table class="pizza-table">
+                                <tr>
+                                    <td class="size-label">السعر</td>
+                                    <td class="price-value">180,000</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="menu-item">
+                        <div class="item-info">
+                            <div class="item-name">لحمة مع جبنة</div>
+                            <div class="item-description">لحمة مفرومة مع جبنة ذائبة وفلفل حار</div>
+                        </div>
+                        <div class="pizza-prices">
+                            <table class="pizza-table">
+                                <tr>
+                                    <td class="size-label">السعر</td>
+                                    <td class="price-value">200,000</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <!-- العمود الثاني: كعك -->
             <div class="menu-column">
-                <div class="column-title">كعك</div>
-                <div class="menu-item">
-                    <div class="item-name">كعك جبنة</div>
-                    <div class="item-price">150.000 ل.ل.</div>
+                <div class="column-header">
+                    <div class="column-icon">
+                        <i class="fas fa-cookie-bite"></i>
+                    </div>
+                    <h2 class="column-title">كعك</h2>
+                    <p class="column-description">كعك طري محشو بمختلف الحشوات اللذيذة</p>
                 </div>
-                <div class="menu-item">
-                    <div class="item-name">كعك جبنة اكسترا</div>
-                    <div class="item-price">200.000 ل.ل.</div>
-                </div>
-                <div class="menu-item">
-                    <div class="item-name">كعك جبنة خضرا</div>
-                    <div class="item-price">180.000 ل.ل.</div>
-                </div>
-                <div class="menu-item">
-                    <div class="item-name">كعك جبنة مرتديلا</div>
-                    <div class="item-price">200.000 ل.ل.</div>
-                </div>
-                <div class="menu-item">
-                    <div class="item-name">كعك جبنة سجق</div>
-                    <div class="item-price">200.000 ل.ل.</div>
-                </div>
-                <div class="menu-item">
-                    <div class="item-name">كعك فاهيتا</div>
-                    <div class="item-price">250.000 ل.ل.</div>
-                </div>
-                <div class="menu-item">
-                    <div class="item-name">كعك طاووق</div>
-                    <div class="item-price">250.000 ل.ل.</div>
+                <div class="menu-items">
+                    <div class="menu-item">
+                        <div class="item-info">
+                            <div class="item-name">كعك جبنة</div>
+                            <div class="item-description">كعك طري محشو بالجبنة الذائبة</div>
+                        </div>
+                        <div class="pizza-prices">
+                            <table class="pizza-table">
+                                <tr>
+                                    <td class="size-label">السعر</td>
+                                    <td class="price-value">150,000</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="menu-item">
+                        <div class="item-info">
+                            <div class="item-name">كعك جبنة اكسترا</div>
+                            <div class="item-description">كعك بكمية جبنة مضاعفة</div>
+                        </div>
+                        <div class="pizza-prices">
+                            <table class="pizza-table">
+                                <tr>
+                                    <td class="size-label">السعر</td>
+                                    <td class="price-value">200,000</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="menu-item">
+                        <div class="item-info">
+                            <div class="item-name">كعك جبنة خضرا</div>
+                            <div class="item-description">جبنة مع خضار طازجة وزيتون</div>
+                        </div>
+                        <div class="pizza-prices">
+                            <table class="pizza-table">
+                                <tr>
+                                    <td class="size-label">السعر</td>
+                                    <td class="price-value">180,000</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="menu-item">
+                        <div class="item-info">
+                            <div class="item-name">كعك جبنة سجق</div>
+                            <div class="item-description">جبنة مع سجق مدخن وبهارات</div>
+                        </div>
+                        <div class="pizza-prices">
+                            <table class="pizza-table">
+                                <tr>
+                                    <td class="size-label">السعر</td>
+                                    <td class="price-value">200,000</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="menu-item">
+                        <div class="item-info">
+                            <div class="item-name">كعك فاهيتا</div>
+                            <div class="item-description">دجاج فاهيتا مع خضار ملونة</div>
+                        </div>
+                        <div class="pizza-prices">
+                            <table class="pizza-table">
+                                <tr>
+                                    <td class="size-label">السعر</td>
+                                    <td class="price-value">250,000</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="menu-item">
+                        <div class="item-info">
+                            <div class="item-name">كعك طاووق</div>
+                            <div class="item-description">دجاج مشوي مع الصلصة الخاصة</div>
+                        </div>
+                        <div class="pizza-prices">
+                            <table class="pizza-table">
+                                <tr>
+                                    <td class="size-label">السعر</td>
+                                    <td class="price-value">250,000</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <!-- العمود الثالث: سواريه -->
             <div class="menu-column">
-                <div class="column-title">سواريه</div>
-                <div class="menu-item">
-                    <div class="item-name">سواريه جبنة</div>
-                    <div class="item-price">25.000 ل.ل.</div>
+                <div class="column-header">
+                    <div class="column-icon">
+                        <i class="fas fa-bacon"></i>
+                    </div>
+                    <h2 class="column-title">سواريه</h2>
+                    <p class="column-description">سواريه محشو بمختلف الحشوات، مثالي كوجبة خفيفة</p>
                 </div>
-                <div class="menu-item">
-                    <div class="item-name">سواريه رقاقات جبنة</div>
-                    <div class="item-price">25.000 ل.ل.</div>
-                </div>
-                <div class="menu-item">
-                    <div class="item-name">سواريه رقاقات فاهيتا</div>
-                    <div class="item-price">25.000 ل.ل.</div>
-                </div>
-                <div class="menu-item">
-                    <div class="item-name">سواريه رقاقات قريشة</div>
-                    <div class="item-price">25.000 ل.ل.</div>
-                </div>
-                <div class="menu-item">
-                    <div class="item-name">سواريه لحمة بعجين</div>
-                    <div class="item-price">25.000 ل.ل.</div>
-                </div>
-                <div class="menu-item">
-                    <div class="item-name">لحمة بعجين كبير</div>
-                    <div class="item-price">50.000 ل.ل.</div>
-                </div>
-                <div class="menu-item">
-                    <div class="item-name">سواريه شعيبيات</div>
-                    <div class="item-price">25.000 ل.ل.</div>
-                </div>
-                <div class="menu-item">
-                    <div class="item-name">دزينة سواريه</div>
-                    <div class="item-price">300.000 ل.ل.</div>
+                <div class="menu-items">
+                    <div class="menu-item">
+                        <div class="item-info">
+                            <div class="item-name">سواريه جبنة</div>
+                            <div class="item-description">سواريه محشو بالجبنة الذائبة</div>
+                        </div>
+                        <div class="pizza-prices">
+                            <table class="pizza-table">
+                                <tr>
+                                    <td class="size-label">السعر</td>
+                                    <td class="price-value">25,000</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="menu-item">
+                        <div class="item-info">
+                            <div class="item-name">سواريه رقاقات جبنة</div>
+                            <div class="item-description">سواريه برقاقات الجبنة الذائبة</div>
+                        </div>
+                        <div class="pizza-prices">
+                            <table class="pizza-table">
+                                <tr>
+                                    <td class="size-label">السعر</td>
+                                    <td class="price-value">25,000</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="menu-item">
+                        <div class="item-info">
+                            <div class="item-name">سواريه رقاقات فاهيتا</div>
+                            <div class="item-description">سواريه برقاقات دجاج فاهيتا</div>
+                        </div>
+                        <div class="pizza-prices">
+                            <table class="pizza-table">
+                                <tr>
+                                    <td class="size-label">السعر</td>
+                                    <td class="price-value">25,000</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="menu-item">
+                        <div class="item-info">
+                            <div class="item-name">لحمة بعجين كبير</div>
+                            <div class="item-description">سواريه كبير محشو بلحمه مفرومة</div>
+                        </div>
+                        <div class="pizza-prices">
+                            <table class="pizza-table">
+                                <tr>
+                                    <td class="size-label">السعر</td>
+                                    <td class="price-value">50,000</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="menu-item">
+                        <div class="item-info">
+                            <div class="item-name">سواريه شعيبيات</div>
+                            <div class="item-description">سواريه محشو بالشعيبيات اللذيذة</div>
+                        </div>
+                        <div class="pizza-prices">
+                            <table class="pizza-table">
+                                <tr>
+                                    <td class="size-label">السعر</td>
+                                    <td class="price-value">25,000</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="menu-item">
+                        <div class="item-info">
+                            <div class="item-name">دزينة سواريه</div>
+                            <div class="item-description">12 قطعة سواريه متنوعة الحشوات</div>
+                        </div>
+                        <div class="pizza-prices">
+                            <table class="pizza-table">
+                                <tr>
+                                    <td class="size-label">السعر</td>
+                                    <td class="price-value">300,000</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-    </main>
 
-    <footer>
-        <div class="footer-text">نتشرف بخدمتكم في معجنات الاشلان</div>
-        <div class="contact-info">
-            <div class="contact-item">
-                <i class="fas fa-phone-alt contact-icon"></i>
-                <span class="contact-text">76/385-060</span>
-            </div>
-            <div class="contact-item">
-                <i class="fas fa-map-marker-alt contact-icon"></i>
-                <span class="contact-text">منطقة الزاهرية، طرابلس</span>
-            </div>
-            <div class="contact-item">
-                <i class="fas fa-clock contact-icon"></i>
-                <span class="contact-text">يومياً: ٦ صباحاً - ١٢ ليلاً</span>
+            <!-- العمود الرابع: بيتزا -->
+            <div class="menu-column">
+                <div class="column-header">
+                    <div class="column-icon">
+                        <i class="fas fa-pizza-slice"></i>
+                    </div>
+                    <h2 class="column-title">بيتزا</h2>
+                    <p class="column-description">بيتزا إيطالية بأنواع مختلفة وأربعة أحجام</p>
+                </div>
+                
+                <div class="pizza-prices">
+                    <table class="pizza-full-table">
+                        <thead>
+                            <tr>
+                                <th>البيتزا</th>
+                                <th>S</th>
+                                <th>M</th>
+                                <th>L</th>
+                                <th>XL</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="pizza-name">بيتزا خضره</td>
+                                <td class="pizza-price">300.000</td>
+                                <td class="pizza-price">500.000</td>
+                                <td class="pizza-price">650.000</td>
+                                <td class="pizza-price">900.000</td>
+                            </tr>
+                            <tr>
+                                <td class="pizza-name">بيتزا سجق</td>
+                                <td class="pizza-price">400.000</td>
+                                <td class="pizza-price">600.000</td>
+                                <td class="pizza-price">800.000</td>
+                                <td class="pizza-price">1,000.000</td>
+                            </tr>
+                            <tr>
+                                <td class="pizza-name">بيتزا مارغريتا</td>
+                                <td class="pizza-price">270.000</td>
+                                <td class="pizza-price">450.000</td>
+                                <td class="pizza-price">600.000</td>
+                                <td class="pizza-price">850.000</td>
+                            </tr>
+                            <tr>
+                                <td class="pizza-name">بيتزا ببيروني</td>
+                                <td class="pizza-price">400.000</td>
+                                <td class="pizza-price">600.000</td>
+                                <td class="pizza-price">800.000</td>
+                                <td class="pizza-price">1,000.000</td>
+                            </tr>
+                            <tr>
+                                <td class="pizza-name">بيتزا فاهيتا</td>
+                                <td class="pizza-price">400.000</td>
+                                <td class="pizza-price">600.000</td>
+                                <td class="pizza-price">850.000</td>
+                                <td class="pizza-price">1,100.000</td>
+                            </tr>
+                            <tr>
+                                <td class="pizza-name">بيتزا طاووق</td>
+                                <td class="pizza-price">450.000</td>
+                                <td class="pizza-price">650.000</td>
+                                <td class="pizza-price">900.000</td>
+                                <td class="pizza-price">1,150.000</td>
+                            </tr>
+                            <tr>
+                                <td class="pizza-name">بيتزا مشكلة</td>
+                                <td class="pizza-price">450.000</td>
+                                <td class="pizza-price">650.000</td>
+                                <td class="pizza-price">950.000</td>
+                                <td class="pizza-price">1,200.000</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
         
-        <div class="delivery-section">
-            <div class="delivery-badge">
-                <i class="fas fa-motorcycle"></i>
-                يوجد توصيل
+        <!-- قسم المميزات -->
+        <div class="features-section">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-award"></i>
+                </div>
+                <h3 class="feature-title">جودة عالية</h3>
+                <p class="feature-description">نستخدم أفضل المكونات الطازجة والمحلية في جميع معجناتنا</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-truck"></i>
+                </div>
+                <h3 class="feature-title">توصيل سريع</h3>
+                <p class="feature-description">نقدم خدمة توصيل سريعة لجميع مناطق طرابلس خلال 45 دقيقة</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-heart"></i>
+                </div>
+                <h3 class="feature-title">حرفية وعراقة</h3>
+                <p class="feature-description">أكثر من 25 عاماً من الخبرة في صناعة المعجنات التقليدية</p>
             </div>
         </div>
+    </main>
+    
+    <!-- الفوتر الفاخر -->
+    <footer>
+        <div class="footer-decoration"></div>
+        <div class="footer-content">
+            <div class="footer-column">
+                <h3 class="footer-title">معلومات الاتصال</h3>
+                <div class="footer-links">
+                    <div class="footer-link">
+                        <i class="fas fa-phone-alt"></i>
+                        <span>76/385-060</span>
+                    </div>
+                    <div class="footer-link">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>الزاهرية، طرابلس - لبنان</span>
+                    </div>
+                    <div class="footer-link">
+                        <i class="fas fa-envelope"></i>
+                        <span>info@al-ashlan.com</span>
+                    </div>
+                </div>
+                
+                <div class="social-icons">
+                    <a href="#" class="social-icon">
+                        <i class="fab fa-facebook-f"></i>
+                    </a>
+                    <a href="#" class="social-icon">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                    <a href="#" class="social-icon">
+                        <i class="fab fa-whatsapp"></i>
+                    </a>
+                </div>
+            </div>
+            
+            <div class="footer-column">
+                <div class="delivery-info">
+                    <div class="delivery-badge">
+                        <i class="fas fa-motorcycle"></i>
+                        <span>يوجد توصيل لجميع مناطق طرابلس</span>
+                    </div>
+                </div>
+                
+                <h3 class="footer-title">تابعنا</h3>
+                <p style="color: rgba(255, 255, 255, 0.9); line-height: 1.7; margin-bottom: 20px;">
+                    تابع عروضنا اليومية وأحدث منتجاتنا على وسائل التواصل الاجتماعي
+                </p>
+            </div>
+        </div>
+        
+        <div class="copyright">
+            © 2023 معجنات الاشلان - جميع الحقوق محفوظة
+        </div>
     </footer>
+    
+    <!-- زر الطلب الفاخر -->
+    <button class="floating-order">
+        <i class="fas fa-shopping-bag"></i>
+        اطلب الآن
+    </button>
+    
+    <script>
+        // تفعيل تأثيرات التمرير للعناصر
+        document.addEventListener('DOMContentLoaded', function() {
+            // إضافة تأثير عند تمرير الصفحة
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+            
+            const observer = new IntersectionObserver(function(entries) {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.animationPlayState = 'running';
+                    }
+                });
+            }, observerOptions);
+            
+            // مراقبة العناصر لإضافة تأثيرات
+            document.querySelectorAll('.menu-column, .feature-card, .footer-column').forEach(el => {
+                observer.observe(el);
+            });
+            
+            // تفعيل زر الطلب
+            const orderButton = document.querySelector('.floating-order');
+            orderButton.addEventListener('click', function() {
+                const phoneNumber = "76385060";
+                const message = "مرحباً، أريد طلب من معجنات الاشلان";
+                const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+                window.open(whatsappUrl, '_blank');
+            });
+            
+            // تأثيرات إضافية عند التمرير
+            window.addEventListener('scroll', function() {
+                const scrolled = window.pageYOffset;
+                
+                // تأثير parallax خفيف للعناصر العائمة
+                const floatingElements = document.querySelectorAll('.floating-element');
+                floatingElements.forEach((el, index) => {
+                    const rate = scrolled * (0.1 + index * 0.05);
+                    el.style.transform = `translateY(${rate}px) rotate(${rate * 0.1}deg)`;
+                });
+            });
+            
+            // تأثيرات بسيطة عند تمرير الماوس على العناصر
+            const menuItems = document.querySelectorAll('.menu-item');
+            menuItems.forEach(item => {
+                item.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateX(-5px)';
+                });
+                
+                item.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateX(0)';
+                });
+            });
+            
+            // إضافة تأثيرات للرموز الاجتماعية
+            const socialIcons = document.querySelectorAll('.social-icon');
+            socialIcons.forEach(icon => {
+                icon.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-5px) scale(1.1)';
+                });
+                
+                icon.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0) scale(1)';
+                });
+            });
+        });
+    </script>
 </body>
 </html>
