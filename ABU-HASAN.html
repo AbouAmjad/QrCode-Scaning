@@ -210,7 +210,7 @@
         .contact-info {
             display: flex;
             justify-content: center;
-            gap: 50px;
+            gap: 40px;
             margin-top: 10px;
             flex-wrap: wrap;
         }
@@ -245,6 +245,38 @@
         .contact-text {
             font-weight: 600;
             color: #333;
+        }
+
+        .delivery-section {
+            margin-top: 30px;
+            padding-top: 25px;
+            border-top: 2px dashed rgba(212, 160, 23, 0.3);
+        }
+
+        .delivery-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 22px;
+            font-weight: bold;
+            color: #2ecc71;
+            padding: 12px 25px;
+            background: rgba(46, 204, 113, 0.1);
+            border-radius: 50px;
+            border: 2px solid rgba(46, 204, 113, 0.3);
+            margin-bottom: 15px;
+            animation: pulse 2s infinite;
+        }
+
+        .delivery-badge i {
+            color: #2ecc71;
+        }
+
+        .delivery-area {
+            font-size: 20px;
+            color: #333;
+            font-weight: 600;
+            margin-top: 10px;
         }
 
         /* تخصيص شريط التمرير */
@@ -283,12 +315,17 @@
             }
             
             .contact-info {
-                gap: 25px;
+                gap: 20px;
             }
             
             .contact-item {
                 font-size: 18px;
                 padding: 12px 20px;
+            }
+            
+            .delivery-badge {
+                font-size: 20px;
+                padding: 10px 20px;
             }
         }
 
@@ -322,7 +359,7 @@
             
             .contact-info {
                 flex-direction: column;
-                gap: 20px;
+                gap: 15px;
                 align-items: center;
             }
             
@@ -335,6 +372,19 @@
             body {
                 padding: 15px;
             }
+            
+            .delivery-badge {
+                font-size: 18px;
+                padding: 10px 15px;
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            .delivery-area {
+                font-size: 18px;
+                text-align: center;
+                padding: 0 15px;
+            }
         }
 
         /* تأثيرات إضافية */
@@ -346,6 +396,18 @@
             to {
                 opacity: 1;
                 transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.4);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(46, 204, 113, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(46, 204, 113, 0);
             }
         }
 
@@ -550,7 +612,14 @@
             </div>
             <div class="contact-item">
                 <i class="fas fa-clock contact-icon"></i>
-                <span class="contact-text">يومياً: ٦ صباحاً - ١٢ ليلا</span>
+                <span class="contact-text">يومياً: ٦ صباحاً - ١٢ ليلاً</span>
+            </div>
+        </div>
+        
+        <div class="delivery-section">
+            <div class="delivery-badge">
+                <i class="fas fa-motorcycle"></i>
+                خدمة التوصيل متاحة
             </div>
         </div>
     </footer>
