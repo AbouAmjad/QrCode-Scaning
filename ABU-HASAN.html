@@ -113,6 +113,10 @@
                 max-width: 400px;
                 justify-content: center;
             }
+            
+            .map-container {
+                height: 300px !important;
+            }
         }
         
         /* تحسينات إضافية لقسم البيتزا */
@@ -135,6 +139,49 @@
         .pizza-size-item:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        /* تخصيص لون التمرير */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 5px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #ffb300;
+            border-radius: 5px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #ff8f00;
+        }
+        
+        /* تأثيرات للخريطة */
+        .map-container {
+            border-radius: 1rem;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .map-container:hover {
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+            transform: translateY(-5px);
+        }
+        
+        /* تأثيرات للبطاقات */
+        .product-item {
+            transition: all 0.3s ease;
+        }
+        
+        .product-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+            background-color: rgba(255, 193, 7, 0.05);
         }
     </style>
 </head>
@@ -169,79 +216,79 @@
                     </h2>
                     
                     <div class="space-y-4">
-                        <div class="flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:bg-[rgba(248,245,240,0.7)] hover:pr-4 transition-all duration-300">
+                        <div class="product-item flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:pr-4 transition-all duration-300">
                             <span class="font-semibold text-lg text-gray-800 flex-1 pr-3">زعتر حلبي</span>
                             <span class="font-bold text-amber-700 text-lg bg-amber-50/50 px-4 py-2 rounded-full border border-amber-200 min-w-[120px] text-center">50.000 ل.ل.</span>
                         </div>
-                        <div class="flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:bg-[rgba(248,245,240,0.7)] hover:pr-4 transition-all duration-300">
+                        <div class="product-item flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:pr-4 transition-all duration-300">
                             <span class="font-semibold text-lg text-gray-800 flex-1 pr-3">زعتر بلدي</span>
                             <span class="font-bold text-amber-700 text-lg bg-amber-50/50 px-4 py-2 rounded-full border border-amber-200 min-w-[120px] text-center">50.000 ل.ل.</span>
                         </div>
-                        <div class="flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:bg-[rgba(248,245,240,0.7)] hover:pr-4 transition-all duration-300">
+                        <div class="product-item flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:pr-4 transition-all duration-300">
                             <span class="font-semibold text-lg text-gray-800 flex-1 pr-3">زعتر خضرا</span>
                             <span class="font-bold text-amber-700 text-lg bg-amber-50/50 px-4 py-2 rounded-full border border-amber-200 min-w-[120px] text-center">70.000 ل.ل.</span>
                         </div>
-                        <div class="flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:bg-[rgba(248,245,240,0.7)] hover:pr-4 transition-all duration-300">
+                        <div class="product-item flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:pr-4 transition-all duration-300">
                             <span class="font-semibold text-lg text-gray-800 flex-1 pr-3">زعتر خضرا + جبنة</span>
                             <span class="font-bold text-amber-700 text-lg bg-amber-50/50 px-4 py-2 rounded-full border border-amber-200 min-w-[120px] text-center">180.000 ل.ل.</span>
                         </div>
-                        <div class="flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:bg-[rgba(248,245,240,0.7)] hover:pr-4 transition-all duration-300">
+                        <div class="product-item flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:pr-4 transition-all duration-300">
                             <span class="font-semibold text-lg text-gray-800 flex-1 pr-3">نص جبنة نص زعتر</span>
                             <span class="font-bold text-amber-700 text-lg bg-amber-50/50 px-4 py-2 rounded-full border border-amber-200 min-w-[120px] text-center">100.000 ل.ل.</span>
                         </div>
-                        <div class="flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:bg-[rgba(248,245,240,0.7)] hover:pr-4 transition-all duration-300">
+                        <div class="product-item flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:pr-4 transition-all duration-300">
                             <span class="font-semibold text-lg text-gray-800 flex-1 pr-3">تركية</span>
                             <span class="font-bold text-amber-700 text-lg bg-amber-50/50 px-4 py-2 rounded-full border border-amber-200 min-w-[120px] text-center">150.000 ل.ل.</span>
                         </div>
-                        <div class="flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:bg-[rgba(248,245,240,0.7)] hover:pr-4 transition-all duration-300">
+                        <div class="product-item flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:pr-4 transition-all duration-300">
                             <span class="font-semibold text-lg text-gray-800 flex-1 pr-3">فاهيتا</span>
                             <span class="font-bold text-amber-700 text-lg bg-amber-50/50 px-4 py-2 rounded-full border border-amber-200 min-w-[120px] text-center">250.000 ل.ل.</span>
                         </div>
-                        <div class="flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:bg-[rgba(248,245,240,0.7)] hover:pr-4 transition-all duration-300">
+                        <div class="product-item flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:pr-4 transition-all duration-300">
                             <span class="font-semibold text-lg text-gray-800 flex-1 pr-3">طاووق</span>
                             <span class="font-bold text-amber-700 text-lg bg-amber-50/50 px-4 py-2 rounded-full border border-amber-200 min-w-[120px] text-center">250.000 ل.ل.</span>
                         </div>
-                        <div class="flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:bg-[rgba(248,245,240,0.7)] hover:pr-4 transition-all duration-300">
+                        <div class="product-item flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:pr-4 transition-all duration-300">
                             <span class="font-semibold text-lg text-gray-800 flex-1 pr-3">لحمة</span>
                             <span class="font-bold text-amber-700 text-lg bg-amber-50/50 px-4 py-2 rounded-full border border-amber-200 min-w-[120px] text-center">150.000 ل.ل.</span>
                         </div>
-                        <div class="flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:bg-[rgba(248,245,240,0.7)] hover:pr-4 transition-all duration-300">
+                        <div class="product-item flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:pr-4 transition-all duration-300">
                             <span class="font-semibold text-lg text-gray-800 flex-1 pr-3">قريشة</span>
                             <span class="font-bold text-amber-700 text-lg bg-amber-50/50 px-4 py-2 rounded-full border border-amber-200 min-w-[120px] text-center">100.000 ل.ل.</span>
                         </div>
-                        <div class="flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:bg-[rgba(248,245,240,0.7)] hover:pr-4 transition-all duration-300">
+                        <div class="product-item flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:pr-4 transition-all duration-300">
                             <span class="font-semibold text-lg text-gray-800 flex-1 pr-3">جبنة</span>
                             <span class="font-bold text-amber-700 text-lg bg-amber-50/50 px-4 py-2 rounded-full border border-amber-200 min-w-[120px] text-center">150.000 ل.ل.</span>
                         </div>
-                        <div class="flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:bg-[rgba(248,245,240,0.7)] hover:pr-4 transition-all duration-300">
+                        <div class="product-item flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:pr-4 transition-all duration-300">
                             <span class="font-semibold text-lg text-gray-800 flex-1 pr-3">جبنة اكسترا</span>
                             <span class="font-bold text-amber-700 text-lg bg-amber-50/50 px-4 py-2 rounded-full border border-amber-200 min-w-[120px] text-center">200.000 ل.ل.</span>
                         </div>
-                        <div class="flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:bg-[rgba(248,245,240,0.7)] hover:pr-4 transition-all duration-300">
+                        <div class="product-item flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:pr-4 transition-all duration-300">
                             <span class="font-semibold text-lg text-gray-800 flex-1 pr-3">جبنة خضرا</span>
                             <span class="font-bold text-amber-700 text-lg bg-amber-50/50 px-4 py-2 rounded-full border border-amber-200 min-w-[120px] text-center">180.000 ل.ل.</span>
                         </div>
-                        <div class="flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:bg-[rgba(248,245,240,0.7)] hover:pr-4 transition-all duration-300">
+                        <div class="product-item flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:pr-4 transition-all duration-300">
                             <span class="font-semibold text-lg text-gray-800 flex-1 pr-3">جبنة ذرة</span>
                             <span class="font-bold text-amber-700 text-lg bg-amber-50/50 px-4 py-2 rounded-full border border-amber-200 min-w-[120px] text-center">180.000 ل.ل.</span>
                         </div>
-                        <div class="flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:bg-[rgba(248,245,240,0.7)] hover:pr-4 transition-all duration-300">
+                        <div class="product-item flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:pr-4 transition-all duration-300">
                             <span class="font-semibold text-lg text-gray-800 flex-1 pr-3">جبنة سجق</span>
                             <span class="font-bold text-amber-700 text-lg bg-amber-50/50 px-4 py-2 rounded-full border border-amber-200 min-w-[120px] text-center">200.000 ل.ل.</span>
                         </div>
-                        <div class="flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:bg-[rgba(248,245,240,0.7)] hover:pr-4 transition-all duration-300">
+                        <div class="product-item flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:pr-4 transition-all duration-300">
                             <span class="font-semibold text-lg text-gray-800 flex-1 pr-3">جبنة مرتديلا</span>
                             <span class="font-bold text-amber-700 text-lg bg-amber-50/50 px-4 py-2 rounded-full border border-amber-200 min-w-[120px] text-center">200.000 ل.ل.</span>
                         </div>
-                        <div class="flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:bg-[rgba(248,245,240,0.7)] hover:pr-4 transition-all duration-300">
-                            <span class="font-semibold text-lg text-gray-800 flex-1 pr-3">جبنة يبيروني</span>
+                        <div class="product-item flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:pr-4 transition-all duration-300">
+                            <span class="font-semibold text-lg text-gray-800 flex-1 pr-3">جبنة بيبروني</span>
                             <span class="font-bold text-amber-700 text-lg bg-amber-50/50 px-4 py-2 rounded-full border border-amber-200 min-w-[120px] text-center">200.000 ل.ل.</span>
                         </div>
-                        <div class="flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:bg-[rgba(248,245,240,0.7)] hover:pr-4 transition-all duration-300">
+                        <div class="product-item flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:pr-4 transition-all duration-300">
                             <span class="font-semibold text-lg text-gray-800 flex-1 pr-3">لحمة مع جبنة</span>
                             <span class="font-bold text-amber-700 text-lg bg-amber-50/50 px-4 py-2 rounded-full border border-amber-200 min-w-[120px] text-center">200.000 ل.ل.</span>
                         </div>
-                        <div class="flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:bg-[rgba(248,245,240,0.7)] hover:pr-4 transition-all duration-300">
+                        <div class="product-item flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:pr-4 transition-all duration-300">
                             <span class="font-semibold text-lg text-gray-800 flex-1 pr-3">قريشة مع جبنة</span>
                             <span class="font-bold text-amber-700 text-lg bg-amber-50/50 px-4 py-2 rounded-full border border-amber-200 min-w-[120px] text-center">150.000 ل.ل.</span>
                         </div>
@@ -256,31 +303,31 @@
                     </h2>
                     
                     <div class="space-y-4">
-                        <div class="flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:bg-[rgba(248,245,240,0.7)] hover:pr-4 transition-all duration-300">
+                        <div class="product-item flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:pr-4 transition-all duration-300">
                             <span class="font-semibold text-lg text-gray-800 flex-1 pr-3">كعك جبنة</span>
                             <span class="font-bold text-amber-700 text-lg bg-amber-50/50 px-4 py-2 rounded-full border border-amber-200 min-w-[120px] text-center">150.000 ل.ل.</span>
                         </div>
-                        <div class="flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:bg-[rgba(248,245,240,0.7)] hover:pr-4 transition-all duration-300">
+                        <div class="product-item flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:pr-4 transition-all duration-300">
                             <span class="font-semibold text-lg text-gray-800 flex-1 pr-3">كعك جبنة اكسترا</span>
                             <span class="font-bold text-amber-700 text-lg bg-amber-50/50 px-4 py-2 rounded-full border border-amber-200 min-w-[120px] text-center">200.000 ل.ل.</span>
                         </div>
-                        <div class="flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:bg-[rgba(248,245,240,0.7)] hover:pr-4 transition-all duration-300">
+                        <div class="product-item flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:pr-4 transition-all duration-300">
                             <span class="font-semibold text-lg text-gray-800 flex-1 pr-3">كعك جبنة خضرا</span>
                             <span class="font-bold text-amber-700 text-lg bg-amber-50/50 px-4 py-2 rounded-full border border-amber-200 min-w-[120px] text-center">180.000 ل.ل.</span>
                         </div>
-                        <div class="flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:bg-[rgba(248,245,240,0.7)] hover:pr-4 transition-all duration-300">
+                        <div class="product-item flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:pr-4 transition-all duration-300">
                             <span class="font-semibold text-lg text-gray-800 flex-1 pr-3">كعك جبنة مرتديلا</span>
                             <span class="font-bold text-amber-700 text-lg bg-amber-50/50 px-4 py-2 rounded-full border border-amber-200 min-w-[120px] text-center">200.000 ل.ل.</span>
                         </div>
-                        <div class="flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:bg-[rgba(248,245,240,0.7)] hover:pr-4 transition-all duration-300">
+                        <div class="product-item flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:pr-4 transition-all duration-300">
                             <span class="font-semibold text-lg text-gray-800 flex-1 pr-3">كعك جبنة سجق</span>
                             <span class="font-bold text-amber-700 text-lg bg-amber-50/50 px-4 py-2 rounded-full border border-amber-200 min-w-[120px] text-center">200.000 ل.ل.</span>
                         </div>
-                        <div class="flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:bg-[rgba(248,245,240,0.7)] hover:pr-4 transition-all duration-300">
+                        <div class="product-item flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:pr-4 transition-all duration-300">
                             <span class="font-semibold text-lg text-gray-800 flex-1 pr-3">كعك فاهيتا</span>
                             <span class="font-bold text-amber-700 text-lg bg-amber-50/50 px-4 py-2 rounded-full border border-amber-200 min-w-[120px] text-center">250.000 ل.ل.</span>
                         </div>
-                        <div class="flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:bg-[rgba(248,245,240,0.7)] hover:pr-4 transition-all duration-300">
+                        <div class="product-item flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:pr-4 transition-all duration-300">
                             <span class="font-semibold text-lg text-gray-800 flex-1 pr-3">كعك طاووق</span>
                             <span class="font-bold text-amber-700 text-lg bg-amber-50/50 px-4 py-2 rounded-full border border-amber-200 min-w-[120px] text-center">250.000 ل.ل.</span>
                         </div>
@@ -295,42 +342,42 @@
                     </h2>
                     
                     <div class="space-y-4">
-                        <div class="flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:bg-[rgba(248,245,240,0.7)] hover:pr-4 transition-all duration-300">
+                        <div class="product-item flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:pr-4 transition-all duration-300">
                             <span class="font-semibold text-lg text-gray-800 flex-1 pr-3">سواريه جبنة</span>
                             <span class="font-bold text-amber-700 text-lg bg-amber-50/50 px-4 py-2 rounded-full border border-amber-200 min-w-[120px] text-center">25.000 ل.ل.</span>
                         </div>
-                        <div class="flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:bg-[rgba(248,245,240,0.7)] hover:pr-4 transition-all duration-300">
+                        <div class="product-item flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:pr-4 transition-all duration-300">
                             <span class="font-semibold text-lg text-gray-800 flex-1 pr-3">سواريه رقاقات جبنة</span>
                             <span class="font-bold text-amber-700 text-lg bg-amber-50/50 px-4 py-2 rounded-full border border-amber-200 min-w-[120px] text-center">25.000 ل.ل.</span>
                         </div>
-                        <div class="flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:bg-[rgba(248,245,240,0.7)] hover:pr-4 transition-all duration-300">
+                        <div class="product-item flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:pr-4 transition-all duration-300">
                             <span class="font-semibold text-lg text-gray-800 flex-1 pr-3">سواريه رقاقات فاهيتا</span>
                             <span class="font-bold text-amber-700 text-lg bg-amber-50/50 px-4 py-2 rounded-full border border-amber-200 min-w-[120px] text-center">25.000 ل.ل.</span>
                         </div>
-                        <div class="flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:bg-[rgba(248,245,240,0.7)] hover:pr-4 transition-all duration-300">
+                        <div class="product-item flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:pr-4 transition-all duration-300">
                             <span class="font-semibold text-lg text-gray-800 flex-1 pr-3">سواريه رقاقات قريشة</span>
                             <span class="font-bold text-amber-700 text-lg bg-amber-50/50 px-4 py-2 rounded-full border border-amber-200 min-w-[120px] text-center">25.000 ل.ل.</span>
                         </div>
-                        <div class="flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:bg-[rgba(248,245,240,0.7)] hover:pr-4 transition-all duration-300">
+                        <div class="product-item flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:pr-4 transition-all duration-300">
                             <span class="font-semibold text-lg text-gray-800 flex-1 pr-3">سواريه لحمة بعجين</span>
                             <span class="font-bold text-amber-700 text-lg bg-amber-50/50 px-4 py-2 rounded-full border border-amber-200 min-w-[120px] text-center">25.000 ل.ل.</span>
                         </div>
-                        <div class="flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:bg-[rgba(248,245,240,0.7)] hover:pr-4 transition-all duration-300">
+                        <div class="product-item flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:pr-4 transition-all duration-300">
                             <span class="font-semibold text-lg text-gray-800 flex-1 pr-3">لحمة بعجين كبير</span>
                             <span class="font-bold text-amber-700 text-lg bg-amber-50/50 px-4 py-2 rounded-full border border-amber-200 min-w-[120px] text-center">50.000 ل.ل.</span>
                         </div>
-                        <div class="flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:bg-[rgba(248,245,240,0.7)] hover:pr-4 transition-all duration-300">
+                        <div class="product-item flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:pr-4 transition-all duration-300">
                             <span class="font-semibold text-lg text-gray-800 flex-1 pr-3">سواريه شعيبيات</span>
                             <span class="font-bold text-amber-700 text-lg bg-amber-50/50 px-4 py-2 rounded-full border border-amber-200 min-w-[120px] text-center">25.000 ل.ل.</span>
                         </div>
-                        <div class="flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:bg-[rgba(248,245,240,0.7)] hover:pr-4 transition-all duration-300">
+                        <div class="product-item flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:pr-4 transition-all duration-300">
                             <span class="font-semibold text-lg text-gray-800 flex-1 pr-3">دزينة سواريه</span>
                             <span class="font-bold text-amber-700 text-lg bg-amber-50/50 px-4 py-2 rounded-full border border-amber-200 min-w-[120px] text-center">300.000 ل.ل.</span>
                         </div>
                     </div>
                 </div>
 
-                <!-- بيتزا Column - القسم المحسن -->
+                <!-- بيتزا Column -->
                 <div class="menu-column bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-xl border-r-4 border-amber-400 animate-fade-in opacity-0">
                     <h2 class="text-3xl font-bold text-amber-800 text-center mb-8 pb-4 border-b-2 border-amber-200 relative">
                         بيتزا
@@ -338,7 +385,7 @@
                     </h2>
                     
                     <div class="space-y-6">
-                        <!-- عنصر بيتزا محسن -->
+                        <!-- بيتزا خضرة -->
                         <div class="pizza-item rounded-xl border border-amber-200 bg-white overflow-hidden hover:shadow-md transition-all duration-300">
                             <div class="p-4">
                                 <h3 class="font-bold text-xl text-gray-800 mb-4 flex items-center justify-between">
@@ -447,7 +494,7 @@
                             </div>
                         </div>
                         
-                        <!-- بيتزا بيبروني (تم تصحيح التسمية) -->
+                        <!-- بيتزا بيبروني -->
                         <div class="pizza-item rounded-xl border border-amber-200 bg-white overflow-hidden hover:shadow-md transition-all duration-300">
                             <div class="p-4">
                                 <h3 class="font-bold text-xl text-gray-800 mb-4">بيتزا بيبروني</h3>
@@ -581,6 +628,116 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- Location Map Section -->
+            <div class="mb-16">
+                <div class="bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-xl border-r-4 border-amber-400">
+                    <h2 class="text-3xl font-bold text-amber-800 text-center mb-8 pb-4 border-b-2 border-amber-200 relative">
+                        <i class="fas fa-map-marker-alt ml-3"></i> موقعنا
+                        <span class="absolute bottom-0 right-1/2 translate-x-1/2 w-20 h-1 bg-amber-400 rounded-full"></span>
+                    </h2>
+                    
+                    <div class="flex flex-col lg:flex-row gap-8 items-center">
+                        <div class="lg:w-1/2">
+                            <div class="map-container h-[400px] w-full">
+                                <iframe 
+                                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3280.123456789!2d35.123456789!3d33.123456789!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzPCsDA3JzI0LjQiTiAzNcKwMDcnNDEuMCJF!5e0!3m2!1sen!2slb!4v1234567890" 
+                                    width="100%" 
+                                    height="100%" 
+                                    style="border:0;" 
+                                    allowfullscreen="" 
+                                    loading="lazy" 
+                                    referrerpolicy="no-referrer-when-downgrade"
+                                    title="موقع معجنات الاشلان في الزاهرية، طرابلس">
+                                </iframe>
+                            </div>
+                        </div>
+                        
+                        <div class="lg:w-1/2">
+                            <div class="bg-gradient-to-l from-amber-50 to-amber-100 rounded-xl p-6 border border-amber-200 shadow-lg">
+                                <h3 class="text-2xl font-bold text-amber-900 mb-6 flex items-center">
+                                    <i class="fas fa-info-circle ml-3"></i> معلومات الموقع
+                                </h3>
+                                
+                                <div class="space-y-6">
+                                    <div class="flex items-start">
+                                        <div class="bg-amber-200 p-3 rounded-full ml-4">
+                                            <i class="fas fa-map-pin text-amber-700 text-xl"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-bold text-lg text-gray-800">العنوان الدقيق</h4>
+                                            <p class="text-gray-700">منطقة الزاهرية، طرابلس، لبنان</p>
+                                            <p class="text-sm text-gray-600 mt-1">قرب دوار الزاهرية الرئيسي</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="flex items-start">
+                                        <div class="bg-amber-200 p-3 rounded-full ml-4">
+                                            <i class="fas fa-clock text-amber-700 text-xl"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-bold text-lg text-gray-800">أوقات الوصول</h4>
+                                            <p class="text-gray-700">من الساعة 6:00 صباحاً حتى 12:00 منتصف الليل</p>
+                                            <p class="text-sm text-gray-600 mt-1">يفتح يومياً بما فيه العطل والأعياد</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="flex items-start">
+                                        <div class="bg-amber-200 p-3 rounded-full ml-4">
+                                            <i class="fas fa-car text-amber-700 text-xl"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-bold text-lg text-gray-800">مواقف سيارات</h4>
+                                            <p class="text-gray-700">مواقف متوفرة بالقرب من المحل</p>
+                                            <p class="text-sm text-gray-600 mt-1">يمكن الوقوف على الشارع الرئيسي</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="flex items-start">
+                                        <div class="bg-amber-200 p-3 rounded-full ml-4">
+                                            <i class="fas fa-directions text-amber-700 text-xl"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-bold text-lg text-gray-800">التوجيهات</h4>
+                                            <p class="text-gray-700">استخدم خرائط جوجل للوصول إلينا</p>
+                                            <a 
+                                                href="https://maps.app.goo.gl/JBZnko42hwUtx2yB6?g_st=awb" 
+                                                target="_blank" 
+                                                class="inline-flex items-center mt-3 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-lg transition-all duration-300 transform hover:scale-105"
+                                            >
+                                                <i class="fas fa-external-link-alt ml-2"></i>
+                                                افتح في خرائط جوجل
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div class="bg-white p-4 rounded-xl border border-amber-200 shadow-sm">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-motorcycle text-emerald-600 text-2xl ml-3"></i>
+                                        <div>
+                                            <h4 class="font-bold text-gray-800">خدمة التوصيل</h4>
+                                            <p class="text-sm text-gray-600">متوفرة لجميع مناطق طرابلس</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-white p-4 rounded-xl border border-amber-200 shadow-sm">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-phone text-amber-600 text-2xl ml-3"></i>
+                                        <div>
+                                            <h4 class="font-bold text-gray-800">اطلب عبر الهاتف</h4>
+                                            <p class="text-sm text-gray-600">76/385-060</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </main>
 
         <!-- Footer Section -->
@@ -605,14 +762,7 @@
                     <span class="font-semibold text-lg">يومياً: ٦ صباحاً - ١٢ ليلاً</span>
                 </div>
             </div>
-            
-            <div class="mt-8 pt-6 border-t-2 border-dashed border-amber-200">
-                <div class="delivery-badge inline-flex items-center gap-3 bg-emerald-50/70 backdrop-blur-sm px-6 py-3 rounded-full border-2 border-emerald-300 shadow-lg animate-pulse-slow">
-                    <i class="fas fa-motorcycle text-emerald-600 text-xl"></i>
-                    <span class="font-bold text-xl text-emerald-700">يوجد توصيل</span>
-                </div>
-                <p class="mt-4 text-lg font-medium text-gray-700">جميع مناطق طرابلس والضواحي</p>
-            </div>
+        
         </footer>
     </div>
 
@@ -633,6 +783,54 @@
                 column.style.animationPlayState = 'paused';
                 observer.observe(column);
             });
+            
+            // إضافة تأثيرات للخريطة عند التمرير
+            const mapSection = document.querySelector('.map-container');
+            if (mapSection) {
+                observer.observe(mapSection);
+            }
+            
+            // إضافة تأثير لرابط خرائط جوجل
+            const mapLink = document.querySelector('a[href*="maps.app.goo.gl"]');
+            if (mapLink) {
+                mapLink.addEventListener('click', function(e) {
+                    // يمكن إضافة حدث تتبع هنا إذا رغبت
+                    console.log('تم النقر على رابط الخريطة الخارجي');
+                });
+            }
+        });
+        
+        // إضافة دالة للتعامل مع أخطاء تحميل الخريطة
+        window.addEventListener('load', function() {
+            const iframe = document.querySelector('iframe[title*="موقع معجنات الاشلان"]');
+            if (iframe) {
+                iframe.addEventListener('load', function() {
+                    console.log('تم تحميل الخريطة بنجاح');
+                });
+                
+                iframe.addEventListener('error', function() {
+                    console.log('حدث خطأ في تحميل الخريطة');
+                    // يمكن إضافة رسالة بديلة هنا
+                    const mapContainer = document.querySelector('.map-container');
+                    if (mapContainer) {
+                        mapContainer.innerHTML = `
+                            <div class="h-full flex flex-col items-center justify-center bg-amber-50 p-6">
+                                <i class="fas fa-map-marked-alt text-amber-500 text-5xl mb-4"></i>
+                                <h3 class="text-xl font-bold text-amber-800 mb-2">تعذر تحميل الخريطة</h3>
+                                <p class="text-gray-700 mb-4 text-center">يمكنك استخدام الزر أدناه لفتح الخريطة في نافذة جديدة</p>
+                                <a 
+                                    href="https://maps.app.goo.gl/JBZnko42hwUtx2yB6?g_st=awb" 
+                                    target="_blank" 
+                                    class="px-6 py-3 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-lg transition-all duration-300"
+                                >
+                                    <i class="fas fa-external-link-alt ml-2"></i>
+                                    افتح خرائط جوجل
+                                </a>
+                            </div>
+                        `;
+                    }
+                });
+            }
         });
     </script>
 </body>
