@@ -26,7 +26,8 @@ amber: {
 },
 animation: {
 'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-'fade-in': 'fadeIn 0.6s ease forwards'
+'fade-in': 'fadeIn 0.6s ease forwards',
+'slide-up': 'slideUp 0.5s ease forwards'
 },
 keyframes: {
 pulse: {
@@ -36,6 +37,10 @@ pulse: {
 fadeIn: {
 '0%': { opacity: 0, transform: 'translateY(20px)' },
 '100%': { opacity: 1, transform: 'translateY(0)' }
+},
+slideUp: {
+'0%': { transform: 'translateY(20px)', opacity: 0 },
+'100%': { transform: 'translateY(0)', opacity: 1 }
 }
 }
 }
@@ -78,92 +83,229 @@ inset: 0;
 background: linear-gradient(to left, rgba(184, 28, 28, 0.9), rgba(212, 160, 23, 0.9));
 z-index: -1;
 }
-.menu-column:nth-child(1) { animation-delay: 0.1s; }
-.menu-column:nth-child(2) { animation-delay: 0.2s; }
-.menu-column:nth-child(3) { animation-delay: 0.3s; }
-.menu-column:nth-child(4) { animation-delay: 0.4s; }
-.menu-column:nth-child(5) { animation-delay: 0.5s; }
-@media (max-width: 1024px) {
-.grid-cols-5 {
-grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-}
-@media (max-width: 768px) {
-.grid-cols-5 {
-grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-}
-@media (max-width: 640px) {
-.grid-cols-5, .grid-cols-4, .grid-cols-3, .grid-cols-2 {
-grid-template-columns: 1fr;
-}
-.pizza-sizes {
-grid-template-columns: repeat(2, 1fr) !important;
-}
-.contact-info {
-flex-direction: column;
-align-items: center;
-}
-.contact-item {
-width: 100%;
-max-width: 400px;
-justify-content: center;
-}
-.map-container {
-height: 300px !important;
-}
-}
-.manakish-grid {
-display: grid;
-grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-gap: 1rem;
-}
-.manakish-item {
-background: white;
-border-radius: 1rem;
-padding: 1.25rem;
+.section-title {
+position: relative;
 text-align: center;
-box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-transition: all 0.3s ease;
-border: 1px solid #f5e9d5;
+margin-bottom: 2rem;
+padding-bottom: 1rem;
 }
-.manakish-item:hover {
-transform: translateY(-3px);
-box-shadow: 0 10px 15px rgba(0,0,0,0.1);
+.section-title::after {
+content: '';
+position: absolute;
+bottom: 0;
+right: 50%;
+transform: translateX(50%);
+width: 80px;
+height: 4px;
+background: linear-gradient(to right, transparent, #ffb300, transparent);
+border-radius: 2px;
+}
+.category-nav {
+background: rgba(255, 255, 255, 0.95);
+backdrop-filter: blur(10px);
+box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+position: sticky;
+top: 0;
+z-index: 100;
+border-radius: 0 0 1.5rem 1.5rem;
+padding: 0.5rem 0;
+margin-bottom: 2rem;
+}
+.category-tabs {
+display: flex;
+overflow-x: auto;
+scrollbar-width: none;
+-webkit-overflow-scrolling: touch;
+}
+.category-tabs::-webkit-scrollbar {
+display: none;
+}
+.tab {
+flex: 0 0 auto;
+padding: 0.75rem 1.25rem;
+font-weight: 600;
+color: #8c2d04;
+border-radius: 1rem;
+margin: 0 0.5rem;
+transition: all 0.3s ease;
+cursor: pointer;
+position: relative;
+}
+.tab.active {
+background: linear-gradient(to right, #ffca28, #ffb300);
+color: white;
+box-shadow: 0 4px 10px rgba(255, 179, 0, 0.3);
+}
+.tab::after {
+content: '';
+position: absolute;
+bottom: -4px;
+right: 0;
+width: 100%;
+height: 3px;
+background: #ffb300;
+border-radius: 3px;
+opacity: 0;
+transition: opacity 0.3s ease;
+}
+.tab.active::after {
+opacity: 1;
+}
+.menu-section {
+display: none;
+animation: slideUp 0.5s ease forwards;
+}
+.menu-section.active {
+display: block;
+}
+.product-card {
+background: white;
+border-radius: 1.25rem;
+overflow: hidden;
+box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+transition: all 0.3s ease;
+border: 1px solid #f0e6d2;
+margin-bottom: 1.5rem;
+}
+.product-card:hover {
+transform: translateY(-5px);
+box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
 border-color: #ffb300;
 }
+.product-header {
+padding: 1.25rem 1.5rem;
+background: linear-gradient(to right, #fff8e1, #ffecb3);
+border-bottom: 1px solid #f5e9d5;
+}
+.product-title {
+font-size: 1.375rem;
+font-weight: 700;
+color: #8c2d04;
+margin-bottom: 0.5rem;
+}
+.product-description {
+color: #8c6d35;
+font-size: 0.9375rem;
+line-height: 1.5;
+}
+.size-options {
+display: grid;
+grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+gap: 1rem;
+padding: 1rem 1.5rem;
+}
 .size-option {
-background: #fff8e1;
-border-radius: 0.75rem;
-padding: 0.75rem;
-margin: 0.5rem 0;
+background: #fffaf3;
 border: 1px dashed #ffca28;
+border-radius: 1rem;
+padding: 1rem;
+text-align: center;
+transition: all 0.2s ease;
+cursor: pointer;
+}
+.size-option:hover {
+background: #fffbf0;
+transform: scale(1.03);
+border-style: solid;
 }
 .size-label {
 display: block;
 font-weight: 600;
 color: #b45309;
-font-size: 0.875rem;
-margin-bottom: 0.25rem;
+font-size: 0.9375rem;
+margin-bottom: 0.375rem;
 }
 .size-price {
 font-weight: 700;
 color: #b45309;
 font-size: 1.125rem;
 }
-.manakish-title {
-font-weight: 700;
-font-size: 1.25rem;
-color: #8c2d04;
-margin-bottom: 1rem;
-padding-bottom: 0.5rem;
-border-bottom: 1px solid #f5e9d5;
-}
 .single-price {
 font-weight: 700;
 color: #b45309;
 font-size: 1.5rem;
-margin-top: 0.5rem;
+text-align: center;
+margin-top: 0.75rem;
+padding-top: 0.75rem;
+border-top: 1px dashed #f5e9d5;
+}
+.featured-badge {
+position: absolute;
+top: 1rem;
+left: 1rem;
+background: linear-gradient(to right, #ff6f00, #ffa000);
+color: white;
+font-size: 0.75rem;
+font-weight: 700;
+padding: 0.25rem 0.75rem;
+border-radius: 1rem;
+box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+z-index: 10;
+}
+.food-image {
+width: 100%;
+height: 150px;
+object-fit: cover;
+border-bottom: 1px solid #f0e6d2;
+}
+.order-sticky {
+position: fixed;
+bottom: 2rem;
+left: 50%;
+transform: translateX(-50%);
+z-index: 1000;
+background: linear-gradient(to right, #8c2d04, #b45309);
+color: white;
+padding: 1rem 2rem;
+border-radius: 2rem;
+box-shadow: 0 6px 20px rgba(140, 45, 4, 0.4);
+font-weight: 700;
+font-size: 1.125rem;
+display: flex;
+align-items: center;
+gap: 0.75rem;
+transition: all 0.3s ease;
+}
+.order-sticky:hover {
+transform: translateX(-50%) translateY(-3px);
+box-shadow: 0 8px 25px rgba(140, 45, 4, 0.5);
+}
+.order-sticky i {
+font-size: 1.5rem;
+}
+@media (max-width: 1024px) {
+.size-options {
+grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+}
+}
+@media (max-width: 768px) {
+.category-tabs {
+padding: 0 1rem;
+}
+.tab {
+padding: 0.75rem 1rem;
+font-size: 0.9375rem;
+margin: 0 0.25rem;
+}
+.order-sticky {
+padding: 0.875rem 1.5rem;
+font-size: 1rem;
+}
+.food-image {
+height: 120px;
+}
+}
+@media (max-width: 640px) {
+.size-options {
+grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+}
+.tab {
+font-size: 0.875rem;
+padding: 0.625rem 0.875rem;
+}
+.product-title {
+font-size: 1.25rem;
+}
 }
 /* تخصيص لون التمرير */
 ::-webkit-scrollbar {
@@ -191,48 +333,63 @@ transition: all 0.3s ease;
 box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
 transform: translateY(-5px);
 }
-/* تأثيرات للبطاقات */
-.product-item, .manakish-item {
-transition: all 0.3s ease;
+/* Responsive adjustments */
+@media (max-width: 768px) {
+.section-spacing {
+padding: 1.5rem 1rem;
 }
-.product-item:hover, .manakish-item:hover {
-transform: translateY(-2px);
-box-shadow: 0 6px 12px rgba(0,0,0,0.1);
-background-color: rgba(255, 193, 7, 0.05);
 }
 </style>
 </head>
 <body class="bg-[#f8f5f0] relative">
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<!-- Sticky Order Button -->
+<a href="tel:76385060" class="order-sticky">
+<i class="fas fa-phone-alt"></i>
+اتصل للطلب الآن: 76/385-060
+</a>
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
 <!-- Header Section -->
-<header class="relative text-center py-10 mb-12 rounded-3xl overflow-hidden shadow-2xl">
+<header class="relative text-center py-10 mb-8 rounded-3xl overflow-hidden shadow-2xl">
 <div class="absolute inset-0 bg-gradient-to-l from-amber-900/90 to-amber-600/90 z-0"></div>
 <div class="absolute inset-0 bg-black/40 z-10"></div>
 <div class="relative z-20 px-4">
 <h1 class="text-4xl md:text-5xl font-bold mb-4 text-white drop-shadow-lg">
 معجنات الاشلان
 </h1>
-<div class="space-y-1.5">
+<div class="space-y-1.5 max-w-2xl mx-auto">
 <p class="text-xl italic opacity-90 text-white">عجينة طرية</p>
 <p class="text-xl italic opacity-90 text-white">على القلب هنية</p>
 <p class="text-xl italic opacity-90 text-white">من قلب الزاهرية</p>
-<p class="text-lg italic opacity-90 text-amber-200">من الصبح لعشية 😉</p>
+<p class="text-lg italic opacity-90 text-amber-200">يومياً من الصبح لعشية</p>
 </div>
 </div>
 </header>
-<!-- Menu Section -->
-<main>
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 mb-16">
-<!-- المناقيش Column with new structure -->
-<div class="menu-column bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-xl border-r-4 border-amber-400 animate-fade-in opacity-0">
-<h2 class="text-3xl font-bold text-amber-800 text-center mb-8 pb-4 border-b-2 border-amber-200 relative">
-مناقيش
-<span class="absolute bottom-0 right-1/2 translate-x-1/2 w-20 h-1 bg-amber-400 rounded-full"></span>
-</h2>
-<div class="manakish-grid">
+
+<!-- Category Navigation -->
+<nav class="category-nav">
+<div class="category-tabs">
+<div class="tab active" data-target="manakish">مناقيش</div>
+<div class="tab" data-target="kak">كعك</div>
+<div class="tab" data-target="sawarieh">سواريه</div>
+<div class="tab" data-target="pizza">بيتزا</div>
+<div class="tab" data-target="croissant">كرواسان</div>
+</div>
+</nav>
+
+<!-- Menu Content -->
+<div class="mb-12">
+<!-- المناقيش Section -->
+<div id="manakish" class="menu-section active">
+<h2 class="section-title text-3xl font-bold text-amber-800 mb-8">أصناف المناقيش</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 <!-- زعتر بلدي -->
-<div class="manakish-item">
-<div class="manakish-title">زعتر بلدي</div>
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">زعتر بلدي</h3>
+<p class="product-description">مناقيش الزعتر البلدي التقليدي</p>
+</div>
+<div class="size-options">
 <div class="size-option">
 <span class="size-label">عادي</span>
 <span class="size-price">50.000 ل.ل.</span>
@@ -240,12 +397,17 @@ background-color: rgba(255, 193, 7, 0.05);
 <div class="size-option">
 <span class="size-label">صغير</span>
 <span class="size-price">30.000 ل.ل.</span>
+</div>
 </div>
 </div>
 
 <!-- زعتر حلبي -->
-<div class="manakish-item">
-<div class="manakish-title">زعتر حلبي</div>
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">زعتر حلبي</h3>
+<p class="product-description">مناقيش الزعتر الحلبي المميز</p>
+</div>
+<div class="size-options">
 <div class="size-option">
 <span class="size-label">عادي</span>
 <span class="size-price">50.000 ل.ل.</span>
@@ -255,432 +417,497 @@ background-color: rgba(255, 193, 7, 0.05);
 <span class="size-price">30.000 ل.ل.</span>
 </div>
 </div>
+</div>
 
 <!-- زعتر خضره -->
-<div class="manakish-item">
-<div class="manakish-title">زعتر خضره</div>
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">زعتر خضره</h3>
+<p class="product-description">مناقيش الزعتر مع الخضروات الطازجة</p>
+</div>
 <span class="single-price">70.000 ل.ل.</span>
 </div>
 
 <!-- جبنه -->
-<div class="manakish-item">
-<div class="manakish-title">جبنه</div>
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">جبنه</h3>
+<p class="product-description">مناقيش الجبنة الطازجة</p>
+</div>
+<div class="size-options">
 <div class="size-option">
 <span class="size-label">عادي</span>
 <span class="size-price">120.000 ل.ل.</span>
 </div>
 <div class="size-option">
 <span class="size-label">صغير</span>
-<span class="size-price">80.000 ل.ل.</span>
+<span class="size-price">80.000 ل.л.</span>
+</div>
 </div>
 </div>
 
 <!-- نص جبنه نص زعتر -->
-<div class="manakish-item">
-<div class="manakish-title">نص جبنه نص زعتر</div>
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">نص جبنه نص زعتر</h3>
+<p class="product-description">مزيج رائع من الجبنة والزعتر</p>
+</div>
 <span class="single-price">90.000 ل.ل.</span>
 </div>
 
 <!-- جبنه خضرا -->
-<div class="manakish-item">
-<div class="manakish-title">جبنه خضرا</div>
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">جبنه خضرا</h3>
+<p class="product-description">مناقيش الجبنة مع الخضروات</p>
+</div>
 <span class="single-price">140.000 ل.ل.</span>
 </div>
 
 <!-- جبنه دره -->
-<div class="manakish-item">
-<div class="manakish-title">جبنه دره</div>
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">جبنه دره</h3>
+<p class="product-description">مناقيش الجبنة بالطريقة الدرزية</p>
+</div>
 <span class="single-price">140.000 ل.ل.</span>
 </div>
 
 <!-- جبنه سجق -->
-<div class="manakish-item">
-<div class="manakish-title">جبنه سجق</div>
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">جبنه سجق</h3>
+<p class="product-description">مزيج الجبنة والسجق اللذيذ</p>
+</div>
 <span class="single-price">160.000 ل.ل.</span>
 </div>
 
 <!-- جبنه مرتديلا -->
-<div class="manakish-item">
-<div class="manakish-title">جبنه مرتديلا</div>
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">جبنه مرتديلا</h3>
+<p class="product-description">مناقيش الجبنة مع المرتديلا</p>
+</div>
 <span class="single-price">160.000 ل.ل.</span>
 </div>
 
 <!-- جبنه بيبيروني -->
-<div class="manakish-item">
-<div class="manakish-title">جبنه بيبيروني</div>
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">جبنه بيبيروني</h3>
+<p class="product-description">مناقيش الجبنة مع البيبيروني</p>
+</div>
 <span class="single-price">160.000 ل.ل.</span>
 </div>
 
 <!-- قريش -->
-<div class="manakish-item">
-<div class="manakish-title">قريش</div>
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">قريش</h3>
+<p class="product-description">مناقيش القريش التقليدي</p>
+</div>
 <span class="single-price">100.000 ل.ل.</span>
 </div>
 
 <!-- قريش مع جبنه -->
-<div class="manakish-item">
-<div class="manakish-title">قريش مع جبنه</div>
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">قريش مع جبنه</h3>
+<p class="product-description">مزيج القريش والجبنة المميز</p>
+</div>
 <span class="single-price">150.000 ل.ل.</span>
 </div>
 
 <!-- لحمه -->
-<div class="manakish-item">
-<div class="manakish-title">لحمه</div>
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">لحمه</h3>
+<p class="product-description">مناقيش اللحم اللذيذ</p>
+</div>
 <span class="single-price">150.000 ل.ل.</span>
 </div>
 
 <!-- لحمه مع جبنه -->
-<div class="manakish-item">
-<div class="manakish-title">لحمه مع جبنه</div>
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">لحمه مع جبنه</h3>
+<p class="product-description">مزيج اللحم والجبنة الشهي</p>
+</div>
 <span class="single-price">200.000 ل.ل.</span>
 </div>
 
 <!-- تركيه -->
-<div class="manakish-item">
-<div class="manakish-title">تركيه</div>
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">تركيه</h3>
+<p class="product-description">مناقيش التركية التقليدية</p>
+</div>
 <span class="single-price">100.000 ل.ل.</span>
 </div>
 
 <!-- فاهيتا -->
-<div class="manakish-item">
-<div class="manakish-title">فاهيتا</div>
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">فاهيتا</h3>
+<p class="product-description">مناقيش الفاهيتا الحارة</p>
+</div>
 <span class="single-price">250.000 ل.ل.</span>
 </div>
 
 <!-- طاووق -->
-<div class="manakish-item">
-<div class="manakish-title">طاووق</div>
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">طاووق</h3>
+<p class="product-description">مناقيش الطاووق اللذيذ</p>
+</div>
 <span class="single-price">250.000 ل.ل.</span>
 </div>
 
-<!-- جبنة مطبقة (new item) -->
-<div class="manakish-item">
-<div class="manakish-title">جبنة مطبقة</div>
+<!-- جبنة مطبقة -->
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">جبنة مطبقة</h3>
+<p class="product-description">مناقيش الجبنة المطبقة التقليدية</p>
+</div>
 <span class="single-price">80.000 ل.ل.</span>
 </div>
 </div>
 </div>
 
-<!-- كعك Column - Updated Prices -->
-<div class="menu-column bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-xl border-r-4 border-amber-400 animate-fade-in opacity-0">
-<h2 class="text-3xl font-bold text-amber-800 text-center mb-8 pb-4 border-b-2 border-amber-200 relative">
-كعك
-<span class="absolute bottom-0 right-1/2 translate-x-1/2 w-20 h-1 bg-amber-400 rounded-full"></span>
-</h2>
-<div class="space-y-4">
-<div class="product-item flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:pr-4 transition-all duration-300">
-<span class="font-semibold text-lg text-gray-800 flex-1 pr-3">كعك جبنة</span>
-<span class="font-bold text-amber-700 text-lg bg-amber-50/50 px-4 py-2 rounded-full border border-amber-200 min-w-[120px] text-center">120.000 ل.ل.</span>
+<!-- كعك Section -->
+<div id="kak" class="menu-section">
+<h2 class="section-title text-3xl font-bold text-amber-800 mb-8">أصناف الكعك</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<!-- كعك جبنة -->
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">كعك جبنة</h3>
+<p class="product-description">كعك الجبنة الطازجة</p>
 </div>
-<div class="product-item flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:pr-4 transition-all duration-300">
-<span class="font-semibold text-lg text-gray-800 flex-1 pr-3">كعك جبنة خضرا</span>
-<span class="font-bold text-amber-700 text-lg bg-amber-50/50 px-4 py-2 rounded-full border border-amber-200 min-w-[120px] text-center">140.000 ل.ل.</span>
+<span class="single-price">120.000 ل.ل.</span>
 </div>
-<div class="product-item flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:pr-4 transition-all duration-300">
-<span class="font-semibold text-lg text-gray-800 flex-1 pr-3">كعك جبنة مرتديلا</span>
-<span class="font-bold text-amber-700 text-lg bg-amber-50/50 px-4 py-2 rounded-full border border-amber-200 min-w-[120px] text-center">160.000 ل.ل.</span>
+
+<!-- كعك جبنة خضرا -->
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">كعك جبنة خضرا</h3>
+<p class="product-description">كعك الجبنة مع الخضروات</p>
 </div>
-<div class="product-item flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:pr-4 transition-all duration-300">
-<span class="font-semibold text-lg text-gray-800 flex-1 pr-3">كعك جبنة سجق</span>
-<span class="font-bold text-amber-700 text-lg bg-amber-50/50 px-4 py-2 rounded-full border border-amber-200 min-w-[120px] text-center">160.000 ل.ل.</span>
+<span class="single-price">140.000 ل.ل.</span>
 </div>
-<div class="product-item flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:pr-4 transition-all duration-300">
-<span class="font-semibold text-lg text-gray-800 flex-1 pr-3">كعك فاهيتا</span>
-<span class="font-bold text-amber-700 text-lg bg-amber-50/50 px-4 py-2 rounded-full border border-amber-200 min-w-[120px] text-center">250.000 ل.ل.</span>
+
+<!-- كعك جبنة مرتديلا -->
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">كعك جبنة مرتديلا</h3>
+<p class="product-description">كعك الجبنة مع المرتديلا</p>
 </div>
-<div class="product-item flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:pr-4 transition-all duration-300">
-<span class="font-semibold text-lg text-gray-800 flex-1 pr-3">كعك طاووق</span>
-<span class="font-bold text-amber-700 text-lg bg-amber-50/50 px-4 py-2 rounded-full border border-amber-200 min-w-[120px] text-center">250.000 ل.ل.</span>
+<span class="single-price">160.000 ل.ل.</span>
+</div>
+
+<!-- كعك جبنة سجق -->
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">كعك جبنة سجق</h3>
+<p class="product-description">كعك الجبنة مع السجق</p>
+</div>
+<span class="single-price">160.000 ل.ل.</span>
+</div>
+
+<!-- كعك فاهيتا -->
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">كعك فاهيتا</h3>
+<p class="product-description">كعك الفاهيتا الشهي</p>
+</div>
+<span class="single-price">250.000 ل.ل.</span>
+</div>
+
+<!-- كعك طاووق -->
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">كعك طاووق</h3>
+<p class="product-description">كعك الطاووق اللذيذ</p>
+</div>
+<span class="single-price">250.000 ل.ل.</span>
 </div>
 </div>
 </div>
 
-<!-- سواريه Column - Unchanged -->
-<div class="menu-column bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-xl border-r-4 border-amber-400 animate-fade-in opacity-0">
-<h2 class="text-3xl font-bold text-amber-800 text-center mb-8 pb-4 border-b-2 border-amber-200 relative">
-سواريه
-<span class="absolute bottom-0 right-1/2 translate-x-1/2 w-20 h-1 bg-amber-400 rounded-full"></span>
-</h2>
-<div class="space-y-4">
-<div class="product-item flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:pr-4 transition-all duration-300">
-<span class="font-semibold text-lg text-gray-800 flex-1 pr-3">سواريه جبنة</span>
-<span class="font-bold text-amber-700 text-lg bg-amber-50/50 px-4 py-2 rounded-full border border-amber-200 min-w-[120px] text-center">25.000 ل.ل.</span>
+<!-- سواريه Section -->
+<div id="sawarieh" class="menu-section">
+<h2 class="section-title text-3xl font-bold text-amber-800 mb-8">أصناف السواريه</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">سواريه جبنة</h3>
 </div>
-<div class="product-item flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:pr-4 transition-all duration-300">
-<span class="font-semibold text-lg text-gray-800 flex-1 pr-3">سواريه رقاقات جبنة</span>
-<span class="font-bold text-amber-700 text-lg bg-amber-50/50 px-4 py-2 rounded-full border border-amber-200 min-w-[120px] text-center">25.000 ل.ل.</span>
+<span class="single-price">25.000 ل.ل.</span>
 </div>
-<div class="product-item flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:pr-4 transition-all duration-300">
-<span class="font-semibold text-lg text-gray-800 flex-1 pr-3">سواريه رقاقات فاهيتا</span>
-<span class="font-bold text-amber-700 text-lg bg-amber-50/50 px-4 py-2 rounded-full border border-amber-200 min-w-[120px] text-center">25.000 ل.ل.</span>
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">سواريه رقاقات جبنة</h3>
 </div>
-<div class="product-item flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:pr-4 transition-all duration-300">
-<span class="font-semibold text-lg text-gray-800 flex-1 pr-3">سواريه رقاقات قريشة</span>
-<span class="font-bold text-amber-700 text-lg bg-amber-50/50 px-4 py-2 rounded-full border border-amber-200 min-w-[120px] text-center">25.000 ل.ل.</span>
+<span class="single-price">25.000 ل.ل.</span>
 </div>
-<div class="product-item flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:pr-4 transition-all duration-300">
-<span class="font-semibold text-lg text-gray-800 flex-1 pr-3">سواريه لحمة بعجين</span>
-<span class="font-bold text-amber-700 text-lg bg-amber-50/50 px-4 py-2 rounded-full border border-amber-200 min-w-[120px] text-center">25.000 ل.ل.</span>
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">سواريه رقاقات فاهيتا</h3>
 </div>
-<div class="product-item flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:pr-4 transition-all duration-300">
-<span class="font-semibold text-lg text-gray-800 flex-1 pr-3">لحمة بعجين كبير</span>
-<span class="font-bold text-amber-700 text-lg bg-amber-50/50 px-4 py-2 rounded-full border border-amber-200 min-w-[120px] text-center">50.000 ل.ل.</span>
+<span class="single-price">25.000 ل.ل.</span>
 </div>
-<div class="product-item flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:pr-4 transition-all duration-300">
-<span class="font-semibold text-lg text-gray-800 flex-1 pr-3">سواريه شعيبيات</span>
-<span class="font-bold text-amber-700 text-lg bg-amber-50/50 px-4 py-2 rounded-full border border-amber-200 min-w-[120px] text-center">25.000 ل.ل.</span>
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">سواريه رقاقات قريشة</h3>
 </div>
-<div class="product-item flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:pr-4 transition-all duration-300">
-<span class="font-semibold text-lg text-gray-800 flex-1 pr-3">دزينة سواريه</span>
-<span class="font-bold text-amber-700 text-lg bg-amber-50/50 px-4 py-2 rounded-full border border-amber-200 min-w-[120px] text-center">300.000 ل.ل.</span>
+<span class="single-price">25.000 ل.ل.</span>
 </div>
-<div class="product-item flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:pr-4 transition-all duration-300">
-<span class="font-semibold text-lg text-gray-800 flex-1 pr-3">اوزي</span>
-<span class="font-bold text-amber-700 text-lg bg-amber-50/50 px-4 py-2 rounded-full border border-amber-200 min-w-[120px] text-center">150.000 ل.ل.</span>
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">سواريه لحمة بعجين</h3>
+</div>
+<span class="single-price">25.000 ل.ل.</span>
+</div>
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">لحمة بعجين كبير</h3>
+</div>
+<span class="single-price">50.000 ل.ل.</span>
+</div>
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">سواريه شعيبيات</h3>
+</div>
+<span class="single-price">25.000 ل.ل.</span>
+</div>
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">دزينة سواريه</h3>
+</div>
+<span class="single-price">300.000 ل.ل.</span>
+</div>
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">أوزي</h3>
+</div>
+<span class="single-price">150.000 ل.ل.</span>
 </div>
 </div>
 </div>
 
-  <!-- New كرواسان Column -->
-<div class="menu-column bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-xl border-r-4 border-amber-400 animate-fade-in opacity-0">
-<h2 class="text-3xl font-bold text-amber-800 text-center mb-8 pb-4 border-b-2 border-amber-200 relative">
-كرواسان
-<span class="absolute bottom-0 right-1/2 translate-x-1/2 w-20 h-1 bg-amber-400 rounded-full"></span>
-</h2>
-<div class="space-y-4">
-<div class="product-item flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:pr-4 transition-all duration-300">
-<span class="font-semibold text-lg text-gray-800 flex-1 pr-3">كرواسان</span>
-<span class="font-bold text-amber-700 text-lg bg-amber-50/50 px-4 py-2 rounded-full border border-amber-200 min-w-[120px] text-center">60.000 ل.ل.</span>
-</div>
-</div>
-</div>
-</div>
-
-<!-- بيتزا Column - Unchanged -->
-<div class="menu-column bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-xl border-r-4 border-amber-400 animate-fade-in opacity-0">
-<h2 class="text-3xl font-bold text-amber-800 text-center mb-8 pb-4 border-b-2 border-amber-200 relative">
-بيتزا
-<span class="absolute bottom-0 right-1/2 translate-x-1/2 w-20 h-1 bg-amber-400 rounded-full"></span>
-</h2>
-<div class="space-y-6">
+<!-- بيتزا Section -->
+<div id="pizza" class="menu-section">
+<h2 class="section-title text-3xl font-bold text-amber-800 mb-8">أصناف البيتزا</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 <!-- بيتزا خضرة -->
-<div class="pizza-item rounded-xl border border-amber-200 bg-white overflow-hidden hover:shadow-md transition-all duration-300">
-<div class="p-4">
-<h3 class="font-bold text-xl text-gray-800 mb-4 flex items-center justify-between">
-<span>بيتزا خضرة</span>
-<span class="text-sm font-normal text-gray-600 bg-amber-100 px-3 py-1 rounded-full">
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">بيتزا خضرة</h3>
+<p class="product-description">بيتزا نباتية بالخضروات الطازجة</p>
+<span class="text-sm font-normal text-gray-600 bg-amber-100 px-3 py-1 rounded-full mt-2 inline-block">
 <i class="fas fa-leaf ml-2 text-green-600"></i>نباتية
 </span>
-</h3>
-<div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-<div class="pizza-size-item text-center bg-amber-50 p-3 rounded-lg border border-amber-100">
-<div class="size-badge bg-amber-500 text-white mb-2 mx-auto">S</div>
-<p class="text-xs text-gray-600 mb-1">صغير</p>
-<p class="font-bold text-lg text-amber-700">300.000 ل.ل.</p>
 </div>
-<div class="pizza-size-item text-center bg-amber-50 p-3 rounded-lg border border-amber-100">
-<div class="size-badge bg-amber-600 text-white mb-2 mx-auto">M</div>
-<p class="text-xs text-gray-600 mb-1">وسط</p>
-<p class="font-bold text-lg text-amber-700">500.000 ل.ل.</p>
+<div class="size-options">
+<div class="size-option">
+<span class="size-label">S</span>
+<span class="size-price">300.000 ل.ل.</span>
 </div>
-<div class="pizza-size-item text-center bg-amber-50 p-3 rounded-lg border border-amber-100">
-<div class="size-badge bg-amber-700 text-white mb-2 mx-auto">L</div>
-<p class="text-xs text-gray-600 mb-1">كبير</p>
-<p class="font-bold text-lg text-amber-700">650.000 ل.ل.</p>
+<div class="size-option">
+<span class="size-label">M</span>
+<span class="size-price">500.000 ل.ل.</span>
 </div>
-<div class="pizza-size-item text-center bg-amber-50 p-3 rounded-lg border border-amber-100">
-<div class="size-badge bg-amber-800 text-white mb-2 mx-auto">XL</div>
-<p class="text-xs text-gray-600 mb-1">عائلي</p>
-<p class="font-bold text-lg text-amber-700">900.000 ل.ل.</p>
+<div class="size-option">
+<span class="size-label">L</span>
+<span class="size-price">650.000 ل.ل.</span>
+</div>
+<div class="size-option">
+<span class="size-label">XL</span>
+<span class="size-price">900.000 ل.ل.</span>
 </div>
 </div>
 </div>
-</div>
+
 <!-- بيتزا سجق -->
-<div class="pizza-item rounded-xl border border-amber-200 bg-white overflow-hidden hover:shadow-md transition-all duration-300">
-<div class="p-4">
-<h3 class="font-bold text-xl text-gray-800 mb-4">بيتزا سجق</h3>
-<div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-<div class="pizza-size-item text-center bg-amber-50 p-3 rounded-lg border border-amber-100">
-<div class="size-badge bg-amber-500 text-white mb-2 mx-auto">S</div>
-<p class="text-xs text-gray-600 mb-1">صغير</p>
-<p class="font-bold text-lg text-amber-700">400.000 ل.ل.</p>
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">بيتزا سجق</h3>
+<p class="product-description">بيتزا السجق اللذيذة</p>
 </div>
-<div class="pizza-size-item text-center bg-amber-50 p-3 rounded-lg border border-amber-100">
-<div class="size-badge bg-amber-600 text-white mb-2 mx-auto">M</div>
-<p class="text-xs text-gray-600 mb-1">وسط</p>
-<p class="font-bold text-lg text-amber-700">600.000 ل.ل.</p>
+<div class="size-options">
+<div class="size-option">
+<span class="size-label">S</span>
+<span class="size-price">400.000 ل.ل.</span>
 </div>
-<div class="pizza-size-item text-center bg-amber-50 p-3 rounded-lg border border-amber-100">
-<div class="size-badge bg-amber-700 text-white mb-2 mx-auto">L</div>
-<p class="text-xs text-gray-600 mb-1">كبير</p>
-<p class="font-bold text-lg text-amber-700">800.000 ل.ل.</p>
+<div class="size-option">
+<span class="size-label">M</span>
+<span class="size-price">600.000 ل.ل.</span>
 </div>
-<div class="pizza-size-item text-center bg-amber-50 p-3 rounded-lg border border-amber-100">
-<div class="size-badge bg-amber-800 text-white mb-2 mx-auto">XL</div>
-<p class="text-xs text-gray-600 mb-1">عائلي</p>
-<p class="font-bold text-lg text-amber-700">1,000.000 ل.ل.</p>
+<div class="size-option">
+<span class="size-label">L</span>
+<span class="size-price">800.000 ل.ل.</span>
+</div>
+<div class="size-option">
+<span class="size-label">XL</span>
+<span class="size-price">1,000.000 ل.ل.</span>
 </div>
 </div>
 </div>
-</div>
+
 <!-- بيتزا مارغريتا -->
-<div class="pizza-item rounded-xl border border-amber-200 bg-white overflow-hidden hover:shadow-md transition-all duration-300">
-<div class="p-4">
-<h3 class="font-bold text-xl text-gray-800 mb-4 flex items-center justify-between">
-<span>بيتزا مارغريتا</span>
-<span class="text-sm font-normal text-gray-600 bg-amber-100 px-3 py-1 rounded-full">
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">بيتزا مارغريتا</h3>
+<p class="product-description">البيتزا الكلاسيكية الإيطالية</p>
+<span class="text-sm font-normal text-gray-600 bg-amber-100 px-3 py-1 rounded-full mt-2 inline-block">
 <i class="fas fa-leaf ml-2 text-green-600"></i>نباتية
 </span>
-</h3>
-<div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-<div class="pizza-size-item text-center bg-amber-50 p-3 rounded-lg border border-amber-100">
-<div class="size-badge bg-amber-500 text-white mb-2 mx-auto">S</div>
-<p class="text-xs text-gray-600 mb-1">صغير</p>
-<p class="font-bold text-lg text-amber-700">270.000 ل.ل.</p>
 </div>
-<div class="pizza-size-item text-center bg-amber-50 p-3 rounded-lg border border-amber-100">
-<div class="size-badge bg-amber-600 text-white mb-2 mx-auto">M</div>
-<p class="text-xs text-gray-600 mb-1">وسط</p>
-<p class="font-bold text-lg text-amber-700">450.000 ل.ل.</p>
+<div class="size-options">
+<div class="size-option">
+<span class="size-label">S</span>
+<span class="size-price">270.000 ل.ل.</span>
 </div>
-<div class="pizza-size-item text-center bg-amber-50 p-3 rounded-lg border border-amber-100">
-<div class="size-badge bg-amber-700 text-white mb-2 mx-auto">L</div>
-<p class="text-xs text-gray-600 mb-1">كبير</p>
-<p class="font-bold text-lg text-amber-700">600.000 ل.ل.</p>
+<div class="size-option">
+<span class="size-label">M</span>
+<span class="size-price">450.000 ل.ل.</span>
 </div>
-<div class="pizza-size-item text-center bg-amber-50 p-3 rounded-lg border border-amber-100">
-<div class="size-badge bg-amber-800 text-white mb-2 mx-auto">XL</div>
-<p class="text-xs text-gray-600 mb-1">عائلي</p>
-<p class="font-bold text-lg text-amber-700">850.000 ل.ل.</p>
+<div class="size-option">
+<span class="size-label">L</span>
+<span class="size-price">600.000 ل.ل.</span>
+</div>
+<div class="size-option">
+<span class="size-label">XL</span>
+<span class="size-price">850.000 ل.ل.</span>
 </div>
 </div>
 </div>
-</div>
+
 <!-- بيتزا بيبروني -->
-<div class="pizza-item rounded-xl border border-amber-200 bg-white overflow-hidden hover:shadow-md transition-all duration-300">
-<div class="p-4">
-<h3 class="font-bold text-xl text-gray-800 mb-4">بيتزا بيبروني</h3>
-<div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-<div class="pizza-size-item text-center bg-amber-50 p-3 rounded-lg border border-amber-100">
-<div class="size-badge bg-amber-500 text-white mb-2 mx-auto">S</div>
-<p class="text-xs text-gray-600 mb-1">صغير</p>
-<p class="font-bold text-lg text-amber-700">400.000 ل.ل.</p>
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">بيتزا بيبروني</h3>
+<p class="product-description">بيتزا البيبروني الحارة</p>
 </div>
-<div class="pizza-size-item text-center bg-amber-50 p-3 rounded-lg border border-amber-100">
-<div class="size-badge bg-amber-600 text-white mb-2 mx-auto">M</div>
-<p class="text-xs text-gray-600 mb-1">وسط</p>
-<p class="font-bold text-lg text-amber-700">600.000 ل.ل.</p>
+<div class="size-options">
+<div class="size-option">
+<span class="size-label">S</span>
+<span class="size-price">400.000 ل.ل.</span>
 </div>
-<div class="pizza-size-item text-center bg-amber-50 p-3 rounded-lg border border-amber-100">
-<div class="size-badge bg-amber-700 text-white mb-2 mx-auto">L</div>
-<p class="text-xs text-gray-600 mb-1">كبير</p>
-<p class="font-bold text-lg text-amber-700">800.000 ل.ل.</p>
+<div class="size-option">
+<span class="size-label">M</span>
+<span class="size-price">600.000 ل.ل.</span>
 </div>
-<div class="pizza-size-item text-center bg-amber-50 p-3 rounded-lg border border-amber-100">
-<div class="size-badge bg-amber-800 text-white mb-2 mx-auto">XL</div>
-<p class="text-xs text-gray-600 mb-1">عائلي</p>
-<p class="font-bold text-lg text-amber-700">1,000.000 ل.ل.</p>
+<div class="size-option">
+<span class="size-label">L</span>
+<span class="size-price">800.000 ل.ل.</span>
+</div>
+<div class="size-option">
+<span class="size-label">XL</span>
+<span class="size-price">1,000.000 ل.ل.</span>
 </div>
 </div>
 </div>
-</div>
+
 <!-- بيتزا فاهيتا -->
-<div class="pizza-item rounded-xl border border-amber-200 bg-white overflow-hidden hover:shadow-md transition-all duration-300">
-<div class="p-4">
-<h3 class="font-bold text-xl text-gray-800 mb-4">بيتزا فاهيتا</h3>
-<div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-<div class="pizza-size-item text-center bg-amber-50 p-3 rounded-lg border border-amber-100">
-<div class="size-badge bg-amber-500 text-white mb-2 mx-auto">S</div>
-<p class="text-xs text-gray-600 mb-1">صغير</p>
-<p class="font-bold text-lg text-amber-700">400.000 ل.ل.</p>
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">بيتزا فاهيتا</h3>
+<p class="product-description">بيتزا الفاهيتا المكسيكية</p>
 </div>
-<div class="pizza-size-item text-center bg-amber-50 p-3 rounded-lg border border-amber-100">
-<div class="size-badge bg-amber-600 text-white mb-2 mx-auto">M</div>
-<p class="text-xs text-gray-600 mb-1">وسط</p>
-<p class="font-bold text-lg text-amber-700">600.000 ل.ل.</p>
+<div class="size-options">
+<div class="size-option">
+<span class="size-label">S</span>
+<span class="size-price">400.000 ل.ل.</span>
 </div>
-<div class="pizza-size-item text-center bg-amber-50 p-3 rounded-lg border border-amber-100">
-<div class="size-badge bg-amber-700 text-white mb-2 mx-auto">L</div>
-<p class="text-xs text-gray-600 mb-1">كبير</p>
-<p class="font-bold text-lg text-amber-700">850.000 ل.ل.</p>
+<div class="size-option">
+<span class="size-label">M</span>
+<span class="size-price">600.000 ل.ل.</span>
 </div>
-<div class="pizza-size-item text-center bg-amber-50 p-3 rounded-lg border border-amber-100">
-<div class="size-badge bg-amber-800 text-white mb-2 mx-auto">XL</div>
-<p class="text-xs text-gray-600 mb-1">عائلي</p>
-<p class="font-bold text-lg text-amber-700">1,100.000 ل.ل.</p>
+<div class="size-option">
+<span class="size-label">L</span>
+<span class="size-price">850.000 ل.ل.</span>
+</div>
+<div class="size-option">
+<span class="size-label">XL</span>
+<span class="size-price">1,100.000 ل.ل.</span>
 </div>
 </div>
 </div>
-</div>
+
 <!-- بيتزا طاووق -->
-<div class="pizza-item rounded-xl border border-amber-200 bg-white overflow-hidden hover:shadow-md transition-all duration-300">
-<div class="p-4">
-<h3 class="font-bold text-xl text-gray-800 mb-4">بيتزا طاووق</h3>
-<div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-<div class="pizza-size-item text-center bg-amber-50 p-3 rounded-lg border border-amber-100">
-<div class="size-badge bg-amber-500 text-white mb-2 mx-auto">S</div>
-<p class="text-xs text-gray-600 mb-1">صغير</p>
-<p class="font-bold text-lg text-amber-700">450.000 ل.ل.</p>
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">بيتزا طاووق</h3>
+<p class="product-description">بيتزا الطاووق التركية</p>
 </div>
-<div class="pizza-size-item text-center bg-amber-50 p-3 rounded-lg border border-amber-100">
-<div class="size-badge bg-amber-600 text-white mb-2 mx-auto">M</div>
-<p class="text-xs text-gray-600 mb-1">وسط</p>
-<p class="font-bold text-lg text-amber-700">650.000 ل.ل.</p>
+<div class="size-options">
+<div class="size-option">
+<span class="size-label">S</span>
+<span class="size-price">450.000 ل.ل.</span>
 </div>
-<div class="pizza-size-item text-center bg-amber-50 p-3 rounded-lg border border-amber-100">
-<div class="size-badge bg-amber-700 text-white mb-2 mx-auto">L</div>
-<p class="text-xs text-gray-600 mb-1">كبير</p>
-<p class="font-bold text-lg text-amber-700">900.000 ل.ل.</p>
+<div class="size-option">
+<span class="size-label">M</span>
+<span class="size-price">650.000 ل.ل.</span>
 </div>
-<div class="pizza-size-item text-center bg-amber-50 p-3 rounded-lg border border-amber-100">
-<div class="size-badge bg-amber-800 text-white mb-2 mx-auto">XL</div>
-<p class="text-xs text-gray-600 mb-1">عائلي</p>
-<p class="font-bold text-lg text-amber-700">1,150.000 ل.ل.</p>
+<div class="size-option">
+<span class="size-label">L</span>
+<span class="size-price">900.000 ل.ل.</span>
+</div>
+<div class="size-option">
+<span class="size-label">XL</span>
+<span class="size-price">1,150.000 ل.ل.</span>
 </div>
 </div>
 </div>
-</div>
+
 <!-- بيتزا مشكلة -->
-<div class="pizza-item rounded-xl border border-amber-200 bg-white overflow-hidden hover:shadow-md transition-all duration-300">
-<div class="p-4">
-<h3 class="font-bold text-xl text-gray-800 mb-4">بيتزا مشكلة</h3>
-<div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-<div class="pizza-size-item text-center bg-amber-50 p-3 rounded-lg border border-amber-100">
-<div class="size-badge bg-amber-500 text-white mb-2 mx-auto">S</div>
-<p class="text-xs text-gray-600 mb-1">صغير</p>
-<p class="font-bold text-lg text-amber-700">450.000 ل.ل.</p>
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">بيتزا مشكلة</h3>
+<p class="product-description">بيتزا بأصناف متعددة</p>
 </div>
-<div class="pizza-size-item text-center bg-amber-50 p-3 rounded-lg border border-amber-100">
-<div class="size-badge bg-amber-600 text-white mb-2 mx-auto">M</div>
-<p class="text-xs text-gray-600 mb-1">وسط</p>
-<p class="font-bold text-lg text-amber-700">650.000 ل.ل.</p>
+<div class="size-options">
+<div class="size-option">
+<span class="size-label">S</span>
+<span class="size-price">450.000 ل.ل.</span>
 </div>
-<div class="pizza-size-item text-center bg-amber-50 p-3 rounded-lg border border-amber-100">
-<div class="size-badge bg-amber-700 text-white mb-2 mx-auto">L</div>
-<p class="text-xs text-gray-600 mb-1">كبير</p>
-<p class="font-bold text-lg text-amber-700">950.000 ل.ل.</p>
+<div class="size-option">
+<span class="size-label">M</span>
+<span class="size-price">650.000 ل.ل.</span>
 </div>
-<div class="pizza-size-item text-center bg-amber-50 p-3 rounded-lg border border-amber-100">
-<div class="size-badge bg-amber-800 text-white mb-2 mx-auto">XL</div>
-<p class="text-xs text-gray-600 mb-1">عائلي</p>
-<p class="font-bold text-lg text-amber-700">1,200.000 ل.ل.</p>
+<div class="size-option">
+<span class="size-label">L</span>
+<span class="size-price">950.000 ل.ل.</span>
 </div>
+<div class="size-option">
+<span class="size-label">XL</span>
+<span class="size-price">1,200.000 ل.ل.</span>
 </div>
 </div>
 </div>
 </div>
 </div>
 
-
-</main>
+<!-- كرواسان Section -->
+<div id="croissant" class="menu-section">
+<h2 class="section-title text-3xl font-bold text-amber-800 mb-8">أصناف الكرواسان</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">كرواسان</h3>
+<p class="product-description">كرواسان طازج ومقرمش</p>
+</div>
+<span class="single-price">60.000 ل.ل.</span>
+</div>
+</div>
+</div>
 
 <!-- Location Map Section -->
 <div class="mb-16">
 <div class="bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-xl border-r-4 border-amber-400">
-<h2 class="text-3xl font-bold text-amber-800 text-center mb-8 pb-4 border-b-2 border-amber-200 relative">
+<h2 class="section-title text-3xl font-bold text-amber-800 mb-8">
 <i class="fas fa-map-marker-alt ml-3"></i> موقعنا
-<span class="absolute bottom-0 right-1/2 translate-x-1/2 w-20 h-1 bg-amber-400 rounded-full"></span>
 </h2>
 <div class="flex flex-col lg:flex-row gap-8 items-center">
 <div class="lg:w-1/2">
@@ -703,8 +930,8 @@ title="موقع معجنات الاشلان في الزاهرية، طرابلس
 <i class="fas fa-info-circle ml-3"></i> معلومات الموقع
 </h3>
 <div>
-<h4 class="font-bold text-lg text-gray-800">التوجيهات</h4>
-<p class="text-gray-700">استخدم خرائط جوجل للوصول إلينا</p>
+<h4 class="font-bold text-lg text-gray-800 mb-2">التوجيهات</h4>
+<p class="text-gray-700 mb-4">استخدم خرائط جوجل للوصول إلينا</p>
 <a
 href="https://maps.app.goo.gl/JBZnko42hwUtx2yB6?g_st=awb"
 target="_blank"
@@ -729,10 +956,10 @@ class="inline-flex items-center mt-3 px-4 py-2 bg-amber-500 hover:bg-amber-600 t
 </div>
 <div class="bg-white p-4 rounded-xl border border-amber-200 shadow-sm">
 <div class="flex items-center">
-<i class="fas fa-phone text-amber-600 text-2xl ml-3"></i>
+<i class="fas fa-clock text-amber-600 text-2xl ml-3"></i>
 <div>
-<h4 class="font-bold text-gray-800">اطلب عبر الهاتف</h4>
-<p class="text-sm text-gray-600">76/385-060</p>
+<h4 class="font-bold text-gray-800">ساعات العمل</h4>
+<p class="text-sm text-gray-600">يومياً: ٦ صباحاً - ١٢ ليلاً</p>
 </div>
 </div>
 </div>
@@ -764,8 +991,27 @@ class="inline-flex items-center mt-3 px-4 py-2 bg-amber-500 hover:bg-amber-600 t
 </div>
 
 <script>
-// Trigger animations on scroll
 document.addEventListener('DOMContentLoaded', function() {
+// Tab navigation
+const tabs = document.querySelectorAll('.tab');
+const sections = document.querySelectorAll('.menu-section');
+
+tabs.forEach(tab => {
+tab.addEventListener('click', () => {
+// Remove active class from all tabs and sections
+tabs.forEach(t => t.classList.remove('active'));
+sections.forEach(s => s.classList.remove('active'));
+      
+// Add active class to clicked tab
+tab.classList.add('active');
+      
+// Show corresponding section
+const target = tab.getAttribute('data-target');
+document.getElementById(target).classList.add('active');
+});
+});
+
+// Animation observer for sections
 const observer = new IntersectionObserver((entries) => {
 entries.forEach(entry => {
 if (entry.isIntersecting) {
@@ -775,35 +1021,38 @@ entry.target.style.animationPlayState = 'running';
 });
 }, { threshold: 0.1 });
 
-document.querySelectorAll('.menu-column').forEach(column => {
-column.style.opacity = 0;
-column.style.animationPlayState = 'paused';
-observer.observe(column);
+document.querySelectorAll('.menu-section, .map-container').forEach(element => {
+element.style.opacity = 0;
+element.style.animationPlayState = 'paused';
+observer.observe(element);
 });
 
-// إضافة تأثيرات للخريطة عند التمرير
-const mapSection = document.querySelector('.map-container');
-if (mapSection) {
-observer.observe(mapSection);
+// Smooth scroll for anchor links
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+anchor.addEventListener('click', function(e) {
+e.preventDefault();
+const targetId = this.getAttribute('href');
+if (targetId === '#') return;
+      
+const targetElement = document.querySelector(targetId);
+if (targetElement) {
+window.scrollTo({
+top: targetElement.offsetTop - 100,
+behavior: 'smooth'
+});
 }
-
-// إضافة تأثير لرابط خرائط جوجل
-const mapLink = document.querySelector('a[href*="maps.app.goo.gl"]');
-if (mapLink) {
-mapLink.addEventListener('click', function(e) {
-console.log('تم النقر على رابط الخريطة الخارجي');
 });
-}
+});
 });
 
-// إضافة دالة للتعامل مع أخطاء تحميل الخريطة
+// Map error handling
 window.addEventListener('load', function() {
 const iframe = document.querySelector('iframe[title*="موقع معجنات الاشلان"]');
 if (iframe) {
 iframe.addEventListener('load', function() {
 console.log('تم تحميل الخريطة بنجاح');
 });
-
+      
 iframe.addEventListener('error', function() {
 console.log('حدث خطأ في تحميل الخريطة');
 const mapContainer = document.querySelector('.map-container');
