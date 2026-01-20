@@ -82,13 +82,19 @@ z-index: -1;
 .menu-column:nth-child(2) { animation-delay: 0.2s; }
 .menu-column:nth-child(3) { animation-delay: 0.3s; }
 .menu-column:nth-child(4) { animation-delay: 0.4s; }
+.menu-column:nth-child(5) { animation-delay: 0.5s; }
 @media (max-width: 1024px) {
-.grid-cols-4 {
+.grid-cols-5 {
+grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+}
+@media (max-width: 768px) {
+.grid-cols-5 {
 grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 }
 @media (max-width: 640px) {
-.grid-cols-4, .grid-cols-2 {
+.grid-cols-5, .grid-cols-4, .grid-cols-3, .grid-cols-2 {
 grid-template-columns: 1fr;
 }
 .pizza-sizes {
@@ -216,7 +222,7 @@ background-color: rgba(255, 193, 7, 0.05);
 </header>
 <!-- Menu Section -->
 <main>
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 mb-16">
 <!-- المناقيش Column with new structure -->
 <div class="menu-column bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-xl border-r-4 border-amber-400 animate-fade-in opacity-0">
 <h2 class="text-3xl font-bold text-amber-800 text-center mb-8 pb-4 border-b-2 border-amber-200 relative">
@@ -345,6 +351,12 @@ background-color: rgba(255, 193, 7, 0.05);
 <div class="manakish-item">
 <div class="manakish-title">طاووق</div>
 <span class="single-price">250.000 ل.ل.</span>
+</div>
+
+<!-- جبنة مطبقة (new item) -->
+<div class="manakish-item">
+<div class="manakish-title">جبنة مطبقة</div>
+<span class="single-price">80.000 ل.ل.</span>
 </div>
 </div>
 </div>
@@ -614,6 +626,28 @@ background-color: rgba(255, 193, 7, 0.05);
 </div>
 </div>
 </div>
+
+
+<!-- New كرواسان Column -->
+<div class="menu-column bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-xl border-r-4 border-amber-400 animate-fade-in opacity-0">
+<h2 class="text-3xl font-bold text-amber-800 text-center mb-8 pb-4 border-b-2 border-amber-200 relative">
+كرواسان
+<span class="absolute bottom-0 right-1/2 translate-x-1/2 w-20 h-1 bg-amber-400 rounded-full"></span>
+</h2>
+<div class="space-y-4">
+<div class="product-item flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:pr-4 transition-all duration-300">
+<span class="font-semibold text-lg text-gray-800 flex-1 pr-3">كرواسان</span>
+<span class="font-bold text-amber-700 text-lg bg-amber-50/50 px-4 py-2 rounded-full border border-amber-200 min-w-[120px] text-center">60.000 ل.ل.</span>
+</div>
+</div>
+</div>
+</div>
+
+
+
+
+
+  
 <!-- بيتزا مشكلة -->
 <div class="pizza-item rounded-xl border border-amber-200 bg-white overflow-hidden hover:shadow-md transition-all duration-300">
 <div class="p-4">
@@ -644,7 +678,8 @@ background-color: rgba(255, 193, 7, 0.05);
 </div>
 </div>
 </div>
-</div>
+
+
 </main>
 
 <!-- Location Map Section -->
