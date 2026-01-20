@@ -166,6 +166,9 @@ box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
 transition: all 0.3s ease;
 border: 1px solid #f0e6d2;
 margin-bottom: 1.5rem;
+height: 100%;
+display: flex;
+flex-direction: column;
 }
 .product-card:hover {
 transform: translateY(-5px);
@@ -176,6 +179,7 @@ border-color: #ffb300;
 padding: 1.25rem 1.5rem;
 background: linear-gradient(to right, #fff8e1, #ffecb3);
 border-bottom: 1px solid #f5e9d5;
+flex-grow: 1;
 }
 .product-title {
 font-size: 1.375rem;
@@ -220,15 +224,17 @@ font-weight: 700;
 color: #b45309;
 font-size: 1.125rem;
 }
+.price-container {
+text-align: center;
+padding: 1.25rem 1.5rem;
+background: #fffaf3;
+border-top: 1px dashed #f5e9d5;
+}
 .single-price {
 font-weight: 700;
 color: #b45309;
 font-size: 1.5rem;
-text-align: center;
-display: block; /* Ensures centering works properly */
-margin-top: 0.75rem;
-padding-top: 0.75rem;
-border-top: 1px dashed #f5e9d5;
+display: block;
 }
 .featured-badge {
 position: absolute;
@@ -248,65 +254,6 @@ width: 100%;
 height: 150px;
 object-fit: cover;
 border-bottom: 1px solid #f0e6d2;
-}
-.order-sticky {
-position: fixed;
-bottom: 2rem;
-left: 50%;
-transform: translateX(-50%);
-z-index: 1000;
-background: linear-gradient(to right, #8c2d04, #b45309);
-color: white;
-padding: 1rem 2rem;
-border-radius: 2rem;
-box-shadow: 0 6px 20px rgba(140, 45, 4, 0.4);
-font-weight: 700;
-font-size: 1.125rem;
-display: flex;
-align-items: center;
-gap: 0.75rem;
-transition: all 0.3s ease;
-}
-.order-sticky:hover {
-transform: translateX(-50%) translateY(-3px);
-box-shadow: 0 8px 25px rgba(140, 45, 4, 0.5);
-}
-.order-sticky i {
-font-size: 1.5rem;
-}
-@media (max-width: 1024px) {
-.size-options {
-grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-}
-}
-@media (max-width: 768px) {
-.category-tabs {
-padding: 0 1rem;
-}
-.tab {
-padding: 0.75rem 1rem;
-font-size: 0.9375rem;
-margin: 0 0.25rem;
-}
-.order-sticky {
-padding: 0.875rem 1.5rem;
-font-size: 1rem;
-}
-.food-image {
-height: 120px;
-}
-}
-@media (max-width: 640px) {
-.size-options {
-grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-}
-.tab {
-font-size: 0.875rem;
-padding: 0.625rem 0.875rem;
-}
-.product-title {
-font-size: 1.25rem;
-}
 }
 /* تخصيص لون التمرير */
 ::-webkit-scrollbar {
@@ -343,12 +290,6 @@ padding: 1.5rem 1rem;
 </style>
 </head>
 <body class="bg-[#f8f5f0] relative">
-<!-- Sticky Order Button -->
-<a href="tel:76385060" class="order-sticky">
-<i class="fas fa-phone-alt"></i>
-اتصل للطلب الآن: 76/385-060
-</a>
-
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
 <!-- Header Section -->
 <header class="relative text-center py-10 mb-8 rounded-3xl overflow-hidden shadow-2xl">
@@ -428,7 +369,9 @@ padding: 1.5rem 1rem;
 <h3 class="product-title">زعتر خضره</h3>
 <p class="product-description">مناقيش الزعتر مع الخضروات الطازجة</p>
 </div>
-<div class="single-price">70.000 ل.ل.</div>
+<div class="price-container">
+<span class="single-price">70.000 ل.ل.</span>
+</div>
 </div>
 
 <!-- جبنه -->
@@ -455,7 +398,9 @@ padding: 1.5rem 1rem;
 <h3 class="product-title">نص جبنه نص زعتر</h3>
 <p class="product-description">مزيج رائع من الجبنة والزعتر</p>
 </div>
-<div class="single-price">90.000 ل.ل.</div>
+<div class="price-container">
+<span class="single-price">90.000 ل.ل.</span>
+</div>
 </div>
 
 <!-- جبنه خضرا -->
@@ -464,7 +409,9 @@ padding: 1.5rem 1rem;
 <h3 class="product-title">جبنه خضرا</h3>
 <p class="product-description">مناقيش الجبنة مع الخضروات</p>
 </div>
-<div class="single-price">140.000 ل.ل.</div>
+<div class="price-container">
+<span class="single-price">140.000 ل.ل.</span>
+</div>
 </div>
 
 <!-- جبنه دره -->
@@ -473,7 +420,9 @@ padding: 1.5rem 1rem;
 <h3 class="product-title">جبنه دره</h3>
 <p class="product-description">مناقيش الجبنة بالطريقة الدرزية</p>
 </div>
-<div class="single-price">140.000 ل.ل.</div>
+<div class="price-container">
+<span class="single-price">140.000 ل.ل.</span>
+</div>
 </div>
 
 <!-- جبنه سجق -->
@@ -482,7 +431,9 @@ padding: 1.5rem 1rem;
 <h3 class="product-title">جبنه سجق</h3>
 <p class="product-description">مزيج الجبنة والسجق اللذيذ</p>
 </div>
-<div class="single-price">160.000 ل.ل.</div>
+<div class="price-container">
+<span class="single-price">160.000 ل.ل.</span>
+</div>
 </div>
 
 <!-- جبنه مرتديلا -->
@@ -491,7 +442,9 @@ padding: 1.5rem 1rem;
 <h3 class="product-title">جبنه مرتديلا</h3>
 <p class="product-description">مناقيش الجبنة مع المرتديلا</p>
 </div>
-<div class="single-price">160.000 ل.ل.</div>
+<div class="price-container">
+<span class="single-price">160.000 ل.ل.</span>
+</div>
 </div>
 
 <!-- جبنه بيبيروني -->
@@ -500,7 +453,9 @@ padding: 1.5rem 1rem;
 <h3 class="product-title">جبنه بيبيروني</h3>
 <p class="product-description">مناقيش الجبنة مع البيبيروني</p>
 </div>
-<div class="single-price">160.000 ل.ل.</div>
+<div class="price-container">
+<span class="single-price">160.000 ل.ل.</span>
+</div>
 </div>
 
 <!-- قريش -->
@@ -509,7 +464,9 @@ padding: 1.5rem 1rem;
 <h3 class="product-title">قريش</h3>
 <p class="product-description">مناقيش القريش التقليدي</p>
 </div>
-<div class="single-price">100.000 ل.ل.</div>
+<div class="price-container">
+<span class="single-price">100.000 ل.ل.</span>
+</div>
 </div>
 
 <!-- قريش مع جبنه -->
@@ -518,7 +475,9 @@ padding: 1.5rem 1rem;
 <h3 class="product-title">قريش مع جبنه</h3>
 <p class="product-description">مزيج القريش والجبنة المميز</p>
 </div>
-<div class="single-price">150.000 ل.ل.</div>
+<div class="price-container">
+<span class="single-price">150.000 ل.ل.</span>
+</div>
 </div>
 
 <!-- لحمه -->
@@ -527,7 +486,9 @@ padding: 1.5rem 1rem;
 <h3 class="product-title">لحمه</h3>
 <p class="product-description">مناقيش اللحم اللذيذ</p>
 </div>
-<div class="single-price">150.000 ل.ل.</div>
+<div class="price-container">
+<span class="single-price">150.000 ل.ل.</span>
+</div>
 </div>
 
 <!-- لحمه مع جبنه -->
@@ -536,7 +497,9 @@ padding: 1.5rem 1rem;
 <h3 class="product-title">لحمه مع جبنه</h3>
 <p class="product-description">مزيج اللحم والجبنة الشهي</p>
 </div>
-<div class="single-price">200.000 ل.ل.</div>
+<div class="price-container">
+<span class="single-price">200.000 ل.ل.</span>
+</div>
 </div>
 
 <!-- تركيه -->
@@ -545,7 +508,9 @@ padding: 1.5rem 1rem;
 <h3 class="product-title">تركيه</h3>
 <p class="product-description">مناقيش التركية التقليدية</p>
 </div>
-<div class="single-price">100.000 ل.ل.</div>
+<div class="price-container">
+<span class="single-price">100.000 ل.ل.</span>
+</div>
 </div>
 
 <!-- فاهيتا -->
@@ -554,7 +519,9 @@ padding: 1.5rem 1rem;
 <h3 class="product-title">فاهيتا</h3>
 <p class="product-description">مناقيش الفاهيتا الحارة</p>
 </div>
-<div class="single-price">250.000 ل.ل.</div>
+<div class="price-container">
+<span class="single-price">250.000 ل.ل.</span>
+</div>
 </div>
 
 <!-- طاووق -->
@@ -563,7 +530,9 @@ padding: 1.5rem 1rem;
 <h3 class="product-title">طاووق</h3>
 <p class="product-description">مناقيش الطاووق اللذيذ</p>
 </div>
-<div class="single-price">250.000 ل.ل.</div>
+<div class="price-container">
+<span class="single-price">250.000 ل.ل.</span>
+</div>
 </div>
 
 <!-- جبنة مطبقة -->
@@ -572,7 +541,9 @@ padding: 1.5rem 1rem;
 <h3 class="product-title">جبنة مطبقة</h3>
 <p class="product-description">مناقيش الجبنة المطبقة التقليدية</p>
 </div>
-<div class="single-price">80.000 ل.ل.</div>
+<div class="price-container">
+<span class="single-price">80.000 ل.ل.</span>
+</div>
 </div>
 </div>
 </div>
@@ -587,7 +558,9 @@ padding: 1.5rem 1rem;
 <h3 class="product-title">كعك جبنة</h3>
 <p class="product-description">كعك الجبنة الطازجة</p>
 </div>
-<div class="single-price">120.000 ل.ل.</div>
+<div class="price-container">
+<span class="single-price">120.000 ل.ل.</span>
+</div>
 </div>
 
 <!-- كعك جبنة خضرا -->
@@ -596,7 +569,9 @@ padding: 1.5rem 1rem;
 <h3 class="product-title">كعك جبنة خضرا</h3>
 <p class="product-description">كعك الجبنة مع الخضروات</p>
 </div>
-<div class="single-price">140.000 ل.ل.</div>
+<div class="price-container">
+<span class="single-price">140.000 ل.ل.</span>
+</div>
 </div>
 
 <!-- كعك جبنة مرتديلا -->
@@ -605,7 +580,9 @@ padding: 1.5rem 1rem;
 <h3 class="product-title">كعك جبنة مرتديلا</h3>
 <p class="product-description">كعك الجبنة مع المرتديلا</p>
 </div>
-<div class="single-price">160.000 ل.ل.</div>
+<div class="price-container">
+<span class="single-price">160.000 ل.ل.</span>
+</div>
 </div>
 
 <!-- كعك جبنة سجق -->
@@ -614,7 +591,9 @@ padding: 1.5rem 1rem;
 <h3 class="product-title">كعك جبنة سجق</h3>
 <p class="product-description">كعك الجبنة مع السجق</p>
 </div>
-<div class="single-price">160.000 ل.ل.</div>
+<div class="price-container">
+<span class="single-price">160.000 ل.ل.</span>
+</div>
 </div>
 
 <!-- كعك فاهيتا -->
@@ -623,7 +602,9 @@ padding: 1.5rem 1rem;
 <h3 class="product-title">كعك فاهيتا</h3>
 <p class="product-description">كعك الفاهيتا الشهي</p>
 </div>
-<div class="single-price">250.000 ل.ل.</div>
+<div class="price-container">
+<span class="single-price">250.000 ل.ل.</span>
+</div>
 </div>
 
 <!-- كعك طاووق -->
@@ -632,7 +613,9 @@ padding: 1.5rem 1rem;
 <h3 class="product-title">كعك طاووق</h3>
 <p class="product-description">كعك الطاووق اللذيذ</p>
 </div>
-<div class="single-price">250.000 ل.ل.</div>
+<div class="price-container">
+<span class="single-price">250.000 ل.ل.</span>
+</div>
 </div>
 </div>
 </div>
@@ -645,55 +628,73 @@ padding: 1.5rem 1rem;
 <div class="product-header">
 <h3 class="product-title">سواريه جبنة</h3>
 </div>
-<div class="single-price">25.000 ل.ل.</div>
+<div class="price-container">
+<span class="single-price">25.000 ل.ل.</span>
+</div>
 </div>
 <div class="product-card">
 <div class="product-header">
 <h3 class="product-title">سواريه رقاقات جبنة</h3>
 </div>
-<div class="single-price">25.000 ل.ل.</div>
+<div class="price-container">
+<span class="single-price">25.000 ل.ل.</span>
+</div>
 </div>
 <div class="product-card">
 <div class="product-header">
 <h3 class="product-title">سواريه رقاقات فاهيتا</h3>
 </div>
-<div class="single-price">25.000 ل.ل.</div>
+<div class="price-container">
+<span class="single-price">25.000 ل.ل.</span>
+</div>
 </div>
 <div class="product-card">
 <div class="product-header">
 <h3 class="product-title">سواريه رقاقات قريشة</h3>
 </div>
-<div class="single-price">25.000 ل.ل.</div>
+<div class="price-container">
+<span class="single-price">25.000 ل.ل.</span>
+</div>
 </div>
 <div class="product-card">
 <div class="product-header">
 <h3 class="product-title">سواريه لحمة بعجين</h3>
 </div>
-<div class="single-price">25.000 ل.ل.</div>
+<div class="price-container">
+<span class="single-price">25.000 ل.ل.</span>
+</div>
 </div>
 <div class="product-card">
 <div class="product-header">
 <h3 class="product-title">لحمة بعجين كبير</h3>
 </div>
-<div class="single-price">50.000 ل.ل.</div>
+<div class="price-container">
+<span class="single-price">50.000 ل.ل.</span>
+</div>
 </div>
 <div class="product-card">
 <div class="product-header">
 <h3 class="product-title">سواريه شعيبيات</h3>
 </div>
-<div class="single-price">25.000 ل.ل.</div>
+<div class="price-container">
+<span class="single-price">25.000 ل.ل.</span>
+</div>
 </div>
 <div class="product-card">
 <div class="product-header">
 <h3 class="product-title">دزينة سواريه</h3>
 </div>
-<div class="single-price">300.000 ل.ل.</div>
+<div class="price-container">
+<span class="single-price">300.000 ل.ل.</span>
+</div>
 </div>
 <div class="product-card">
 <div class="product-header">
 <h3 class="product-title">أوزي</h3>
 </div>
-<div class="single-price">150.000 ل.ل.</div>
+<div class="price-container">
+<span class="single-price">150.000 ل.ل.</span>
+</div>
 </div>
 </div>
 </div>
@@ -901,7 +902,9 @@ padding: 1.5rem 1rem;
 <h3 class="product-title">كرواسان</h3>
 <p class="product-description">كرواسان طازج ومقرمش</p>
 </div>
-<div class="single-price">60.000 ل.ل.</div>
+<div class="price-container">
+<span class="single-price">60.000 ل.ل.</span>
+</div>
 </div>
 </div>
 </div>
