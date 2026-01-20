@@ -368,12 +368,14 @@ padding: 1.5rem 1rem;
 
 <!-- Category Navigation -->
 <nav class="category-nav">
+<div class="max-w-7xl mx-auto px-4">
 <div class="category-tabs">
 <div class="tab active" data-target="manakish">مناقيش</div>
 <div class="tab" data-target="kak">كعك</div>
 <div class="tab" data-target="sawarieh">سواريه</div>
 <div class="tab" data-target="pizza">بيتزا</div>
 <div class="tab" data-target="croissant">كرواسان</div>
+</div>
 </div>
 </nav>
 
@@ -441,7 +443,7 @@ padding: 1.5rem 1rem;
 </div>
 <div class="size-option">
 <span class="size-label">صغير</span>
-<span class="size-price">80.000 ل.л.</span>
+<span class="size-price">80.000 ل.ل.</span>
 </div>
 </div>
 </div>
@@ -992,90 +994,98 @@ class="inline-flex items-center mt-3 px-4 py-2 bg-amber-500 hover:bg-amber-600 t
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-// Tab navigation
-const tabs = document.querySelectorAll('.tab');
-const sections = document.querySelectorAll('.menu-section');
+    // Fix tab navigation
+    const tabs = document.querySelectorAll('.tab');
+    const sections = document.querySelectorAll('.menu-section');
 
-tabs.forEach(tab => {
-tab.addEventListener('click', () => {
-// Remove active class from all tabs and sections
-tabs.forEach(t => t.classList.remove('active'));
-sections.forEach(s => s.classList.remove('active'));
-      
-// Add active class to clicked tab
-tab.classList.add('active');
-      
-// Show corresponding section
-const target = tab.getAttribute('data-target');
-document.getElementById(target).classList.add('active');
-});
-});
+    tabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            // Remove active class from all tabs and sections
+            tabs.forEach(t => t.classList.remove('active'));
+            sections.forEach(s => s.classList.remove('active'));
+            
+            // Add active class to clicked tab
+            this.classList.add('active');
+            
+            // Show corresponding section
+            const target = this.getAttribute('data-target');
+            const section = document.getElementById(target);
+            if (section) {
+                section.classList.add('active');
+                // Scroll to the section smoothly
+                section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+    });
 
-// Animation observer for sections
-const observer = new IntersectionObserver((entries) => {
-entries.forEach(entry => {
-if (entry.isIntersecting) {
-entry.target.style.opacity = 1;
-entry.target.style.animationPlayState = 'running';
-}
-});
-}, { threshold: 0.1 });
+    // Initial scroll position fix
+    if (window.location.hash) {
+        const targetSection = document.querySelector(window.location.hash);
+        if (targetSection && targetSection.classList.contains('menu-section')) {
+            sections.forEach(s => s.classList.remove('active'));
+            targetSection.classList.add('active');
+            
+            // Update active tab
+            tabs.forEach(tab => {
+                if (tab.getAttribute('data-target') === targetSection.id) {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                }
+            });
+            
+            setTimeout(() => {
+                targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
+        }
+    }
 
-document.querySelectorAll('.menu-section, .map-container').forEach(element => {
-element.style.opacity = 0;
-element.style.animationPlayState = 'paused';
-observer.observe(element);
-});
+    // Animation observer for map and footer
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = 1;
+                entry.target.style.animationPlayState = 'running';
+            }
+        });
+    }, { threshold: 0.1 });
 
-// Smooth scroll for anchor links
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-anchor.addEventListener('click', function(e) {
-e.preventDefault();
-const targetId = this.getAttribute('href');
-if (targetId === '#') return;
-      
-const targetElement = document.querySelector(targetId);
-if (targetElement) {
-window.scrollTo({
-top: targetElement.offsetTop - 100,
-behavior: 'smooth'
-});
-}
-});
-});
+    document.querySelectorAll('.map-container, footer').forEach(element => {
+        element.style.opacity = 0;
+        element.style.animationPlayState = 'paused';
+        observer.observe(element);
+    });
 });
 
 // Map error handling
 window.addEventListener('load', function() {
-const iframe = document.querySelector('iframe[title*="موقع معجنات الاشلان"]');
-if (iframe) {
-iframe.addEventListener('load', function() {
-console.log('تم تحميل الخريطة بنجاح');
-});
-      
-iframe.addEventListener('error', function() {
-console.log('حدث خطأ في تحميل الخريطة');
-const mapContainer = document.querySelector('.map-container');
-if (mapContainer) {
-mapContainer.innerHTML = `
-<div class="h-full flex flex-col items-center justify-center bg-amber-50 p-6">
-<i class="fas fa-map-marked-alt text-amber-500 text-5xl mb-4"></i>
-<h3 class="text-xl font-bold text-amber-800 mb-2">تعذر تحميل الخريطة</h3>
-<p class="text-gray-700 mb-4 text-center">يمكنك استخدام الزر أدناه لفتح الخريطة في نافذة جديدة</p>
-<a
-href="https://maps.app.goo.gl/JBZnko42hwUtx2yB6?g_st=awb"
-target="_blank"
-class="px-6 py-3 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-lg transition-all duration-300"
->
-<i class="fas fa-external-link-alt ml-2"></i>
-افتح خرائط جوجل
-</a>
-</div>
-`;
-}
-}
-});
-}
+    const iframe = document.querySelector('iframe[title*="موقع معجنات الاشلان"]');
+    if (iframe) {
+        iframe.addEventListener('load', function() {
+            console.log('تم تحميل الخريطة بنجاح');
+        });
+        
+        iframe.addEventListener('error', function() {
+            console.log('حدث خطأ في تحميل الخريطة');
+            const mapContainer = document.querySelector('.map-container');
+            if (mapContainer) {
+                mapContainer.innerHTML = `
+                <div class="h-full flex flex-col items-center justify-center bg-amber-50 p-6">
+                    <i class="fas fa-map-marked-alt text-amber-500 text-5xl mb-4"></i>
+                    <h3 class="text-xl font-bold text-amber-800 mb-2">تعذر تحميل الخريطة</h3>
+                    <p class="text-gray-700 mb-4 text-center">يمكنك استخدام الزر أدناه لفتح الخريطة في نافذة جديدة</p>
+                    <a
+                        href="https://maps.app.goo.gl/JBZnko42hwUtx2yB6?g_st=awb"
+                        target="_blank"
+                        class="px-6 py-3 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-lg transition-all duration-300"
+                    >
+                        <i class="fas fa-external-link-alt ml-2"></i>
+                        افتح خرائط جوجل
+                    </a>
+                </div>
+                `;
+            }
+        });
+    }
 });
 </script>
 </body>
