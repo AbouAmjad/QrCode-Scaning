@@ -1,1197 +1,1314 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>معجنات الاشلان | الزاهرية، طرابلس</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&display=swap');
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Cairo', sans-serif;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>معجنات الاشلان</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script>
+tailwind.config = {
+theme: {
+extend: {
+colors: {
+amber: {
+50: '#fff8e1',
+100: '#ffecb3',
+200: '#ffe082',
+300: '#ffd54f',
+400: '#ffca28',
+500: '#ffc107',
+600: '#ffb300',
+700: '#ffa000',
+800: '#ff8f00',
+900: '#ff6f00',
+}
+},
+animation: {
+'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+'fade-in': 'fadeIn 0.6s ease forwards',
+'slide-up': 'slideUp 0.5s ease forwards'
+},
+keyframes: {
+pulse: {
+'0%, 100%': { opacity: 1 },
+'50%': { opacity: .5 }
+},
+fadeIn: {
+'0%': { opacity: 0, transform: 'translateY(20px)' },
+'100%': { opacity: 1, transform: 'translateY(0)' }
+},
+slideUp: {
+'0%': { transform: 'translateY(20px)', opacity: 0 },
+'100%': { transform: 'translateY(0)', opacity: 1 }
+}
+}
+}
+}
+}
+</script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
+* {
+margin: 0;
+padding: 0;
+box-sizing: border-box;
+font-family: 'Cairo', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+body {
+background-color: #f8f5f0;
+color: #333;
+line-height: 1.6;
+min-height: 100vh;
+position: relative;
+overflow-x: hidden;
+}
+body::before {
+content: '';
+position: fixed;
+top: 0;
+right: 0;
+width: 100%;
+height: 100%;
+background-image: url('https://images.unsplash.com/photo-1620374645498-af6bd681a0bd?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80');
+background-size: cover;
+background-position: center;
+background-attachment: fixed;
+opacity: 0.25;
+z-index: -2;
+}
+.header-overlay {
+position: absolute;
+inset: 0;
+background: linear-gradient(to left, rgba(184, 28, 28, 0.9), rgba(212, 160, 23, 0.9));
+z-index: -1;
+}
 
-        body {
-            background: linear-gradient(135deg, #f8f5f0 0%, #fffaf0 100%);
-            min-height: 100vh;
-            position: relative;
-        }
+/* قائمة التصنيفات الجانبية */
+.sidebar-nav {
+position: fixed;
+right: 0;
+top: 50%;
+transform: translateY(-50%);
+width: 100px;
+background: rgba(255, 255, 255, 0.95);
+backdrop-filter: blur(10px);
+border-radius: 25px 0 0 25px;
+box-shadow: -5px 0 25px rgba(0, 0, 0, 0.1);
+padding: 20px 0;
+z-index: 100;
+border: 1px solid rgba(255, 193, 7, 0.2);
+border-right: none;
+}
 
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            right: 0;
-            width: 100%;
-            height: 100%;
-            background-image: url('https://images.unsplash.com/photo-1620374645498-af6bd681a0bd?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80');
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-            opacity: 0.15;
-            z-index: -1;
-        }
+.nav-menu {
+display: flex;
+flex-direction: column;
+align-items: center;
+gap: 15px;
+}
 
-        .glass-effect {
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
+.nav-item {
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+width: 80px;
+height: 80px;
+border-radius: 20px;
+cursor: pointer;
+transition: all 0.3s ease;
+background: rgba(255, 255, 255, 0.9);
+border: 1px solid rgba(255, 193, 7, 0.1);
+}
 
-        .gradient-text {
-            background: linear-gradient(135deg, #8c2d04 0%, #b45309 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
+.nav-item i {
+font-size: 24px;
+color: #8c2d04;
+margin-bottom: 8px;
+transition: all 0.3s ease;
+}
 
-        .gradient-bg {
-            background: linear-gradient(135deg, #ffc107 0%, #ff8f00 100%);
-        }
+.nav-item span {
+font-size: 12px;
+font-weight: 700;
+color: #8c2d04;
+text-align: center;
+}
 
-        .section-divider {
-            height: 4px;
-            background: linear-gradient(90deg, transparent, #ffc107, transparent);
-            margin: 2rem 0;
-        }
+.nav-item:hover {
+background: rgba(255, 193, 7, 0.1);
+transform: translateX(-5px);
+}
 
-        .product-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 1.5rem;
-        }
+.nav-item.active {
+background: linear-gradient(to bottom, #ffc107, #ff8f00);
+border-color: #ffc107;
+}
 
-        .menu-category {
-            scroll-margin-top: 120px;
-        }
+.nav-item.active i,
+.nav-item.active span {
+color: white;
+}
 
-        .sticky-header {
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            animation: slideDown 0.3s ease;
-        }
+.nav-item.active:hover {
+transform: translateX(-5px) scale(1.05);
+}
 
-        @keyframes slideDown {
-            from { transform: translateY(-100%); }
-            to { transform: translateY(0); }
-        }
+.nav-count {
+position: absolute;
+top: -5px;
+left: -5px;
+background: #ff6f00;
+color: white;
+font-size: 11px;
+font-weight: bold;
+width: 22px;
+height: 22px;
+border-radius: 50%;
+display: flex;
+align-items: center;
+justify-content: center;
+box-shadow: 0 2px 8px rgba(255, 111, 0, 0.3);
+}
 
-        .floating-whatsapp {
-            position: fixed;
-            bottom: 2rem;
-            left: 2rem;
-            width: 60px;
-            height: 60px;
-            background: #25D366;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 2rem;
-            box-shadow: 0 4px 20px rgba(37, 211, 102, 0.4);
-            z-index: 1000;
-            transition: all 0.3s ease;
-            animation: pulse 2s infinite;
-            text-decoration: none;
-        }
+/* تحسينات أقسام المنتجات */
+.category-section {
+margin-bottom: 3rem;
+padding-top: 2rem;
+}
 
-        .floating-whatsapp:hover {
-            transform: scale(1.1);
-            box-shadow: 0 6px 30px rgba(37, 211, 102, 0.6);
-        }
+.category-header {
+position: sticky;
+top: 0;
+background: rgba(255, 255, 255, 0.95);
+backdrop-filter: blur(10px);
+z-index: 90;
+padding: 1.5rem 0;
+margin-bottom: 2rem;
+border-bottom: 2px solid #ffc107;
+}
 
-        @keyframes pulse {
-            0% { box-shadow: 0 4px 20px rgba(37, 211, 102, 0.4); }
-            50% { box-shadow: 0 4px 30px rgba(37, 211, 102, 0.6); }
-            100% { box-shadow: 0 4px 20px rgba(37, 211, 102, 0.4); }
-        }
+.category-title {
+font-size: 2.5rem;
+font-weight: 800;
+color: #8c2d04;
+text-align: center;
+margin-bottom: 0.5rem;
+position: relative;
+display: inline-block;
+}
 
-        .product-card {
-            transition: all 0.3s ease;
-            border: 2px solid transparent;
-        }
+.category-title::after {
+content: '';
+position: absolute;
+bottom: -10px;
+right: 0;
+width: 100%;
+height: 3px;
+background: linear-gradient(to right, #ffc107, #ff8f00);
+border-radius: 3px;
+}
 
-        .product-card:hover {
-            transform: translateY(-5px);
-            border-color: #ffc107;
-            box-shadow: 0 10px 30px rgba(255, 193, 7, 0.2);
-        }
+.category-count {
+font-size: 1.2rem;
+color: #b45309;
+font-weight: 600;
+text-align: center;
+}
 
-        .tab-indicator {
-            position: absolute;
-            bottom: 0;
-            height: 3px;
-            background: linear-gradient(90deg, #ffc107, #ff8f00);
-            transition: all 0.3s ease;
-            border-radius: 3px;
-        }
+/* تحسينات البطاقات */
+.product-grid {
+display: grid;
+grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+gap: 1.5rem;
+padding: 1rem;
+}
 
-        .price-tag {
-            background: linear-gradient(135deg, #ffc107 0%, #ffb300 100%);
-            color: white;
-            font-weight: bold;
-            padding: 0.25rem 1rem;
-            border-radius: 20px;
-            box-shadow: 0 2px 10px rgba(255, 179, 0, 0.3);
-        }
+.product-card {
+background: white;
+border-radius: 1.25rem;
+overflow: hidden;
+box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+transition: all 0.3s ease;
+border: 2px solid #f0e6d2;
+animation: fade-in 0.5s ease forwards;
+}
 
-        .scrollbar-hide {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
+.product-card:hover {
+transform: translateY(-8px);
+box-shadow: 0 12px 30px rgba(255, 179, 0, 0.15);
+border-color: #ffc107;
+}
 
-        .scrollbar-hide::-webkit-scrollbar {
-            display: none;
-        }
+.product-header {
+padding: 1.25rem 1.5rem;
+background: linear-gradient(to right, #fff8e1, #ffecb3);
+border-bottom: 1px solid #f5e9d5;
+}
 
-        .image-overlay {
-            position: relative;
-            overflow: hidden;
-            border-radius: 12px;
-        }
+.product-title {
+font-size: 1.375rem;
+font-weight: 700;
+color: #8c2d04;
+margin-bottom: 0.5rem;
+}
 
-        .image-overlay::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(135deg, rgba(140, 45, 4, 0.3) 0%, rgba(180, 83, 9, 0.1) 100%);
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
+.product-description {
+color: #8c6d35;
+font-size: 0.9375rem;
+line-height: 1.5;
+}
 
-        .image-overlay:hover::after {
-            opacity: 1;
-        }
+.size-options {
+display: grid;
+grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+gap: 1rem;
+padding: 1rem 1.5rem;
+}
 
-        .order-badge {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            background: #ff6f00;
-            color: white;
-            padding: 0.25rem 0.75rem;
-            border-radius: 15px;
-            font-size: 0.75rem;
-            font-weight: bold;
-            z-index: 2;
-        }
-    </style>
+.size-option {
+background: #fffaf3;
+border: 1px dashed #ffca28;
+border-radius: 1rem;
+padding: 1rem;
+text-align: center;
+transition: all 0.2s ease;
+cursor: pointer;
+}
+
+.size-option:hover {
+background: #fffbf0;
+transform: scale(1.03);
+border-style: solid;
+}
+
+.size-label {
+display: block;
+font-weight: 600;
+color: #b45309;
+font-size: 0.9375rem;
+margin-bottom: 0.375rem;
+}
+
+.size-price {
+font-weight: 700;
+color: #b45309;
+font-size: 1.125rem;
+}
+
+.price-container {
+text-align: center;
+padding: 1.25rem 1.5rem;
+background: #fffaf3;
+border-top: 1px dashed #f5e9d5;
+}
+
+.single-price {
+font-weight: 700;
+color: #b45309;
+font-size: 1.5rem;
+display: block;
+}
+
+/* تخصيص لون التمرير */
+::-webkit-scrollbar {
+width: 10px;
+}
+::-webkit-scrollbar-track {
+background: #f1f1f1;
+border-radius: 5px;
+}
+::-webkit-scrollbar-thumb {
+background: #ffb300;
+border-radius: 5px;
+}
+::-webkit-scrollbar-thumb:hover {
+background: #ff8f00;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+.sidebar-nav {
+width: 80px;
+}
+
+.nav-item {
+width: 70px;
+height: 70px;
+}
+
+.nav-item i {
+font-size: 20px;
+}
+
+.nav-item span {
+font-size: 11px;
+}
+}
+
+@media (max-width: 768px) {
+.sidebar-nav {
+position: fixed;
+bottom: 0;
+top: auto;
+right: 0;
+width: 100%;
+height: 80px;
+transform: none;
+border-radius: 25px 25px 0 0;
+flex-direction: row;
+padding: 0;
+border: 1px solid rgba(255, 193, 7, 0.2);
+border-bottom: none;
+}
+
+.nav-menu {
+flex-direction: row;
+justify-content: space-around;
+height: 100%;
+gap: 0;
+}
+
+.nav-item {
+width: 70px;
+height: 70px;
+margin: 0;
+}
+
+.nav-item:hover {
+transform: translateY(-5px);
+}
+
+.nav-item.active:hover {
+transform: translateY(-5px) scale(1.05);
+}
+
+.category-header {
+position: relative;
+top: 0;
+}
+
+.container {
+padding-left: 0 !important;
+}
+}
+
+/* واتساب عائم */
+.floating-whatsapp {
+position: fixed;
+bottom: 100px;
+left: 20px;
+width: 60px;
+height: 60px;
+background: #25D366;
+border-radius: 50%;
+display: flex;
+align-items: center;
+justify-content: center;
+color: white;
+font-size: 2rem;
+box-shadow: 0 4px 20px rgba(37, 211, 102, 0.4);
+z-index: 1000;
+transition: all 0.3s ease;
+animation: pulse 2s infinite;
+}
+
+.floating-whatsapp:hover {
+transform: scale(1.1);
+box-shadow: 0 6px 30px rgba(37, 211, 102, 0.6);
+}
+
+@keyframes pulse {
+0% { box-shadow: 0 4px 20px rgba(37, 211, 102, 0.4); }
+50% { box-shadow: 0 4px 30px rgba(37, 211, 102, 0.6); }
+100% { box-shadow: 0 4px 20px rgba(37, 211, 102, 0.4); }
+}
+</style>
 </head>
-<body class="bg-gray-50">
+<body class="bg-[#f8f5f0] relative">
+<!-- واتساب عائم -->
+<a href="https://wa.me/76385060" target="_blank" class="floating-whatsapp">
+<i class="fab fa-whatsapp"></i>
+</a>
+
+<!-- قائمة التصنيفات الجانبية -->
+<nav class="sidebar-nav">
+<div class="nav-menu">
+<div class="nav-item active" data-category="manakish">
+<span class="nav-count">18</span>
+<i class="fas fa-bread-slice"></i>
+<span>المناقيش</span>
+</div>
+<div class="nav-item" data-category="kak">
+<span class="nav-count">6</span>
+<i class="fas fa-cookie-bite"></i>
+<span>الكعك</span>
+</div>
+<div class="nav-item" data-category="sawarieh">
+<span class="nav-count">9</span>
+<i class="fas fa-utensil-spoon"></i>
+<span>السواريه</span>
+</div>
+<div class="nav-item" data-category="pizza">
+<span class="nav-count">7</span>
+<i class="fas fa-pizza-slice"></i>
+<span>البيتزا</span>
+</div>
+<div class="nav-item" data-category="croissant">
+<span class="nav-count">1</span>
+<i class="fas fa-croissant"></i>
+<span>الكرواسان</span>
+</div>
+</div>
+</nav>
+
+<div class="container mx-auto px-4 sm:px-6 lg:px-8 py-4" style="margin-right: 100px;">
+<!-- Header Section -->
+<header class="relative text-center py-10 mb-8 rounded-3xl overflow-hidden shadow-2xl">
+<div class="absolute inset-0 bg-gradient-to-l from-amber-900/90 to-amber-600/90 z-0"></div>
+<div class="absolute inset-0 bg-black/40 z-10"></div>
+<div class="relative z-20 px-4">
+<h1 class="text-4xl md:text-5xl font-bold mb-4 text-white drop-shadow-lg">
+معجنات الاشلان
+</h1>
+<div class="space-y-1.5 max-w-2xl mx-auto">
+<p class="text-xl italic opacity-90 text-white">عجينة طرية</p>
+<p class="text-xl italic opacity-90 text-white">على القلب هنية</p>
+<p class="text-xl italic opacity-90 text-white">من قلب الزاهرية</p>
+<p class="text-lg italic opacity-90 text-amber-200">يومياً من الصبح لعشية</p>
+</div>
+</div>
+</header>
+
+<!-- جميع المنتجات -->
+<div class="space-y-16">
+
+<!-- المناقيش Section -->
+<div id="manakish" class="category-section">
+<div class="category-header">
+<h2 class="category-title">أصناف المناقيش</h2>
+<p class="category-count">18 صنفاً من أشهر المعجنات اللبنانية</p>
+</div>
+<div class="product-grid">
+<!-- زعتر بلدي -->
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">زعتر بلدي</h3>
+<p class="product-description">مناقيش الزعتر البلدي التقليدي</p>
+</div>
+<div class="size-options">
+<div class="size-option">
+<span class="size-label">عادي</span>
+<span class="size-price">50.000 ل.ل.</span>
+</div>
+<div class="size-option">
+<span class="size-label">صغير</span>
+<span class="size-price">30.000 ل.ل.</span>
+</div>
+</div>
+</div>
+
+<!-- زعتر حلبي -->
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">زعتر حلبي</h3>
+<p class="product-description">مناقيش الزعتر الحلبي المميز</p>
+</div>
+<div class="size-options">
+<div class="size-option">
+<span class="size-label">عادي</span>
+<span class="size-price">50.000 ل.ل.</span>
+</div>
+<div class="size-option">
+<span class="size-label">صغير</span>
+<span class="size-price">30.000 ل.ل.</span>
+</div>
+</div>
+</div>
+
+<!-- زعتر خضره -->
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">زعتر خضره</h3>
+<p class="product-description">مناقيش الزعتر مع الخضروات الطازجة</p>
+</div>
+<div class="price-container">
+<span class="single-price">70.000 ل.ل.</span>
+</div>
+</div>
+
+<!-- جبنه -->
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">جبنه</h3>
+<p class="product-description">مناقيش الجبنة الطازجة</p>
+</div>
+<div class="size-options">
+<div class="size-option">
+<span class="size-label">عادي</span>
+<span class="size-price">120.000 ل.ل.</span>
+</div>
+<div class="size-option">
+<span class="size-label">صغير</span>
+<span class="size-price">80.000 ل.ل.</span>
+</div>
+</div>
+</div>
+
+<!-- نص جبنه نص زعتر -->
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">نص جبنه نص زعتر</h3>
+<p class="product-description">مزيج رائع من الجبنة والزعتر</p>
+</div>
+<div class="price-container">
+<span class="single-price">90.000 ل.ل.</span>
+</div>
+</div>
+
+<!-- جبنه خضرا -->
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">جبنه خضرا</h3>
+<p class="product-description">مناقيش الجبنة مع الخضروات</p>
+</div>
+<div class="price-container">
+<span class="single-price">140.000 ل.ل.</span>
+</div>
+</div>
+
+<!-- جبنه دره -->
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">جبنه دره</h3>
+<p class="product-description">مناقيش الجبنة بالطريقة الدرزية</p>
+</div>
+<div class="price-container">
+<span class="single-price">140.000 ل.ل.</span>
+</div>
+</div>
+
+<!-- جبنه سجق -->
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">جبنه سجق</h3>
+<p class="product-description">مزيج الجبنة والسجق اللذيذ</p>
+</div>
+<div class="price-container">
+<span class="single-price">160.000 ل.ل.</span>
+</div>
+</div>
+
+<!-- جبنه مرتديلا -->
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">جبنه مرتديلا</h3>
+<p class="product-description">مناقيش الجبنة مع المرتديلا</p>
+</div>
+<div class="price-container">
+<span class="single-price">160.000 ل.ل.</span>
+</div>
+</div>
+
+<!-- جبنه بيبيروني -->
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">جبنه بيبيروني</h3>
+<p class="product-description">مناقيش الجبنة مع البيبيروني</p>
+</div>
+<div class="price-container">
+<span class="single-price">160.000 ل.ل.</span>
+</div>
+</div>
+
+<!-- قريش -->
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">قريش</h3>
+<p class="product-description">مناقيش القريش التقليدي</p>
+</div>
+<div class="price-container">
+<span class="single-price">100.000 ل.ل.</span>
+</div>
+</div>
+
+<!-- قريش مع جبنه -->
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">قريش مع جبنه</h3>
+<p class="product-description">مزيج القريش والجبنة المميز</p>
+</div>
+<div class="price-container">
+<span class="single-price">150.000 ل.ل.</span>
+</div>
+</div>
+
+<!-- لحمه -->
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">لحمه</h3>
+<p class="product-description">مناقيش اللحم اللذيذ</p>
+</div>
+<div class="price-container">
+<span class="single-price">150.000 ل.ل.</span>
+</div>
+</div>
+
+<!-- لحمه مع جبنه -->
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">لحمه مع جبنه</h3>
+<p class="product-description">مزيج اللحم والجبنة الشهي</p>
+</div>
+<div class="price-container">
+<span class="single-price">200.000 ل.ل.</span>
+</div>
+</div>
+
+<!-- تركيه -->
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">تركيه</h3>
+<p class="product-description">مناقيش التركية التقليدية</p>
+</div>
+<div class="price-container">
+<span class="single-price">100.000 ل.ل.</span>
+</div>
+</div>
+
+<!-- فاهيتا -->
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">فاهيتا</h3>
+<p class="product-description">مناقيش الفاهيتا الحارة</p>
+</div>
+<div class="price-container">
+<span class="single-price">250.000 ل.ل.</span>
+</div>
+</div>
+
+<!-- طاووق -->
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">طاووق</h3>
+<p class="product-description">مناقيش الطاووق اللذيذ</p>
+</div>
+<div class="price-container">
+<span class="single-price">250.000 ل.ل.</span>
+</div>
+</div>
+
+<!-- جبنة مطبقة -->
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">جبنة مطبقة</h3>
+<p class="product-description">مناقيش الجبنة المطبقة التقليدية</p>
+</div>
+<div class="price-container">
+<span class="single-price">80.000 ل.ل.</span>
+</div>
+</div>
+</div>
+</div>
+
+<!-- كعك Section -->
+<div id="kak" class="category-section">
+<div class="category-header">
+<h2 class="category-title">أصناف الكعك</h2>
+<p class="category-count">6 أصناف من الكعك المحشو بأنواع مختلفة</p>
+</div>
+<div class="product-grid">
+<!-- كعك جبنة -->
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">كعك جبنة</h3>
+<p class="product-description">كعك الجبنة الطازجة</p>
+</div>
+<div class="price-container">
+<span class="single-price">120.000 ل.ل.</span>
+</div>
+</div>
+
+<!-- كعك جبنة خضرا -->
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">كعك جبنة خضرا</h3>
+<p class="product-description">كعك الجبنة مع الخضروات</p>
+</div>
+<div class="price-container">
+<span class="single-price">140.000 ل.ل.</span>
+</div>
+</div>
+
+<!-- كعك جبنة مرتديلا -->
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">كعك جبنة مرتديلا</h3>
+<p class="product-description">كعك الجبنة مع المرتديلا</p>
+</div>
+<div class="price-container">
+<span class="single-price">160.000 ل.ل.</span>
+</div>
+</div>
+
+<!-- كعك جبنة سجق -->
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">كعك جبنة سجق</h3>
+<p class="product-description">كعك الجبنة مع السجق</p>
+</div>
+<div class="price-container">
+<span class="single-price">160.000 ل.ل.</span>
+</div>
+</div>
+
+<!-- كعك فاهيتا -->
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">كعك فاهيتا</h3>
+<p class="product-description">كعك الفاهيتا الشهي</p>
+</div>
+<div class="price-container">
+<span class="single-price">250.000 ل.ل.</span>
+</div>
+</div>
+
+<!-- كعك طاووق -->
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">كعك طاووق</h3>
+<p class="product-description">كعك الطاووق اللذيذ</p>
+</div>
+<div class="price-container">
+<span class="single-price">250.000 ل.ل.</span>
+</div>
+</div>
+</div>
+</div>
+
+<!-- سواريه Section -->
+<div id="sawarieh" class="category-section">
+<div class="category-header">
+<h2 class="category-title">أصناف السواريه</h2>
+<p class="category-count">9 أصناف من السواريه والمعجنات المتنوعة</p>
+</div>
+<div class="product-grid">
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">سواريه جبنة</h3>
+</div>
+<div class="price-container">
+<span class="single-price">25.000 ل.ل.</span>
+</div>
+</div>
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">سواريه رقاقات جبنة</h3>
+</div>
+<div class="price-container">
+<span class="single-price">25.000 ل.ل.</span>
+</div>
+</div>
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">سواريه رقاقات فاهيتا</h3>
+</div>
+<div class="price-container">
+<span class="single-price">25.000 ل.ل.</span>
+</div>
+</div>
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">سواريه رقاقات قريشة</h3>
+</div>
+<div class="price-container">
+<span class="single-price">25.000 ل.ل.</span>
+</div>
+</div>
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">سواريه لحمة بعجين</h3>
+</div>
+<div class="price-container">
+<span class="single-price">25.000 ل.ل.</span>
+</div>
+</div>
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">لحمة بعجين كبير</h3>
+</div>
+<div class="price-container">
+<span class="single-price">50.000 ل.ل.</span>
+</div>
+</div>
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">سواريه شعيبيات</h3>
+</div>
+<div class="price-container">
+<span class="single-price">25.000 ل.ل.</span>
+</div>
+</div>
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">دزينة سواريه</h3>
+</div>
+<div class="price-container">
+<span class="single-price">300.000 ل.ل.</span>
+</div>
+</div>
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">أوزي</h3>
+</div>
+<div class="price-container">
+<span class="single-price">150.000 ل.ل.</span>
+</div>
+</div>
+</div>
+</div>
+
+<!-- بيتزا Section -->
+<div id="pizza" class="category-section">
+<div class="category-header">
+<h2 class="category-title">أصناف البيتزا</h2>
+<p class="category-count">7 أصناف من البيتزا الإيطالية بأنواع مختلفة</p>
+</div>
+<div class="product-grid">
+<!-- بيتزا خضرة -->
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">بيتزا خضرة</h3>
+<p class="product-description">بيتزا نباتية بالخضروات الطازجة</p>
+<span class="text-sm font-normal text-gray-600 bg-amber-100 px-3 py-1 rounded-full mt-2 inline-block">
+<i class="fas fa-leaf ml-2 text-green-600"></i>نباتية
+</span>
+</div>
+<div class="size-options">
+<div class="size-option">
+<span class="size-label">S</span>
+<span class="size-price">300.000 ل.ل.</span>
+</div>
+<div class="size-option">
+<span class="size-label">M</span>
+<span class="size-price">500.000 ل.ل.</span>
+</div>
+<div class="size-option">
+<span class="size-label">L</span>
+<span class="size-price">650.000 ل.ل.</span>
+</div>
+<div class="size-option">
+<span class="size-label">XL</span>
+<span class="size-price">900.000 ل.ل.</span>
+</div>
+</div>
+</div>
+
+<!-- بيتزا سجق -->
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">بيتزا سجق</h3>
+<p class="product-description">بيتزا السجق اللذيذة</p>
+</div>
+<div class="size-options">
+<div class="size-option">
+<span class="size-label">S</span>
+<span class="size-price">400.000 ل.ل.</span>
+</div>
+<div class="size-option">
+<span class="size-label">M</span>
+<span class="size-price">600.000 ل.ل.</span>
+</div>
+<div class="size-option">
+<span class="size-label">L</span>
+<span class="size-price">800.000 ل.ل.</span>
+</div>
+<div class="size-option">
+<span class="size-label">XL</span>
+<span class="size-price">1,000.000 ل.ل.</span>
+</div>
+</div>
+</div>
+
+<!-- بيتزا مارغريتا -->
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">بيتزا مارغريتا</h3>
+<p class="product-description">البيتزا الكلاسيكية الإيطالية</p>
+<span class="text-sm font-normal text-gray-600 bg-amber-100 px-3 py-1 rounded-full mt-2 inline-block">
+<i class="fas fa-leaf ml-2 text-green-600"></i>نباتية
+</span>
+</div>
+<div class="size-options">
+<div class="size-option">
+<span class="size-label">S</span>
+<span class="size-price">270.000 ل.ل.</span>
+</div>
+<div class="size-option">
+<span class="size-label">M</span>
+<span class="size-price">450.000 ل.ل.</span>
+</div>
+<div class="size-option">
+<span class="size-label">L</span>
+<span class="size-price">600.000 ل.ل.</span>
+</div>
+<div class="size-option">
+<span class="size-label">XL</span>
+<span class="size-price">850.000 ل.ل.</span>
+</div>
+</div>
+</div>
+
+<!-- بيتزا بيبروني -->
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">بيتزا بيبروني</h3>
+<p class="product-description">بيتزا البيبروني الحارة</p>
+</div>
+<div class="size-options">
+<div class="size-option">
+<span class="size-label">S</span>
+<span class="size-price">400.000 ل.ل.</span>
+</div>
+<div class="size-option">
+<span class="size-label">M</span>
+<span class="size-price">600.000 ل.ل.</span>
+</div>
+<div class="size-option">
+<span class="size-label">L</span>
+<span class="size-price">800.000 ل.ل.</span>
+</div>
+<div class="size-option">
+<span class="size-label">XL</span>
+<span class="size-price">1,000.000 ل.ل.</span>
+</div>
+</div>
+</div>
+
+<!-- بيتزا فاهيتا -->
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">بيتزا فاهيتا</h3>
+<p class="product-description">بيتزا الفاهيتا المكسيكية</p>
+</div>
+<div class="size-options">
+<div class="size-option">
+<span class="size-label">S</span>
+<span class="size-price">400.000 ل.ل.</span>
+</div>
+<div class="size-option">
+<span class="size-label">M</span>
+<span class="size-price">600.000 ل.ل.</span>
+</div>
+<div class="size-option">
+<span class="size-label">L</span>
+<span class="size-price">850.000 ل.ل.</span>
+</div>
+<div class="size-option">
+<span class="size-label">XL</span>
+<span class="size-price">1,100.000 ل.ل.</span>
+</div>
+</div>
+</div>
+
+<!-- بيتزا طاووق -->
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">بيتزا طاووق</h3>
+<p class="product-description">بيتزا الطاووق التركية</p>
+</div>
+<div class="size-options">
+<div class="size-option">
+<span class="size-label">S</span>
+<span class="size-price">450.000 ل.ل.</span>
+</div>
+<div class="size-option">
+<span class="size-label">M</span>
+<span class="size-price">650.000 ل.ل.</span>
+</div>
+<div class="size-option">
+<span class="size-label">L</span>
+<span class="size-price">900.000 ل.ل.</span>
+</div>
+<div class="size-option">
+<span class="size-label">XL</span>
+<span class="size-price">1,150.000 ل.ل.</span>
+</div>
+</div>
+</div>
+
+<!-- بيتزا مشكلة -->
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">بيتزا مشكلة</h3>
+<p class="product-description">بيتزا بأصناف متعددة</p>
+</div>
+<div class="size-options">
+<div class="size-option">
+<span class="size-label">S</span>
+<span class="size-price">450.000 ل.ل.</span>
+</div>
+<div class="size-option">
+<span class="size-label">M</span>
+<span class="size-price">650.000 ل.ل.</span>
+</div>
+<div class="size-option">
+<span class="size-label">L</span>
+<span class="size-price">950.000 ل.ل.</span>
+</div>
+<div class="size-option">
+<span class="size-label">XL</span>
+<span class="size-price">1,200.000 ل.ل.</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- كرواسان Section -->
+<div id="croissant" class="category-section">
+<div class="category-header">
+<h2 class="category-title">أصناف الكرواسان</h2>
+<p class="category-count">كرواسان فرنسي طازج</p>
+</div>
+<div class="product-grid">
+<div class="product-card">
+<div class="product-header">
+<h3 class="product-title">كرواسان</h3>
+<p class="product-description">كرواسان طازج ومقرمش</p>
+</div>
+<div class="price-container">
+<span class="single-price">60.000 ل.ل.</span>
+</div>
+</div>
+</div>
+</div>
+
+</div>
+
+<!-- Location Map Section -->
+<div class="mb-16">
+<div class="bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-xl border-r-4 border-amber-400">
+<h2 class="section-title text-3xl font-bold text-amber-800 mb-8">
+<i class="fas fa-map-marker-alt ml-3"></i> موقعنا
+</h2>
+<div class="flex flex-col lg:flex-row gap-8 items-center">
+<div class="lg:w-1/2">
+<div class="map-container h-[400px] w-full">
+<iframe
+src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3280.123456789!2d35.123456789!3d33.123456789!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzPCsDA3JzI0LjQiTiAzNcKwMDcnNDEuMCJF!5e0!3m2!1sen!2slb!4v1234567890"
+width="100%"
+height="100%"
+style="border:0;"
+allowfullscreen=""
+loading="lazy"
+referrerpolicy="no-referrer-when-downgrade"
+title="موقع معجنات الاشلان في الزاهرية، طرابلس">
+</iframe>
+</div>
+</div>
+<div class="lg:w-1/2">
+<div class="bg-gradient-to-l from-amber-50 to-amber-100 rounded-xl p-6 border border-amber-200 shadow-lg">
+<h3 class="text-2xl font-bold text-amber-900 mb-6 flex items-center">
+<i class="fas fa-info-circle ml-3"></i> معلومات الموقع
+</h3>
+<div>
+<h4 class="font-bold text-lg text-gray-800 mb-2">التوجيهات</h4>
+<p class="text-gray-700 mb-4">استخدم خرائط جوجل للوصول إلينا</p>
+<a
+href="https://maps.app.goo.gl/JBZnko42hwUtx2yB6?g_st=awb"
+target="_blank"
+class="inline-flex items-center mt-3 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-lg transition-all duration-300 transform hover:scale-105"
+>
+<i class="fas fa-external-link-alt ml-2"></i>
+افتح في خرائط جوجل
+</a>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+<div class="bg-white p-4 rounded-xl border border-amber-200 shadow-sm">
+<div class="flex items-center">
+<i class="fas fa-motorcycle text-emerald-600 text-2xl ml-3"></i>
+<div>
+<h4 class="font-bold text-gray-800">خدمة التوصيل</h4>
+<p class="text-sm text-gray-600">متوفرة لجميع مناطق طرابلس</p>
+</div>
+</div>
+</div>
+<div class="bg-white p-4 rounded-xl border border-amber-200 shadow-sm">
+<div class="flex items-center">
+<i class="fas fa-clock text-amber-600 text-2xl ml-3"></i>
+<div>
+<h4 class="font-bold text-gray-800">ساعات العمل</h4>
+<p class="text-sm text-gray-600">يومياً: ٦ صباحاً - ١٢ ليلاً</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Footer Section -->
+<footer class="text-center py-10 mt-8 bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl border-2 border-amber-200">
+<h3 class="text-3xl font-bold text-amber-800 mb-6 pb-4 border-b-2 border-dashed border-amber-300">
+نتشرف بخدمتكم في معجنات الاشلان
+</h3>
+<div class="contact-info flex flex-wrap justify-center gap-6 md:gap-10 my-8">
+<div class="contact-item flex items-center gap-3 bg-white/80 backdrop-blur-sm px-6 py-4 rounded-2xl border border-amber-200 shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+<i class="fas fa-phone-alt text-amber-700 text-2xl"></i>
+<span class="font-semibold text-lg">76/385-060</span>
+</div>
+<div class="contact-item flex items-center gap-3 bg-white/80 backdrop-blur-sm px-6 py-4 rounded-2xl border border-amber-200 shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+<i class="fas fa-map-marker-alt text-amber-700 text-2xl"></i>
+<span class="font-semibold text-lg">منطقة الزاهرية، طرابلس</span>
+</div>
+<div class="contact-item flex items-center gap-3 bg-white/80 backdrop-blur-sm px-6 py-4 rounded-2xl border border-amber-200 shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+<i class="fas fa-clock text-amber-700 text-2xl"></i>
+<span class="font-semibold text-lg">يومياً: ٦ صباحاً - ١٢ ليلاً</span>
+</div>
+</div>
+</footer>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // التنقل بين الأقسام
+    const navItems = document.querySelectorAll('.nav-item');
+    const sections = document.querySelectorAll('.category-section');
     
-    <!-- واتساب عائم -->
-    <a href="https://wa.me/76385060" target="_blank" class="floating-whatsapp">
-        <i class="fab fa-whatsapp"></i>
-    </a>
-
-    <!-- الهيدر الرئيسي -->
-    <header class="sticky-header glass-effect shadow-lg">
-        <div class="container mx-auto px-4">
-            <div class="flex items-center justify-between py-4">
-                <!-- الشعار -->
-                <div class="flex items-center space-x-3 space-x-reverse">
-                    <div class="w-12 h-12 bg-gradient-to-br from-amber-500 to-amber-700 rounded-xl flex items-center justify-center shadow-lg">
-                        <i class="fas fa-bread-slice text-white text-2xl"></i>
-                    </div>
-                    <div>
-                        <h1 class="text-2xl font-bold gradient-text">معجنات الاشلان</h1>
-                        <p class="text-sm text-gray-600">الزاهرية، طرابلس</p>
-                    </div>
-                </div>
-
-                <!-- معلومات التواصل -->
-                <div class="hidden md:flex items-center space-x-6 space-x-reverse">
-                    <div class="text-right">
-                        <div class="flex items-center space-x-2 space-x-reverse">
-                            <i class="fas fa-phone text-amber-600"></i>
-                            <span class="font-bold text-gray-800">76/385-060</span>
-                        </div>
-                        <p class="text-sm text-gray-600">خدمة التوصيل متاحة</p>
-                    </div>
-                    <div class="h-8 w-px bg-gray-300"></div>
-                    <div class="text-right">
-                        <div class="flex items-center space-x-2 space-x-reverse">
-                            <i class="fas fa-clock text-amber-600"></i>
-                            <span class="font-bold text-gray-800">٦ صباحاً - ١٢ ليلاً</span>
-                        </div>
-                        <p class="text-sm text-gray-600">يومياً</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </header>
-
-    <!-- الهيرو سيكشن -->
-    <section class="py-12 md:py-20 relative overflow-hidden">
-        <div class="absolute inset-0 bg-gradient-to-l from-amber-900/10 via-transparent to-amber-900/10"></div>
-        <div class="container mx-auto px-4 relative z-10">
-            <div class="grid md:grid-cols-2 gap-12 items-center">
-                <div class="text-right">
-                    <div class="inline-block px-4 py-2 bg-amber-100 text-amber-800 rounded-full mb-6 font-bold shadow-sm">
-                        <i class="fas fa-star ml-2"></i>
-                        منذ 1995
-                    </div>
-                    <h1 class="text-4xl md:text-5xl font-bold mb-6 leading-tight">
-                        <span class="gradient-text">أشهى المعجنات</span><br>
-                        <span class="text-gray-800">من قلب الزاهرية</span>
-                    </h1>
-                    <p class="text-xl text-gray-700 mb-8 leading-relaxed">
-                        عجينة طرية على القلب هنية، نقدمها لكم يومياً من الصبح لعشية
-                    </p>
-                    <div class="flex flex-wrap gap-4">
-                        <a href="#menu" class="px-8 py-3 gradient-bg text-white font-bold rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300">
-                            <i class="fas fa-utensils ml-2"></i>
-                            قائمة الطعام
-                        </a>
-                        <a href="#location" class="px-8 py-3 glass-effect text-amber-700 font-bold rounded-lg border border-amber-200 hover:border-amber-300 transition-all duration-300">
-                            <i class="fas fa-map-marker-alt ml-2"></i>
-                            زيارة المحل
-                        </a>
-                    </div>
-                </div>
-                <div class="relative">
-                    <div class="image-overlay">
-                        <div class="order-badge">الأكثر طلباً</div>
-                        <img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
-                             alt="معجنات الاشلان" 
-                             class="rounded-2xl shadow-2xl w-full h-64 md:h-96 object-cover">
-                    </div>
-                    <div class="absolute -bottom-6 -right-6 w-32 h-32 bg-gradient-to-br from-amber-400 to-amber-600 rounded-full opacity-20"></div>
-                    <div class="absolute -top-6 -left-6 w-24 h-24 bg-gradient-to-br from-amber-300 to-amber-500 rounded-full opacity-20"></div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- قسم التبويبات -->
-    <section id="menu" class="py-8 bg-white/50">
-        <div class="container mx-auto px-4">
-            <div class="relative overflow-x-auto scrollbar-hide">
-                <div class="flex space-x-4 space-x-reverse min-w-max pb-4" id="tabs-container">
-                    <button data-category="manakish" class="category-tab px-6 py-3 glass-effect rounded-xl text-gray-700 font-bold whitespace-nowrap transition-all duration-300 relative active">
-                        <i class="fas fa-bread-slice ml-2"></i>
-                        المناقيش
-                        <span class="mr-2 text-sm text-gray-500">(18)</span>
-                    </button>
-                    <button data-category="kak" class="category-tab px-6 py-3 glass-effect rounded-xl text-gray-700 font-bold whitespace-nowrap transition-all duration-300">
-                        <i class="fas fa-cookie-bite ml-2"></i>
-                        الكعك
-                        <span class="mr-2 text-sm text-gray-500">(6)</span>
-                    </button>
-                    <button data-category="sawarieh" class="category-tab px-6 py-3 glass-effect rounded-xl text-gray-700 font-bold whitespace-nowrap transition-all duration-300">
-                        <i class="fas fa-utensil-spoon ml-2"></i>
-                        السواريه
-                        <span class="mr-2 text-sm text-gray-500">(9)</span>
-                    </button>
-                    <button data-category="pizza" class="category-tab px-6 py-3 glass-effect rounded-xl text-gray-700 font-bold whitespace-nowrap transition-all duration-300">
-                        <i class="fas fa-pizza-slice ml-2"></i>
-                        البيتزا
-                        <span class="mr-2 text-sm text-gray-500">(7)</span>
-                    </button>
-                    <button data-category="croissant" class="category-tab px-6 py-3 glass-effect rounded-xl text-gray-700 font-bold whitespace-nowrap transition-all duration-300">
-                        <i class="fas fa-croissant ml-2"></i>
-                        الكرواسان
-                        <span class="mr-2 text-sm text-gray-500">(1)</span>
-                    </button>
-                </div>
-                <div class="tab-indicator" id="tab-indicator"></div>
-            </div>
-        </div>
-    </section>
-
-    <!-- قسم المنتجات -->
-    <main class="py-12">
-        <div class="container mx-auto px-4">
+    // تحديث العدادات بناء على عدد المنتجات
+    const counts = {
+        manakish: document.querySelectorAll('#manakish .product-card').length,
+        kak: document.querySelectorAll('#kak .product-card').length,
+        sawarieh: document.querySelectorAll('#sawarieh .product-card').length,
+        pizza: document.querySelectorAll('#pizza .product-card').length,
+        croissant: document.querySelectorAll('#croissant .product-card').length
+    };
+    
+    // تحديث العدادات
+    navItems.forEach(item => {
+        const category = item.getAttribute('data-category');
+        const counter = item.querySelector('.nav-count');
+        if (counter && counts[category]) {
+            counter.textContent = counts[category];
+        }
+    });
+    
+    // تفعيل التنقل
+    navItems.forEach(item => {
+        item.addEventListener('click', function() {
+            const category = this.getAttribute('data-category');
             
-            <!-- المناقيش -->
-            <div id="manakish" class="menu-category mb-16">
-                <div class="flex items-center justify-between mb-8">
-                    <div>
-                        <h2 class="text-3xl font-bold gradient-text mb-2">المناقيش</h2>
-                        <p class="text-gray-600">أشهر المعجنات اللبنانية بعجينة طازجة يومياً</p>
-                    </div>
-                    <div class="hidden md:block">
-                        <span class="text-amber-600 font-bold">18 صنفاً</span>
-                    </div>
-                </div>
-                
-                <div class="product-grid">
-                    <!-- زعتر بلدي -->
-                    <div class="product-card glass-effect rounded-2xl p-6 shadow-lg">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 class="text-xl font-bold text-gray-800 mb-2">زعتر بلدي</h3>
-                                <p class="text-gray-600 text-sm">مناقيش الزعتر البلدي التقليدي</p>
-                            </div>
-                            <div class="flex flex-col items-end">
-                                <span class="price-tag">50.000 ل.ل</span>
-                                <span class="text-sm text-gray-500 mt-1">عادي</span>
-                            </div>
-                        </div>
-                        <div class="flex gap-2">
-                            <span class="px-3 py-1 bg-amber-50 text-amber-700 rounded-full text-sm">حجم صغير: 30.000</span>
-                        </div>
-                    </div>
-                    
-                    <!-- زعتر حلبي -->
-                    <div class="product-card glass-effect rounded-2xl p-6 shadow-lg">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 class="text-xl font-bold text-gray-800 mb-2">زعتر حلبي</h3>
-                                <p class="text-gray-600 text-sm">مناقيش الزعتر الحلبي المميز</p>
-                            </div>
-                            <div class="flex flex-col items-end">
-                                <span class="price-tag">50.000 ل.ل</span>
-                                <span class="text-sm text-gray-500 mt-1">عادي</span>
-                            </div>
-                        </div>
-                        <div class="flex gap-2">
-                            <span class="px-3 py-1 bg-amber-50 text-amber-700 rounded-full text-sm">حجم صغير: 30.000</span>
-                        </div>
-                    </div>
-                    
-                    <!-- زعتر خضره -->
-                    <div class="product-card glass-effect rounded-2xl p-6 shadow-lg">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 class="text-xl font-bold text-gray-800 mb-2">زعتر خضره</h3>
-                                <p class="text-gray-600 text-sm">مناقيش الزعتر مع الخضروات الطازجة</p>
-                            </div>
-                            <div class="flex flex-col items-end">
-                                <span class="price-tag">70.000 ل.ل</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- جبنة -->
-                    <div class="product-card glass-effect rounded-2xl p-6 shadow-lg">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 class="text-xl font-bold text-gray-800 mb-2">جبنه</h3>
-                                <p class="text-gray-600 text-sm">مناقيش الجبنة الطازجة</p>
-                            </div>
-                            <div class="flex flex-col items-end">
-                                <span class="price-tag">120.000 ل.ل</span>
-                                <span class="text-sm text-gray-500 mt-1">عادي</span>
-                            </div>
-                        </div>
-                        <div class="flex gap-2">
-                            <span class="px-3 py-1 bg-amber-50 text-amber-700 rounded-full text-sm">حجم صغير: 80.000</span>
-                        </div>
-                    </div>
-
-                    <!-- نص جبنه نص زعتر -->
-                    <div class="product-card glass-effect rounded-2xl p-6 shadow-lg">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 class="text-xl font-bold text-gray-800 mb-2">نص جبنه نص زعتر</h3>
-                                <p class="text-gray-600 text-sm">مزيج رائع من الجبنة والزعتر</p>
-                            </div>
-                            <div class="flex flex-col items-end">
-                                <span class="price-tag">90.000 ل.ل</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- جبنه خضره -->
-                    <div class="product-card glass-effect rounded-2xl p-6 shadow-lg">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 class="text-xl font-bold text-gray-800 mb-2">جبنه خضره</h3>
-                                <p class="text-gray-600 text-sm">مناقيش الجبنة مع الخضروات</p>
-                            </div>
-                            <div class="flex flex-col items-end">
-                                <span class="price-tag">140.000 ل.ل</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- جبنه دره -->
-                    <div class="product-card glass-effect rounded-2xl p-6 shadow-lg">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 class="text-xl font-bold text-gray-800 mb-2">جبنه دره</h3>
-                                <p class="text-gray-600 text-sm">مناقيش الجبنة بالطريقة الدرزية</p>
-                            </div>
-                            <div class="flex flex-col items-end">
-                                <span class="price-tag">140.000 ل.ل</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- جبنه سجق -->
-                    <div class="product-card glass-effect rounded-2xl p-6 shadow-lg">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 class="text-xl font-bold text-gray-800 mb-2">جبنه سجق</h3>
-                                <p class="text-gray-600 text-sm">مزيج الجبنة والسجق اللذيذ</p>
-                            </div>
-                            <div class="flex flex-col items-end">
-                                <span class="price-tag">160.000 ل.ل</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- جبنه مرتديلا -->
-                    <div class="product-card glass-effect rounded-2xl p-6 shadow-lg">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 class="text-xl font-bold text-gray-800 mb-2">جبنه مرتديلا</h3>
-                                <p class="text-gray-600 text-sm">مناقيش الجبنة مع المرتديلا</p>
-                            </div>
-                            <div class="flex flex-col items-end">
-                                <span class="price-tag">160.000 ل.ل</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- جبنه بيبيروني -->
-                    <div class="product-card glass-effect rounded-2xl p-6 shadow-lg">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 class="text-xl font-bold text-gray-800 mb-2">جبنه بيبيروني</h3>
-                                <p class="text-gray-600 text-sm">مناقيش الجبنة مع البيبيروني</p>
-                            </div>
-                            <div class="flex flex-col items-end">
-                                <span class="price-tag">160.000 ل.ل</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- قريش -->
-                    <div class="product-card glass-effect rounded-2xl p-6 shadow-lg">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 class="text-xl font-bold text-gray-800 mb-2">قريش</h3>
-                                <p class="text-gray-600 text-sm">مناقيش القريش التقليدي</p>
-                            </div>
-                            <div class="flex flex-col items-end">
-                                <span class="price-tag">100.000 ل.ل</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- قريش مع جبنة -->
-                    <div class="product-card glass-effect rounded-2xl p-6 shadow-lg">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 class="text-xl font-bold text-gray-800 mb-2">قريش مع جبنة</h3>
-                                <p class="text-gray-600 text-sm">مزيج القريش والجبنة المميز</p>
-                            </div>
-                            <div class="flex flex-col items-end">
-                                <span class="price-tag">150.000 ل.ل</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- لحمه -->
-                    <div class="product-card glass-effect rounded-2xl p-6 shadow-lg">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 class="text-xl font-bold text-gray-800 mb-2">لحمه</h3>
-                                <p class="text-gray-600 text-sm">مناقيش اللحم اللذيذ</p>
-                            </div>
-                            <div class="flex flex-col items-end">
-                                <span class="price-tag">150.000 ل.ل</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- لحمه مع جبنة -->
-                    <div class="product-card glass-effect rounded-2xl p-6 shadow-lg">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 class="text-xl font-bold text-gray-800 mb-2">لحمه مع جبنة</h3>
-                                <p class="text-gray-600 text-sm">مزيج اللحم والجبنة الشهي</p>
-                            </div>
-                            <div class="flex flex-col items-end">
-                                <span class="price-tag">200.000 ل.ل</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- تركيه -->
-                    <div class="product-card glass-effect rounded-2xl p-6 shadow-lg">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 class="text-xl font-bold text-gray-800 mb-2">تركيه</h3>
-                                <p class="text-gray-600 text-sm">مناقيش التركية التقليدية</p>
-                            </div>
-                            <div class="flex flex-col items-end">
-                                <span class="price-tag">100.000 ل.ل</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- فاهيتا -->
-                    <div class="product-card glass-effect rounded-2xl p-6 shadow-lg">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 class="text-xl font-bold text-gray-800 mb-2">فاهيتا</h3>
-                                <p class="text-gray-600 text-sm">مناقيش الفاهيتا الحارة</p>
-                            </div>
-                            <div class="flex flex-col items-end">
-                                <span class="price-tag">250.000 ل.ل</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- طاووق -->
-                    <div class="product-card glass-effect rounded-2xl p-6 shadow-lg">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 class="text-xl font-bold text-gray-800 mb-2">طاووق</h3>
-                                <p class="text-gray-600 text-sm">مناقيش الطاووق اللذيذ</p>
-                            </div>
-                            <div class="flex flex-col items-end">
-                                <span class="price-tag">250.000 ل.ل</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- جبنة مطبقة -->
-                    <div class="product-card glass-effect rounded-2xl p-6 shadow-lg">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 class="text-xl font-bold text-gray-800 mb-2">جبنة مطبقة</h3>
-                                <p class="text-gray-600 text-sm">مناقيش الجبنة المطبقة التقليدية</p>
-                            </div>
-                            <div class="flex flex-col items-end">
-                                <span class="price-tag">80.000 ل.ل</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- الكعك -->
-            <div id="kak" class="menu-category mb-16 hidden">
-                <div class="flex items-center justify-between mb-8">
-                    <div>
-                        <h2 class="text-3xl font-bold gradient-text mb-2">الكعك</h2>
-                        <p class="text-gray-600">كعك محشو بأنواع مختلفة من الحشوات</p>
-                    </div>
-                    <div class="hidden md:block">
-                        <span class="text-amber-600 font-bold">6 أصناف</span>
-                    </div>
-                </div>
-                
-                <div class="product-grid">
-                    <!-- كعك جبنة -->
-                    <div class="product-card glass-effect rounded-2xl p-6 shadow-lg">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 class="text-xl font-bold text-gray-800 mb-2">كعك جبنة</h3>
-                                <p class="text-gray-600 text-sm">كعك الجبنة الطازجة</p>
-                            </div>
-                            <div class="flex flex-col items-end">
-                                <span class="price-tag">120.000 ل.ل</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- كعك جبنة خضره -->
-                    <div class="product-card glass-effect rounded-2xl p-6 shadow-lg">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 class="text-xl font-bold text-gray-800 mb-2">كعك جبنة خضره</h3>
-                                <p class="text-gray-600 text-sm">كعك الجبنة مع الخضروات</p>
-                            </div>
-                            <div class="flex flex-col items-end">
-                                <span class="price-tag">140.000 ل.ل</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- كعك جبنة مرتديلا -->
-                    <div class="product-card glass-effect rounded-2xl p-6 shadow-lg">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 class="text-xl font-bold text-gray-800 mb-2">كعك جبنة مرتديلا</h3>
-                                <p class="text-gray-600 text-sm">كعك الجبنة مع المرتديلا</p>
-                            </div>
-                            <div class="flex flex-col items-end">
-                                <span class="price-tag">160.000 ل.ل</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- كعك جبنة سجق -->
-                    <div class="product-card glass-effect rounded-2xl p-6 shadow-lg">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 class="text-xl font-bold text-gray-800 mb-2">كعك جبنة سجق</h3>
-                                <p class="text-gray-600 text-sm">كعك الجبنة مع السجق</p>
-                            </div>
-                            <div class="flex flex-col items-end">
-                                <span class="price-tag">160.000 ل.ل</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- كعك فاهيتا -->
-                    <div class="product-card glass-effect rounded-2xl p-6 shadow-lg">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 class="text-xl font-bold text-gray-800 mb-2">كعك فاهيتا</h3>
-                                <p class="text-gray-600 text-sm">كعك الفاهيتا الشهي</p>
-                            </div>
-                            <div class="flex flex-col items-end">
-                                <span class="price-tag">250.000 ل.ل</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- كعك طاووق -->
-                    <div class="product-card glass-effect rounded-2xl p-6 shadow-lg">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 class="text-xl font-bold text-gray-800 mb-2">كعك طاووق</h3>
-                                <p class="text-gray-600 text-sm">كعك الطاووق اللذيذ</p>
-                            </div>
-                            <div class="flex flex-col items-end">
-                                <span class="price-tag">250.000 ل.ل</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- السواريه -->
-            <div id="sawarieh" class="menu-category mb-16 hidden">
-                <div class="flex items-center justify-between mb-8">
-                    <div>
-                        <h2 class="text-3xl font-bold gradient-text mb-2">السواريه</h2>
-                        <p class="text-gray-600">معجنات متنوعة بحجم واحد</p>
-                    </div>
-                    <div class="hidden md:block">
-                        <span class="text-amber-600 font-bold">9 أصناف</span>
-                    </div>
-                </div>
-                
-                <div class="product-grid">
-                    <!-- سواريه جبنة -->
-                    <div class="product-card glass-effect rounded-2xl p-6 shadow-lg">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 class="text-xl font-bold text-gray-800 mb-2">سواريه جبنة</h3>
-                            </div>
-                            <div class="flex flex-col items-end">
-                                <span class="price-tag">25.000 ل.ل</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- سواريه رقاقات جبنة -->
-                    <div class="product-card glass-effect rounded-2xl p-6 shadow-lg">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 class="text-xl font-bold text-gray-800 mb-2">سواريه رقاقات جبنة</h3>
-                            </div>
-                            <div class="flex flex-col items-end">
-                                <span class="price-tag">25.000 ل.ل</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- سواريه رقاقات فاهيتا -->
-                    <div class="product-card glass-effect rounded-2xl p-6 shadow-lg">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 class="text-xl font-bold text-gray-800 mb-2">سواريه رقاقات فاهيتا</h3>
-                            </div>
-                            <div class="flex flex-col items-end">
-                                <span class="price-tag">25.000 ل.ل</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- سواريه رقاقات قريشة -->
-                    <div class="product-card glass-effect rounded-2xl p-6 shadow-lg">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 class="text-xl font-bold text-gray-800 mb-2">سواريه رقاقات قريشة</h3>
-                            </div>
-                            <div class="flex flex-col items-end">
-                                <span class="price-tag">25.000 ل.ل</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- سواريه لحمة بعجين -->
-                    <div class="product-card glass-effect rounded-2xl p-6 shadow-lg">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 class="text-xl font-bold text-gray-800 mb-2">سواريه لحمة بعجين</h3>
-                            </div>
-                            <div class="flex flex-col items-end">
-                                <span class="price-tag">25.000 ل.ل</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- لحمة بعجين كبير -->
-                    <div class="product-card glass-effect rounded-2xl p-6 shadow-lg">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 class="text-xl font-bold text-gray-800 mb-2">لحمة بعجين كبير</h3>
-                            </div>
-                            <div class="flex flex-col items-end">
-                                <span class="price-tag">50.000 ل.ل</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- سواريه شعيبيات -->
-                    <div class="product-card glass-effect rounded-2xl p-6 shadow-lg">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 class="text-xl font-bold text-gray-800 mb-2">سواريه شعيبيات</h3>
-                            </div>
-                            <div class="flex flex-col items-end">
-                                <span class="price-tag">25.000 ل.ل</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- دزينة سواريه -->
-                    <div class="product-card glass-effect rounded-2xl p-6 shadow-lg">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 class="text-xl font-bold text-gray-800 mb-2">دزينة سواريه</h3>
-                            </div>
-                            <div class="flex flex-col items-end">
-                                <span class="price-tag">300.000 ل.ل</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- أوزي -->
-                    <div class="product-card glass-effect rounded-2xl p-6 shadow-lg">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 class="text-xl font-bold text-gray-800 mb-2">أوزي</h3>
-                            </div>
-                            <div class="flex flex-col items-end">
-                                <span class="price-tag">150.000 ل.ل</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- البيتزا -->
-            <div id="pizza" class="menu-category mb-16 hidden">
-                <div class="flex items-center justify-between mb-8">
-                    <div>
-                        <h2 class="text-3xl font-bold gradient-text mb-2">البيتزا</h2>
-                        <p class="text-gray-600">بيتزا إيطالية بأنواع مختلفة وأحجام متعددة</p>
-                    </div>
-                    <div class="hidden md:block">
-                        <span class="text-amber-600 font-bold">7 أصناف</span>
-                    </div>
-                </div>
-                
-                <div class="product-grid">
-                    <!-- بيتزا خضرة -->
-                    <div class="product-card glass-effect rounded-2xl p-6 shadow-lg">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 class="text-xl font-bold text-gray-800 mb-2">بيتزا خضرة</h3>
-                                <p class="text-gray-600 text-sm">بيتزا نباتية بالخضروات الطازجة</p>
-                                <span class="mt-2 inline-block px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-xs">
-                                    <i class="fas fa-leaf ml-1"></i>
-                                    نباتية
-                                </span>
-                            </div>
-                        </div>
-                        <div class="flex gap-2">
-                            <span class="px-3 py-1 bg-amber-50 text-amber-700 rounded-full text-sm">صغير: 300.000</span>
-                            <span class="px-3 py-1 bg-amber-50 text-amber-700 rounded-full text-sm">وسط: 500.000</span>
-                            <span class="px-3 py-1 bg-amber-50 text-amber-700 rounded-full text-sm">كبير: 650.000</span>
-                            <span class="px-3 py-1 bg-amber-50 text-amber-700 rounded-full text-sm">عائلي: 900.000</span>
-                        </div>
-                    </div>
-                    
-                    <!-- بيتزا سجق -->
-                    <div class="product-card glass-effect rounded-2xl p-6 shadow-lg">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 class="text-xl font-bold text-gray-800 mb-2">بيتزا سجق</h3>
-                                <p class="text-gray-600 text-sm">بيتزا السجق اللذيذة</p>
-                            </div>
-                        </div>
-                        <div class="flex gap-2">
-                            <span class="px-3 py-1 bg-amber-50 text-amber-700 rounded-full text-sm">صغير: 400.000</span>
-                            <span class="px-3 py-1 bg-amber-50 text-amber-700 rounded-full text-sm">وسط: 600.000</span>
-                            <span class="px-3 py-1 bg-amber-50 text-amber-700 rounded-full text-sm">كبير: 800.000</span>
-                            <span class="px-3 py-1 bg-amber-50 text-amber-700 rounded-full text-sm">عائلي: 1,000.000</span>
-                        </div>
-                    </div>
-                    
-                    <!-- بيتزا مارغريتا -->
-                    <div class="product-card glass-effect rounded-2xl p-6 shadow-lg">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 class="text-xl font-bold text-gray-800 mb-2">بيتزا مارغريتا</h3>
-                                <p class="text-gray-600 text-sm">البيتزا الكلاسيكية الإيطالية</p>
-                                <span class="mt-2 inline-block px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-xs">
-                                    <i class="fas fa-leaf ml-1"></i>
-                                    نباتية
-                                </span>
-                            </div>
-                        </div>
-                        <div class="flex gap-2">
-                            <span class="px-3 py-1 bg-amber-50 text-amber-700 rounded-full text-sm">صغير: 270.000</span>
-                            <span class="px-3 py-1 bg-amber-50 text-amber-700 rounded-full text-sm">وسط: 450.000</span>
-                            <span class="px-3 py-1 bg-amber-50 text-amber-700 rounded-full text-sm">كبير: 600.000</span>
-                            <span class="px-3 py-1 bg-amber-50 text-amber-700 rounded-full text-sm">عائلي: 850.000</span>
-                        </div>
-                    </div>
-                    
-                    <!-- بيتزا بيبروني -->
-                    <div class="product-card glass-effect rounded-2xl p-6 shadow-lg">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 class="text-xl font-bold text-gray-800 mb-2">بيتزا بيبروني</h3>
-                                <p class="text-gray-600 text-sm">بيتزا البيبروني الحارة</p>
-                            </div>
-                        </div>
-                        <div class="flex gap-2">
-                            <span class="px-3 py-1 bg-amber-50 text-amber-700 rounded-full text-sm">صغير: 400.000</span>
-                            <span class="px-3 py-1 bg-amber-50 text-amber-700 rounded-full text-sm">وسط: 600.000</span>
-                            <span class="px-3 py-1 bg-amber-50 text-amber-700 rounded-full text-sm">كبير: 800.000</span>
-                            <span class="px-3 py-1 bg-amber-50 text-amber-700 rounded-full text-sm">عائلي: 1,000.000</span>
-                        </div>
-                    </div>
-                    
-                    <!-- بيتزا فاهيتا -->
-                    <div class="product-card glass-effect rounded-2xl p-6 shadow-lg">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 class="text-xl font-bold text-gray-800 mb-2">بيتزا فاهيتا</h3>
-                                <p class="text-gray-600 text-sm">بيتزا الفاهيتا المكسيكية</p>
-                            </div>
-                        </div>
-                        <div class="flex gap-2">
-                            <span class="px-3 py-1 bg-amber-50 text-amber-700 rounded-full text-sm">صغير: 400.000</span>
-                            <span class="px-3 py-1 bg-amber-50 text-amber-700 rounded-full text-sm">وسط: 600.000</span>
-                            <span class="px-3 py-1 bg-amber-50 text-amber-700 rounded-full text-sm">كبير: 850.000</span>
-                            <span class="px-3 py-1 bg-amber-50 text-amber-700 rounded-full text-sm">عائلي: 1,100.000</span>
-                        </div>
-                    </div>
-                    
-                    <!-- بيتزا طاووق -->
-                    <div class="product-card glass-effect rounded-2xl p-6 shadow-lg">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 class="text-xl font-bold text-gray-800 mb-2">بيتزا طاووق</h3>
-                                <p class="text-gray-600 text-sm">بيتزا الطاووق التركية</p>
-                            </div>
-                        </div>
-                        <div class="flex gap-2">
-                            <span class="px-3 py-1 bg-amber-50 text-amber-700 rounded-full text-sm">صغير: 450.000</span>
-                            <span class="px-3 py-1 bg-amber-50 text-amber-700 rounded-full text-sm">وسط: 650.000</span>
-                            <span class="px-3 py-1 bg-amber-50 text-amber-700 rounded-full text-sm">كبير: 900.000</span>
-                            <span class="px-3 py-1 bg-amber-50 text-amber-700 rounded-full text-sm">عائلي: 1,150.000</span>
-                        </div>
-                    </div>
-                    
-                    <!-- بيتزا مشكلة -->
-                    <div class="product-card glass-effect rounded-2xl p-6 shadow-lg">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 class="text-xl font-bold text-gray-800 mb-2">بيتزا مشكلة</h3>
-                                <p class="text-gray-600 text-sm">بيتزا بأصناف متعددة</p>
-                            </div>
-                        </div>
-                        <div class="flex gap-2">
-                            <span class="px-3 py-1 bg-amber-50 text-amber-700 rounded-full text-sm">صغير: 450.000</span>
-                            <span class="px-3 py-1 bg-amber-50 text-amber-700 rounded-full text-sm">وسط: 650.000</span>
-                            <span class="px-3 py-1 bg-amber-50 text-amber-700 rounded-full text-sm">كبير: 950.000</span>
-                            <span class="px-3 py-1 bg-amber-50 text-amber-700 rounded-full text-sm">عائلي: 1,200.000</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- الكرواسان -->
-            <div id="croissant" class="menu-category hidden">
-                <div class="flex items-center justify-between mb-8">
-                    <div>
-                        <h2 class="text-3xl font-bold gradient-text mb-2">الكرواسان</h2>
-                        <p class="text-gray-600">كرواسان فرنسي طازج</p>
-                    </div>
-                </div>
-                
-                <div class="product-grid">
-                    <!-- كرواسان -->
-                    <div class="product-card glass-effect rounded-2xl p-6 shadow-lg">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 class="text-xl font-bold text-gray-800 mb-2">كرواسان</h3>
-                                <p class="text-gray-600 text-sm">كرواسان طازج ومقرمش</p>
-                            </div>
-                            <div class="flex flex-col items-end">
-                                <span class="price-tag">60.000 ل.ل</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <!-- قسم الموقع والمعلومات -->
-    <section id="location" class="py-16 bg-gradient-to-b from-white to-amber-50">
-        <div class="container mx-auto px-4">
-            <div class="text-center mb-12">
-                <h2 class="text-3xl font-bold gradient-text mb-4">موقعنا وخدماتنا</h2>
-                <p class="text-gray-600 max-w-2xl mx-auto">نحن هنا لخدمتكم في منطقة الزاهرية، طرابلس مع خدمة توصيل سريعة</p>
-            </div>
+            // إزالة النشط من جميع العناصر
+            navItems.forEach(nav => nav.classList.remove('active'));
+            // إضافة النشط للعنصر المحدد
+            this.classList.add('active');
             
-            <div class="grid md:grid-cols-2 gap-12">
-                <div class="space-y-6">
-                    <div class="glass-effect rounded-2xl p-6 shadow-lg">
-                        <div class="flex items-center space-x-4 space-x-reverse mb-6">
-                            <div class="w-14 h-14 bg-gradient-to-br from-amber-500 to-amber-700 rounded-xl flex items-center justify-center shadow-lg">
-                                <i class="fas fa-map-marker-alt text-white text-2xl"></i>
-                            </div>
-                            <div class="text-right">
-                                <h3 class="text-xl font-bold text-gray-800">موقعنا</h3>
-                                <p class="text-gray-600">الزاهرية، طرابلس - لبنان</p>
-                            </div>
-                        </div>
-                        <div class="aspect-w-16 aspect-h-9 rounded-xl overflow-hidden shadow-lg">
-                            <iframe 
-                                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3280.078297068475!2d35.83262850088362!3d34.44689851487946!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x151f3e2b4c3946cf%3A0xef937b4e480de1b9!2z2KfYqtmK2YjYp9mKINin2K3YutmD2KfZhNmE2Ycg2KfZhNix2KfZhCDZh9ix2YjYp9mE2Kcg2YfYsdiq2K7ZhNmIINin2YTYqti52KfZhA!5e0!3m2!1sar!2slb!4v1704016572270!5m2!1sar!2slb" 
-                                class="w-full h-64 rounded-xl border-0"
-                                allowfullscreen=""
-                                loading="lazy"
-                                referrerpolicy="no-referrer-when-downgrade">
-                            </iframe>
-                        </div>
-                        <a href="https://maps.app.goo.gl/JBZnko42hwUtx2yB6" target="_blank" 
-                           class="mt-4 inline-flex items-center px-6 py-3 gradient-bg text-white font-bold rounded-lg shadow hover:shadow-lg transition-all duration-300">
-                            <i class="fas fa-directions ml-2"></i>
-                            افتح في خرائط جوجل
-                        </a>
-                    </div>
-                </div>
-                
-                <div class="space-y-6">
-                    <div class="glass-effect rounded-2xl p-6 shadow-lg">
-                        <div class="flex items-center space-x-4 space-x-reverse mb-6">
-                            <div class="w-14 h-14 bg-gradient-to-br from-amber-500 to-amber-700 rounded-xl flex items-center justify-center shadow-lg">
-                                <i class="fas fa-clock text-white text-2xl"></i>
-                            </div>
-                            <div class="text-right">
-                                <h3 class="text-xl font-bold text-gray-800">ساعات العمل</h3>
-                                <p class="text-gray-600">خدمتكم طوال الأسبوع</p>
-                            </div>
-                        </div>
-                        <div class="space-y-3">
-                            <div class="flex justify-between items-center py-3 border-b border-gray-100">
-                                <span class="font-bold text-gray-700">يومياً</span>
-                                <span class="text-amber-600 font-bold">٦ صباحاً - ١٢ ليلاً</span>
-                            </div>
-                            <div class="flex justify-between items-center py-3">
-                                <span class="font-bold text-gray-700">خدمة التوصيل</span>
-                                <span class="text-green-600 font-bold">متاحة</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="glass-effect rounded-2xl p-6 shadow-lg">
-                        <div class="flex items-center space-x-4 space-x-reverse mb-6">
-                            <div class="w-14 h-14 bg-gradient-to-br from-amber-500 to-amber-700 rounded-xl flex items-center justify-center shadow-lg">
-                                <i class="fas fa-phone-alt text-white text-2xl"></i>
-                            </div>
-                            <div class="text-right">
-                                <h3 class="text-xl font-bold text-gray-800">اتصل بنا</h3>
-                                <p class="text-gray-600">نرحب بأستفساراتكم وطلباتكم</p>
-                            </div>
-                        </div>
-                        <div class="space-y-4">
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center space-x-3 space-x-reverse">
-                                    <i class="fas fa-phone text-amber-600"></i>
-                                    <div class="text-right">
-                                        <div class="font-bold text-gray-800 text-xl">76/385-060</div>
-                                        <div class="text-sm text-gray-600">اتصال مباشر</div>
-                                    </div>
-                                </div>
-                                <a href="tel:76385060" 
-                                   class="px-4 py-2 bg-amber-50 text-amber-700 rounded-lg font-bold hover:bg-amber-100 transition-colors">
-                                    <i class="fas fa-phone ml-2"></i>
-                                    اتصل الآن
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- الفوتر -->
-    <footer class="bg-gradient-to-r from-amber-900 to-amber-800 text-white py-12">
-        <div class="container mx-auto px-4">
-            <div class="grid md:grid-cols-3 gap-8 items-center">
-                <div>
-                    <div class="flex items-center space-x-3 space-x-reverse mb-4">
-                        <div class="w-12 h-12 bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center">
-                            <i class="fas fa-bread-slice text-amber-300 text-2xl"></i>
-                        </div>
-                        <div>
-                            <h3 class="text-2xl font-bold">معجنات الاشلان</h3>
-                            <p class="text-amber-200">الزاهرية، طرابلس</p>
-                        </div>
-                    </div>
-                    <p class="text-amber-100 opacity-90">
-                        عجينة طرية على القلب هنية، نقدمها لكم يومياً من الصبح لعشية
-                    </p>
-                </div>
-                
-                <div class="text-center">
-                    <h4 class="text-xl font-bold mb-4">روابط سريعة</h4>
-                    <div class="flex flex-wrap justify-center gap-4">
-                        <a href="#menu" class="text-amber-100 hover:text-white transition-colors">قائمة الطعام</a>
-                        <a href="#location" class="text-amber-100 hover:text-white transition-colors">موقعنا</a>
-                        <a href="tel:76385060" class="text-amber-100 hover:text-white transition-colors">اتصل بنا</a>
-                    </div>
-                </div>
-                
-                <div class="text-right">
-                    <h4 class="text-xl font-bold mb-4">تابعنا</h4>
-                    <div class="flex justify-end space-x-4 space-x-reverse">
-                        <a href="#" class="w-12 h-12 bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center hover:bg-white/20 transition-all duration-300">
-                            <i class="fab fa-facebook-f text-xl"></i>
-                        </a>
-                        <a href="#" class="w-12 h-12 bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center hover:bg-white/20 transition-all duration-300">
-                            <i class="fab fa-instagram text-xl"></i>
-                        </a>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="border-t border-amber-700/50 mt-8 pt-8 text-center text-amber-200">
-                <p>© 2024 معجنات الاشلان. جميع الحقوق محفوظة.</p>
-                <p class="text-sm mt-2">تصميم وتطوير: فريق معجنات الاشلان</p>
-            </div>
-        </div>
-    </footer>
-
-    <!-- جافاسكريبت -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // التنقل بين التبويبات
-            const tabs = document.querySelectorAll('.category-tab');
-            const sections = document.querySelectorAll('.menu-category');
-            const tabIndicator = document.getElementById('tab-indicator');
-            const tabsContainer = document.getElementById('tabs-container');
-            
-            // دالة تحديث موقع المؤشر
-            function updateIndicator(tab) {
-                const tabRect = tab.getBoundingClientRect();
-                const containerRect = tabsContainer.getBoundingClientRect();
-                
-                // حساب الموقع في التنسيق العربي (من اليمين لليسار)
-                const rightPosition = containerRect.right - tabRect.right;
-                tabIndicator.style.right = `${rightPosition}px`;
-                tabIndicator.style.width = `${tabRect.width}px`;
-            }
-            
-            // دالة تغيير التبويب
-            function activateTab(tab) {
-                // إزالة النشطة من جميع التبويبات
-                tabs.forEach(t => {
-                    t.classList.remove('gradient-bg', 'text-white');
-                    t.classList.add('glass-effect', 'text-gray-700');
+            // التمرير للقسم المحدد
+            const targetSection = document.getElementById(category);
+            if (targetSection) {
+                window.scrollTo({
+                    top: targetSection.offsetTop - 50,
+                    behavior: 'smooth'
                 });
-                
-                // إضافة النشطة للتبويب المختار
-                tab.classList.remove('glass-effect', 'text-gray-700');
-                tab.classList.add('gradient-bg', 'text-white');
-                
-                // إظهار القسم المناسب وإخفاء باقي الأقسام
-                const targetId = tab.dataset.category;
-                sections.forEach(section => {
-                    section.classList.add('hidden');
-                });
-                document.getElementById(targetId).classList.remove('hidden');
-                
-                // تحديث موقع المؤشر
-                updateIndicator(tab);
-            }
-            
-            // إضافة مستمعي الأحداث
-            tabs.forEach(tab => {
-                tab.addEventListener('click', () => activateTab(tab));
-            });
-            
-            // تهيئة المؤشر للموضع الأول
-            if (tabs.length > 0 && tabIndicator) {
-                updateIndicator(tabs[0]);
-            }
-            
-            // تأثير الهيدر عند التمرير
-            let lastScroll = 0;
-            const header = document.querySelector('.sticky-header');
-            
-            window.addEventListener('scroll', () => {
-                const currentScroll = window.pageYOffset;
-                
-                if (currentScroll > lastScroll && currentScroll > 100) {
-                    header.style.transform = 'translateY(-100%)';
-                } else {
-                    header.style.transform = 'translateY(0)';
-                }
-                
-                lastScroll = currentScroll;
-            });
-            
-            // تأثيرات الظهور
-            const observerOptions = {
-                threshold: 0.1,
-                rootMargin: '0px 0px -50px 0px'
-            };
-            
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.style.opacity = 1;
-                        entry.target.style.transform = 'translateY(0)';
-                    }
-                });
-            }, observerOptions);
-            
-            // تطبيق تأثيرات الظهور على العناصر
-            document.querySelectorAll('.product-card, .glass-effect').forEach(el => {
-                el.style.opacity = 0;
-                el.style.transform = 'translateY(20px)';
-                el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-                observer.observe(el);
-            });
-            
-            // التحقق من الرابط الحالي وتفعيل التبويب المناسب
-            const hash = window.location.hash;
-            if (hash) {
-                const targetTab = Array.from(tabs).find(tab => 
-                    tab.dataset.category === hash.substring(1)
-                );
-                if (targetTab) {
-                    activateTab(targetTab);
-                }
             }
         });
-    </script>
+    });
+    
+    // تتبع التمرير وتحديد القسم النشط
+    const observerOptions = {
+        root: null,
+        rootMargin: '-50% 0px -50% 0px',
+        threshold: 0
+    };
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const currentSection = entry.target.id;
+                navItems.forEach(item => {
+                    item.classList.remove('active');
+                    if (item.getAttribute('data-category') === currentSection) {
+                        item.classList.add('active');
+                    }
+                });
+            }
+        });
+    }, observerOptions);
+    
+    sections.forEach(section => {
+        observer.observe(section);
+    });
+    
+    // تفعيل التمرير لأسفل للواجهة الرئيسية
+    window.addEventListener('scroll', function() {
+        const header = document.querySelector('.category-header');
+        if (window.scrollY > 100) {
+            header.style.padding = '1rem 0';
+            header.style.backdropFilter = 'blur(20px)';
+        } else {
+            header.style.padding = '1.5rem 0';
+            header.style.backdropFilter = 'blur(10px)';
+        }
+    });
+    
+    // تأثيرات الظهور للمنتجات
+    const productCards = document.querySelectorAll('.product-card');
+    const cardObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry, index) => {
+            if (entry.isIntersecting) {
+                setTimeout(() => {
+                    entry.target.style.opacity = 1;
+                    entry.target.style.transform = 'translateY(0)';
+                }, index * 50);
+            }
+        });
+    }, {
+        threshold: 0.1
+    });
+    
+    productCards.forEach(card => {
+        card.style.opacity = 0;
+        card.style.transform = 'translateY(20px)';
+        card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+        cardObserver.observe(card);
+    });
+});
+
+// معالجة أخطاء الخريطة
+window.addEventListener('load', function() {
+    const iframe = document.querySelector('iframe[title*="موقع معجنات الاشلان"]');
+    if (iframe) {
+        iframe.addEventListener('load', function() {
+            console.log('تم تحميل الخريطة بنجاح');
+        });
+        
+        iframe.addEventListener('error', function() {
+            console.log('حدث خطأ في تحميل الخريطة');
+            const mapContainer = document.querySelector('.map-container');
+            if (mapContainer) {
+                mapContainer.innerHTML = `
+                <div class="h-full flex flex-col items-center justify-center bg-amber-50 p-6">
+                    <i class="fas fa-map-marked-alt text-amber-500 text-5xl mb-4"></i>
+                    <h3 class="text-xl font-bold text-amber-800 mb-2">تعذر تحميل الخريطة</h3>
+                    <p class="text-gray-700 mb-4 text-center">يمكنك استخدام الزر أدناه لفتح الخريطة في نافذة جديدة</p>
+                    <a
+                        href="https://maps.app.goo.gl/JBZnko42hwUtx2yB6?g_st=awb"
+                        target="_blank"
+                        class="px-6 py-3 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-lg transition-all duration-300"
+                    >
+                        <i class="fas fa-external-link-alt ml-2"></i>
+                        افتح خرائط جوجل
+                    </a>
+                </div>
+                `;
+            }
+        });
+    }
+});
+</script>
 </body>
 </html>
-
