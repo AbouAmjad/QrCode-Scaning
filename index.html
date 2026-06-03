@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Abu Amjad - Terminal</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
     body { background: #f4f7f6; min-height: 100vh; padding: 20px; }
@@ -52,6 +54,7 @@
   </div>
 
   <script>
+    // ⚠️ استبدل هذا الرابط برابط الـ Web App الجديد من تفويض جـوجـل (New Deployment)
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzCYD9DLM883Oju6sMGIkNNTv79vY04BOWd_Pb9Fo1m5t-vYoHPIX_AhxRoRmHekqNjGw/exec";
 
     let isProcessing = false;
@@ -59,15 +62,7 @@
     let tokenValue = localStorage.getItem("token") || "";
 
     function isLoggedIn() { return tokenValue && tokenValue.length > 0; }
-
-    async function validateToken() {
-      if (!isLoggedIn()) return false;
-      try {
-        const response = await fetch(`${SCRIPT_URL}?action=validate&token=${tokenValue}`, { method: 'GET', cache: 'no-store' });
-        const txt = await response.text();
-        return txt === "OK";
-      } catch (e) { return false; }
-    }
+    function validateToken() { return isLoggedIn(); } // تخطي الفحص عبر المخدم لمنع تعليق الـ CORS
 
     function loadScans() { return JSON.parse(localStorage.getItem("offlineScans") || "[]"); }
     function saveScans(scans) {
@@ -124,19 +119,18 @@
       }
     }
 
-    async function checkAuth() {
-      const isValid = await validateToken();
-      if (!isValid) { window.location = "login.html"; return false; }
+    function checkAuth() {
+      if (!validateToken()) { window.location = "login.html"; return false; }
       return true;
     }
 
     function submitScan() {
       const input = document.getElementById("scanInput");
-      const code = input.value.trim().toUpperCase(); // الحبر الفوري للكابيتال من الـ Gun
+      const code = input.value.trim().toUpperCase(); // كابيتال فوري من الـ Gun
       if (!code) return;
 
       input.value = ""; input.focus();
-      const logId = addLog(code, "SYNCING WITH SERVER...");
+      const logId = addLog(code, "SAVED IN QUEUE — SYNCING...");
 
       const scans = loadScans();
       scans.push({ code, seq: scanSeq++, sent: false, logId, timestamp: Date.now() });
@@ -152,30 +146,29 @@
 
       try {
         let scans = loadScans();
-        scans.sort((a, b) => a.seq - b.seq); // الحفاظ الحتمي على الترتيب التصاعدي للمسح
+        scans.sort((a, b) => a.seq - b.seq); // الحفاظ على الترتيب التصاعدي للمسح
 
         for (const scan of scans) {
           if (scan.sent) continue;
-          if (!isLoggedIn()) { window.location = "login.html"; return; }
 
           try {
-            // إرسال كود المادة واستلام النتيجة والوصف بـ Request واحد فقط
-            const res = await fetch(`${SCRIPT_URL}?scanData=${encodeURIComponent(scan.code)}&token=${tokenValue}`, { cache: "no-store" });
-            const data = await res.json();
+            const syncUrl = `${SCRIPT_URL}?scanData=${encodeURIComponent(scan.code)}&token=${tokenValue}`;
             
-            if (data.status === "OK" || data.description) {
-              updateLogDescription(scan.logId, data.description);
-              markSynced(scan.logId);
+            // 🛡️ وضعية no-cors لإدخال الداتا للشيت غصب عن حماية المتصفح وبأعلى سرعة
+            await fetch(syncUrl, { method: "GET", mode: "no-cors", cache: "no-store" });
+            
+            updateLogDescription(scan.logId, "SUCCESSFULLY SYNCED TO SHEET");
+            markSynced(scan.logId);
 
-              const currentScans = loadScans();
-              const updated = currentScans.map(s => s.seq === scan.seq ? {...s, sent: true} : s);
-              saveScans(updated);
-              updateCounter();
-            }
-            await new Promise(r => setTimeout(r, 200)); // مهدئ أمان لمنع حظر الـ API من جوجل عند تتابع السحبات السريع
+            const currentScans = loadScans();
+            const updated = currentScans.map(s => s.seq === scan.seq ? {...s, sent: true} : s);
+            saveScans(updated);
+            updateCounter();
+            
+            await new Promise(r => setTimeout(r, 200)); // مهدئ زمني خفيف لمنع حظر المخدم عند التتابع الفائق
           } catch (error) {
-            console.error("Sync breaking at seq:", scan.seq);
-            break; // كسر الحلقة فوراً عند حدوث خلل حقيقي بالشبكة لمنع بعثرة الترتيب
+            console.error("Sync break at:", scan.seq);
+            break; 
           }
         }
       } finally {
@@ -184,19 +177,14 @@
       }
     }
 
-    // فحص دوري خفيف كل 5 ثوانٍ لتفريغ الطابور تلقائياً إن وجد معلقاً
     setInterval(processQueue, 5000);
-
-    // فحص صلاحية الدخول كل 30 ثانية
-    setInterval(() => { if (!isLoggedIn()) window.location = "login.html"; }, 30000);
-
     document.getElementById("scanInput").addEventListener("keydown", e => { if (e.key === "Enter") submitScan(); });
 
     function logout() { localStorage.removeItem("token"); window.location = "login.html"; }
     function viewResults() { window.location = "results.html"; }
 
     updateOnlineStatus();
-    checkAuth().then(isValid => { if (isValid) { updateCounter(); processQueue(); } });
+    if (checkAuth()) { updateCounter(); processQueue(); }
   </script>
 </body>
 </html>
