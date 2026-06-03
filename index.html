@@ -1,743 +1,202 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<title>QR Scanner</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
-<style>
-:root {
-  --primary: #43a047;
-  --primary-dark: #2e7d32;
-  --secondary: #66bb6a;
-  --danger: #c62828;
-  --danger-dark: #8e0000;
-  --warning: #ffb300;
-  --bg-dark: #121212;
-  --bg-card: #1f1f1f;
-  --text-light: #ffffff;
-  --text-gray: #cccccc;
-}
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  text-transform: uppercase;
-}
-
-body {
-  background: linear-gradient(135deg, #1a1a1a 0%, #0d0d0d 100%);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  color: var(--text-light);
-  padding: 30px;
-  min-height: 100vh;
-  overflow-x: hidden;
-}
-
-.container {
-  max-width: 1400px;
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: 1fr 2fr;
-  gap: 30px;
-  align-items: start;
-}
-
-/* Left Panel */
-.left-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 25px;
-}
-
-.scan-section {
-  background: var(--bg-card);
-  padding: 30px;
-  border-radius: 20px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-  border: 1px solid rgba(67, 160, 71, 0.2);
-}
-
-.scan-section h2 {
-  text-align: center;
-  margin-bottom: 25px;
-  font-size: 24px;
-  color: var(--text-light);
-}
-
-.scan-input {
-  width: 100%;
-  padding: 20px 15px;
-  font-size: 18px;
-  border: 2px solid var(--primary);
-  border-radius: 12px;
-  outline: none;
-  background: rgba(31, 31, 31, 0.8);
-  color: var(--text-light);
-  transition: all 0.3s ease;
-  text-transform: uppercase;
-}
-
-.scan-input:focus {
-  border-color: var(--secondary);
-  background: rgba(255, 255, 255, 0.05);
-  box-shadow: 0 0 0 4px rgba(67, 160, 71, 0.3);
-  transform: scale(1.02);
-}
-
-.scan-input::placeholder {
-  color: var(--text-gray);
-}
-
-.submit-btn {
-  width: 100%;
-  margin-top: 20px;
-  padding: 20px;
-  font-size: 18px;
-  border-radius: 12px;
-  border: none;
-  cursor: pointer;
-  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-  color: white;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-  text-transform: uppercase;
-}
-
-.submit-btn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-  transition: left 0.5s;
-}
-
-.submit-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(67, 160, 71, 0.4);
-}
-
-.submit-btn:hover::before {
-  left: 100%;
-}
-
-.submit-btn:active {
-  transform: translateY(0);
-}
-
-.stats-section {
-  background: var(--bg-card);
-  padding: 25px;
-  border-radius: 20px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-  border: 1px solid rgba(67, 160, 71, 0.2);
-}
-
-.stats-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 20px;
-}
-
-.stat-item {
-  text-align: center;
-  padding: 20px;
-  background: rgba(67, 160, 71, 0.1);
-  border-radius: 15px;
-  border: 1px solid rgba(67, 160, 71, 0.2);
-}
-
-.stat-value {
-  font-size: 28px;
-  font-weight: 700;
-  color: var(--primary);
-  margin-bottom: 5px;
-}
-
-.stat-label {
-  font-size: 14px;
-  color: var(--text-gray);
-  opacity: 0.9;
-}
-
-.logout-btn {
-  width: 100%;
-  padding: 15px;
-  background: linear-gradient(135deg, var(--danger-dark) 0%, var(--danger) 100%);
-  color: white;
-  border: none;
-  border-radius: 12px;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 16px;
-  transition: all 0.3s ease;
-  text-transform: uppercase;
-}
-
-.logout-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(198, 40, 40, 0.4);
-}
-
-.results-btn {
-  width: 100%;
-  padding: 15px;
-  background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
-  color: white;
-  border: none;
-  border-radius: 12px;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 16px;
-  transition: all 0.3s ease;
-  margin-bottom: 10px;
-  text-transform: uppercase;
-}
-
-.results-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(67, 160, 71, 0.4);
-}
-
-/* Right Panel */
-.right-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 25px;
-}
-
-.logs-section {
-  background: var(--bg-card);
-  border-radius: 20px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-  border: 1px solid rgba(67, 160, 71, 0.2);
-  max-height: 800px;
-  overflow-y: auto;
-}
-
-.logs-header {
-  padding: 20px;
-  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-  color: white;
-  border-radius: 20px 20px 0 0;
-  font-weight: 600;
-  font-size: 18px;
-  text-align: center;
-  box-shadow: 0 4px 15px rgba(67, 160, 71, 0.3);
-}
-
-.log-item {
-  padding: 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  animation: slideIn 0.3s ease;
-  background: rgba(255, 255, 255, 0.02);
-  margin: 10px 15px;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  transition: all 0.3s ease;
-}
-
-.log-item:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0,0,0,0.2);
-}
-
-.log-item:last-child {
-  border-bottom: none;
-}
-
-.log-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-.log-code {
-  font-weight: 700;
-  color: var(--text-light);
-  font-size: 16px;
-  display: flex;
-  align-items: center;
-  text-transform: uppercase;
-}
-
-.log-code::before {
-  content: '●';
-  color: var(--primary);
-  margin-right: 10px;
-  font-size: 12px;
-}
-
-.sync-status {
-  font-size: 18px;
-  margin-left: 10px;
-}
-
-.status-synced {
-  color: var(--primary);
-}
-
-.status-pending {
-  color: var(--warning);
-  animation: pulse 1s infinite;
-}
-
-.log-description {
-  background: rgba(67, 160, 71, 0.1);
-  padding: 12px;
-  border-radius: 8px;
-  margin: 8px 0;
-  border-left: 3px solid var(--primary);
-  font-size: 14px;
-  color: var(--text-gray);
-  line-height: 1.5;
-  text-transform: uppercase;
-}
-
-.log-time {
-  color: var(--text-gray);
-  font-size: 12px;
-  margin-top: 10px;
-  text-align: right;
-  opacity: 0.7;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-}
-
-@keyframes slideIn {
-  from { opacity: 0; transform: translateX(30px); }
-  to { opacity: 1; transform: translateX(0); }
-}
-
-.status {
-  padding: 15px;
-  border-radius: 12px;
-  font-weight: 600;
-  text-align: center;
-  margin-bottom: 20px;
-  font-size: 16px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-  text-transform: uppercase;
-}
-
-.online { 
-  background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%); 
-  color: white;
-}
-.offline { 
-  background: linear-gradient(135deg, var(--danger-dark) 0%, var(--danger) 100%); 
-  color: white;
-}
-
-.counter {
-  margin-top: 15px;
-  text-align: center;
-  font-size: 16px;
-  padding: 10px;
-  background: rgba(67, 160, 71, 0.1);
-  border-radius: 10px;
-  text-transform: uppercase;
-}
-
-.log {
-  max-height: 650px;
-  overflow-y: auto;
-}
-
-.log::-webkit-scrollbar {
-  width: 8px;
-}
-
-.log::-webkit-scrollbar-track {
-  background: rgba(31, 31, 31, 0.5);
-  border-radius: 4px;
-}
-
-.log::-webkit-scrollbar-thumb {
-  background: var(--primary);
-  border-radius: 4px;
-}
-
-/* Floating logout button */
-.floating-logout {
-  position: fixed;
-  bottom: 30px;
-  right: 30px;
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--danger-dark) 0%, var(--danger) 100%);
-  color: white;
-  border: none;
-  font-size: 24px;
-  cursor: pointer;
-  box-shadow: 0 8px 25px rgba(198, 40, 40, 0.4);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  transition: all 0.3s ease;
-  text-transform: uppercase;
-}
-
-.floating-logout:hover {
-  transform: translateY(-3px) scale(1.1);
-  box-shadow: 0 12px 35px rgba(198, 40, 40, 0.5);
-}
-
-@media (max-width: 1200px) {
-  .container {
-    grid-template-columns: 1fr;
-  }
-  
-  .left-panel, .right-panel {
-    grid-column: 1;
-  }
-}
-
-@media (max-width: 768px) {
-  body {
-    padding: 15px;
-  }
-  
-  .floating-logout {
-    bottom: 15px;
-    right: 15px;
-    width: 50px;
-    height: 50px;
-    font-size: 20px;
-  }
-}
-</style>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+    body { background: #f4f7f6; min-height: 100vh; padding: 20px; }
+    .container { max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 2px solid #f4f7f6; padding-bottom: 15px; }
+    h2 { color: #2d5016; font-weight: 700; }
+    .nav-btns button { padding: 6px 12px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; margin-left: 5px; font-size: 13px; }
+    .btn-report { background: #007bff; color: white; }
+    .btn-logout { background: #dc3545; color: white; }
+    .status { padding: 12px; border-radius: 12px; text-align: center; font-weight: 700; font-size: 14px; margin-bottom: 20px; letter-spacing: 0.5px; transition: all 0.3s ease; }
+    .online { background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
+    .offline { background: #ffebee; color: #c62828; border: 1px solid #ffcdd2; }
+    .scan-area { position: relative; margin-bottom: 25px; }
+    #scanInput { width: 100%; padding: 18px; border: 2px solid #e1e5e9; border-radius: 15px; font-size: 18px; outline: none; transition: all 0.3s ease; letter-spacing: 1px; text-transform: uppercase; }
+    #scanInput:focus { border-color: #2d5016; box-shadow: 0 0 0 4px rgba(45, 80, 22, 0.15); }
+    .counter-badge { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); background: #2d5016; color: white; padding: 4px 12px; border-radius: 20px; font-weight: 700; font-size: 14px; }
+    .log-section { background: #fafafa; border-radius: 15px; padding: 15px; max-height: 400px; overflow-y: auto; border: 1px solid #e1e5e9; }
+    .log-item { background: white; padding: 15px; border-radius: 10px; margin-bottom: 10px; border-left: 4px solid #ffb300; box-shadow: 0 2px 5px rgba(0,0,0,0.02); display: flex; flex-direction: column; gap: 4px; transition: all 0.3s ease; }
+    .log-header { display: flex; justify-content: space-between; align-items: center; }
+    .log-code { font-weight: 700; color: #333; font-size: 16px; }
+    .log-description { font-size: 14px; color: #666; font-weight: 500; }
+    .log-time { font-size: 11px; color: #999; text-align: right; }
+    .sync-status { font-size: 16px; font-weight: bold; }
+    .status-pending { color: #ffb300; animation: pulse 1s infinite; }
+    .status-synced { color: #2e7d32; }
+    .log-item.synced { border-left-color: #2e7d32; background: #fbfdfb; }
+    @keyframes pulse { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
+  </style>
 </head>
-
 <body>
-
-<div id="status" class="status online">ONLINE — syncing scans</div>
-
-<div class="container">
-  <div class="left-panel">
-    <div class="scan-section">
-      <h2>QR Scanner</h2>
-      <input id="scanInput" class="scan-input" placeholder="SCAN CODE HERE" autofocus>
-      <button onclick="submitScan()" class="submit-btn">SUBMIT SCAN</button>
-    </div>
-
-    <div class="stats-section">
-      <div class="stats-grid">
-        <div class="stat-item">
-          <div class="stat-value" id="counter">0</div>
-          <div class="stat-label">PENDING SCANS</div>
-        </div>
+  <div class="container">
+    <div class="header">
+      <h2>Scan Terminal</h2>
+      <div class="nav-btns">
+        <button class="btn-report" onclick="viewResults()">📊 Report</button>
+        <button class="btn-logout" onclick="logout()">🚪 Logout</button>
       </div>
-      <button onclick="viewResults()" class="results-btn">VIEW RESULTS</button>
-      <button onclick="logout()" class="logout-btn">LOGOUT</button>
     </div>
+    
+    <div id="status" class="status online">ONLINE — READY FOR SCANS</div>
+    
+    <div class="scan-area">
+      <input type="text" id="scanInput" placeholder="READY FOR GUN SCAN..." autocomplete="off">
+      <div class="counter-badge" id="counter">0</div>
+    </div>
+    
+    <div class="log-section" id="log"></div>
   </div>
 
-  <div class="right-panel">
-    <div class="logs-section">
-      <div class="logs-header">SCAN LOGS</div>
-      <div id="log" class="log"></div>
-    </div>
-  </div>
-</div>
+  <script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyrScJh7k84wwIpEAr4MqSrnsyvPBMp3BYhPpM1hPyG_V7RPBPtQ_um3YYcCw0JLmc/exec";
 
-<button class="floating-logout" onclick="logout()">🚪</button>
+    let isProcessing = false;
+    let scanSeq = Number(localStorage.getItem("scanSeq") || 1);
+    let tokenValue = localStorage.getItem("token") || "";
 
-<script>
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyrScJh7k84wwIpEAr4MqSrnsyvPBMp3BYhPpM1hPyG_V7RPBPtQ_um3YYcCw0JLmc/exec";
+    function isLoggedIn() { return tokenValue && tokenValue.length > 0; }
 
-let isProcessing = false;
-let scanSeq = Number(localStorage.getItem("scanSeq") || 1);
-let tokenValue = localStorage.getItem("token") || "";
-
-// Check if user is logged in
-function isLoggedIn() {
-  return tokenValue && tokenValue.length > 0;
-}
-
-// Validate token function (only for login check)
-async function validateToken() {
-  if (!isLoggedIn()) return false;
-  
-  try {
-    const response = await fetch(`${SCRIPT_URL}?action=validate&token=${tokenValue}`, {
-      method: 'GET',
-      cache: 'no-store',
-      mode: 'cors'
-    });
-    
-    const text = await response.text();
-    return text !== "UNAUTHORIZED";
-  } catch (error) {
-    return false;
-  }
-}
-
-// Test connection function
-async function testConnection() {
-  try {
-    const response = await fetch(`${SCRIPT_URL}?action=test&token=${tokenValue}`, {
-      method: 'GET',
-      cache: 'no-store',
-      mode: 'cors'
-    });
-    
-    return response.ok;
-  } catch (error) {
-    return false;
-  }
-}
-
-// Get description from appropriate column based on code prefix
-async function getDescription(code) {
-  try {
-    const response = await fetch(`${SCRIPT_URL}?action=getDescription&scanData=${encodeURIComponent(code.toUpperCase())}&token=${tokenValue}`, {
-      method: 'GET',
-      cache: 'no-store',
-      mode: 'cors'
-    });
-    
-    const description = await response.text();
-    return description;
-  } catch (error) {
-    console.error("Error fetching description:", error);
-    return "DESCRIPTION NOT FOUND";
-  }
-}
-
-function loadScans() {
-  return JSON.parse(localStorage.getItem("offlineScans") || "[]");
-}
-
-function saveScans(scans) {
-  localStorage.setItem("offlineScans", JSON.stringify(scans));
-  localStorage.setItem("scanSeq", scanSeq);
-}
-
-function updateCounter() {
-  const scans = loadScans();
-  const pending = scans.filter(s => !s.sent).length;
-  document.getElementById("counter").innerText = pending;
-}
-
-function addLog(code, description = "LOADING...") {
-  const id = "log_" + Date.now();
-  const div = document.createElement("div");
-  div.className = "log-item";
-  div.id = id;
-  div.innerHTML = `
-    <div class="log-header">
-      <div class="log-code">${code.toUpperCase()}</div>
-      <span class="sync-status status-pending">●</span>
-    </div>
-    <div class="log-description">${description.toUpperCase()}</div>
-    <div class="log-time">${new Date().toLocaleTimeString().toUpperCase()}</div>
-  `;
-  document.getElementById("log").prepend(div);
-  return id;
-}
-
-function updateLogDescription(logId, description) {
-  const el = document.getElementById(logId);
-  if (el) {
-    const descDiv = el.querySelector(".log-description");
-    if (descDiv) {
-      descDiv.textContent = description.toUpperCase();
-    }
-  }
-}
-
-function markSynced(id) {
-  const el = document.getElementById(id);
-  if (el) {
-    const statusSpan = el.querySelector(".sync-status");
-    if (statusSpan) {
-      statusSpan.textContent = '✓';
-      statusSpan.className = "sync-status status-synced";
-    }
-  }
-}
-
-// Check authentication on page load
-async function checkAuth() {
-  const isValid = await validateToken();
-  if (!isValid) {
-    window.location = "login.html";
-    return false;
-  }
-  return true;
-}
-
-function submitScan() {
-  const input = document.getElementById("scanInput");
-  const code = input.value.trim().toUpperCase(); // Convert to uppercase
-  if (!code) return;
-
-  input.value = "";
-  input.focus();
-
-  // Add to UI with loading description
-  const logId = addLog(code, "LOADING DESCRIPTION...");
-  
-  // Get description and update UI
-  getDescription(code).then(description => {
-    updateLogDescription(logId, description);
-  });
-
-  // Add to processing queue
-  const scans = loadScans();
-  scans.push({ 
-    code, 
-    seq: scanSeq++, 
-    sent: false, 
-    logId,
-    timestamp: Date.now(),
-    submitted: false
-  });
-  saveScans(scans);
-  updateCounter();
-
-  // Process immediately
-  processQueue();
-}
-
-async function processQueue() {
-  if (isProcessing) return;
-  isProcessing = true;
-
-  try {
-    let scans = loadScans();
-    // Sort by sequence number to maintain order
-    scans.sort((a, b) => a.seq - b.seq);
-
-    for (const scan of scans) {
-      if (scan.sent || scan.submitted) continue;
-
+    async function validateToken() {
+      if (!isLoggedIn()) return false;
       try {
-        // Check if user is logged in (no session expiration)
-        if (!isLoggedIn()) {
-          window.location = "login.html";
-          return;
-        }
+        const response = await fetch(`${SCRIPT_URL}?action=validate&token=${tokenValue}`, { method: 'GET', cache: 'no-store' });
+        const txt = await response.text();
+        return txt === "OK";
+      } catch (e) { return false; }
+    }
 
-        // Test connection
-        const isOnline = await testConnection();
-        
-        if (!isOnline) {
-          document.getElementById("status").className = "status offline";
-          document.getElementById("status").innerText = "OFFLINE — SCANS SAVED";
-          return;
-        }
+    function loadScans() { return JSON.parse(localStorage.getItem("offlineScans") || "[]"); }
+    function saveScans(scans) {
+      localStorage.setItem("offlineScans", JSON.stringify(scans));
+      localStorage.setItem("scanSeq", scanSeq);
+    }
 
-        // Mark as submitted to prevent duplicates
-        const allScans = loadScans();
-        const updatedScans = allScans.map(s => 
-          s.seq === scan.seq ? {...s, submitted: true} : s
-        );
-        saveScans(updatedScans);
+    function updateCounter() {
+      const scans = loadScans();
+      document.getElementById("counter").innerText = scans.filter(s => !s.sent).length;
+    }
 
-        // Submit scan to server (convert to uppercase)
-        const res = await fetch(
-          `${SCRIPT_URL}?scanData=${encodeURIComponent(scan.code.toUpperCase())}&token=${tokenValue}`,
-          { 
-            cache: "no-store",
-            method: "GET"
-          }
-        );
+    function updateOnlineStatus() {
+      const statusEl = document.getElementById("status");
+      if (navigator.onLine) {
+        statusEl.className = "status online"; statusEl.innerText = "ONLINE — SYNC ACTIVE";
+      } else {
+        statusEl.className = "status offline"; statusEl.innerText = "OFFLINE — STORAGE MODE";
+      }
+    }
+    window.addEventListener('online', updateOnlineStatus);
+    window.addEventListener('offline', updateOnlineStatus);
 
-        const txt = await res.text();
-        if (txt !== "OK") {
-          // Revert submitted flag on failure
-          const revertScans = loadScans();
-          const revertedScans = revertScans.map(s => 
-            s.seq === scan.seq ? {...s, submitted: false} : s
-          );
-          saveScans(revertedScans);
-          throw new Error("SYNC FAILED");
-        }
+    function addLog(code, description = "WAITING FOR NETWORK SYNC...") {
+      const id = "log_" + Date.now();
+      const div = document.createElement("div");
+      div.className = "log-item"; div.id = id;
+      div.innerHTML = `
+        <div class="log-header">
+          <div class="log-code">${code.toUpperCase()}</div>
+          <span class="sync-status status-pending">●</span>
+        </div>
+        <div class="log-description">${description.toUpperCase()}</div>
+        <div class="log-time">${new Date().toLocaleTimeString().toUpperCase()}</div>
+      `;
+      document.getElementById("log").prepend(div);
+      return id;
+    }
 
-        // Mark as fully sent
-        const finalScans = loadScans();
-        const finalUpdatedScans = finalScans.map(s => 
-          s.seq === scan.seq ? {...s, sent: true, submitted: true} : s
-        );
-        saveScans(finalUpdatedScans);
-        
-        markSynced(scan.logId);
-        updateCounter();
-
-        await new Promise(r => setTimeout(r, 200));
-
-      } catch (error) {
-        console.error("SYNC ERROR:", error);
-        document.getElementById("status").className = "status offline";
-        document.getElementById("status").innerText = "OFFLINE — SCANS SAVED";
-        return;
+    function updateLogDescription(logId, description) {
+      const el = document.getElementById(logId);
+      if (el) {
+        const descDiv = el.querySelector(".log-description");
+        if (descDiv) descDiv.textContent = description.toUpperCase();
       }
     }
 
-    document.getElementById("status").className = "status online";
-    document.getElementById("status").innerText = "ONLINE — SYNCING SCANS";
+    function markSynced(id) {
+      const el = document.getElementById(id);
+      if (el) {
+        el.classList.add("synced");
+        const statusSpan = el.querySelector(".sync-status");
+        if (statusSpan) { statusSpan.textContent = '✓'; statusSpan.className = "sync-status status-synced"; }
+      }
+    }
 
-  } finally {
-    isProcessing = false;
-  }
-}
+    async function checkAuth() {
+      const isValid = await validateToken();
+      if (!isValid) { window.location = "login.html"; return false; }
+      return true;
+    }
 
-// Process queue every 2 seconds
-setInterval(processQueue, 2000);
+    function submitScan() {
+      const input = document.getElementById("scanInput");
+      const code = input.value.trim().toUpperCase(); // الحبر الفوري للكابيتال من الـ Gun
+      if (!code) return;
 
-// Check connection every 3 seconds
-setInterval(async () => {
-  const isOnline = await testConnection();
-  if (isOnline) {
-    document.getElementById("status").className = "status online";
-    document.getElementById("status").innerText = "ONLINE — SYNCING SCANS";
-  } else {
-    document.getElementById("status").className = "status offline";
-    document.getElementById("status").innerText = "OFFLINE — SCANS SAVED";
-  }
-}, 3000);
+      input.value = ""; input.focus();
+      const logId = addLog(code, "SYNCING WITH SERVER...");
 
-// Check authentication every 10 seconds (only if not logged in)
-setInterval(async () => {
-  if (!isLoggedIn()) {
-    window.location = "login.html";
-  }
-}, 10000);
+      const scans = loadScans();
+      scans.push({ code, seq: scanSeq++, sent: false, logId, timestamp: Date.now() });
+      saveScans(scans);
+      updateCounter();
 
-document.getElementById("scanInput").addEventListener("keydown", e => {
-  if (e.key === "Enter") submitScan();
-});
+      processQueue();
+    }
 
-function logout() {
-  localStorage.removeItem("token");
-  window.location = "login.html";
-}
+    async function processQueue() {
+      if (isProcessing || !navigator.onLine) { updateOnlineStatus(); return; }
+      isProcessing = true;
 
-function viewResults() {
-  window.location = "results.html";
-}
+      try {
+        let scans = loadScans();
+        scans.sort((a, b) => a.seq - b.seq); // الحفاظ الحتمي على الترتيب التصاعدي للمسح
 
-// Initial checks
-checkAuth().then(isValid => {
-  if (isValid) {
-    updateCounter();
-  }
-});
-</script>
+        for (const scan of scans) {
+          if (scan.sent) continue;
+          if (!isLoggedIn()) { window.location = "login.html"; return; }
 
+          try {
+            // إرسال كود المادة واستلام النتيجة والوصف بـ Request واحد فقط
+            const res = await fetch(`${SCRIPT_URL}?scanData=${encodeURIComponent(scan.code)}&token=${tokenValue}`, { cache: "no-store" });
+            const data = await res.json();
+            
+            if (data.status === "OK" || data.description) {
+              updateLogDescription(scan.logId, data.description);
+              markSynced(scan.logId);
+
+              const currentScans = loadScans();
+              const updated = currentScans.map(s => s.seq === scan.seq ? {...s, sent: true} : s);
+              saveScans(updated);
+              updateCounter();
+            }
+            await new Promise(r => setTimeout(r, 200)); // مهدئ أمان لمنع حظر الـ API من جوجل عند تتابع السحبات السريع
+          } catch (error) {
+            console.error("Sync breaking at seq:", scan.seq);
+            break; // كسر الحلقة فوراً عند حدوث خلل حقيقي بالشبكة لمنع بعثرة الترتيب
+          }
+        }
+      } finally {
+        isProcessing = false;
+        updateOnlineStatus();
+      }
+    }
+
+    // فحص دوري خفيف كل 5 ثوانٍ لتفريغ الطابور تلقائياً إن وجد معلقاً
+    setInterval(processQueue, 5000);
+
+    // فحص صلاحية الدخول كل 30 ثانية
+    setInterval(() => { if (!isLoggedIn()) window.location = "login.html"; }, 30000);
+
+    document.getElementById("scanInput").addEventListener("keydown", e => { if (e.key === "Enter") submitScan(); });
+
+    function logout() { localStorage.removeItem("token"); window.location = "login.html"; }
+    function viewResults() { window.location = "results.html"; }
+
+    updateOnlineStatus();
+    checkAuth().then(isValid => { if (isValid) { updateCounter(); processQueue(); } });
+  </script>
 </body>
 </html>
