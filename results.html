@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Daily Tool Tracker</title>
+  <title>Abu Amjad - Report</title>
   <style>
     body { font-family: Arial, sans-serif; margin: 20px; background: #f0f0f0; }
     .container { max-width: 1000px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
@@ -42,10 +42,10 @@
   </div>
 
   <script>
+    // ⚠️ استبدل هذا الرابط برابط الـ Web App الجديد من تفويض جـوجـل (New Deployment)
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzCYD9DLM883Oju6sMGIkNNTv79vY04BOWd_Pb9Fo1m5t-vYoHPIX_AhxRoRmHekqNjGw/exec";
     const tokenValue = localStorage.getItem("token") || "";
 
-    // جدار حماية لمنع الدخول العشوائي بدون توكن صالح
     function checkProtection() {
       if (!tokenValue) { window.location = "login.html"; return false; }
       return true;
@@ -54,12 +54,12 @@
     async function loadDates() {
       if(!checkProtection()) return;
       try {
+        // نطلب البيانات بـ mode عادي لأن جلب التقارير يحتاج قراءة الـ JSON العائد عكس المسح السريع
         const response = await fetch(`${WEB_APP_URL}?action=getDates&token=${tokenValue}`);
         const textData = await response.text();
         
         if (textData === "UNAUTHORIZED") { window.location = "login.html"; return; }
         const dates = JSON.parse(textData);
-        
         if (dates.error) { showError(dates.error); return; }
         
         const select = document.getElementById('dateSelect');
@@ -92,7 +92,6 @@
         
         if (textData === "UNAUTHORIZED") { window.location = "login.html"; return; }
         const data = JSON.parse(textData);
-        
         if (data.error) { showError(data.error); return; }
         displayResults(data, selectedDate);
       } catch (error) { showError('Failed to load data: ' + error.message); } 
