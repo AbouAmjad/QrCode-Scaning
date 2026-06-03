@@ -1,198 +1,129 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="utf-8">
-    <title>Daily Tool Tracker</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            background: #f0f0f0;
-        }
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        h1 {
-            color: #333;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .controls {
-            margin-bottom: 20px;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 6px;
-        }
-        select, button {
-            padding: 8px 12px;
-            margin: 5px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-size: 14px;
-        }
-        button {
-            background: #007bff;
-            color: white;
-            cursor: pointer;
-        }
-        button:hover {
-            background: #0056b3;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        th, td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-        th {
-            background: #343a40;
-            color: white;
-        }
-        tr:nth-child(even) {
-            background: #f8f9fa;
-        }
-        .qty {
-            font-weight: bold;
-            color: #28a745;
-            font-size: 16px;
-        }
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #666;
-        }
-        .error {
-            color: #dc3545;
-            background: #f8d7da;
-            padding: 10px;
-            border-radius: 4px;
-            margin: 10px 0;
-        }
-    </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Daily Tool Tracker</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; background: #f0f0f0; }
+    .container { max-width: 1000px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    h1 { color: #333; text-align: center; margin-bottom: 20px; }
+    .controls { margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 6px; display: flex; align-items: center; gap: 10px; }
+    select, button { padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; outline: none; }
+    button { background: #007bff; color: white; cursor: pointer; font-weight: bold; }
+    button:hover { background: #0056b3; }
+    .btn-back { background: #6c757d; }
+    .btn-back:hover { background: #5a6268; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+    th { background: #343a40; color: white; }
+    tr:nth-child(even) { background: #f8f9fa; }
+    .qty { font-weight: bold; color: #28a745; font-size: 16px; }
+    .loading { text-align: center; padding: 40px; color: #666; font-weight: bold; }
+    .error { color: #dc3545; background: #f8d7da; padding: 10px; border-radius: 4px; margin: 10px 0; border: 1px solid #f5c6cb; }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>📅 Daily Tool Tracking System</h1>
-        
-        <div class="controls">
-            <label for="dateSelect">Select Date:</label>
-            <select id="dateSelect">
-                <option value="">Loading dates...</option>
-            </select>
-            <button onclick="loadData()">Load Data</button>
-        </div>
-        
-        <div id="loading" class="loading">Select a date to view daily tool activity</div>
-        <div id="error" style="display:none;"></div>
-        <div id="results"></div>
+  <div class="container">
+    <h1>📅 Daily Tool Tracking System</h1>
+    
+    <div class="controls">
+      <button class="btn-back" onclick="window.location='index.html'">⬅ Back</button>
+      <label for="dateSelect">Select Date:</label>
+      <select id="dateSelect">
+        <option value="">Loading dates...</option>
+      </select>
+      <button onclick="loadData()">Load Data</button>
     </div>
+    
+    <div id="loading" class="loading" style="display:none;">Fetching records from server...</div>
+    <div id="error" style="display:none;"></div>
+    <div id="results"></div>
+  </div>
 
-    <script>
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxhj5tA3dS1Z9YFpFD74J0sBdqm2UVMphtXRwLlqdNZBlZ7gGJTHMHrScrDA-PLaOEK/exec";
+  <script>
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyrScJh7k84wwIpEAr4MqSrnsyvPBMp3BYhPpM1hPyG_V7RPBPtQ_um3YYcCw0JLmc/exec";
+    const tokenValue = localStorage.getItem("token") || "";
+
+    // جدار حماية لمنع الدخول العشوائي بدون توكن صالح
+    function checkProtection() {
+      if (!tokenValue) { window.location = "login.html"; return false; }
+      return true;
+    }
+
+    async function loadDates() {
+      if(!checkProtection()) return;
+      try {
+        const response = await fetch(`${WEB_APP_URL}?action=getDates&token=${tokenValue}`);
+        const textData = await response.text();
         
-        // Load available dates
-        async function loadDates() {
-            try {
-                const response = await fetch(WEB_APP_URL + '?action=getDates');
-                const dates = await response.json();
-                
-                if (dates.error) {
-                    showError(dates.error);
-                    return;
-                }
-                
-                const select = document.getElementById('dateSelect');
-                select.innerHTML = '<option value="">Select a date</option>';
-                
-                dates.forEach(date => {
-                    const option = document.createElement('option');
-                    option.value = date;
-                    option.textContent = date;
-                    select.appendChild(option);
-                });
-                
-            } catch (error) {
-                showError('Failed to load dates: ' + error.message);
-            }
-        }
+        if (textData === "UNAUTHORIZED") { window.location = "login.html"; return; }
+        const dates = JSON.parse(textData);
         
-        // Load data for selected date
-        async function loadData() {
-            const selectedDate = document.getElementById('dateSelect').value;
-            
-            if (!selectedDate) {
-                document.getElementById('results').innerHTML = '<p>Please select a date.</p>';
-                document.getElementById('loading').style.display = 'none';
-                return;
-            }
-            
-            document.getElementById('loading').style.display = 'block';
-            document.getElementById('results').innerHTML = '';
-            document.getElementById('error').style.display = 'none';
-            
-            try {
-                const response = await fetch(WEB_APP_URL + '?action=getData&date=' + encodeURIComponent(selectedDate));
-                const data = await response.json();
-                
-                if (data.error) {
-                    showError(data.error);
-                    return;
-                }
-                
-                displayResults(data, selectedDate);
-                
-            } catch (error) {
-                showError('Failed to load data: ' + error.message);
-            } finally {
-                document.getElementById('loading').style.display = 'none';
-            }
-        }
+        if (dates.error) { showError(dates.error); return; }
         
-        function displayResults(data, date) {
-            if (!data || data.length === 0) {
-                document.getElementById('results').innerHTML = 
-                    '<p style="text-align:center;padding:30px;color:#666;">No unreturned tools found for ' + date + '</p>';
-                return;
-            }
-            
-            let html = '<table><thead><tr>' +
-                '<th>Person Code</th>' +
-                '<th>Person Name</th>' +
-                '<th>Tool Code</th>' +
-                '<th>Tool Description</th>' +
-                '<th>Quantity</th>' +
-                '</tr></thead><tbody>';
-            
-            data.forEach(item => {
-                html += '<tr>' +
-                    '<td>' + item.personCode + '</td>' +
-                    '<td>' + item.personName + '</td>' +
-                    '<td>' + item.toolCode + '</td>' +
-                    '<td>' + item.toolDescription + '</td>' +
-                    '<td class="qty">' + item.count + '</td>' +
-                    '</tr>';
-            });
-            
-            html += '</tbody></table>';
-            document.getElementById('results').innerHTML = html;
-        }
+        const select = document.getElementById('dateSelect');
+        select.innerHTML = '<option value="">Select a date</option>';
         
-        function showError(message) {
-            document.getElementById('error').innerHTML = '<div class="error">' + message + '</div>';
-            document.getElementById('error').style.display = 'block';
-        }
+        dates.forEach(date => {
+          const option = document.createElement('option');
+          option.value = date; option.textContent = date;
+          select.appendChild(option);
+        });
+      } catch (error) { showError('Failed to load dates: ' + error.message); }
+    }
+
+    async function loadData() {
+      if(!checkProtection()) return;
+      const selectedDate = document.getElementById('dateSelect').value;
+      
+      if (!selectedDate) {
+        document.getElementById('results').innerHTML = '<p style="text-align:center; padding:10px; color:#c62828;">Please select a date.</p>';
+        return;
+      }
+      
+      document.getElementById('loading').style.display = 'block';
+      document.getElementById('results').innerHTML = '';
+      document.getElementById('error').style.display = 'none';
+      
+      try {
+        const response = await fetch(`${WEB_APP_URL}?action=getData&date=${encodeURIComponent(selectedDate)}&token=${tokenValue}`);
+        const textData = await response.text();
         
-        // Initialize
-        window.onload = loadDates;
-    </script>
+        if (textData === "UNAUTHORIZED") { window.location = "login.html"; return; }
+        const data = JSON.parse(textData);
+        
+        if (data.error) { showError(data.error); return; }
+        displayResults(data, selectedDate);
+      } catch (error) { showError('Failed to load data: ' + error.message); } 
+      finally { document.getElementById('loading').style.display = 'none'; }
+    }
+
+    function displayResults(data, date) {
+      if (!data || data.length === 0) {
+        document.getElementById('results').innerHTML = `<p style="text-align:center;padding:30px;color:#666;">No items found for ${date}</p>`;
+        return;
+      }
+      
+      let html = '<table><thead><tr><th>Tool Code</th><th>Tool Description</th><th>Quantity</th></tr></thead><tbody>';
+      data.forEach(item => {
+        html += `<tr>
+          <td>${item.toolCode}</td>
+          <td>${item.toolDescription}</td>
+          <td class="qty">${item.count}</td>
+        </tr>`;
+      });
+      html += '</tbody></table>';
+      document.getElementById('results').innerHTML = html;
+    }
+
+    function showError(message) {
+      const errDiv = document.getElementById('error');
+      errDiv.innerHTML = '<div class="error">' + message + '</div>';
+      errDiv.style.display = 'block';
+    }
+
+    window.onload = loadDates;
+  </script>
 </body>
 </html>
