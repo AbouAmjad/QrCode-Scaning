@@ -3,29 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Tool Tracking System - Reports</title>
+    <title>Daily Tool Tracking System - Advanced Reports</title>
+    <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Poppins', sans-serif;
-            background-color: #f8f9fa;
+            background-color: #f4f6f9;
             padding-top: 30px;
         }
         .report-container {
             background: #ffffff;
             border-radius: 12px;
             padding: 25px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
             margin-bottom: 50px;
         }
         .table th {
             background-color: #212529;
             color: #ffffff;
             text-align: center;
+            font-size: 0.9rem;
         }
         .table td {
             vertical-align: middle;
+            font-size: 0.9rem;
+        }
+        .filter-btn {
+            min-width: 120px;
+        }
+        .badge-holder {
+            display: inline-block;
+            margin: 2px;
+            padding: 5px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -33,9 +48,11 @@
 
 <div class="container">
     <div class="report-container">
-        <h2 class="text-center mb-4">⚙️ Daily Tool Tracking System</h2>
+        <!-- Header -->
+        <h2 class="text-center mb-4">⚙️ Daily Tool Tracking System - تقارير العُهد الذكية</h2>
         
-        <div class="row g-3 align-items-center justify-content-between mb-4 bg-light p-3 rounded">
+        <!-- Controls Filter -->
+        <div class="row g-3 align-items-center justify-content-between mb-4 bg-light p-3 rounded border">
             <div class="col-auto">
                 <button id="btnBack" class="btn btn-secondary">⬅️ Back to Terminal</button>
             </div>
@@ -48,15 +65,23 @@
             </div>
         </div>
 
+        <!-- Advanced Filter Buttons -->
+        <div class="d-flex gap-2 mb-3 justify-content-center bg-white p-2 rounded border">
+            <button id="filterAll" class="btn btn-outline-dark filter-btn active" onclick="filterTable('all')">كل السجلات</button>
+            <button id="filterInSite" class="btn btn-outline-danger filter-btn" onclick="filterTable('insite')">🔴 المتبقي بالموقع حالياً</button>
+            <button id="filterPersons" class="btn btn-outline-success filter-btn" onclick="filterTable('persons')">👤 حضور الأشخاص</button>
+        </div>
+
+        <!-- Report Table -->
         <div class="table-responsive">
-            <table class="table table-bordered table-striped">
+            <table class="table table-bordered table-striped table-hover">
                 <thead>
                     <tr>
-                        <th>Tool Code</th>
-                        <th>Tool Description</th>
-                        <th>Movement Today (الحركة اليوم)</th>
-                        <th>Current Holder (المتواجد مع الشخص)</th>
-                        <th>Current In Site (المتبقي بالموقع)</th>
+                        <th style="width: 12%;">Tool Code</th>
+                        <th style="width: 23%;">Tool Description</th>
+                        <th style="width: 30%;">Movement Today (حركات اليوم)</th>
+                        <th style="width: 25%;">Current Holders (القطع المتواجدة حالياً مع من؟)</th>
+                        <th style="width: 10%;">Qty In Site (المتبقي بالموقع)</th>
                     </tr>
                 </thead>
                 <tbody id="tableBody">
@@ -70,9 +95,11 @@
 </div>
 
 <script>
-    // ⚠️ استبدل هذا الرابط برابط الـ Web App الخاص بك من Google Apps Script
+    // ⚠️ حط رابط الـ Web App التابع لجوجل سكربت هنا
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyHXMuZcmFT7KrvqR8cygFl-t-oU_Jh4Vr2L4yp1eoT5AQAL00rbjBbUL0aKod3_C8l7g/exec";
     const token = localStorage.getItem("session_token") || "abouamjad_secure_session_token";
+    
+    let globalCalculatedInventory = {}; // لتخزين الحسبة بعد الفرز
 
     document.addEventListener("DOMContentLoaded", function() {
         loadAvailableDates();
@@ -114,7 +141,7 @@
 
     function fetchReportData(date) {
         const tableBody = document.getElementById("tableBody");
-        tableBody.innerHTML = `<tr><td colspan="5" class="text-center text-primary">جاري تحليل السجلات والربط الذكي للأشخاص... الرجاء الانتظار</td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan="5" class="text-center text-primary">🔄 جاري تحليل سجلات العُهد التراكمية وفرز الـ 200 عامل... الرجاء الانتظار</td></tr>`;
 
         fetch(`${SCRIPT_URL}?action=getData&date=${encodeURIComponent(date)}&token=${token}`)
             .then(res => res.json())
@@ -127,21 +154,17 @@
             });
     }
 
-    // 🔥 دالة المعالجة التتابعية الذكية لربط الأدوات بآخر شخص قام بسحبها
+    // 🔥 دالة المعالجة التتابعية المتقدمة (حل مشكلة تداخل الأشخاص المتعددين لنفس المادة)
     function processAndDisplayData(data, selectedDate) {
-        const tableBody = document.getElementById("tableBody");
-        tableBody.innerHTML = "";
-
         if (!data || data.length === 0 || data.error) {
-            tableBody.innerHTML = `<tr><td colspan="5" class="text-center text-muted">لا توجد سجلات نهائياً لغاية هذا التاريخ</td></tr>`;
+            document.getElementById("tableBody").innerHTML = `<tr><td colspan="5" class="text-center text-muted">لا توجد سجلات نهائياً لغاية هذا التاريخ</td></tr>`;
             return;
         }
 
-        const globalInventory = {};
+        globalCalculatedInventory = {};
         
-        // متغيرات الذاكرة التتابعية لقراءة السطور وراء بعضها
         let lastActivePersonName = "مستودع عام"; 
-        let lastActiveMovementType = "OUT"; // الافتراضي سحب إذا لم يحدد
+        let lastActiveMovementType = "OUT"; 
 
         data.forEach(row => {
             const code = row.toolCode.toUpperCase().trim();
@@ -150,108 +173,132 @@
 
             if (!code) return;
 
-            // 1. إذا كان الكود هو كود شخص (يبدأ بـ P)
+            // 1. إذا كان الكود كدلالة شخص (P)
             if (code.startsWith("P")) {
-                lastActivePersonName = desc || code; // حفظ اسم الشخص الحالي في الذاكرة لقراءة السطور التالية
+                lastActivePersonName = desc || code; 
                 
-                if (!globalInventory[code]) {
-                    globalInventory[code] = {
+                if (!globalCalculatedInventory[code]) {
+                    globalCalculatedInventory[code] = {
                         description: desc,
                         isPerson: true,
                         scannedToday: false,
-                        actionsToday: []
+                        actionsToday: [],
+                        holdersList: []
                     };
                 }
                 if (isTargetDay) {
-                    globalInventory[code].scannedToday = true;
-                    globalInventory[code].actionsToday.push("حضور 👤");
+                    globalCalculatedInventory[code].scannedToday = true;
+                    globalCalculatedInventory[code].actionsToday.push("حضور 👤");
                 }
-                return; // ننتقل للسطر التالي
+                return; 
             }
 
-            // 2. إذا كان السطر عبارة عن إشارة حركة فقط (IN أو OUT)
+            // 2. إذا كان السطر إشارة حركة (IN أو OUT)
             if (code === "IN" || code === "OUT") {
-                lastActiveMovementType = code; // حفظ نوع الحركة الحالية في الذاكرة لقراءة السطر التالي للعدة
-                return; // ننتقل للسطر التالي
+                lastActiveMovementType = code; 
+                return; 
             }
 
-            // 3. إذا وصلنا هنا، يعني السطر الحالي هو كود أداة أو عُدّة (I, E, C...)
-            if (!globalInventory[code]) {
-                globalInventory[code] = {
+            // 3. معالجة عُهد الأدوات والمواد بأسلوب الـ Stack المترابط
+            if (!globalCalculatedInventory[code]) {
+                globalCalculatedInventory[code] = {
                     description: desc,
                     isPerson: false,
-                    totalOutEver: 0,
-                    totalInEver: 0,
                     scannedToday: false,
                     actionsToday: [],
-                    currentHolder: "المستودع 🏠"
+                    holdersList: [] // مصفوفة ذكية تحتوي أسماء الأشخاص الذين يملكون القطعة حالياً
                 };
             }
 
             if (isTargetDay) {
-                globalInventory[code].scannedToday = true;
+                globalCalculatedInventory[code].scannedToday = true;
             }
 
-            // تطبيق الحركة بناءً على الذاكرة التتابعية المحفوظة من السطور السابقة
-            if (lastActiveMovementType === "IN") {
-                globalInventory[code].totalInEver += 1;
-                globalInventory[code].currentHolder = "المستودع 🏠"; // رجعت للمستودع
+            if (lastActiveMovementType === "IN" || code.includes("IN")) {
+                // إرجاع مادة: نبحث عن اسم الشخص بداخل قائمة حاملي القطعة ونشيله
+                const index = globalCalculatedInventory[code].holdersList.indexOf(lastActivePersonName);
+                if (index !== -1) {
+                    globalCalculatedInventory[code].holdersList.splice(index, 1); // إزالة القطعة من عهدته
+                } else if (globalCalculatedInventory[code].holdersList.length > 0) {
+                    // إذا لم نجد الاسم بالظبط بسبب تداخل سريع، نقوم بإزالة أقدم عهدة طالعة (FIFO) لتصفية الحسبة رياضياً
+                    globalCalculatedInventory[code].holdersList.shift();
+                }
+                
                 if (isTargetDay) {
-                    globalInventory[code].actionsToday.push(`إرجاع من [${lastActivePersonName}] 📥`);
+                    globalCalculatedInventory[code].actionsToday.push(`إرجاع من [${lastActivePersonName}] 📥`);
                 }
             } else {
-                // الحركة المعتمدة هي OUT (سحب)
-                globalInventory[code].totalOutEver += 1;
-                globalInventory[code].currentHolder = lastActivePersonName; // القطعة أصبحت بعهدة هذا الشخص هلق
+                // سحب مادة: نضيف اسم الشخص الحالي لقائمة عُهد هذه المادة
+                globalCalculatedInventory[code].holdersList.push(lastActivePersonName);
+                
                 if (isTargetDay) {
-                    globalInventory[code].actionsToday.push(`سحب بواسطة [${lastActivePersonName}] 📤`);
+                    globalCalculatedInventory[code].actionsToday.push(`سحب بواسطة [${lastActivePersonName}] 📤`);
                 }
             }
         });
 
-        // رص البيانات بداخل الجدول
+        // استدعاء دالة الرسم الفعلي للجدول بناءً على الفلتر الحالي
+        renderTableRows('all');
+    }
+
+    // 📊 دالة الرسم والفلترة الديناميكية بدون إعادة تحميل من السيرفر
+    function renderTableRows(filterType) {
+        const tableBody = document.getElementById("tableBody");
+        tableBody.innerHTML = "";
         let hasDataToShow = false;
 
-        Object.keys(globalInventory).forEach(code => {
-            const item = globalInventory[code];
+        Object.keys(globalCalculatedInventory).forEach(code => {
+            const item = globalCalculatedInventory[code];
+
+            // تطبيق شروط الفلاتر الثلاثة
+            if (filterType === 'persons' && !item.isPerson) return;
+            if (filterType === 'insite' && (item.isPerson || item.holdersList.length === 0)) return;
 
             if (item.isPerson) {
-                // عرض حضور الأشخاص اليوم فقط
                 if (item.scannedToday) {
                     hasDataToShow = true;
                     const tr = document.createElement("tr");
                     tr.innerHTML = `
                         <td class="text-center"><code>${code}</code></td>
                         <td><strong>${item.description}</strong></td>
-                        <td class="text-center"><span class="badge bg-success">حضور 👤</span></td>
+                        <td class="text-center"><span class="badge bg-success p-2">حضور 👤</span></td>
                         <td class="text-center text-muted">-</td>
                         <td class="text-center text-muted">-</td>
                     `;
                     tableBody.appendChild(tr);
                 }
             } else {
-                // حساب المتبقي الفعلي للعدد
-                const netInSite = item.totalOutEver - item.totalInEver;
-                const remaining = netInSite > 0 ? netInSite : 0;
-                
-                // تصفير اسم الحامل إذا كانت العدة داخل المستودع
-                const holderDisplay = remaining > 0 ? `👤 ${item.currentHolder}` : "🏠 في المستودع";
+                const remaining = item.holdersList.length;
 
+                // إعداد وعرض أسماء الأشخاص المستحوذين على المادة حالياً وبدقة
+                let holdersDisplay = "";
+                if (remaining > 0) {
+                    // تجميع الأسماء وتلوينها كبطاقات منفصلة لكل شخص معه عهدة هلق
+                    const counts = {};
+                    item.holdersList.forEach(p => counts[p] = (counts[p] || 0) + 1);
+                    holdersDisplay = Object.keys(counts).map(p => 
+                        `<span class="badge-holder bg-warning text-dark border border-dark">👤 ${p} (${counts[p]} قطع)</span>`
+                    ).join(" ");
+                } else {
+                    holdersDisplay = '<span class="badge bg-light text-success border">🏠 في المستودع بالكامل</span>';
+                }
+
+                // نُظهر السطر إذا تفاعل اليوم أو متبقي منه قطع برا المستودع
                 if (item.scannedToday || remaining > 0) {
                     hasDataToShow = true;
                     const tr = document.createElement("tr");
                     
                     let actionBadges = item.actionsToday.length > 0 
-                        ? [...new Set(item.actionsToday)].map(a => `<span class="badge bg-info text-dark me-1 d-block my-1">${a}</span>`).join("")
-                        : `<span class="badge bg-warning text-dark">باقية بالموقع من أيام سابقة ⏳</span>`;
+                        ? [...new Set(item.actionsToday)].map(a => `<span class="badge bg-info text-dark me-1 d-block my-1 text-start" style="font-size:0.8rem;">${a}</span>`).join("")
+                        : `<span class="badge bg-secondary text-white d-block my-1 text-start" style="font-size:0.8rem;">باقية بالموقع من أيام سابقة ⏳</span>`;
 
                     tr.innerHTML = `
                         <td class="text-center"><code>${code}</code></td>
                         <td>${item.description}</td>
                         <td>${actionBadges}</td>
-                        <td class="text-center fw-bold text-secondary">${holderDisplay}</td>
-                        <td class="text-center ${remaining > 0 ? 'table-danger text-danger' : 'table-success text-success'}">
-                            <strong>${remaining}</strong>
+                        <td>${holdersDisplay}</td>
+                        <td class="text-center ${remaining > 0 ? 'table-danger text-danger fw-bold' : 'table-success text-success'}">
+                            <h4>${remaining}</h4>
                         </td>
                     `;
                     tableBody.appendChild(tr);
@@ -260,7 +307,19 @@
         });
 
         if (!hasDataToShow) {
-            tableBody.innerHTML = `<tr><td colspan="5" class="text-center text-muted">لا توجد حركات عُدد أو حضور أشخاص لهذا اليوم.</td></tr>`;
+            tableBody.innerHTML = `<tr><td colspan="5" class="text-center text-muted p-4">لا توجد بيانات تطابق الفلتر المختار في هذا اليوم.</td></tr>`;
+        }
+    }
+
+    // تحويل التظليل النشط بين أزرار الفلاتر
+    function filterTable(type) {
+        document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+        if (type === 'all') document.getElementById('filterAll').classList.add('active');
+        if (type === 'insite') document.getElementById('filterInSite').classList.add('active');
+        if (type === 'persons') document.getElementById('filterPersons').classList.add('active');
+        
+        if (Object.keys(globalCalculatedInventory).length > 0) {
+            renderTableRows(type);
         }
     }
 </script>
