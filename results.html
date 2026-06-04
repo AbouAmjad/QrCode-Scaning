@@ -1,128 +1,265 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Abu Amjad - Report</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 20px; background: #f0f0f0; }
-    .container { max-width: 1000px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-    h1 { color: #333; text-align: center; margin-bottom: 20px; }
-    .controls { margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 6px; display: flex; align-items: center; gap: 10px; }
-    select, button { padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; outline: none; }
-    button { background: #007bff; color: white; cursor: pointer; font-weight: bold; }
-    button:hover { background: #0056b3; }
-    .btn-back { background: #6c757d; }
-    .btn-back:hover { background: #5a6268; }
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-    th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
-    th { background: #343a40; color: white; }
-    tr:nth-child(even) { background: #f8f9fa; }
-    .qty { font-weight: bold; color: #28a745; font-size: 16px; }
-    .loading { text-align: center; padding: 40px; color: #666; font-weight: bold; }
-    .error { color: #dc3545; background: #f8d7da; padding: 10px; border-radius: 4px; margin: 10px 0; border: 1px solid #f5c6cb; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Tool Tracking System - Reports</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8f9fa;
+            padding-top: 30px;
+        }
+        .report-container {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            margin-bottom: 50px;
+        }
+        .table th {
+            background-color: #343a40;
+            color: #ffffff;
+            text-align: center;
+        }
+        .table td {
+            vertical-align: middle;
+        }
+        .badge-action {
+            font-size: 0.85rem;
+            padding: 5px 10px;
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <h1>📅 Daily Tool Tracking System</h1>
-    
-    <div class="controls">
-      <button class="btn-back" onclick="window.location='index.html'">⬅ Back</button>
-      <label for="dateSelect">Select Date:</label>
-      <select id="dateSelect">
-        <option value="">Loading dates...</option>
-      </select>
-      <button onclick="loadData()">Load Data</button>
+
+<div class="container">
+    <div class="report-container">
+        <!-- Header -->
+        <h2 class="text-center mb-4">📅 Daily Tool Tracking System</h2>
+        
+        <!-- Controls Filter -->
+        <div class="row g-3 align-items-center justify-content-between mb-4 bg-light p-3 rounded">
+            <div class="col-auto">
+                <button id="btnBack" class="btn btn-secondary">⬅️ Back to Terminal</button>
+            </div>
+            <div class="col-md-6 d-flex gap-2">
+                <label for="dateSelect" class="form-label my-auto fw-bold text-nowrap">Select Date:</label>
+                <select id="dateSelect" class="form-select">
+                    <option value="">Loading dates...</option>
+                </select>
+                <button id="btnLoadData" class="btn btn-primary text-nowrap">Load Data</button>
+            </div>
+        </div>
+
+        <!-- Report Table -->
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped hover-table">
+                <thead>
+                    <tr>
+                        <th>Tool Code</th>
+                        <th>Tool Description</th>
+                        <th>Movement Today (الحركة اليوم)</th>
+                        <th>Current In Site (المتبقي بالموقع)</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <tr>
+                        <td colspan="4" class="text-center text-muted">الرجاء اختيار تاريخ واضغط على Load Data</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
-    
-    <div id="loading" class="loading" style="display:none;">Fetching records from server...</div>
-    <div id="error" style="display:none;"></div>
-    <div id="results"></div>
-  </div>
+</div>
 
-  <script>
-    // ⚠️ استبدل هذا الرابط برابط الـ Web App الجديد من تفويض جـوجـل (New Deployment)
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyHXMuZcmFT7KrvqR8cygFl-t-oU_Jh4Vr2L4yp1eoT5AQAL00rbjBbUL0aKod3_C8l7g/exec";
-    const tokenValue = localStorage.getItem("token") || "";
+<!-- JavaScript Logic -->
+<script>
+    // ⚠️ حط رابط الـ Web App التابع لجوجل سكربت (المحدث بـ Anyone) بداخل هذا المتغير
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyHXMuZcmFT7KrvqR8cygFl-t-oU_Jh4Vr2L4yp1eoT5AQAL00rbjBbUL0aKod3_C8l7g/exec";
 
-    function checkProtection() {
-      if (!tokenValue) { window.location = "login.html"; return false; }
-      return true;
-    }
+    // جلب التوكن المخزن بجلسة المتصفح للحفاظ على الأمان
+    const token = localStorage.getItem("session_token") || "abouamjad_secure_session_token";
 
-    async function loadDates() {
-      if(!checkProtection()) return;
-      try {
-        // نطلب البيانات بـ mode عادي لأن جلب التقارير يحتاج قراءة الـ JSON العائد عكس المسح السريع
-        const response = await fetch(`${WEB_APP_URL}?action=getDates&token=${tokenValue}`);
-        const textData = await response.text();
-        
-        if (textData === "UNAUTHORIZED") { window.location = "login.html"; return; }
-        const dates = JSON.parse(textData);
-        if (dates.error) { showError(dates.error); return; }
-        
-        const select = document.getElementById('dateSelect');
-        select.innerHTML = '<option value="">Select a date</option>';
-        
-        dates.forEach(date => {
-          const option = document.createElement('option');
-          option.value = date; option.textContent = date;
-          select.appendChild(option);
+    document.addEventListener("DOMContentLoaded", function() {
+        loadAvailableDates();
+
+        // زر العودة لوحة الفحص
+        document.getElementById("btnBack").addEventListener("click", function() {
+            window.location.href = "index.html";
         });
-      } catch (error) { showError('Failed to load dates: ' + error.message); }
-    }
 
-    async function loadData() {
-      if(!checkProtection()) return;
-      const selectedDate = document.getElementById('dateSelect').value;
-      
-      if (!selectedDate) {
-        document.getElementById('results').innerHTML = '<p style="text-align:center; padding:10px; color:#c62828;">Please select a date.</p>';
-        return;
-      }
-      
-      document.getElementById('loading').style.display = 'block';
-      document.getElementById('results').innerHTML = '';
-      document.getElementById('error').style.display = 'none';
-      
-      try {
-        const response = await fetch(`${WEB_APP_URL}?action=getData&date=${encodeURIComponent(selectedDate)}&token=${tokenValue}`);
-        const textData = await response.text();
+        // زر جلب البيانات للتاريخ المحدد
+        document.getElementById("btnLoadData").addEventListener("click", function() {
+            const selectedDate = document.getElementById("dateSelect").value;
+            if (!selectedDate) {
+                alert("الرجاء اختيار تاريخ أولاً!");
+                return;
+            }
+            fetchReportData(selectedDate);
+        });
+    });
+
+    // 1. دالة سحب التواريخ المتاحة من العمود H لتعبئة القائمة المنسدلة
+    function loadAvailableDates() {
+        const select = document.getElementById("dateSelect");
         
-        if (textData === "UNAUTHORIZED") { window.location = "login.html"; return; }
-        const data = JSON.parse(textData);
-        if (data.error) { showError(data.error); return; }
-        displayResults(data, selectedDate);
-      } catch (error) { showError('Failed to load data: ' + error.message); } 
-      finally { document.getElementById('loading').style.display = 'none'; }
+        fetch(`${SCRIPT_URL}?action=getDates&token=${token}`)
+            .then(res => res.json())
+            .then(dates => {
+                select.innerHTML = "";
+                if (dates.length === 0 || dates.error) {
+                    select.innerHTML = '<option value="">لا توجد تواريخ مسجلة</option>';
+                    return;
+                }
+                // ترتيب التواريخ تنازلياً لتظهر الأيام الأحدث أولاً
+                dates.reverse().forEach(date => {
+                    const opt = document.createElement("option");
+                    opt.value = date;
+                    opt.textContent = date;
+                    select.appendChild(opt);
+                });
+            })
+            .catch(err => {
+                console.error("Error loading dates:", err);
+                select.innerHTML = '<option value="">خطأ أثناء جلب التواريخ</option>';
+            });
     }
 
-    function displayResults(data, date) {
-      if (!data || data.length === 0) {
-        document.getElementById('results').innerHTML = `<p style="text-align:center;padding:30px;color:#666;">No items found for ${date}</p>`;
-        return;
-      }
-      
-      let html = '<table><thead><tr><th>Tool Code</th><th>Tool Description</th><th>Quantity</th></tr></thead><tbody>';
-      data.forEach(item => {
-        html += `<tr>
-          <td>${item.toolCode}</td>
-          <td>${item.toolDescription}</td>
-          <td class="qty">${item.count}</td>
-        </tr>`;
-      });
-      html += '</tbody></table>';
-      document.getElementById('results').innerHTML = html;
+    // 2. دالة جلب البيانات التراكمية وتمريرها لـ دالة الحساب الذكي
+    function fetchReportData(date) {
+        const tableBody = document.getElementById("tableBody");
+        tableBody.innerHTML = `<tr><td colspan="4" class="text-center text-primary">جاري جلب وتحليل البيانات التراكمية... الرجاء الانتظار</td></tr>`;
+
+        fetch(`${SCRIPT_URL}?action=getData&date=${encodeURIComponent(date)}&token=${token}`)
+            .then(res => res.json())
+            .then(data => {
+                processAndDisplayData(data, date);
+            })
+            .catch(err => {
+                console.error("Error fetching report:", err);
+                tableBody.innerHTML = `<tr><td colspan="4" class="text-center text-danger">فشل الاتصال بالسيرفر أو جلب البيانات.</td></tr>`;
+            });
     }
 
-    function showError(message) {
-      const errDiv = document.getElementById('error');
-      errDiv.innerHTML = '<div class="error">' + message + '</div>';
-      errDiv.style.display = 'block';
-    }
+    // 3. 🔥 دالة الفرز والتصفية الرياضية (القلب النابض للتقارير)
+    function processAndDisplayData(data, selectedDate) {
+        const tableBody = document.getElementById("tableBody");
+        tableBody.innerHTML = "";
 
-    window.onload = loadDates;
-  </script>
+        if (!data || data.length === 0 || data.error) {
+            tableBody.innerHTML = `<tr><td colspan="4" class="text-center text-muted">لا يوجد سجلات نهائياً لغاية هذا التاريخ</td></tr>`;
+            return;
+        }
+
+        // المستودع المركزي لتتبع حالة كل كود مادة عبر السجل بالكامل
+        const globalInventory = {};
+
+        // تحليل السجل التاريخي خطوة بخطوة للوصول للصافي الصحيح
+        data.forEach(row => {
+            const code = row.toolCode.toUpperCase().trim();
+            const desc = row.toolDescription;
+            const isTargetDay = row.isTargetDay; 
+
+            // تخطي أكواد المزامنة العامة المفرسنة لوحدها إن وجدت
+            if (code === "IN" || code === "OUT" || !code) return;
+
+            // إنشاء تهيئة برمجية للمادة إن لم تكن متواجدة مسبقاً بالسجل
+            if (!globalInventory[code]) {
+                globalInventory[code] = {
+                    description: desc,
+                    totalOutEver: 0,
+                    totalInEver: 0,
+                    scannedToday: false,
+                    actionsToday: []
+                };
+            }
+
+            // تتبع حضور وانصراف الأشخاص (الرموز التي تبدأ بحرف P مثل P101)
+            if (code.startsWith("P")) {
+                if (isTargetDay) {
+                    globalInventory[code].scannedToday = true;
+                    globalInventory[code].actionsToday.push("حضور 👤");
+                }
+            } else {
+                // تتبع حركة الـ العُدد والأدوات (Items & PowerTools) بناءً على نمط الفحص عندك
+                if (isTargetDay) {
+                    globalInventory[code].scannedToday = true;
+                }
+                
+                // آلية الفرز التلقائي: 
+                // إذا ضربت كود "IN" مسبوقاً بالرمز أو مدمجاً، يعتبر إرجاع، وإلا يعتبر سحب للموقع
+                if (code.includes("IN") || code.includes("RETURN")) {
+                    globalInventory[code].totalInEver += 1;
+                    if (isTargetDay) globalInventory[code].actionsToday.push("إرجاع 📥");
+                } else if (code.includes("OUT")) {
+                    globalInventory[code].totalOutEver += 1;
+                    if (isTargetDay) globalInventory[code].actionsToday.push("سحب 📤");
+                } else {
+                    // نظام الـ Toggle التتابعي الذكي (إذا ضربت الكود وكان طالع بيعتبر رجع، وإلا فهو مسحوب)
+                    // هيدي الطريقة الأسهل إذا كنت بتضرب نفس كود القطعة بالـ Gun بدون إضافات
+                    if (globalInventory[code].totalOutEver > globalInventory[code].totalInEver) {
+                        globalInventory[code].totalInEver += 1;
+                        if (isTargetDay) globalInventory[code].actionsToday.push("إرجاع 📥");
+                    } else {
+                        globalInventory[code].totalOutEver += 1;
+                        if (isTargetDay) globalInventory[code].actionsToday.push("سحب 📤");
+                    }
+                }
+            }
+        });
+
+        // رص وعرض السطور التي تمت عليها حركة اليوم أو الباقية بالموقع من أيام سابقة
+        let hasDataToShow = false;
+
+        Object.keys(globalInventory).forEach(code => {
+            const item = globalInventory[code];
+            
+            // المعادلة: (المتبقي بالموقع = إجمالي ما خرج - إجمالي ما دخل) عبر التاريخ
+            const netInSite = item.totalOutEver - item.totalInEver;
+            const remaining = netInSite > 0 ? netInSite : 0;
+
+            // نُظهر السطر فقط إذا تفاعل اليوم أو له عهدة باقية من أيام مضت
+            if (item.scannedToday || (remaining > 0 && !code.startsWith("P"))) {
+                hasDataToShow = true;
+                
+                const tr = document.createElement("tr");
+                
+                // تجهيز نصوص الحركات اليومية
+                let actionBadge = "";
+                if (item.actionsToday.length > 0) {
+                    // تجميع كافة الحركات الحاصلة بنفس اليوم بداخل خلية واحدة متل ما بالصورة
+                    actionBadge = [...new Set(item.actionsToday)].map(a => `<span class="badge bg-info text-dark me-1">${a}</span>`).join(" ");
+                } else {
+                    actionBadge = `<span class="badge bg-warning text-dark">باقية بالموقع من أيام سابقة ⏳</span>`;
+                }
+
+                // كود الأشخاص لا يحسب عُدد متبقية بل يسجل حضور فقط
+                const remainingDisplay = code.startsWith("P") ? "-" : `<strong>${remaining}</strong>`;
+
+                tr.innerHTML = `
+                    <td class="text-center"><code>${code}</code></td>
+                    <td>${item.description || "UNKNOWN DESCRIPTION"}</td>
+                    <td class="text-center">${actionBadge}</td>
+                    <td class="text-center ${remaining > 0 ? 'table-danger text-danger' : 'table-success text-success'}">
+                        ${remainingDisplay}
+                    </td>
+                `;
+                tableBody.appendChild(tr);
+            }
+        });
+
+        if (!hasDataToShow) {
+            tableBody.innerHTML = `<tr><td colspan="4" class="text-center text-muted">المستودع مقفل، ولم تحدث أي حركات بهذا اليوم ولا توجد عُدد مفقودة بالموقع.</td></tr>`;
+        }
+    }
+</script>
+
+<!-- Bootstrap 5 JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
