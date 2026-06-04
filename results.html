@@ -25,8 +25,9 @@
 
         /* modern glassmorphic container */
         .glass-panel {
-            background: rgba(255, 255, 255, 0.96);
-            backdrop-filter: blur(0px);
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             border-radius: 2rem;
             box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.02);
             border: 1px solid rgba(255, 255, 255, 0.6);
@@ -228,7 +229,7 @@
             }
             .badge-holder-modern {
                 font-size: 0.65rem;
-                padding: 0.2rem 0.6rem;
+                padding: 0.2rem 0.6xlrem;
             }
             .btn-premium {
                 padding: 0.45rem 1rem;
@@ -250,15 +251,19 @@
             }
         }
 
-        /* custom scroll */
-        .workers-list-custom::-webkit-scrollbar {
+        /* custom scrollbar styles */
+        .workers-list-custom::-webkit-scrollbar,
+        .table-responsive::-webkit-scrollbar {
             width: 5px;
+            height: 5px;
         }
-        .workers-list-custom::-webkit-scrollbar-track {
+        .workers-list-custom::-webkit-scrollbar-track,
+        .table-responsive::-webkit-scrollbar-track {
             background: #eef2f6;
             border-radius: 10px;
         }
-        .workers-list-custom::-webkit-scrollbar-thumb {
+        .workers-list-custom::-webkit-scrollbar-thumb,
+        .table-responsive::-webkit-scrollbar-thumb {
             background: #b9c3d0;
             border-radius: 10px;
         }
@@ -273,13 +278,6 @@
             margin: 1rem auto;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
-
-        .empty-state {
-            background: #f9fafb;
-            border-radius: 1.5rem;
-            padding: 2rem;
-            text-align: center;
-        }
     </style>
 </head>
 <body>
@@ -350,7 +348,7 @@
                     <div class="table-responsive">
                         <table class="table custom-table mb-0">
                             <thead>
-                                <tr><th class="text-center">Code</th><th>Tool description</th><th>Current holder(s)</th><th class="text-center">Qty out</th></tr>
+                                <tr><th class="text-center">Code</th><th>Tool description</th><th class="ps-3">Current holder(s)</th><th class="text-center">Qty out</th></tr>
                             </thead>
                             <tbody id="toolsTableBody">
                                 <tr><td colspan="4" class="text-center text-muted py-5"><i class="bi bi-info-circle"></i> Select a date & click Load Report</td></tr>
@@ -417,8 +415,6 @@
     const countWorkersSpan = document.getElementById("countWorkers");
     const toolsCountBadge = document.getElementById("toolsCountBadge");
 
-    let globalCache = { inventory: null, workersCount: 0, toolsOut: 0 };
-
     // Helper: show loading states
     function showToolsLoading() {
         toolsTBody.innerHTML = `<tr><td colspan="4" class="text-center py-5"><div class="spinner-custom"></div><span class="text-muted">Fetching ledger entries...</span></td></tr>`;
@@ -426,7 +422,7 @@
         kpiSection.style.display = "none";
     }
 
-    // Load available dates from backend (with token)
+    // Load available dates from backend
     async function loadAvailableDates() {
         dateSelect.innerHTML = '<option value="">⏳ loading dates...</option>';
         try {
@@ -452,22 +448,30 @@
         }
     }
 
-    // core parser: replicates exact logic but with sorted output, premium design
+    // ---------- NEW PARSER LOGIC (STATEFUL & AUTOMATIC MATCHING) ----------
     function processLedgerData(rawRows, selectedDate) {
-        if (!rawRows || rawRows.length === 0) return { toolsMap: [], workersPresent: [], totalToolsOut: 0, totalWorkers: 0 };
+        if (!rawRows || rawRows.length === 0) {
+            return { toolsMap: [], workersPresent: [], totalToolsOut: 0, totalWorkers: 0 };
+        }
         
         let globalInventory = {};
         let lastActivePerson = "General Store";
-        let lastMovement = "OUT";   // initial direction neutral but logic based on IN/OUT
+        let lastMovement = "OUT"; 
         
-        // sequential scan as per original logic
-        for (let row of rawRows) {
+        // 1. ترتيب الأسطر زمنياً لضمان دقة بناء الحالة التراكمية عبر الأيام
+        const sortedRows = [...rawRows].sort((a, b) => {
+            return (a.rowId || 0) - (b.rowId || 0); // ترتيب حسب الـ ID أو التسلسل الطبيعي للأسطر
+        });
+        
+        // 2. مسح تتابعي كامل لبناء حالة الـ Inventory التراكمية
+        for (let row of sortedRows) {
             let code = (row.toolCode || "").toString().toUpperCase().trim();
             let desc = row.toolDescription || "—";
-            let isTarget = row.isTargetDay === true || row.isTargetDay === "true";
+            let isTarget = (row.date === selectedDate || row.isTargetDay === true || row.isTargetDay === "true");
+            
             if (!code) continue;
             
-            // PERSON detection (starting with P)
+            // كشف العمال (الأكواد التي تبدأ بـ P)
             if (code.startsWith("P")) {
                 lastActivePerson = desc || code;
                 if (!globalInventory[code]) {
@@ -477,42 +481,53 @@
                 continue;
             }
             
-            // IN/OUT direction markers
+            // كشف الاتجاهات
             if (code === "IN" || code === "OUT") {
                 lastMovement = code;
                 continue;
             }
             
-            // regular tool
+            // كشف الأدوات والقطع (أكواد تبدأ بـ I أو E)
             if (!globalInventory[code]) {
                 globalInventory[code] = {
                     description: desc,
                     isPerson: false,
                     scannedToday: false,
                     actionsToday: [],
-                    holdersList: []       // stores person names (multiple entries represent quantity)
+                    holdersList: [] // طابور يحمل العمال المستعيرين حالياً للقطعة
                 };
             }
             
             if (isTarget) globalInventory[code].scannedToday = true;
             
-            // Apply movement logic based on last movement marker & person
+            // معالجة منطق الحركة بناءً على الحالة التراكمية للـ holdersList
             if (lastMovement === "IN") {
-                // return one item: remove one occurrence of lastActivePerson
                 const idx = globalInventory[code].holdersList.indexOf(lastActivePerson);
-                if (idx !== -1) globalInventory[code].holdersList.splice(idx, 1);
-                else if (globalInventory[code].holdersList.length > 0) globalInventory[code].holdersList.shift();
                 
-                if (isTarget) globalInventory[code].actionsToday.push(`📥 Returned · ${lastActivePerson}`);
-            } 
-            else {
-                // OUT checkout
+                if (idx !== -1) {
+                    // أ) إرجاع طبيعي: نفس الشخص الذي أخذ القطعة يقوم بإرجاعها
+                    globalInventory[code].holdersList.splice(idx, 1);
+                    if (isTarget) globalInventory[code].actionsToday.push(`📥 Returned by · ${lastActivePerson}`);
+                } else {
+                    // ب) معالجة القطعة المعثور عليها (Found Asset): شخص آخر سلم قطعة مسجلة على شخص قبله
+                    if (globalInventory[code].holdersList.length > 0) {
+                        const originalHolder = globalInventory[code].holdersList.shift(); // تبرئة الساحرة للأول
+                        if (isTarget) {
+                            globalInventory[code].actionsToday.push(`⚠️ Found & Returned by · ${lastActivePerson} (Lost by: ${originalHolder})`);
+                        }
+                    } else {
+                        // ج) حالة استثنائية: القطعة رجعت للمستودع بدون سجل خروج مسبق
+                        if (isTarget) globalInventory[code].actionsToday.push(`📥 Returned by · ${lastActivePerson} (Unregistered state)`);
+                    }
+                }
+            } else {
+                // حركة خروج عادية (OUT): تضاف القطعة لذمة العامل الحالي
                 globalInventory[code].holdersList.push(lastActivePerson);
                 if (isTarget) globalInventory[code].actionsToday.push(`📤 Checked out · ${lastActivePerson}`);
             }
         }
         
-        // Build workers list (persons with scannedToday true)
+        // 3. بناء مصفوفة العرض وتجهيز الـ Badges المنظمة
         let workersList = [];
         let activeWorkersCount = 0;
         let totalToolsOutSum = 0;
@@ -527,21 +542,23 @@
             } else {
                 const qtyOut = item.holdersList.length;
                 totalToolsOutSum += qtyOut;
-                // only show tools if they have any activity or current out (or scannedToday)
+                
+                // عرض الأدوات إذا كان لها حركة اليوم، أو ما زالت بالخارج (عابرة للأيام)
                 if (item.scannedToday || qtyOut > 0) {
-                    // create holder badges with quantity aggregation
                     const holderCountMap = new Map();
                     item.holdersList.forEach(person => {
                         holderCountMap.set(person, (holderCountMap.get(person) || 0) + 1);
                     });
+                    
                     let holdersHtml = "";
                     if (holderCountMap.size === 0) {
                         holdersHtml = `<span class="text-success small fw-semibold"><i class="bi bi-house-door-fill me-1"></i>In store</span>`;
                     } else {
                         holdersHtml = Array.from(holderCountMap.entries()).map(([person, qty]) => 
-                            `<span class="badge-holder-modern"><i class="bi bi-person-circle"></i> ${person} <strong>×${qty}</strong></span>`
-                        ).join(" ");
+                            `<span class="badge-holder-modern d-inline-flex m-1"><i class="bi bi-person-circle"></i> ${person} <strong>×${qty}</strong></span>`
+                        ).join("");
                     }
+                    
                     toolsRenderArray.push({
                         code,
                         description: item.description,
@@ -554,9 +571,8 @@
             }
         }
         
-        // sort tools by code (alphanumeric)
+        // ترتيب أبجدي للأدوات والعمال
         toolsRenderArray.sort((a,b) => a.code.localeCompare(b.code));
-        // sort workers by name
         workersList.sort((a,b) => a.name.localeCompare(b.name));
         
         return { tools: toolsRenderArray, workers: workersList, totalToolsOut: totalToolsOutSum, totalWorkers: activeWorkersCount };
@@ -590,7 +606,7 @@
     function renderDashboard(processed) {
         const { tools, workers, totalToolsOut, totalWorkers } = processed;
         
-        // tools table
+        // tools table rendering
         if (!tools.length) {
             toolsTBody.innerHTML = `<tr><td colspan="4" class="text-center py-5 text-secondary"><i class="bi bi-inbox"></i> No tool transactions or inventory on this date.</td></tr>`;
         } else {
@@ -598,9 +614,6 @@
             tools.forEach(tool => {
                 const row = document.createElement("tr");
                 row.className = "clickable-row";
-                row.setAttribute("data-code", tool.code);
-                row.setAttribute("data-desc", tool.description);
-                row.setAttribute("data-actions", JSON.stringify(tool.actionsToday || []));
                 row.onclick = (function(actionsArr, code, desc) {
                     return function() { showLogModal(code, desc, actionsArr); };
                 })(tool.actionsToday, tool.code, tool.description);
@@ -608,7 +621,7 @@
                 row.innerHTML = `
                     <td class="text-center fw-mono"><code class="bg-light px-2 py-1 rounded">${escapeHtml(tool.code)}</code></td>
                     <td class="fw-semibold text-dark">${escapeHtml(tool.description)}</td>
-                    <td class="holder-badge-cell">${tool.holdersDisplay}</td>
+                    <td class="holder-badge-cell d-flex flex-wrap">${tool.holdersDisplay}</td>
                     <td class="text-center fw-bold ${tool.qtyOut > 0 ? 'text-danger' : 'text-success'}"><span class="fs-5">${tool.qtyOut}</span></td>
                 `;
                 toolsTBody.appendChild(row);
@@ -632,7 +645,7 @@
             });
         }
         
-        // Update KPI numbers
+        // Update KPI widgets
         countOutSpan.textContent = totalToolsOut;
         countWorkersSpan.textContent = totalWorkers;
         kpiSection.style.display = "flex";
@@ -677,7 +690,8 @@
         } else {
             toolsTBody.innerHTML = `<tr><td colspan="4" class="text-center text-warning">⚠️ No date records available. Sync with backend first.</td></tr>`;
         }
-        // manual load button
+        
+        // manual load button trigger
         btnLoad.addEventListener("click", async () => {
             const selected = dateSelect.value;
             if (!selected) { alert("Please select a date from list."); return; }
