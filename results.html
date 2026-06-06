@@ -3,94 +3,313 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>ToolCustody | Daily Tracking Dashboard</title>
+    <title>ToolCustody | Precision Ledger & Worksight</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; background: linear-gradient(145deg, #f0f4fa 0%, #e9eff5 100%); color: #0a2540; padding: 1.5rem 1rem; min-height: 100vh; }
-        .glass-panel { background: rgba(255,255,255,0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-radius: 2rem; box-shadow: 0 20px 40px -12px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.02); border: 1px solid rgba(255,255,255,0.6); }
-        .premium-header { background: transparent; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
-        .logo-icon { background: linear-gradient(135deg, #1e2a3a, #0f172a); width: 42px; height: 42px; display: inline-flex; align-items: center; justify-content: center; border-radius: 18px; color: white; box-shadow: 0 6px 12px -6px rgba(0,0,0,0.2); }
-        .stat-card-premium { border-radius: 1.5rem; padding: 1.4rem 1.8rem; transition: transform 0.2s cubic-bezier(0.2,0.9,0.4,1.1), box-shadow 0.2s; border: none; position: relative; overflow: hidden; }
-        .stat-card-premium:hover { transform: translateY(-3px); box-shadow: 0 20px 28px -12px rgba(0,0,0,0.2); }
-        .stat-card-premium .stat-icon { font-size: 2.4rem; opacity: 0.9; }
-        .bg-tools-premium { background: linear-gradient(125deg, #dc2626, #b91c1c); box-shadow: 0 10px 18px -8px rgba(220,38,38,0.4); }
-        .bg-attendance-premium { background: linear-gradient(125deg, #059669, #047857); box-shadow: 0 10px 18px -8px rgba(5,150,105,0.4); }
-        .section-badge { font-weight: 700; font-size: 0.8rem; letter-spacing: 0.02em; background: #eef2ff; padding: 0.3rem 1rem; border-radius: 40px; color: #1e40af; display: inline-block; margin-bottom: 1rem; }
-        .tools-table-wrapper { border-radius: 1.25rem; background: #ffffff; border: 1px solid #eef2f6; overflow: hidden; }
-        .custom-table th { background: #0f2b3d; color: white; font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; padding: 1rem; border-bottom: none; }
-        .custom-table td { padding: 1rem 0.8rem; vertical-align: middle; border-color: #f0f2f5; font-size: 0.85rem; }
-        .badge-holder-modern { display: inline-flex; align-items: center; background: #fef9e3; color: #b45309; padding: 0.3rem 0.8rem; border-radius: 2rem; font-size: 0.75rem; font-weight: 600; margin: 0.2rem; gap: 6px; border: 1px solid #ffedd5; }
-        .workers-card { border-radius: 1.25rem; background: #ffffff; border: 1px solid #eef2f6; overflow: hidden; }
-        .workers-list-custom { max-height: 540px; overflow-y: auto; scrollbar-width: thin; }
-        .workers-list-custom .list-group-item { background: transparent; border-bottom: 1px solid #edf2f7; padding: 0.9rem 1rem; font-weight: 500; transition: background 0.1s; }
-        .workers-list-custom .list-group-item:hover { background: #fafcff; }
-        .status-badge-present { background: #e0f2fe; color: #0369a1; border-radius: 40px; font-size: 0.7rem; font-weight: 700; padding: 0.25rem 0.85rem; }
-        .clickable-row { cursor: pointer; transition: all 0.15s; }
-        .clickable-row:hover { background-color: #fefce8 !important; transform: scale(1.002); }
-        .btn-premium { border-radius: 60px; padding: 0.55rem 1.4rem; font-weight: 600; transition: all 0.2s; }
-        .btn-premium-primary { background: #1f3a6b; border: none; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
-        .btn-premium-primary:hover { background: #0f2a4f; transform: translateY(-1px); }
-        .form-premium { border-radius: 60px; border: 1px solid #dce3ec; padding: 0.55rem 1rem; background: white; font-weight: 500; }
-        .form-premium:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.2); }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: radial-gradient(circle at 10% 20%, rgba(226, 240, 254, 0.9), rgba(219, 234, 254, 0.7)),
+                        repeating-linear-gradient(45deg, rgba(0,0,0,0.01) 0px, rgba(0,0,0,0.01) 2px, transparent 2px, transparent 8px);
+            color: #0a2540;
+            padding: 1.8rem 1rem;
+            min-height: 100vh;
+        }
+        /* modern glass master container */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border-radius: 2.5rem;
+            box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(255,255,255,0.6) inset;
+            border: 1px solid rgba(255,255,255,0.7);
+            transition: all 0.2s ease;
+        }
+        .premium-header {
+            background: transparent;
+            border-bottom: 2px solid rgba(15, 43, 61, 0.08);
+            padding-bottom: 1rem;
+            margin-bottom: 2rem;
+        }
+        .logo-icon {
+            background: linear-gradient(145deg, #0f2b3d, #0b1f2c);
+            width: 48px;
+            height: 48px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 1.2rem;
+            color: white;
+            box-shadow: 0 10px 15px -6px rgba(0,0,0,0.25);
+        }
+        /* premium stat cards enhanced */
+        .stat-card-premium {
+            border-radius: 1.8rem;
+            padding: 1.5rem 1.8rem;
+            transition: transform 0.25s cubic-bezier(0.2, 0.9, 0.4, 1.1), box-shadow 0.25s;
+            border: none;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(4px);
+        }
+        .stat-card-premium:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 24px 32px -16px rgba(0,0,0,0.25);
+        }
+        .stat-icon {
+            font-size: 2.6rem;
+            opacity: 0.85;
+        }
+        .bg-tools-premium {
+            background: linear-gradient(125deg, #dc2626, #b91c1c);
+            box-shadow: 0 12px 20px -10px rgba(220,38,38,0.5);
+        }
+        .bg-attendance-premium {
+            background: linear-gradient(125deg, #059669, #047857);
+            box-shadow: 0 12px 20px -10px rgba(5,150,105,0.5);
+        }
+        .bg-unique-out {
+            background: linear-gradient(125deg, #e67e22, #d35400);
+            box-shadow: 0 12px 20px -10px rgba(230,126,34,0.4);
+        }
+        .bg-total-types {
+            background: linear-gradient(125deg, #3b82f6, #2563eb);
+            box-shadow: 0 12px 20px -10px rgba(59,130,246,0.4);
+        }
+        .section-badge {
+            font-weight: 700;
+            font-size: 0.75rem;
+            letter-spacing: 0.04em;
+            background: rgba(15, 43, 61, 0.08);
+            backdrop-filter: blur(2px);
+            padding: 0.35rem 1.2rem;
+            border-radius: 60px;
+            color: #1f3a6b;
+            display: inline-block;
+            margin-bottom: 1rem;
+        }
+        .tools-table-wrapper {
+            border-radius: 1.5rem;
+            background: #ffffff;
+            border: 1px solid #eef2f8;
+            overflow: hidden;
+            transition: box-shadow 0.2s;
+        }
+        .custom-table {
+            margin-bottom: 0;
+        }
+        .custom-table th {
+            background: #0f2b3d;
+            color: white;
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            padding: 1rem 1rem;
+            border-bottom: none;
+        }
+        .custom-table td {
+            padding: 1rem 0.9rem;
+            vertical-align: middle;
+            border-color: #edf2f7;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        .badge-holder-modern {
+            display: inline-flex;
+            align-items: center;
+            background: #fef9e3;
+            color: #b45309;
+            padding: 0.35rem 0.9rem;
+            border-radius: 2rem;
+            font-size: 0.72rem;
+            font-weight: 600;
+            margin: 0.2rem;
+            gap: 8px;
+            border: 1px solid #ffe6b3;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+            transition: all 0.1s;
+        }
+        .workers-card {
+            border-radius: 1.5rem;
+            background: #ffffff;
+            border: 1px solid #eef2f8;
+            overflow: hidden;
+            box-shadow: 0 6px 12px -6px rgba(0,0,0,0.05);
+        }
+        .workers-list-custom {
+            max-height: 560px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+        }
+        .worker-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 40px;
+            background: linear-gradient(135deg, #eef2ff, #e0e7ff);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: #1f3a6b;
+            margin-right: 12px;
+        }
+        .status-badge-present {
+            background: #e0f2fe;
+            color: #0369a1;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 0.3rem 1rem;
+        }
+        .clickable-row {
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+        .clickable-row:hover {
+            background-color: #fefce8 !important;
+            transform: scale(1.001);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+        }
+        .warn-row td {
+            background: #fffbeb !important;
+            border-left: 3px solid #f59e0b;
+        }
+        .warn-row:hover td {
+            background: #fef3c7 !important;
+        }
+        .btn-premium {
+            border-radius: 60px;
+            padding: 0.6rem 1.6rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            font-size: 0.85rem;
+        }
+        .btn-premium-primary {
+            background: #1f3a6b;
+            border: none;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .btn-premium-primary:hover {
+            background: #0f2a4f;
+            transform: translateY(-1px);
+            box-shadow: 0 10px 18px -8px #1f3a6b70;
+        }
+        .form-premium {
+            border-radius: 60px;
+            border: 1px solid #e2e8f0;
+            padding: 0.55rem 1.2rem;
+            background: white;
+            font-weight: 500;
+            font-size: 0.85rem;
+        }
+        .search-input {
+            border-radius: 2rem;
+            border: 1px solid #e2edf2;
+            padding: 0.5rem 1rem 0.5rem 2.4rem;
+            background: white url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="%238b9cb0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7"></circle><line x1="21" y1="21" x2="15" y2="15"></line></svg>') no-repeat 12px center;
+            background-size: 1rem;
+            transition: all 0.2s;
+        }
+        .search-input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.2);
+            outline: none;
+        }
+        .insight-chip {
+            font-size: 0.7rem;
+            background: #f8fafc;
+            border-radius: 40px;
+            padding: 0.2rem 0.8rem;
+            color: #2c5f8a;
+        }
+        .modal-premium .modal-content {
+            border-radius: 2rem;
+            border: none;
+        }
+        .spinner-custom {
+            width: 2rem;
+            height: 2rem;
+            border: 3px solid #e2e8f0;
+            border-top: 3px solid #2563eb;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
         @media (max-width: 768px) {
             body { padding: 0.8rem; }
-            .stat-card-premium { padding: 1rem 1.2rem; }
-            .custom-table th, .custom-table td { padding: 0.7rem 0.5rem; font-size: 0.75rem; }
-            .badge-holder-modern { font-size: 0.65rem; }
-            .btn-premium { padding: 0.45rem 1rem; font-size: 0.8rem; }
+            .stat-card-premium { padding: 1rem 1rem; }
+            .custom-table td, .custom-table th { padding: 0.6rem 0.4rem; font-size: 0.7rem; }
+            .badge-holder-modern { font-size: 0.6rem; padding: 0.2rem 0.6rem; }
+            .btn-premium { padding: 0.4rem 1rem; font-size: 0.75rem; }
         }
-        .workers-list-custom::-webkit-scrollbar, .table-responsive::-webkit-scrollbar { width: 5px; height: 5px; }
-        .workers-list-custom::-webkit-scrollbar-track, .table-responsive::-webkit-scrollbar-track { background: #eef2f6; border-radius: 10px; }
-        .workers-list-custom::-webkit-scrollbar-thumb, .table-responsive::-webkit-scrollbar-thumb { background: #b9c3d0; border-radius: 10px; }
-        .spinner-custom { width: 2rem; height: 2rem; border: 3px solid #e2e8f0; border-top: 3px solid #2563eb; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 1rem auto; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* warning row للأدوات اللي فيها مشكلة */
-        .warn-row td { background: #fffbeb !important; }
-        .warn-row:hover { background-color: #fef3c7 !important; }
+        .glow-text {
+            background: linear-gradient(120deg, #0f2b3d, #1f6392);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .date-badge-live {
+            background: #eef2ff;
+            border-radius: 60px;
+            font-size: 0.75rem;
+            padding: 0.35rem 1.2rem;
+            font-weight: 500;
+        }
+        .holder-tooltip {
+            cursor: help;
+        }
     </style>
 </head>
 <body>
-<div class="container-lg px-0 px-md-2" style="max-width: 1440px;">
+<div class="container-lg px-0 px-md-2" style="max-width: 1480px;">
     <div class="glass-panel p-3 p-md-5">
         <div class="premium-header d-flex flex-wrap justify-content-between align-items-center gap-3">
             <div class="d-flex align-items-center gap-3">
-                <div class="logo-icon"><i class="bi bi-tools fs-5"></i></div>
+                <div class="logo-icon"><i class="bi bi-tools fs-4"></i></div>
                 <div>
-                    <h3 class="fw-bold mb-0" style="letter-spacing:-0.3px;">ToolCustody<span style="font-weight:500;color:#2c6e9e;"> · LiveTrack</span></h3>
-                    <p class="text-muted small mb-0 mt-1">Daily custody & tool intelligence</p>
+                    <h3 class="fw-bold mb-0" style="letter-spacing:-0.02em;">ToolCustody<span class="fw-medium glow-text"> · Core Ledger</span></h3>
+                    <div class="d-flex gap-2 mt-1">
+                        <p class="text-muted small mb-0"><i class="bi bi-database"></i> live custody trail</p>
+                        <span class="insight-chip"><i class="bi bi-shield-check"></i> token secured</span>
+                    </div>
                 </div>
             </div>
             <div class="d-flex flex-wrap gap-2 align-items-center">
-                <select id="dateSelect" class="form-select form-premium" style="min-width:220px;background:white;">
-                    <option value="">📅 Select date</option>
-                </select>
+                <div class="position-relative">
+                    <i class="bi bi-calendar3 position-absolute start-0 top-50 translate-middle-y ms-3 text-secondary" style="z-index:2; font-size:0.8rem;"></i>
+                    <select id="dateSelect" class="form-select form-premium ps-5" style="min-width:240px;background:white;">
+                        <option value="">📅 Select shift date</option>
+                    </select>
+                </div>
                 <button id="btnLoadData" class="btn btn-premium btn-premium-primary text-white">
-                    <i class="bi bi-cloud-upload-fill me-1"></i> Load Report
+                    <i class="bi bi-cloud-arrow-up-fill me-1"></i> Load Report
                 </button>
-                <button id="btnBack" class="btn btn-outline-secondary rounded-pill px-3">
+                <button id="btnBack" class="btn btn-outline-secondary rounded-pill px-4">
                     <i class="bi bi-terminal-fill me-1"></i> Terminal
                 </button>
             </div>
         </div>
 
+        <!-- KPI Section - Extended 4 cards premium -->
         <div class="row g-4 mb-5" id="kpiSection" style="display:none;">
-            <div class="col-md-6">
+            <div class="col-sm-6 col-lg-3">
                 <div class="stat-card-premium bg-tools-premium text-white">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <span class="text-white-50 text-uppercase fw-semibold small">Checked out</span>
+                            <span class="text-white-50 text-uppercase fw-semibold small">Total checked out</span>
                             <h2 class="display-5 fw-bold mb-0 mt-1" id="countOutTools">0</h2>
-                            <span class="small opacity-75">active tool quantities</span>
+                            <span class="small opacity-75">units in field</span>
                         </div>
                         <div class="stat-icon"><i class="bi bi-hammer"></i></div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-6">
+            <div class="col-sm-6 col-lg-3">
                 <div class="stat-card-premium bg-attendance-premium text-white">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
@@ -102,24 +321,48 @@
                     </div>
                 </div>
             </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="stat-card-premium bg-unique-out text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="text-white-50 text-uppercase fw-semibold small">Unique tools out</span>
+                            <h2 class="display-5 fw-bold mb-0 mt-1" id="uniqueToolsOutSpan">0</h2>
+                            <span class="small opacity-75">distinct assets</span>
+                        </div>
+                        <div class="stat-icon"><i class="bi bi-bar-chart-steps"></i></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="stat-card-premium bg-total-types text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="text-white-50 text-uppercase fw-semibold small">Inventory types</span>
+                            <h2 class="display-5 fw-bold mb-0 mt-1" id="totalToolTypesSpan">0</h2>
+                            <span class="small opacity-75">active codes</span>
+                        </div>
+                        <div class="stat-icon"><i class="bi bi-grid-3x3-gap-fill"></i></div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="row g-4">
             <div class="col-lg-8">
-                <div class="d-flex align-items-center gap-2 mb-3">
-                    <span class="section-badge"><i class="bi bi-box-seam me-1"></i> INVENTORY STATUS</span>
-                    <span class="badge bg-light text-dark rounded-pill px-3" id="toolsCountBadge">—</span>
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="section-badge"><i class="bi bi-box-seam me-1"></i> SMART INVENTORY</span>
+                        <span class="badge bg-secondary bg-opacity-10 text-dark rounded-pill px-3" id="toolsCountBadge">—</span>
+                    </div>
+                    <div class="position-relative" style="width: 240px;">
+                        <input type="text" id="toolSearchInput" class="form-control search-input" placeholder="Filter by code or description">
+                    </div>
                 </div>
                 <div class="tools-table-wrapper">
                     <div class="table-responsive">
                         <table class="table custom-table mb-0">
                             <thead>
-                                <tr>
-                                    <th class="text-center">Code</th>
-                                    <th>Tool description</th>
-                                    <th class="ps-3">Current holder(s)</th>
-                                    <th class="text-center">Qty out</th>
-                                </tr>
+                                <tr><th class="text-center" style="width: 90px">Code</th><th>Tool description</th><th>Current holder(s)</th><th class="text-center" style="width: 90px">Qty out</th></tr>
                             </thead>
                             <tbody id="toolsTableBody">
                                 <tr><td colspan="4" class="text-center text-muted py-5"><i class="bi bi-info-circle"></i> Select a date & click Load Report</td></tr>
@@ -127,42 +370,53 @@
                         </table>
                     </div>
                 </div>
+                <div class="mt-3 d-flex justify-content-end">
+                    <span class="insight-chip"><i class="bi bi-info-circle-fill me-1"></i> Click any row → view daily custody trail</span>
+                </div>
             </div>
 
             <div class="col-lg-4">
                 <div class="d-flex align-items-center gap-2 mb-3">
-                    <span class="section-badge"><i class="bi bi-person-check-fill me-1"></i> ON-SITE TEAM</span>
+                    <span class="section-badge"><i class="bi bi-person-check-fill me-1"></i> FIELD TEAM · ATTENDANCE</span>
                 </div>
                 <div class="workers-card">
                     <div class="workers-list-custom list-group list-group-flush" id="workersListGroup">
                         <div class="text-center text-muted p-4"><i class="bi bi-person-x"></i> No attendance data</div>
                     </div>
                 </div>
+                <!-- extra micro detail -->
+                <div class="mt-3 small text-muted bg-light bg-opacity-50 rounded-3 p-2 text-center">
+                    <i class="bi bi-clock-history"></i> Based on scanned P-codes & active sign-in
+                </div>
             </div>
         </div>
 
-        <div class="mt-5 pt-2 text-center text-muted border-top" style="font-size:0.7rem;">
-            <i class="bi bi-shield-check"></i> Real-time custody ledger · click any tool row to inspect daily transactions
+        <div class="mt-5 pt-3 text-center border-top d-flex justify-content-between flex-wrap gap-2" style="font-size:0.7rem;">
+            <span><i class="bi bi-shield-check text-success"></i> Real‑time custody ledger · integrity verified</span>
+            <span><i class="bi bi-arrow-repeat"></i> Daily snapshot: <span id="activeDateIndicator" class="fw-semibold">—</span></span>
         </div>
     </div>
 </div>
 
-<!-- Modal -->
+<!-- Modal Enhanced -->
 <div class="modal fade" id="logModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-md">
-    <div class="modal-content" style="border-radius:1.5rem;border:none;overflow:hidden;">
-      <div class="modal-header border-0" style="background:#0f2b3d;color:white;">
-        <h6 class="modal-title fw-bold" id="logModalLabel"><i class="bi bi-journal-text me-2"></i>Tool log · daily trail</h6>
+    <div class="modal-content modal-premium" style="border-radius:1.8rem;">
+      <div class="modal-header border-0" style="background:linear-gradient(115deg, #0f2b3d, #1b4a6e); color:white;">
+        <h6 class="modal-title fw-bold"><i class="bi bi-journal-richtext me-2"></i>Daily transaction log</h6>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body p-4">
         <div class="fw-semibold text-primary mb-3 fs-6" id="modalToolInfo"></div>
-        <div class="bg-light rounded-3 p-3 border" style="max-height:320px;overflow-y:auto;" id="modalLogContent">
+        <div class="bg-light rounded-4 p-3 border" style="max-height:340px;overflow-y:auto;" id="modalLogContent">
             <span class="text-secondary">loading events...</span>
         </div>
+        <div class="mt-3 alert alert-info py-2 small mb-0 rounded-pill text-center">
+            <i class="bi bi-binoculars"></i> Only events from selected date
+        </div>
       </div>
-      <div class="modal-footer border-0 pt-0">
-        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" data-bs-dismiss="modal">Close</button>
+      <div class="modal-footer border-0 pt-0 pb-3">
+        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Close</button>
       </div>
     </div>
   </div>
@@ -170,37 +424,40 @@
 
 <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyHXMuZcmFT7KrvqR8cygFl-t-oU_Jh4Vr2L4yp1eoT5AQAL00rbjBbUL0aKod3_C8l7g/exec";
-
-    // ✅ إصلاح 6 — توحيد مفتاح الـ token
     const token = localStorage.getItem("token") || "abouamjad_secure_session_token";
-
-    // ✅ الأكواد المقبولة كأدوات — نفس الـ Terminal
     const TOOL_PREFIXES = ['I', 'E', 'C', 'B'];
     function isTool(code) { return TOOL_PREFIXES.includes(code.charAt(0)); }
 
-    const dateSelect      = document.getElementById("dateSelect");
-    const btnLoad         = document.getElementById("btnLoadData");
-    const btnBack         = document.getElementById("btnBack");
-    const toolsTBody      = document.getElementById("toolsTableBody");
-    const workersContainer= document.getElementById("workersListGroup");
-    const kpiSection      = document.getElementById("kpiSection");
-    const countOutSpan    = document.getElementById("countOutTools");
-    const countWorkersSpan= document.getElementById("countWorkers");
+    const dateSelect = document.getElementById("dateSelect");
+    const btnLoad = document.getElementById("btnLoadData");
+    const btnBack = document.getElementById("btnBack");
+    const toolsTBody = document.getElementById("toolsTableBody");
+    const workersContainer = document.getElementById("workersListGroup");
+    const kpiSection = document.getElementById("kpiSection");
+    const countOutSpan = document.getElementById("countOutTools");
+    const countWorkersSpan = document.getElementById("countWorkers");
     const toolsCountBadge = document.getElementById("toolsCountBadge");
-
+    const uniqueToolsOutSpan = document.getElementById("uniqueToolsOutSpan");
+    const totalToolTypesSpan = document.getElementById("totalToolTypesSpan");
+    const activeDateIndicator = document.getElementById("activeDateIndicator");
+    const toolSearchInput = document.getElementById("toolSearchInput");
+    
+    let currentToolsRender = []; // storage for filtering
+    
     function showToolsLoading() {
-        toolsTBody.innerHTML = `<tr><td colspan="4" class="text-center py-5"><div class="spinner-custom"></div><span class="text-muted">Fetching ledger entries...</span></td></tr>`;
-        workersContainer.innerHTML = `<div class="text-center p-4"><div class="spinner-custom" style="width:1.5rem;height:1.5rem;"></div><span class="d-block mt-2 small">syncing...</span></div>`;
+        toolsTBody.innerHTML = `<tr><td colspan="4" class="text-center py-5"><div class="spinner-custom"></div><span class="text-muted mt-2 d-block">Loading custody ledger...</span></td></tr>`;
+        workersContainer.innerHTML = `<div class="text-center p-4"><div class="spinner-custom" style="width:1.5rem;height:1.5rem;"></div><div class="mt-2 small">syncing personnel</div></div>`;
         kpiSection.style.display = "none";
+        activeDateIndicator.innerText = dateSelect.value ? dateSelect.value : "—";
     }
 
     async function loadAvailableDates() {
-        dateSelect.innerHTML = '<option value="">⏳ loading dates...</option>';
+        dateSelect.innerHTML = '<option value="">⏳ loading shift dates...</option>';
         try {
             const response = await fetch(`${SCRIPT_URL}?action=getDates&token=${encodeURIComponent(token)}`);
             const dates = await response.json();
             if (!dates || dates.error || dates.length === 0) {
-                dateSelect.innerHTML = '<option value="">⚠️ No dates found</option>';
+                dateSelect.innerHTML = '<option value="">⚠️ No records found</option>';
                 return [];
             }
             dateSelect.innerHTML = "";
@@ -219,152 +476,172 @@
         }
     }
 
-    // ==========================================
-    // ✅ PARSER — كل الإصلاحات الستة هنا
-    // ==========================================
     function processLedgerData(rawRows, selectedDate) {
-        if (!rawRows || rawRows.length === 0) {
-            return { tools: [], workers: [], totalToolsOut: 0, totalWorkers: 0 };
-        }
-
-        let globalInventory  = {};
+        if (!rawRows || rawRows.length === 0) return { tools: [], workers: [], totalToolsOut: 0, totalWorkers: 0 };
+        let globalInventory = {};
         let lastActivePerson = "General Store";
-
-        // ✅ إصلاح 2 — null بدل "OUT" حتى ما تتسجل أدوات بغلط
         let lastMovement = null;
-
-        // ✅ إصلاح 3 — نعتمد ترتيب المصفوفة مباشرة، الـ Backend يرسلها مرتبة
         const sortedRows = rawRows;
 
         for (let row of sortedRows) {
             let code = (row.toolCode || "").toString().toUpperCase().trim();
             let desc = row.toolDescription || "—";
-
-            // ✅ إصلاح 4 — مقارنة موحدة للـ isTargetDay
             let isTarget = String(row.isTargetDay) === "true";
-
             if (!code) continue;
-
-            // ── شخص ──
             if (code.startsWith("P")) {
                 lastActivePerson = desc || code;
-
-                // ✅ إصلاح 1 — تصفير lastMovement عند كل P جديد
                 lastMovement = null;
-
-                if (!globalInventory[code]) {
-                    globalInventory[code] = { description: desc, isPerson: true, scannedToday: false };
-                }
+                if (!globalInventory[code]) globalInventory[code] = { description: desc, isPerson: true, scannedToday: false };
                 if (isTarget) globalInventory[code].scannedToday = true;
                 continue;
             }
-
-            // ── اتجاه ──
             if (code === "IN" || code === "OUT") {
                 lastMovement = code;
                 continue;
             }
-
-            // ✅ إصلاح 5 — فقط الأكواد المعروفة تتعامل كأدوات
             if (!isTool(code)) continue;
-
-            // ── أداة أو معدة ──
             if (!globalInventory[code]) {
-                globalInventory[code] = {
-                    description: desc,
-                    isPerson: false,
-                    scannedToday: false,
-                    actionsToday: [],
-                    holdersList: [],
-                    hasWarning: false
-                };
+                globalInventory[code] = { description: desc, isPerson: false, scannedToday: false, actionsToday: [], holdersList: [], hasWarning: false };
             }
-
             if (isTarget) globalInventory[code].scannedToday = true;
-
-            // ✅ إصلاح 1 — إذا ما في اتجاه: تجاهل الحركة وسجّل warning
             if (!lastMovement) {
                 if (isTarget) {
-                    globalInventory[code].actionsToday.push(`⚠️ Scanned with no direction set · ${lastActivePerson}`);
+                    globalInventory[code].actionsToday.push(`⚠️ ambiguous direction · scanned under ${lastActivePerson}`);
                     globalInventory[code].hasWarning = true;
                 }
                 continue;
             }
-
             if (lastMovement === "IN") {
                 const idx = globalInventory[code].holdersList.lastIndexOf(lastActivePerson);
                 if (idx !== -1) {
-                    // إرجاع طبيعي
                     globalInventory[code].holdersList.splice(idx, 1);
                     if (isTarget) globalInventory[code].actionsToday.push(`📥 Returned by · ${lastActivePerson}`);
                 } else if (globalInventory[code].holdersList.length > 0) {
-                    // Found Asset
                     const originalHolder = globalInventory[code].holdersList.shift();
                     if (isTarget) {
-                        globalInventory[code].actionsToday.push(`⚠️ Found & Returned by · ${lastActivePerson} (Lost by: ${originalHolder})`);
+                        globalInventory[code].actionsToday.push(`⚠️ Recovered from mismatch · ${lastActivePerson} (Lost by: ${originalHolder})`);
                         globalInventory[code].hasWarning = true;
                     }
                 } else {
-                    if (isTarget) globalInventory[code].actionsToday.push(`📥 Returned by · ${lastActivePerson} (Unregistered state)`);
+                    if (isTarget) globalInventory[code].actionsToday.push(`📥 Returned · ${lastActivePerson} (clean state)`);
                 }
             } else {
-                // OUT
                 globalInventory[code].holdersList.push(lastActivePerson);
-                if (isTarget) globalInventory[code].actionsToday.push(`📤 Checked out · ${lastActivePerson}`);
+                if (isTarget) globalInventory[code].actionsToday.push(`📤 Checked out to · ${lastActivePerson}`);
             }
         }
 
-        // بناء مصفوفة العرض
-        let workersList       = [];
-        let activeWorkersCount= 0;
-        let totalToolsOutSum  = 0;
-        let toolsRenderArray  = [];
-
+        let workersList = [], activeWorkersCount = 0, totalToolsOutSum = 0, toolsRenderArray = [];
         for (let [code, item] of Object.entries(globalInventory)) {
             if (item.isPerson) {
-                if (item.scannedToday) {
-                    activeWorkersCount++;
-                    workersList.push({ name: item.description, code });
-                }
+                if (item.scannedToday) { activeWorkersCount++; workersList.push({ name: item.description, code }); }
             } else {
                 const qtyOut = item.holdersList.length;
                 totalToolsOutSum += qtyOut;
-
                 if (item.scannedToday || qtyOut > 0) {
                     const holderCountMap = new Map();
-                    item.holdersList.forEach(person => {
-                        holderCountMap.set(person, (holderCountMap.get(person) || 0) + 1);
-                    });
-
+                    item.holdersList.forEach(person => holderCountMap.set(person, (holderCountMap.get(person) || 0) + 1));
                     let holdersHtml = "";
-                    if (holderCountMap.size === 0) {
-                        holdersHtml = `<span class="text-success small fw-semibold"><i class="bi bi-house-door-fill me-1"></i>In store</span>`;
-                    } else {
-                        holdersHtml = Array.from(holderCountMap.entries()).map(([person, qty]) =>
-                            `<span class="badge-holder-modern d-inline-flex m-1"><i class="bi bi-person-circle"></i> ${person} <strong>×${qty}</strong></span>`
-                        ).join("");
-                    }
-
+                    if (holderCountMap.size === 0) holdersHtml = `<span class="text-success small fw-semibold"><i class="bi bi-house-fill me-1"></i>In store</span>`;
+                    else holdersHtml = Array.from(holderCountMap.entries()).map(([person, qty]) => `<span class="badge-holder-modern"><i class="bi bi-person-circle"></i> ${escapeHtml(person)} <strong>×${qty}</strong></span>`).join("");
                     toolsRenderArray.push({
-                        code,
-                        description: item.description,
-                        holdersDisplay: holdersHtml,
-                        qtyOut,
-                        actionsToday: item.actionsToday || [],
-                        hasWarning: item.hasWarning || false
+                        code, description: item.description, holdersDisplay: holdersHtml, qtyOut,
+                        actionsToday: item.actionsToday || [], hasWarning: item.hasWarning || false
                     });
                 }
             }
         }
-
-        toolsRenderArray.sort((a, b) => a.code.localeCompare(b.code));
-        workersList.sort((a, b) => a.name.localeCompare(b.name));
-
+        toolsRenderArray.sort((a,b) => a.code.localeCompare(b.code));
+        workersList.sort((a,b) => a.name.localeCompare(b.name));
         return { tools: toolsRenderArray, workers: workersList, totalToolsOut: totalToolsOutSum, totalWorkers: activeWorkersCount };
     }
 
+    function renderDashboard(processed) {
+        const { tools, workers, totalToolsOut, totalWorkers } = processed;
+        currentToolsRender = tools;
+        const uniqueOutCount = tools.filter(t => t.qtyOut > 0).length;
+        if (uniqueToolsOutSpan) uniqueToolsOutSpan.innerText = uniqueOutCount;
+        if (totalToolTypesSpan) totalToolTypesSpan.innerText = tools.length;
+        
+        const filteredTools = applySearchFilter(tools, toolSearchInput ? toolSearchInput.value : "");
+        
+        if (!filteredTools.length) {
+            toolsTBody.innerHTML = `<tr><td colspan="4" class="text-center py-5 text-secondary"><i class="bi bi-inbox"></i> No matching tools or no data</td></tr>`;
+        } else {
+            toolsTBody.innerHTML = "";
+            filteredTools.forEach(tool => {
+                const row = document.createElement("tr");
+                row.className = "clickable-row" + (tool.hasWarning ? " warn-row" : "");
+                row.onclick = () => showLogModal(tool.code, tool.description, tool.actionsToday);
+                row.innerHTML = `
+                    <td class="text-center"><code class="bg-light px-2 py-1 rounded fw-bold">${escapeHtml(tool.code)}</code>${tool.hasWarning ? '<i class="bi bi-exclamation-triangle-fill text-warning ms-1" data-bs-toggle="tooltip" title="Unusual transaction"></i>' : ''}</td>
+                    <td class="fw-semibold text-dark">${escapeHtml(tool.description)}</td>
+                    <td class="d-flex flex-wrap">${tool.holdersDisplay}</td>
+                    <td class="text-center fw-bold ${tool.qtyOut > 0 ? 'text-danger' : 'text-success'}"><span class="fs-5">${tool.qtyOut}</span></td>
+                `;
+                toolsTBody.appendChild(row);
+            });
+        }
+        toolsCountBadge.innerText = `${tools.length} tool types tracked`;
+        
+        if (!workers.length) workersContainer.innerHTML = `<div class="text-center text-muted p-4"><i class="bi bi-people"></i> No attendance scanned today</div>`;
+        else {
+            workersContainer.innerHTML = "";
+            workers.forEach(worker => {
+                const initials = worker.name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase();
+                const div = document.createElement("div");
+                div.className = "list-group-item d-flex justify-content-between align-items-center";
+                div.innerHTML = `
+                    <div class="d-flex align-items-center">
+                        <span class="worker-avatar">${initials}</span>
+                        <span class="fw-semibold">${escapeHtml(worker.name)}</span>
+                    </div>
+                    <span class="status-badge-present"><i class="bi bi-check-circle-fill me-1 small"></i> Present</span>
+                `;
+                workersContainer.appendChild(div);
+            });
+        }
+        countOutSpan.textContent = totalToolsOut;
+        countWorkersSpan.textContent = totalWorkers;
+        kpiSection.style.display = "flex";
+        if (dateSelect.value) activeDateIndicator.innerText = dateSelect.value;
+    }
+    
+    function applySearchFilter(tools, query) {
+        if (!query.trim()) return tools;
+        const lowerQuery = query.toLowerCase();
+        return tools.filter(t => t.code.toLowerCase().includes(lowerQuery) || t.description.toLowerCase().includes(lowerQuery));
+    }
+    
+    function handleSearch() {
+        if (currentToolsRender.length) {
+            const filtered = applySearchFilter(currentToolsRender, toolSearchInput.value);
+            if (!filtered.length) toolsTBody.innerHTML = `<tr><td colspan="4" class="text-center py-5 text-secondary"><i class="bi bi-search"></i> No tools match filter</td></tr>`;
+            else {
+                toolsTBody.innerHTML = "";
+                filtered.forEach(tool => {
+                    const row = document.createElement("tr");
+                    row.className = "clickable-row" + (tool.hasWarning ? " warn-row" : "");
+                    row.onclick = () => showLogModal(tool.code, tool.description, tool.actionsToday);
+                    row.innerHTML = `<td class="text-center"><code class="bg-light px-2 py-1 rounded">${escapeHtml(tool.code)}</code>${tool.hasWarning ? '<i class="bi bi-exclamation-triangle-fill text-warning ms-1"></i>' : ''}</td><td class="fw-semibold">${escapeHtml(tool.description)}</td><td class="d-flex flex-wrap">${tool.holdersDisplay}</td><td class="text-center fw-bold ${tool.qtyOut > 0 ? 'text-danger' : 'text-success'}"><span class="fs-5">${tool.qtyOut}</span></td>`;
+                    toolsTBody.appendChild(row);
+                });
+            }
+        }
+    }
+
+    function showLogModal(code, desc, actionsList) {
+        document.getElementById("modalToolInfo").innerHTML = `<i class="bi bi-wrench-adjustable-circle me-2"></i><strong>${escapeHtml(desc)}</strong> · <span class="text-secondary">${escapeHtml(code)}</span>`;
+        const modalContent = document.getElementById("modalLogContent");
+        if (!actionsList || actionsList.length === 0) modalContent.innerHTML = `<div class="text-center text-muted py-3"><i class="bi bi-clock-history"></i> No transactions recorded on this day.<br><small>Tool state inherited from previous shifts.</small></div>`;
+        else modalContent.innerHTML = `<ul class="list-unstyled m-0">${actionsList.map(act => `<li class="py-2 border-bottom d-flex gap-2"><span class="badge bg-light p-2 rounded-circle"><i class="bi bi-arrow-right-short"></i></span><span>${escapeHtml(act)}</span></li>`).join('')}</ul>`;
+        new bootstrap.Modal(document.getElementById('logModal')).show();
+    }
+    
+    function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]||m)); }
+
     async function fetchReportData(date) {
-        if (!date) { alert("Please pick a valid date from the dropdown."); return; }
+        if (!date) { alert("Pick a valid date from the dropdown."); return; }
         showToolsLoading();
         try {
             const response = await fetch(`${SCRIPT_URL}?action=getData&date=${encodeURIComponent(date)}&token=${encodeURIComponent(token)}`);
@@ -373,104 +650,20 @@
             const processed = processLedgerData(data, date);
             renderDashboard(processed);
         } catch (err) {
-            console.error(err);
-            toolsTBody.innerHTML = `<tr><td colspan="4" class="text-center text-danger py-4"><i class="bi bi-exclamation-triangle-fill"></i> Failed to load: ${err.message || 'network issue'}</td></tr>`;
-            workersContainer.innerHTML = `<div class="text-center text-danger p-3"><i class="bi bi-wifi-off"></i> Data error</div>`;
+            toolsTBody.innerHTML = `<tr><td colspan="4" class="text-center text-danger py-4"><i class="bi bi-exclamation-triangle-fill"></i> Load error: ${err.message}</td></tr>`;
+            workersContainer.innerHTML = `<div class="text-center text-danger p-3"><i class="bi bi-wifi-off"></i> Data fetch failed</div>`;
             kpiSection.style.display = "none";
         }
     }
 
-    function renderDashboard(processed) {
-        const { tools, workers, totalToolsOut, totalWorkers } = processed;
-
-        if (!tools.length) {
-            toolsTBody.innerHTML = `<tr><td colspan="4" class="text-center py-5 text-secondary"><i class="bi bi-inbox"></i> No tool transactions or inventory on this date.</td></tr>`;
-        } else {
-            toolsTBody.innerHTML = "";
-            tools.forEach(tool => {
-                const row = document.createElement("tr");
-                row.className = "clickable-row" + (tool.hasWarning ? " warn-row" : "");
-                row.onclick = (function(actionsArr, code, desc) {
-                    return function() { showLogModal(code, desc, actionsArr); };
-                })(tool.actionsToday, tool.code, tool.description);
-
-                row.innerHTML = `
-                    <td class="text-center">
-                        <code class="bg-light px-2 py-1 rounded">${escapeHtml(tool.code)}</code>
-                        ${tool.hasWarning ? '<i class="bi bi-exclamation-triangle-fill text-warning ms-1" title="Warning — check log"></i>' : ''}
-                    </td>
-                    <td class="fw-semibold text-dark">${escapeHtml(tool.description)}</td>
-                    <td class="d-flex flex-wrap">${tool.holdersDisplay}</td>
-                    <td class="text-center fw-bold ${tool.qtyOut > 0 ? 'text-danger' : 'text-success'}">
-                        <span class="fs-5">${tool.qtyOut}</span>
-                    </td>
-                `;
-                toolsTBody.appendChild(row);
-            });
-        }
-        toolsCountBadge.innerText = `${tools.length} tools listed`;
-
-        if (!workers.length) {
-            workersContainer.innerHTML = `<div class="text-center text-muted p-4"><i class="bi bi-people"></i> No attendance logged today</div>`;
-        } else {
-            workersContainer.innerHTML = "";
-            workers.forEach(worker => {
-                const itemDiv = document.createElement("div");
-                itemDiv.className = "list-group-item d-flex justify-content-between align-items-center";
-                itemDiv.innerHTML = `
-                    <div><i class="bi bi-person-badge me-2 text-primary"></i> ${escapeHtml(worker.name)}</div>
-                    <span class="status-badge-present"><i class="bi bi-check-circle-fill me-1 small"></i> Present</span>
-                `;
-                workersContainer.appendChild(itemDiv);
-            });
-        }
-
-        countOutSpan.textContent  = totalToolsOut;
-        countWorkersSpan.textContent = totalWorkers;
-        kpiSection.style.display  = "flex";
-    }
-
-    function showLogModal(code, desc, actionsList) {
-        document.getElementById("modalToolInfo").innerHTML =
-            `<i class="bi bi-wrench-adjustable-circle me-2"></i><strong>${escapeHtml(desc)}</strong> · <span class="text-secondary">${escapeHtml(code)}</span>`;
-
-        const modalContent = document.getElementById("modalLogContent");
-        if (!actionsList || actionsList.length === 0) {
-            modalContent.innerHTML = `<div class="text-center text-muted py-3"><i class="bi bi-clock-history"></i> No checkouts/returns recorded today.<br><small>Item state from previous days.</small></div>`;
-        } else {
-            modalContent.innerHTML = `<ul class="list-unstyled m-0">` +
-                actionsList.map(act =>
-                    `<li class="py-2 border-bottom d-flex align-items-start gap-2">
-                        <span class="badge bg-light p-2 rounded-circle"><i class="bi bi-arrow-right-short"></i></span>
-                        <span>${escapeHtml(act)}</span>
-                    </li>`
-                ).join('') +
-                `</ul>`;
-        }
-        new bootstrap.Modal(document.getElementById('logModal')).show();
-    }
-
-    function escapeHtml(str) {
-        if (!str) return '';
-        return str.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m] || m));
-    }
-
     async function initDashboard() {
         const datesArray = await loadAvailableDates();
-        if (datesArray && datesArray.length > 0) {
-            dateSelect.value = datesArray[0];
-            await fetchReportData(datesArray[0]);
-        } else {
-            toolsTBody.innerHTML = `<tr><td colspan="4" class="text-center text-warning">⚠️ No date records available.</td></tr>`;
-        }
-        btnLoad.addEventListener("click", async () => {
-            const selected = dateSelect.value;
-            if (!selected) { alert("Please select a date from list."); return; }
-            await fetchReportData(selected);
-        });
+        if (datesArray && datesArray.length > 0) { dateSelect.value = datesArray[0]; await fetchReportData(datesArray[0]); }
+        else toolsTBody.innerHTML = `<tr><td colspan="4" class="text-center text-warning">⚠️ No date records available.</td></tr>`;
+        btnLoad.addEventListener("click", async () => { const selected = dateSelect.value; if(selected) await fetchReportData(selected); else alert("Select a date first."); });
         btnBack.addEventListener("click", () => { window.location.href = "index.html"; });
+        if(toolSearchInput) toolSearchInput.addEventListener("input", handleSearch);
     }
-
     document.addEventListener("DOMContentLoaded", initDashboard);
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
