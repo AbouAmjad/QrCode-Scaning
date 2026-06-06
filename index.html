@@ -1,147 +1,494 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Abu Amjad - Terminal</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>⚡ TERMINAL // ABU AMJAD // HYPERSCAN</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
-    body { background: #f4f7f6; min-height: 100vh; padding: 20px; transition: background 0.3s; }
-    body.danger-mode { background: #fff0f0; animation: bodyDanger 0.5s ease infinite alternate; }
-    @keyframes bodyDanger { from { background: #fff0f0; } to { background: #ffe0e0; } }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-    .container { max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); transition: box-shadow 0.3s; }
-    .container.danger-mode { box-shadow: 0 0 0 3px #dc3545, 0 10px 30px rgba(220,53,69,0.2); }
+    /* ---------- SUPER POWER CORE ---------- */
+    body {
+      background: radial-gradient(circle at 20% 30%, #03050b, #000000);
+      min-height: 100vh;
+      padding: 28px 20px;
+      font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', 'Courier New', monospace;
+      transition: all 0.2s ease;
+      position: relative;
+    }
 
-    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 2px solid #f4f7f6; padding-bottom: 15px; }
-    h2 { color: #2d5016; font-weight: 700; }
-    .nav-btns button { padding: 6px 12px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; margin-left: 5px; font-size: 13px; }
-    .btn-report { background: #007bff; color: white; }
-    .btn-logout { background: #dc3545; color: white; }
+    /* Hacker Grid Background */
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: 
+        linear-gradient(rgba(0, 255, 100, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 255, 100, 0.02) 1px, transparent 1px);
+      background-size: 28px 28px;
+      pointer-events: none;
+      z-index: 0;
+    }
 
-    .status { padding: 12px; border-radius: 12px; text-align: center; font-weight: 700; font-size: 14px; margin-bottom: 20px; letter-spacing: 0.5px; transition: all 0.3s ease; }
-    .online  { background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
-    .offline { background: #ffebee; color: #c62828; border: 1px solid #ffcdd2; }
+    /* DANGER MODE — HYPER RED ALERT */
+    body.danger-mode {
+      background: radial-gradient(circle at 30% 20%, #1a0303, #000000);
+      box-shadow: inset 0 0 80px rgba(255, 30, 30, 0.3);
+      animation: dangerPulse 0.35s infinite alternate;
+    }
+    @keyframes dangerPulse {
+      0% { background: radial-gradient(circle at 30% 20%, #1f0404, #000); }
+      100% { background: radial-gradient(circle at 30% 20%, #3a0808, #200000); }
+    }
 
-    /* شريط الشخص الحالي والاتجاه */
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+      background: rgba(8, 12, 18, 0.75);
+      backdrop-filter: blur(12px);
+      border-radius: 48px;
+      padding: 28px 28px 32px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(0, 255, 100, 0.25), 0 0 0 3px rgba(0, 0, 0, 0.4);
+      transition: all 0.25s;
+      border: 1px solid rgba(0, 255, 100, 0.35);
+      position: relative;
+      z-index: 2;
+    }
+    .container.danger-mode {
+      box-shadow: 0 0 0 2px #ff0033, 0 0 0 6px rgba(255, 0, 50, 0.4), 0 20px 40px black;
+      border-color: #ff3366;
+    }
+
+    /* GLOW HEADER */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 24px;
+      border-bottom: 2px solid rgba(0, 255, 150, 0.6);
+      padding-bottom: 18px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    h2 {
+      color: #0fec7a;
+      font-weight: 700;
+      font-size: 1.8rem;
+      letter-spacing: -0.5px;
+      text-shadow: 0 0 8px #0fec7a, 0 0 2px #00cc66;
+      background: linear-gradient(135deg, #b0ffd0, #0fec7a);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-shadow: none;
+    }
+    .nav-btns {
+      display: flex;
+      gap: 12px;
+    }
+    .nav-btns button {
+      background: #11161f;
+      border: 1px solid #2c3e2a;
+      padding: 8px 18px;
+      border-radius: 60px;
+      font-weight: 700;
+      font-size: 0.75rem;
+      letter-spacing: 1.2px;
+      cursor: pointer;
+      transition: 0.12s linear;
+      color: #bbe1c7;
+      font-family: monospace;
+      backdrop-filter: blur(4px);
+    }
+    .btn-report {
+      box-shadow: 0 0 6px #0fec7a40;
+      background: #0a1f12;
+      border-color: #2aff8c;
+      color: #beffdd;
+    }
+    .btn-report:hover {
+      background: #1b8c48;
+      border-color: #b3ffcf;
+      color: #000;
+      box-shadow: 0 0 14px #00ff88;
+      transform: scale(1.02);
+    }
+    .btn-logout:hover {
+      background: #ff3040;
+      border-color: #ff90a0;
+      color: white;
+      box-shadow: 0 0 12px #ff3366;
+    }
+
+    /* STATUS BAR — TACTICAL */
+    .status {
+      padding: 10px 18px;
+      border-radius: 60px;
+      text-align: center;
+      font-weight: 800;
+      font-size: 0.75rem;
+      margin-bottom: 24px;
+      letter-spacing: 1px;
+      background: #030609;
+      border: 1px solid #00b340;
+      color: #11ff77;
+      box-shadow: inset 0 0 4px #00ff5522, 0 0 10px #00ff7722;
+      backdrop-filter: blur(4px);
+      text-transform: uppercase;
+    }
+    .status.online {
+      background: #041f12;
+      color: #2eff8c;
+      border-color: #29ff80;
+    }
+    .status.offline {
+      background: #2a0a0f;
+      color: #ff6a6a;
+      border-color: #ff4466;
+    }
+
+    /* ACTIVE PERSON PANEL (CYBER) */
     .person-bar {
-      display: flex; justify-content: space-between; align-items: center;
-      background: #f8f9fa; border: 1px solid #e1e5e9; border-radius: 12px;
-      padding: 10px 16px; margin-bottom: 16px; font-size: 13px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(0, 5, 10, 0.7);
+      backdrop-filter: blur(8px);
+      border: 1px solid #22ff88;
+      border-radius: 32px;
+      padding: 12px 20px;
+      margin-bottom: 22px;
+      font-size: 0.8rem;
     }
-    .person-bar .label { color: #999; font-size: 11px; letter-spacing: 0.5px; }
-    .person-bar .value { font-weight: 700; color: #333; font-size: 15px; margin-top: 2px; }
-    .dir-badge { font-size: 12px; font-weight: 700; padding: 5px 14px; border-radius: 20px; letter-spacing: 1px; }
-    .dir-out  { background: #fff3cd; color: #856404; border: 1px solid #ffc107; }
-    .dir-in   { background: #d4edda; color: #155724; border: 1px solid #28a745; }
-    .dir-none { background: #f0f0f0; color: #999;    border: 1px solid #ddd; }
+    .person-bar .label {
+      color: #88ffaa;
+      font-size: 0.65rem;
+      letter-spacing: 2px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    .person-bar .value {
+      font-weight: 800;
+      color: #f0fff0;
+      font-size: 1.2rem;
+      letter-spacing: 0.5px;
+      text-shadow: 0 0 5px #0fec7a;
+      font-family: monospace;
+    }
+    .dir-badge {
+      font-weight: 800;
+      padding: 6px 18px;
+      border-radius: 60px;
+      font-size: 0.85rem;
+      text-align: center;
+      backdrop-filter: blur(6px);
+    }
+    .dir-out {
+      background: #3c0000;
+      color: #ff7b7b;
+      border: 1px solid #ff2a3c;
+      box-shadow: 0 0 8px #ff1e3c;
+    }
+    .dir-in {
+      background: #013013;
+      color: #9effc7;
+      border: 1px solid #1eff7a;
+      box-shadow: 0 0 8px #0eff6a;
+    }
+    .dir-none {
+      background: #1e1a1f;
+      color: #aaaaaa;
+      border: 1px solid #444;
+    }
 
-    .scan-area { position: relative; margin-bottom: 25px; }
+    /* SCAN AREA — FUTURISTIC */
+    .scan-area {
+      position: relative;
+      margin-bottom: 32px;
+    }
     #scanInput {
-      width: 100%; padding: 18px; border: 2px solid #e1e5e9; border-radius: 15px;
-      font-size: 18px; outline: none; transition: all 0.3s ease;
-      letter-spacing: 1px; text-transform: uppercase;
+      width: 100%;
+      padding: 20px 100px 20px 26px;
+      background: #050b0e;
+      border: 2px solid #2aff8c;
+      border-radius: 60px;
+      font-size: 1.3rem;
+      font-weight: 600;
+      letter-spacing: 2px;
+      font-family: 'Fira Code', monospace;
+      color: #b3ffe0;
+      outline: none;
+      transition: 0.2s;
+      text-transform: uppercase;
+      box-shadow: 0 0 0px 0px rgba(0,255,100,0);
     }
-    #scanInput:focus  { border-color: #2d5016; box-shadow: 0 0 0 4px rgba(45,80,22,0.15); }
-    #scanInput.locked { border-color: #dc3545 !important; background: #fff5f5 !important; cursor: not-allowed; color: #dc3545; }
+    #scanInput:focus {
+      border-color: #6effb3;
+      box-shadow: 0 0 18px #2eff88, inset 0 0 8px #2eff88;
+      background: #010a0c;
+    }
+    #scanInput.locked {
+      border-color: #ff3366 !important;
+      background: #2c0000 !important;
+      color: #ffa0b0;
+      box-shadow: 0 0 16px #ff3366;
+    }
     .counter-badge {
-      position: absolute; right: 15px; top: 50%; transform: translateY(-50%);
-      background: #2d5016; color: white; padding: 4px 12px; border-radius: 20px;
-      font-weight: 700; font-size: 14px;
+      position: absolute;
+      right: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: #0fec7a;
+      color: #010a0c;
+      font-weight: 900;
+      font-size: 1.1rem;
+      padding: 4px 14px;
+      border-radius: 40px;
+      letter-spacing: 0;
+      font-family: monospace;
+      box-shadow: 0 0 12px #0fec7a;
     }
 
-    /* Warning Panel */
+    /* WARNING — TACTICAL NUKE PANEL */
     .warning-panel {
-      display: none; background: #fff5f5; border: 2px solid #dc3545;
-      border-radius: 15px; padding: 20px; margin-bottom: 20px;
-      animation: warnSlide 0.3s ease;
+      display: none;
+      background: rgba(30, 0, 0, 0.9);
+      backdrop-filter: blur(12px);
+      border: 2px solid #ff3366;
+      border-radius: 40px;
+      padding: 24px 22px;
+      margin-bottom: 28px;
+      box-shadow: 0 0 30px rgba(255, 51, 102, 0.6);
+      animation: glitchFlash 0.2s ease;
+    }
+    @keyframes glitchFlash {
+      0% { transform: translateX(-2px); opacity: 0.8; }
+      100% { transform: translateX(0); }
     }
     .warning-panel.visible { display: block; }
-    @keyframes warnSlide { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }
-
-    .warn-title { font-size: 16px; font-weight: 700; color: #dc3545; margin-bottom: 6px; }
-    .warn-code  { display: inline-block; background: #dc3545; color: white; font-weight: 700; font-size: 14px; letter-spacing: 2px; padding: 3px 10px; border-radius: 6px; margin: 6px 0 8px; }
-    .warn-sub   { font-size: 13px; color: #666; margin-bottom: 16px; line-height: 1.6; }
-
-    .dir-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .dir-btn {
-      padding: 16px; border: none; border-radius: 12px; font-size: 20px;
-      font-weight: 800; cursor: pointer; letter-spacing: 2px;
-      transition: transform 0.15s, opacity 0.15s;
-      display: flex; flex-direction: column; align-items: center; gap: 4px;
+    .warn-title {
+      font-size: 1.4rem;
+      font-weight: 900;
+      color: #ff4d6d;
+      letter-spacing: -0.5px;
+      text-transform: uppercase;
+      text-shadow: 0 0 6px #ff0033;
     }
-    .dir-btn:hover  { transform: scale(1.03); opacity: 0.92; }
-    .dir-btn:active { transform: scale(0.97); }
-    .dir-btn small  { font-size: 10px; font-weight: 500; opacity: 0.75; letter-spacing: 1px; }
-    .btn-out { background: #dc3545; color: white; box-shadow: 0 4px 14px rgba(220,53,69,0.35); }
-    .btn-in  { background: #28a745; color: white; box-shadow: 0 4px 14px rgba(40,167,69,0.35); }
+    .warn-code {
+      display: inline-block;
+      background: #ff0033;
+      font-weight: 900;
+      padding: 6px 20px;
+      border-radius: 60px;
+      font-size: 1.35rem;
+      letter-spacing: 2px;
+      margin: 12px 0 10px;
+      color: white;
+      font-family: monospace;
+      box-shadow: 0 0 16px red;
+    }
+    .dir-btns {
+      display: flex;
+      gap: 16px;
+      margin-top: 20px;
+    }
+    .dir-btn {
+      flex: 1;
+      padding: 16px;
+      border: none;
+      border-radius: 60px;
+      font-weight: 900;
+      font-size: 1.3rem;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: 0.08s linear;
+      font-family: monospace;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-out {
+      background: radial-gradient(ellipse at 30% 30%, #ff2a3c, #8b0000);
+      color: white;
+      box-shadow: 0 4px 20px #ff0040;
+      border: 1px solid #ff9999;
+    }
+    .btn-in {
+      background: radial-gradient(ellipse at 30% 30%, #00cc55, #026023);
+      color: white;
+      box-shadow: 0 4px 20px #00ff77;
+      border: 1px solid #88ffaa;
+    }
+    .dir-btn:hover {
+      transform: scale(1.02);
+      filter: brightness(1.1);
+    }
 
-    /* Log */
-    .log-section { background: #fafafa; border-radius: 15px; padding: 15px; max-height: 400px; overflow-y: auto; border: 1px solid #e1e5e9; }
-    .log-item { background: white; padding: 15px; border-radius: 10px; margin-bottom: 10px; border-left: 4px solid #ffb300; box-shadow: 0 2px 5px rgba(0,0,0,0.02); display: flex; flex-direction: column; gap: 4px; transition: all 0.3s ease; }
-    .log-item.synced   { border-left-color: #2e7d32; background: #fbfdfb; }
-    .log-item.warn-log { border-left-color: #dc3545; background: #fff8f8; }
-    .log-header  { display: flex; justify-content: space-between; align-items: center; }
-    .log-code    { font-weight: 700; color: #333; font-size: 16px; }
-    .log-description { font-size: 14px; color: #666; font-weight: 500; }
-    .log-time    { font-size: 11px; color: #999; text-align: right; }
-    .sync-status { font-size: 16px; font-weight: bold; }
-    .status-pending { color: #ffb300; animation: pulse 1s infinite; }
-    .status-synced  { color: #2e7d32; }
-    .status-warn    { color: #dc3545; }
-    @keyframes pulse { 0% { opacity:0.4; } 50% { opacity:1; } 100% { opacity:0.4; } }
+    /* LOG SECTION — POWER TERMINAL */
+    .log-section {
+      background: rgba(0, 0, 0, 0.55);
+      backdrop-filter: blur(4px);
+      border-radius: 32px;
+      padding: 8px;
+      max-height: 460px;
+      overflow-y: auto;
+      border: 1px solid #2eff8c30;
+    }
+    .log-section::-webkit-scrollbar {
+      width: 6px;
+    }
+    .log-section::-webkit-scrollbar-track {
+      background: #111;
+      border-radius: 6px;
+    }
+    .log-section::-webkit-scrollbar-thumb {
+      background: #0fec7a;
+      border-radius: 6px;
+    }
+    .log-item {
+      background: rgba(10, 18, 22, 0.8);
+      backdrop-filter: blur(2px);
+      margin-bottom: 12px;
+      padding: 16px 18px;
+      border-radius: 28px;
+      border-left: 6px solid #ffb347;
+      transition: all 0.2s;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      font-family: monospace;
+    }
+    .log-item.synced {
+      border-left-color: #2eff8c;
+      background: #082012b3;
+    }
+    .log-item.warn-log {
+      border-left-color: #ff3366;
+      background: #2d0a0ad9;
+    }
+    .log-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 8px;
+    }
+    .log-code {
+      font-weight: 900;
+      font-size: 1.2rem;
+      color: #c6ffe8;
+      letter-spacing: 1px;
+    }
+    .log-description {
+      font-size: 0.8rem;
+      color: #adccb5;
+      font-weight: 500;
+      word-break: break-word;
+    }
+    .log-time {
+      font-size: 0.65rem;
+      color: #6c8b7a;
+      text-align: right;
+      margin-top: 4px;
+    }
+    .sync-status {
+      font-weight: 900;
+      font-size: 1rem;
+    }
+    .status-pending {
+      color: #ffcc44;
+      text-shadow: 0 0 3px #ffaa22;
+      animation: pulseIcon 0.9s infinite;
+    }
+    .status-synced {
+      color: #2eff8c;
+    }
+    .status-warn {
+      color: #ff5c5c;
+    }
+    @keyframes pulseIcon {
+      0% { opacity: 0.5; text-shadow: 0 0 0px gold; }
+      100% { opacity: 1; text-shadow: 0 0 6px #ffcc44; }
+    }
+
+    /* glow & extras */
+    button, .dir-btn {
+      font-weight: bold;
+      transition: all 0.1s;
+    }
+    button:active, .dir-btn:active {
+      transform: scale(0.96);
+    }
+    .scan-area:after {
+      content: "⚡";
+      position: absolute;
+      left: 20px;
+      top: 18px;
+      font-size: 18px;
+      color: #2eff8c;
+      opacity: 0.7;
+      pointer-events: none;
+    }
+    #scanInput {
+      padding-left: 48px;
+    }
   </style>
 </head>
 <body>
-  <div class="container" id="mainContainer">
-    <div class="header">
-      <h2>Scan Terminal</h2>
-      <div class="nav-btns">
-        <button class="btn-report" onclick="viewResults()">📊 Report</button>
-        <button class="btn-logout" onclick="logout()">🚪 Logout</button>
-      </div>
+<div class="container" id="mainContainer">
+  <div class="header">
+    <h2>⚡ HYPERSCAN ⚡<span style="font-size: 0.7rem; color:#2eff8c;"> // ABU AMJAD TERM</span></h2>
+    <div class="nav-btns">
+      <button class="btn-report" onclick="viewResults()">📡 REPORT</button>
+      <button class="btn-logout" onclick="logout()">⛔ EXFIL</button>
     </div>
-
-    <div id="status" class="status online">ONLINE — READY FOR SCANS</div>
-
-    <!-- شريط الشخص الحالي -->
-    <div class="person-bar">
-      <div>
-        <div class="label">ACTIVE PERSON</div>
-        <div class="value" id="activePersonName">— none —</div>
-      </div>
-      <span class="dir-badge dir-none" id="dirBadge">NO DIR</span>
-    </div>
-
-    <!-- Warning Panel -->
-    <div class="warning-panel" id="warningPanel">
-      <div class="warn-title">⛔ NO DIRECTION SET</div>
-      <div class="warn-code" id="warnCode"></div>
-      <div class="warn-sub">
-        Tool scanned under <strong id="warnPerson"></strong> but no IN / OUT was selected.<br>
-        <strong>Select direction below — then re-scan the tool.</strong>
-      </div>
-      <div class="dir-btns">
-        <button class="dir-btn btn-out" onclick="setDirection('OUT')">
-          OUT
-          <small>LEAVING STORE</small>
-        </button>
-        <button class="dir-btn btn-in" onclick="setDirection('IN')">
-          IN
-          <small>RETURNING</small>
-        </button>
-      </div>
-    </div>
-
-    <div class="scan-area">
-      <input type="text" id="scanInput" placeholder="READY FOR GUN SCAN..." autocomplete="off">
-      <div class="counter-badge" id="counter">0</div>
-    </div>
-
-    <div class="log-section" id="log"></div>
   </div>
 
-  <script>
+  <div id="status" class="status online">🟢 ONLINE // SYNC ACTIVE</div>
+
+  <!-- TACTICAL PERSON DIRECTION PANEL -->
+  <div class="person-bar">
+    <div>
+      <div class="label">👤 OPERATIVE</div>
+      <div class="value" id="activePersonName">◈ STANDING BY</div>
+    </div>
+    <span class="dir-badge dir-none" id="dirBadge">⛌ NO VECTOR</span>
+  </div>
+
+  <!-- WARNING OVERRIDE -->
+  <div class="warning-panel" id="warningPanel">
+    <div class="warn-title">⚠️ DIRECTION OVERRIDE REQUIRED ⚠️</div>
+    <div class="warn-code" id="warnCode">ERR-00</div>
+    <div class="warn-sub" style="color:#ffc0c0; font-weight:500; margin-bottom:16px;">
+      🔒 TOOL <strong id="warnPerson">UNKNOWN</strong> SCANNED — NO IN/OUT COMMAND.<br>
+      SELECT TRAJECTORY & RESCAN.
+    </div>
+    <div class="dir-btns">
+      <button class="dir-btn btn-out" onclick="setDirection('OUT')">
+        🚪 EXIT / OUT
+        <small>LEAVING ARMORY</small>
+      </button>
+      <button class="dir-btn btn-in" onclick="setDirection('IN')">
+        🔄 IN / RETURN
+        <small>BACK TO STORAGE</small>
+      </button>
+    </div>
+  </div>
+
+  <div class="scan-area">
+    <input type="text" id="scanInput" placeholder="⚡ READY FOR TOOL/PERSON CODE ⚡" autocomplete="off">
+    <div class="counter-badge" id="counter">0</div>
+  </div>
+
+  <div class="log-section" id="log"></div>
+</div>
+
+<script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyHXMuZcmFT7KrvqR8cygFl-t-oU_Jh4Vr2L4yp1eoT5AQAL00rbjBbUL0aKod3_C8l7g/exec";
 
     let isProcessing = false;
@@ -234,7 +581,7 @@
       const input = document.getElementById('scanInput');
       input.disabled = true;
       input.classList.add('locked');
-      input.placeholder = "SELECT IN / OUT FIRST...";
+      input.placeholder = "⚠️ LOCKED — SELECT DIRECTION FIRST ⚠️";
       document.body.classList.add('danger-mode');
       document.getElementById('mainContainer').classList.add('danger-mode');
     }
@@ -244,7 +591,7 @@
       const input = document.getElementById('scanInput');
       input.disabled = false;
       input.classList.remove('locked');
-      input.placeholder = "READY FOR GUN SCAN...";
+      input.placeholder = "⚡ READY FOR TOOL/PERSON CODE ⚡";
       document.body.classList.remove('danger-mode');
       document.getElementById('mainContainer').classList.remove('danger-mode');
       setTimeout(() => input.focus(), 50);
@@ -269,13 +616,13 @@
       const badge = document.getElementById('dirBadge');
       if (lastDirection === 'OUT') {
         badge.className = 'dir-badge dir-out';
-        badge.textContent = 'OUT';
+        badge.textContent = '🔴 OUT // EXFIL';
       } else if (lastDirection === 'IN') {
         badge.className = 'dir-badge dir-in';
-        badge.textContent = 'IN';
+        badge.textContent = '🟢 IN // RETURN';
       } else {
         badge.className = 'dir-badge dir-none';
-        badge.textContent = 'NO DIR';
+        badge.textContent = '◈ NO VECTOR';
       }
     }
 
@@ -287,7 +634,7 @@
       playDirSet();
 
       // سجّل الاتجاه في الـ Queue ليروح للشيت
-      const logId = addLog(dir, dir === 'OUT' ? 'DIRECTION SET — LEAVING STORE' : 'DIRECTION SET — RETURNING');
+      const logId = addLog(dir, dir === 'OUT' ? '🔻 DIRECTION LOCKED: EXFIL' : '🔺 DIRECTION LOCKED: RETURN');
       const scans = loadScans();
       scans.push({ code: dir, seq: scanSeq++, sent: false, logId, timestamp: Date.now() });
       saveScans(scans);
@@ -308,13 +655,13 @@
 
     function updateOnlineStatus() {
       const el = document.getElementById("status");
-      if (navigator.onLine) { el.className = "status online"; el.innerText = "ONLINE — SYNC ACTIVE"; }
-      else                  { el.className = "status offline"; el.innerText = "OFFLINE — STORAGE MODE"; }
+      if (navigator.onLine) { el.className = "status online"; el.innerText = "🟢 ONLINE // SYNC ACTIVE"; }
+      else                  { el.className = "status offline"; el.innerText = "🔴 OFFLINE // LOCAL STORAGE MODE"; }
     }
     window.addEventListener('online',  updateOnlineStatus);
     window.addEventListener('offline', updateOnlineStatus);
 
-    function addLog(code, description = "WAITING FOR NETWORK SYNC...", isWarn = false) {
+    function addLog(code, description = "⏳ SYNC PENDING...", isWarn = false) {
       const id = "log_" + Date.now() + "_" + Math.random();
       const div = document.createElement("div");
       div.className = "log-item" + (isWarn ? " warn-log" : "");
@@ -322,7 +669,7 @@
       div.innerHTML = `
         <div class="log-header">
           <div class="log-code">${code.toUpperCase()}</div>
-          <span class="sync-status ${isWarn ? 'status-warn' : 'status-pending'}">${isWarn ? '⚠' : '●'}</span>
+          <span class="sync-status ${isWarn ? 'status-warn' : 'status-pending'}">${isWarn ? '⚠️ BLOCKED' : '⟳ PENDING'}</span>
         </div>
         <div class="log-description">${description.toUpperCase()}</div>
         <div class="log-time">${new Date().toLocaleTimeString().toUpperCase()}</div>
@@ -341,7 +688,7 @@
       if (el) {
         el.classList.add("synced");
         const s = el.querySelector(".sync-status");
-        if (s) { s.textContent = '✓'; s.className = "sync-status status-synced"; }
+        if (s) { s.textContent = '✓ SYNCED'; s.className = "sync-status status-synced"; }
       }
     }
 
@@ -364,7 +711,7 @@
         updateDirBadge();
         if (scannerLocked) hideWarning();
         playDirSet();
-        const logId = addLog(code, code === 'OUT' ? 'DIRECTION SET — LEAVING STORE' : 'DIRECTION SET — RETURNING');
+        const logId = addLog(code, code === 'OUT' ? '🎯 COMMAND: EXFILTRATION' : '🎯 COMMAND: INGRESS');
         const scans = loadScans();
         scans.push({ code, seq: scanSeq++, sent: false, logId, timestamp: Date.now() });
         saveScans(scans);
@@ -379,7 +726,7 @@
         lastDirection = null;
         updateDirBadge();
         document.getElementById('activePersonName').textContent = code;
-        const logId = addLog(code, "PERSON REGISTERED — WAITING FOR DIRECTION");
+        const logId = addLog(code, "🆔 PERSON DETECTED — AWAITING DIRECTION");
         const scans = loadScans();
         scans.push({ code, seq: scanSeq++, sent: false, logId, timestamp: Date.now() });
         saveScans(scans);
@@ -389,7 +736,7 @@
         fetchDescription(code).then(name => {
           lastPerson = name;
           document.getElementById('activePersonName').textContent = name;
-          updateLogDescription(logId, `PERSON · ${name} — WAITING FOR DIRECTION`);
+          updateLogDescription(logId, `👤 OPERATIVE: ${name} — STANDING BY FOR DIRECTION`);
         });
         return;
       }
@@ -398,14 +745,14 @@
       if (isTool(code)) {
         // ⚠️ ما في اتجاه — لا تسجّل، أعطِ Warning
         if (!lastDirection) {
-          addLog(code, "BLOCKED — NO DIRECTION SET", true);
+          addLog(code, "🚫 BLOCKED — DIRECTION MISSING (SET IN/OUT)", true);
           showWarning(code);
           return;
         }
         // ✅ احفظ بالـ Queue فوراً بدون await
         const dirLabel = lastDirection === 'OUT'
-          ? `CHECKED OUT · ${lastPerson || '—'}`
-          : `RETURNED · ${lastPerson || '—'}`;
+          ? `🔻 EXFIL · ${lastPerson || 'UNASSIGNED'} · TOOL DEPARTURE`
+          : `🔺 INGRESS · ${lastPerson || 'UNASSIGNED'} · TOOL RETURN`;
         const logId = addLog(code, dirLabel);
         playSuccess();
         const scans = loadScans();
@@ -419,7 +766,7 @@
       }
 
       // كود غير معروف
-      addLog(code, "UNKNOWN CODE TYPE — IGNORED", true);
+      addLog(code, "⛔ UNKNOWN CODE TYPE — SYSTEM IGNORE", true);
     }
 
     async function processQueue() {
@@ -433,7 +780,7 @@
           try {
             const syncUrl = `${SCRIPT_URL}?scanData=${encodeURIComponent(scan.code)}&token=${tokenValue}`;
             await fetch(syncUrl, { method: "GET", mode: "no-cors", cache: "no-store" });
-            updateLogDescription(scan.logId, "SUCCESSFULLY SYNCED TO SHEET");
+            updateLogDescription(scan.logId, "✅ SYNC COMPLETE — RECORD VERIFIED");
             markSynced(scan.logId);
             const currentScans = loadScans();
             const updated = currentScans.map(s => s.seq === scan.seq ? {...s, sent: true} : s);
