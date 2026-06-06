@@ -153,6 +153,35 @@
     let lastDirection  = null; // null = لم يُحدد بعد
     let scannerLocked  = false;
 
+    // ── الأكواد المقبولة كأدوات ──
+    const TOOL_PREFIXES = ['I', 'E', 'C', 'B'];
+    function isTool(code) { return TOOL_PREFIXES.includes(code.charAt(0)); }
+
+    // ── Cache محلي للـ Descriptions (ما يتسجل بالشيت مرتين) ──
+    const descCache = {};
+
+    // ── جلب الـ Description بـ endpoint منفصل لا يكتب بالشيت ──
+    async function fetchDescription(code) {
+      if (descCache[code]) return descCache[code];
+      try {
+        const url = `${SCRIPT_URL}?action=getDesc&code=${encodeURIComponent(code)}&token=${tokenValue}`;
+        const res = await fetch(url, { method: "GET", cache: "no-store" });
+        const data = await res.json();
+        const name = data.description || code;
+        descCache[code] = name;
+        return name;
+      } catch {
+        return code;
+      }
+    }
+
+    // ── تحديث الـ Log بالـ Description بعد الحفظ (بدون تعطيل المسح) ──
+    function enrichLog(logId, code, dirLabel) {
+      fetchDescription(code).then(name => {
+        updateLogDescription(logId, `${name} · ${dirLabel}`);
+      });
+    }
+
     // ── Audio ──
     let audioCtx = null;
     function getAudioCtx() {
@@ -321,7 +350,7 @@
       return true;
     }
 
-    // ── Main Submit ──
+    // ── Main Submit — sync بالكامل، لا يوجد await هنا ──
     function submitScan() {
       const input = document.getElementById("scanInput");
       const code  = input.value.trim().toUpperCase();
@@ -344,9 +373,9 @@
         return;
       }
 
-      // شخص — يتسجل، بس يصفّر الاتجاه
+      // شخص — يتسجل فوراً بالـ Queue، الـ Description تجي لاحقاً
       if (code.startsWith('P')) {
-        lastPerson    = code;
+        lastPerson    = code; // نحفظ الكود مؤقتاً لحد ما يجي الاسم
         lastDirection = null;
         updateDirBadge();
         document.getElementById('activePersonName').textContent = code;
@@ -356,29 +385,36 @@
         saveScans(scans);
         updateCounter();
         processQueue();
+        // جلب الاسم الحقيقي بشكل منفصل — لا يوقف المسح
+        fetchDescription(code).then(name => {
+          lastPerson = name;
+          document.getElementById('activePersonName').textContent = name;
+          updateLogDescription(logId, `PERSON · ${name} — WAITING FOR DIRECTION`);
+        });
         return;
       }
 
-      // أداة أو معدة
-      if (code.startsWith('I') || code.startsWith('E')) {
+      // أداة — I, E, C, B
+      if (isTool(code)) {
         // ⚠️ ما في اتجاه — لا تسجّل، أعطِ Warning
         if (!lastDirection) {
           addLog(code, "BLOCKED — NO DIRECTION SET", true);
           showWarning(code);
-          return; // ما تروح للشيت
+          return;
         }
-
-        // ✅ كل شي تمام — سجّل وأرسل
-        const desc = lastDirection === 'OUT'
+        // ✅ احفظ بالـ Queue فوراً بدون await
+        const dirLabel = lastDirection === 'OUT'
           ? `CHECKED OUT · ${lastPerson || '—'}`
           : `RETURNED · ${lastPerson || '—'}`;
-        const logId = addLog(code, desc);
+        const logId = addLog(code, dirLabel);
         playSuccess();
         const scans = loadScans();
         scans.push({ code, seq: scanSeq++, sent: false, logId, timestamp: Date.now() });
         saveScans(scans);
         updateCounter();
         processQueue();
+        // جلب الاسم الحقيقي بشكل منفصل — لا يوقف المسح ولا يكتب بالشيت
+        enrichLog(logId, code, dirLabel);
         return;
       }
 
