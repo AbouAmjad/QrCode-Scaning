@@ -6,35 +6,94 @@
   <title>Abu Amjad - Terminal</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
-    body { background: #f4f7f6; min-height: 100vh; padding: 20px; }
-    .container { max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+    body { background: #f4f7f6; min-height: 100vh; padding: 20px; transition: background 0.3s; }
+    body.danger-mode { background: #fff0f0; animation: bodyDanger 0.5s ease infinite alternate; }
+    @keyframes bodyDanger { from { background: #fff0f0; } to { background: #ffe0e0; } }
+
+    .container { max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); transition: box-shadow 0.3s; }
+    .container.danger-mode { box-shadow: 0 0 0 3px #dc3545, 0 10px 30px rgba(220,53,69,0.2); }
+
     .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 2px solid #f4f7f6; padding-bottom: 15px; }
     h2 { color: #2d5016; font-weight: 700; }
     .nav-btns button { padding: 6px 12px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; margin-left: 5px; font-size: 13px; }
     .btn-report { background: #007bff; color: white; }
     .btn-logout { background: #dc3545; color: white; }
+
     .status { padding: 12px; border-radius: 12px; text-align: center; font-weight: 700; font-size: 14px; margin-bottom: 20px; letter-spacing: 0.5px; transition: all 0.3s ease; }
-    .online { background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
+    .online  { background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
     .offline { background: #ffebee; color: #c62828; border: 1px solid #ffcdd2; }
+
+    /* شريط الشخص الحالي والاتجاه */
+    .person-bar {
+      display: flex; justify-content: space-between; align-items: center;
+      background: #f8f9fa; border: 1px solid #e1e5e9; border-radius: 12px;
+      padding: 10px 16px; margin-bottom: 16px; font-size: 13px;
+    }
+    .person-bar .label { color: #999; font-size: 11px; letter-spacing: 0.5px; }
+    .person-bar .value { font-weight: 700; color: #333; font-size: 15px; margin-top: 2px; }
+    .dir-badge { font-size: 12px; font-weight: 700; padding: 5px 14px; border-radius: 20px; letter-spacing: 1px; }
+    .dir-out  { background: #fff3cd; color: #856404; border: 1px solid #ffc107; }
+    .dir-in   { background: #d4edda; color: #155724; border: 1px solid #28a745; }
+    .dir-none { background: #f0f0f0; color: #999;    border: 1px solid #ddd; }
+
     .scan-area { position: relative; margin-bottom: 25px; }
-    #scanInput { width: 100%; padding: 18px; border: 2px solid #e1e5e9; border-radius: 15px; font-size: 18px; outline: none; transition: all 0.3s ease; letter-spacing: 1px; text-transform: uppercase; }
-    #scanInput:focus { border-color: #2d5016; box-shadow: 0 0 0 4px rgba(45, 80, 22, 0.15); }
-    .counter-badge { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); background: #2d5016; color: white; padding: 4px 12px; border-radius: 20px; font-weight: 700; font-size: 14px; }
+    #scanInput {
+      width: 100%; padding: 18px; border: 2px solid #e1e5e9; border-radius: 15px;
+      font-size: 18px; outline: none; transition: all 0.3s ease;
+      letter-spacing: 1px; text-transform: uppercase;
+    }
+    #scanInput:focus  { border-color: #2d5016; box-shadow: 0 0 0 4px rgba(45,80,22,0.15); }
+    #scanInput.locked { border-color: #dc3545 !important; background: #fff5f5 !important; cursor: not-allowed; color: #dc3545; }
+    .counter-badge {
+      position: absolute; right: 15px; top: 50%; transform: translateY(-50%);
+      background: #2d5016; color: white; padding: 4px 12px; border-radius: 20px;
+      font-weight: 700; font-size: 14px;
+    }
+
+    /* Warning Panel */
+    .warning-panel {
+      display: none; background: #fff5f5; border: 2px solid #dc3545;
+      border-radius: 15px; padding: 20px; margin-bottom: 20px;
+      animation: warnSlide 0.3s ease;
+    }
+    .warning-panel.visible { display: block; }
+    @keyframes warnSlide { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }
+
+    .warn-title { font-size: 16px; font-weight: 700; color: #dc3545; margin-bottom: 6px; }
+    .warn-code  { display: inline-block; background: #dc3545; color: white; font-weight: 700; font-size: 14px; letter-spacing: 2px; padding: 3px 10px; border-radius: 6px; margin: 6px 0 8px; }
+    .warn-sub   { font-size: 13px; color: #666; margin-bottom: 16px; line-height: 1.6; }
+
+    .dir-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .dir-btn {
+      padding: 16px; border: none; border-radius: 12px; font-size: 20px;
+      font-weight: 800; cursor: pointer; letter-spacing: 2px;
+      transition: transform 0.15s, opacity 0.15s;
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+    }
+    .dir-btn:hover  { transform: scale(1.03); opacity: 0.92; }
+    .dir-btn:active { transform: scale(0.97); }
+    .dir-btn small  { font-size: 10px; font-weight: 500; opacity: 0.75; letter-spacing: 1px; }
+    .btn-out { background: #dc3545; color: white; box-shadow: 0 4px 14px rgba(220,53,69,0.35); }
+    .btn-in  { background: #28a745; color: white; box-shadow: 0 4px 14px rgba(40,167,69,0.35); }
+
+    /* Log */
     .log-section { background: #fafafa; border-radius: 15px; padding: 15px; max-height: 400px; overflow-y: auto; border: 1px solid #e1e5e9; }
     .log-item { background: white; padding: 15px; border-radius: 10px; margin-bottom: 10px; border-left: 4px solid #ffb300; box-shadow: 0 2px 5px rgba(0,0,0,0.02); display: flex; flex-direction: column; gap: 4px; transition: all 0.3s ease; }
-    .log-header { display: flex; justify-content: space-between; align-items: center; }
-    .log-code { font-weight: 700; color: #333; font-size: 16px; }
+    .log-item.synced   { border-left-color: #2e7d32; background: #fbfdfb; }
+    .log-item.warn-log { border-left-color: #dc3545; background: #fff8f8; }
+    .log-header  { display: flex; justify-content: space-between; align-items: center; }
+    .log-code    { font-weight: 700; color: #333; font-size: 16px; }
     .log-description { font-size: 14px; color: #666; font-weight: 500; }
-    .log-time { font-size: 11px; color: #999; text-align: right; }
+    .log-time    { font-size: 11px; color: #999; text-align: right; }
     .sync-status { font-size: 16px; font-weight: bold; }
     .status-pending { color: #ffb300; animation: pulse 1s infinite; }
-    .status-synced { color: #2e7d32; }
-    .log-item.synced { border-left-color: #2e7d32; background: #fbfdfb; }
-    @keyframes pulse { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
+    .status-synced  { color: #2e7d32; }
+    .status-warn    { color: #dc3545; }
+    @keyframes pulse { 0% { opacity:0.4; } 50% { opacity:1; } 100% { opacity:0.4; } }
   </style>
 </head>
 <body>
-  <div class="container">
+  <div class="container" id="mainContainer">
     <div class="header">
       <h2>Scan Terminal</h2>
       <div class="nav-btns">
@@ -42,33 +101,176 @@
         <button class="btn-logout" onclick="logout()">🚪 Logout</button>
       </div>
     </div>
-    
+
     <div id="status" class="status online">ONLINE — READY FOR SCANS</div>
-    
+
+    <!-- شريط الشخص الحالي -->
+    <div class="person-bar">
+      <div>
+        <div class="label">ACTIVE PERSON</div>
+        <div class="value" id="activePersonName">— none —</div>
+      </div>
+      <span class="dir-badge dir-none" id="dirBadge">NO DIR</span>
+    </div>
+
+    <!-- Warning Panel -->
+    <div class="warning-panel" id="warningPanel">
+      <div class="warn-title">⛔ NO DIRECTION SET</div>
+      <div class="warn-code" id="warnCode"></div>
+      <div class="warn-sub">
+        Tool scanned under <strong id="warnPerson"></strong> but no IN / OUT was selected.<br>
+        <strong>Select direction below — then re-scan the tool.</strong>
+      </div>
+      <div class="dir-btns">
+        <button class="dir-btn btn-out" onclick="setDirection('OUT')">
+          OUT
+          <small>LEAVING STORE</small>
+        </button>
+        <button class="dir-btn btn-in" onclick="setDirection('IN')">
+          IN
+          <small>RETURNING</small>
+        </button>
+      </div>
+    </div>
+
     <div class="scan-area">
       <input type="text" id="scanInput" placeholder="READY FOR GUN SCAN..." autocomplete="off">
       <div class="counter-badge" id="counter">0</div>
     </div>
-    
+
     <div class="log-section" id="log"></div>
   </div>
 
   <script>
-    // ⚠️ استبدل هذا الرابط برابط الـ Web App الجديد من تفويض جـوجـل (New Deployment)
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyHXMuZcmFT7KrvqR8cygFl-t-oU_Jh4Vr2L4yp1eoT5AQAL00rbjBbUL0aKod3_C8l7g/exec";
 
     let isProcessing = false;
     let scanSeq = Number(localStorage.getItem("scanSeq") || 1);
     let tokenValue = localStorage.getItem("token") || "";
 
-    function isLoggedIn() { return tokenValue && tokenValue.length > 0; }
-    function validateToken() { return isLoggedIn(); } // تخطي الفحص عبر المخدم لمنع تعليق الـ CORS
+    // ── حالة الـ Parser ──
+    let lastPerson     = null;
+    let lastDirection  = null; // null = لم يُحدد بعد
+    let scannerLocked  = false;
 
-    function loadScans() { return JSON.parse(localStorage.getItem("offlineScans") || "[]"); }
-    function saveScans(scans) {
-      localStorage.setItem("offlineScans", JSON.stringify(scans));
-      localStorage.setItem("scanSeq", scanSeq);
+    // ── Audio ──
+    let audioCtx = null;
+    function getAudioCtx() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      return audioCtx;
     }
+
+    function playDanger() {
+      const ctx = getAudioCtx();
+      [0, 0.18, 0.36, 0.54].forEach(t => {
+        const osc = ctx.createOscillator(), gain = ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(220, ctx.currentTime + t);
+        osc.frequency.exponentialRampToValueAtTime(80, ctx.currentTime + t + 0.15);
+        gain.gain.setValueAtTime(0.5, ctx.currentTime + t);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + t + 0.15);
+        osc.start(ctx.currentTime + t);
+        osc.stop(ctx.currentTime + t + 0.16);
+      });
+    }
+
+    function playSuccess() {
+      const ctx = getAudioCtx();
+      const osc = ctx.createOscillator(), gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(660, ctx.currentTime);
+      osc.frequency.setValueAtTime(880, ctx.currentTime + 0.1);
+      gain.gain.setValueAtTime(0.2, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+      osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.26);
+    }
+
+    function playDirSet() {
+      const ctx = getAudioCtx();
+      const osc = ctx.createOscillator(), gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(440, ctx.currentTime);
+      osc.frequency.setValueAtTime(550, ctx.currentTime + 0.08);
+      gain.gain.setValueAtTime(0.25, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
+      osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.21);
+    }
+
+    // ── Lock / Unlock Scanner ──
+    function lockScanner() {
+      scannerLocked = true;
+      const input = document.getElementById('scanInput');
+      input.disabled = true;
+      input.classList.add('locked');
+      input.placeholder = "SELECT IN / OUT FIRST...";
+      document.body.classList.add('danger-mode');
+      document.getElementById('mainContainer').classList.add('danger-mode');
+    }
+
+    function unlockScanner() {
+      scannerLocked = false;
+      const input = document.getElementById('scanInput');
+      input.disabled = false;
+      input.classList.remove('locked');
+      input.placeholder = "READY FOR GUN SCAN...";
+      document.body.classList.remove('danger-mode');
+      document.getElementById('mainContainer').classList.remove('danger-mode');
+      setTimeout(() => input.focus(), 50);
+    }
+
+    // ── Warning Panel ──
+    function showWarning(blockedCode) {
+      document.getElementById('warnCode').textContent = blockedCode;
+      document.getElementById('warnPerson').textContent = lastPerson || '—';
+      document.getElementById('warningPanel').classList.add('visible');
+      lockScanner();
+      playDanger();
+    }
+
+    function hideWarning() {
+      document.getElementById('warningPanel').classList.remove('visible');
+      unlockScanner();
+    }
+
+    // ── Direction Badge ──
+    function updateDirBadge() {
+      const badge = document.getElementById('dirBadge');
+      if (lastDirection === 'OUT') {
+        badge.className = 'dir-badge dir-out';
+        badge.textContent = 'OUT';
+      } else if (lastDirection === 'IN') {
+        badge.className = 'dir-badge dir-in';
+        badge.textContent = 'IN';
+      } else {
+        badge.className = 'dir-badge dir-none';
+        badge.textContent = 'NO DIR';
+      }
+    }
+
+    // ── اختيار الاتجاه من الأزرار ──
+    function setDirection(dir) {
+      lastDirection = dir;
+      updateDirBadge();
+      hideWarning();
+      playDirSet();
+
+      // سجّل الاتجاه في الـ Queue ليروح للشيت
+      const logId = addLog(dir, dir === 'OUT' ? 'DIRECTION SET — LEAVING STORE' : 'DIRECTION SET — RETURNING');
+      const scans = loadScans();
+      scans.push({ code: dir, seq: scanSeq++, sent: false, logId, timestamp: Date.now() });
+      saveScans(scans);
+      updateCounter();
+      processQueue();
+    }
+
+    // ── Scan Logic ──
+    function isLoggedIn()   { return tokenValue && tokenValue.length > 0; }
+    function validateToken(){ return isLoggedIn(); }
+    function loadScans()    { return JSON.parse(localStorage.getItem("offlineScans") || "[]"); }
+    function saveScans(s)   { localStorage.setItem("offlineScans", JSON.stringify(s)); localStorage.setItem("scanSeq", scanSeq); }
 
     function updateCounter() {
       const scans = loadScans();
@@ -76,24 +278,22 @@
     }
 
     function updateOnlineStatus() {
-      const statusEl = document.getElementById("status");
-      if (navigator.onLine) {
-        statusEl.className = "status online"; statusEl.innerText = "ONLINE — SYNC ACTIVE";
-      } else {
-        statusEl.className = "status offline"; statusEl.innerText = "OFFLINE — STORAGE MODE";
-      }
+      const el = document.getElementById("status");
+      if (navigator.onLine) { el.className = "status online"; el.innerText = "ONLINE — SYNC ACTIVE"; }
+      else                  { el.className = "status offline"; el.innerText = "OFFLINE — STORAGE MODE"; }
     }
-    window.addEventListener('online', updateOnlineStatus);
+    window.addEventListener('online',  updateOnlineStatus);
     window.addEventListener('offline', updateOnlineStatus);
 
-    function addLog(code, description = "WAITING FOR NETWORK SYNC...") {
-      const id = "log_" + Date.now();
+    function addLog(code, description = "WAITING FOR NETWORK SYNC...", isWarn = false) {
+      const id = "log_" + Date.now() + "_" + Math.random();
       const div = document.createElement("div");
-      div.className = "log-item"; div.id = id;
+      div.className = "log-item" + (isWarn ? " warn-log" : "");
+      div.id = id;
       div.innerHTML = `
         <div class="log-header">
           <div class="log-code">${code.toUpperCase()}</div>
-          <span class="sync-status status-pending">●</span>
+          <span class="sync-status ${isWarn ? 'status-warn' : 'status-pending'}">${isWarn ? '⚠' : '●'}</span>
         </div>
         <div class="log-description">${description.toUpperCase()}</div>
         <div class="log-time">${new Date().toLocaleTimeString().toUpperCase()}</div>
@@ -104,18 +304,15 @@
 
     function updateLogDescription(logId, description) {
       const el = document.getElementById(logId);
-      if (el) {
-        const descDiv = el.querySelector(".log-description");
-        if (descDiv) descDiv.textContent = description.toUpperCase();
-      }
+      if (el) { const d = el.querySelector(".log-description"); if (d) d.textContent = description.toUpperCase(); }
     }
 
     function markSynced(id) {
       const el = document.getElementById(id);
       if (el) {
         el.classList.add("synced");
-        const statusSpan = el.querySelector(".sync-status");
-        if (statusSpan) { statusSpan.textContent = '✓'; statusSpan.className = "sync-status status-synced"; }
+        const s = el.querySelector(".sync-status");
+        if (s) { s.textContent = '✓'; s.className = "sync-status status-synced"; }
       }
     }
 
@@ -124,51 +321,92 @@
       return true;
     }
 
+    // ── Main Submit ──
     function submitScan() {
       const input = document.getElementById("scanInput");
-      const code = input.value.trim().toUpperCase(); // كابيتال فوري من الـ Gun
+      const code  = input.value.trim().toUpperCase();
       if (!code) return;
+      input.value = "";
+      input.focus();
 
-      input.value = ""; input.focus();
-      const logId = addLog(code, "SAVED IN QUEUE — SYNCING...");
+      // IN / OUT مباشر من السكانر
+      if (code === 'IN' || code === 'OUT') {
+        lastDirection = code;
+        updateDirBadge();
+        if (scannerLocked) hideWarning();
+        playDirSet();
+        const logId = addLog(code, code === 'OUT' ? 'DIRECTION SET — LEAVING STORE' : 'DIRECTION SET — RETURNING');
+        const scans = loadScans();
+        scans.push({ code, seq: scanSeq++, sent: false, logId, timestamp: Date.now() });
+        saveScans(scans);
+        updateCounter();
+        processQueue();
+        return;
+      }
 
-      const scans = loadScans();
-      scans.push({ code, seq: scanSeq++, sent: false, logId, timestamp: Date.now() });
-      saveScans(scans);
-      updateCounter();
+      // شخص — يتسجل، بس يصفّر الاتجاه
+      if (code.startsWith('P')) {
+        lastPerson    = code;
+        lastDirection = null;
+        updateDirBadge();
+        document.getElementById('activePersonName').textContent = code;
+        const logId = addLog(code, "PERSON REGISTERED — WAITING FOR DIRECTION");
+        const scans = loadScans();
+        scans.push({ code, seq: scanSeq++, sent: false, logId, timestamp: Date.now() });
+        saveScans(scans);
+        updateCounter();
+        processQueue();
+        return;
+      }
 
-      processQueue();
+      // أداة أو معدة
+      if (code.startsWith('I') || code.startsWith('E')) {
+        // ⚠️ ما في اتجاه — لا تسجّل، أعطِ Warning
+        if (!lastDirection) {
+          addLog(code, "BLOCKED — NO DIRECTION SET", true);
+          showWarning(code);
+          return; // ما تروح للشيت
+        }
+
+        // ✅ كل شي تمام — سجّل وأرسل
+        const desc = lastDirection === 'OUT'
+          ? `CHECKED OUT · ${lastPerson || '—'}`
+          : `RETURNED · ${lastPerson || '—'}`;
+        const logId = addLog(code, desc);
+        playSuccess();
+        const scans = loadScans();
+        scans.push({ code, seq: scanSeq++, sent: false, logId, timestamp: Date.now() });
+        saveScans(scans);
+        updateCounter();
+        processQueue();
+        return;
+      }
+
+      // كود غير معروف
+      addLog(code, "UNKNOWN CODE TYPE — IGNORED", true);
     }
 
     async function processQueue() {
       if (isProcessing || !navigator.onLine) { updateOnlineStatus(); return; }
       isProcessing = true;
-
       try {
         let scans = loadScans();
-        scans.sort((a, b) => a.seq - b.seq); // الحفاظ على الترتيب التصاعدي للمسح
-
+        scans.sort((a, b) => a.seq - b.seq);
         for (const scan of scans) {
           if (scan.sent) continue;
-
           try {
             const syncUrl = `${SCRIPT_URL}?scanData=${encodeURIComponent(scan.code)}&token=${tokenValue}`;
-            
-            // 🛡️ وضعية no-cors لإدخال الداتا للشيت غصب عن حماية المتصفح وبأعلى سرعة
             await fetch(syncUrl, { method: "GET", mode: "no-cors", cache: "no-store" });
-            
             updateLogDescription(scan.logId, "SUCCESSFULLY SYNCED TO SHEET");
             markSynced(scan.logId);
-
             const currentScans = loadScans();
             const updated = currentScans.map(s => s.seq === scan.seq ? {...s, sent: true} : s);
             saveScans(updated);
             updateCounter();
-            
-            await new Promise(r => setTimeout(r, 200)); // مهدئ زمني خفيف لمنع حظر المخدم عند التتابع الفائق
+            await new Promise(r => setTimeout(r, 200));
           } catch (error) {
             console.error("Sync break at:", scan.seq);
-            break; 
+            break;
           }
         }
       } finally {
@@ -180,7 +418,7 @@
     setInterval(processQueue, 5000);
     document.getElementById("scanInput").addEventListener("keydown", e => { if (e.key === "Enter") submitScan(); });
 
-    function logout() { localStorage.removeItem("token"); window.location = "login.html"; }
+    function logout()      { localStorage.removeItem("token"); window.location = "login.html"; }
     function viewResults() { window.location = "results.html"; }
 
     updateOnlineStatus();
