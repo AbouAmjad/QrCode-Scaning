@@ -4,299 +4,68 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>ToolCustody | Daily Tracking Dashboard</title>
-    <!-- Bootstrap 5 + Icons + Fonts -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(145deg, #f0f4fa 0%, #e9eff5 100%);
-            color: #0a2540;
-            padding: 1.5rem 1rem;
-            min-height: 100vh;
-        }
-
-        /* modern glassmorphic container */
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-radius: 2rem;
-            box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.6);
-            transition: all 0.2s ease;
-        }
-
-        .premium-header {
-            background: transparent;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-            padding-bottom: 1rem;
-            margin-bottom: 1.5rem;
-            flex-wrap: wrap;
-        }
-
-        .logo-icon {
-            background: linear-gradient(135deg, #1e2a3a, #0f172a);
-            width: 42px;
-            height: 42px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 18px;
-            color: white;
-            box-shadow: 0 6px 12px -6px rgba(0,0,0,0.2);
-        }
-
-        .stat-card-premium {
-            border-radius: 1.5rem;
-            padding: 1.4rem 1.8rem;
-            transition: transform 0.2s cubic-bezier(0.2, 0.9, 0.4, 1.1), box-shadow 0.2s;
-            border: none;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .stat-card-premium:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 20px 28px -12px rgba(0, 0, 0, 0.2);
-        }
-
-        .stat-card-premium .stat-icon {
-            font-size: 2.4rem;
-            opacity: 0.9;
-        }
-
-        .bg-tools-premium {
-            background: linear-gradient(125deg, #dc2626, #b91c1c);
-            box-shadow: 0 10px 18px -8px rgba(220, 38, 38, 0.4);
-        }
-
-        .bg-attendance-premium {
-            background: linear-gradient(125deg, #059669, #047857);
-            box-shadow: 0 10px 18px -8px rgba(5, 150, 105, 0.4);
-        }
-
-        .section-badge {
-            font-weight: 700;
-            font-size: 0.8rem;
-            letter-spacing: 0.02em;
-            background: #eef2ff;
-            padding: 0.3rem 1rem;
-            border-radius: 40px;
-            color: #1e40af;
-            display: inline-block;
-            margin-bottom: 1rem;
-        }
-
-        .tools-table-wrapper {
-            border-radius: 1.25rem;
-            background: #ffffff;
-            border: 1px solid #eef2f6;
-            overflow: hidden;
-            transition: all 0.2s;
-        }
-
-        .custom-table th {
-            background: #0f2b3d;
-            color: white;
-            font-weight: 600;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            padding: 1rem 1rem;
-            border-bottom: none;
-        }
-
-        .custom-table td {
-            padding: 1rem 0.8rem;
-            vertical-align: middle;
-            border-color: #f0f2f5;
-            font-size: 0.85rem;
-        }
-
-        .badge-holder-modern {
-            display: inline-flex;
-            align-items: center;
-            background: #fef9e3;
-            color: #b45309;
-            padding: 0.3rem 0.8rem;
-            border-radius: 2rem;
-            font-size: 0.75rem;
-            font-weight: 600;
-            margin: 0.2rem;
-            gap: 6px;
-            border: 1px solid #ffedd5;
-            transition: all 0.1s;
-        }
-
-        .workers-card {
-            border-radius: 1.25rem;
-            background: #ffffff;
-            border: 1px solid #eef2f6;
-            overflow: hidden;
-        }
-
-        .workers-list-custom {
-            max-height: 540px;
-            overflow-y: auto;
-            scrollbar-width: thin;
-        }
-
-        .workers-list-custom .list-group-item {
-            background: transparent;
-            border-bottom: 1px solid #edf2f7;
-            padding: 0.9rem 1rem;
-            font-weight: 500;
-            transition: background 0.1s;
-        }
-
-        .workers-list-custom .list-group-item:hover {
-            background: #fafcff;
-        }
-
-        .status-badge-present {
-            background: #e0f2fe;
-            color: #0369a1;
-            border-radius: 40px;
-            font-size: 0.7rem;
-            font-weight: 700;
-            padding: 0.25rem 0.85rem;
-        }
-
-        .clickable-row {
-            cursor: pointer;
-            transition: all 0.15s;
-        }
-
-        .clickable-row:hover {
-            background-color: #fefce8 !important;
-            transform: scale(1.002);
-        }
-
-        .btn-premium {
-            border-radius: 60px;
-            padding: 0.55rem 1.4rem;
-            font-weight: 600;
-            transition: all 0.2s;
-        }
-
-        .btn-premium-primary {
-            background: #1f3a6b;
-            border: none;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-        }
-
-        .btn-premium-primary:hover {
-            background: #0f2a4f;
-            transform: translateY(-1px);
-            box-shadow: 0 8px 16px -8px rgba(0, 32, 64, 0.2);
-        }
-
-        .form-premium {
-            border-radius: 60px;
-            border: 1px solid #dce3ec;
-            padding: 0.55rem 1rem;
-            background: white;
-            font-weight: 500;
-        }
-
-        .form-premium:focus {
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59,130,246,0.2);
-        }
-
-        /* mobile adjustments */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: linear-gradient(145deg, #f0f4fa 0%, #e9eff5 100%); color: #0a2540; padding: 1.5rem 1rem; min-height: 100vh; }
+        .glass-panel { background: rgba(255,255,255,0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-radius: 2rem; box-shadow: 0 20px 40px -12px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.02); border: 1px solid rgba(255,255,255,0.6); }
+        .premium-header { background: transparent; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+        .logo-icon { background: linear-gradient(135deg, #1e2a3a, #0f172a); width: 42px; height: 42px; display: inline-flex; align-items: center; justify-content: center; border-radius: 18px; color: white; box-shadow: 0 6px 12px -6px rgba(0,0,0,0.2); }
+        .stat-card-premium { border-radius: 1.5rem; padding: 1.4rem 1.8rem; transition: transform 0.2s cubic-bezier(0.2,0.9,0.4,1.1), box-shadow 0.2s; border: none; position: relative; overflow: hidden; }
+        .stat-card-premium:hover { transform: translateY(-3px); box-shadow: 0 20px 28px -12px rgba(0,0,0,0.2); }
+        .stat-card-premium .stat-icon { font-size: 2.4rem; opacity: 0.9; }
+        .bg-tools-premium { background: linear-gradient(125deg, #dc2626, #b91c1c); box-shadow: 0 10px 18px -8px rgba(220,38,38,0.4); }
+        .bg-attendance-premium { background: linear-gradient(125deg, #059669, #047857); box-shadow: 0 10px 18px -8px rgba(5,150,105,0.4); }
+        .section-badge { font-weight: 700; font-size: 0.8rem; letter-spacing: 0.02em; background: #eef2ff; padding: 0.3rem 1rem; border-radius: 40px; color: #1e40af; display: inline-block; margin-bottom: 1rem; }
+        .tools-table-wrapper { border-radius: 1.25rem; background: #ffffff; border: 1px solid #eef2f6; overflow: hidden; }
+        .custom-table th { background: #0f2b3d; color: white; font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; padding: 1rem; border-bottom: none; }
+        .custom-table td { padding: 1rem 0.8rem; vertical-align: middle; border-color: #f0f2f5; font-size: 0.85rem; }
+        .badge-holder-modern { display: inline-flex; align-items: center; background: #fef9e3; color: #b45309; padding: 0.3rem 0.8rem; border-radius: 2rem; font-size: 0.75rem; font-weight: 600; margin: 0.2rem; gap: 6px; border: 1px solid #ffedd5; }
+        .workers-card { border-radius: 1.25rem; background: #ffffff; border: 1px solid #eef2f6; overflow: hidden; }
+        .workers-list-custom { max-height: 540px; overflow-y: auto; scrollbar-width: thin; }
+        .workers-list-custom .list-group-item { background: transparent; border-bottom: 1px solid #edf2f7; padding: 0.9rem 1rem; font-weight: 500; transition: background 0.1s; }
+        .workers-list-custom .list-group-item:hover { background: #fafcff; }
+        .status-badge-present { background: #e0f2fe; color: #0369a1; border-radius: 40px; font-size: 0.7rem; font-weight: 700; padding: 0.25rem 0.85rem; }
+        .clickable-row { cursor: pointer; transition: all 0.15s; }
+        .clickable-row:hover { background-color: #fefce8 !important; transform: scale(1.002); }
+        .btn-premium { border-radius: 60px; padding: 0.55rem 1.4rem; font-weight: 600; transition: all 0.2s; }
+        .btn-premium-primary { background: #1f3a6b; border: none; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
+        .btn-premium-primary:hover { background: #0f2a4f; transform: translateY(-1px); }
+        .form-premium { border-radius: 60px; border: 1px solid #dce3ec; padding: 0.55rem 1rem; background: white; font-weight: 500; }
+        .form-premium:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.2); }
         @media (max-width: 768px) {
-            body {
-                padding: 0.8rem;
-            }
-            .stat-card-premium {
-                padding: 1rem 1.2rem;
-            }
-            .stat-card-premium h2 {
-                font-size: 1.8rem;
-            }
-            .custom-table th, .custom-table td {
-                padding: 0.7rem 0.5rem;
-                font-size: 0.75rem;
-            }
-            .badge-holder-modern {
-                font-size: 0.65rem;
-                padding: 0.2rem 0.6xlrem;
-            }
-            .btn-premium {
-                padding: 0.45rem 1rem;
-                font-size: 0.8rem;
-            }
-            .logo-icon {
-                width: 36px;
-                height: 36px;
-                font-size: 1.2rem;
-            }
+            body { padding: 0.8rem; }
+            .stat-card-premium { padding: 1rem 1.2rem; }
+            .custom-table th, .custom-table td { padding: 0.7rem 0.5rem; font-size: 0.75rem; }
+            .badge-holder-modern { font-size: 0.65rem; }
+            .btn-premium { padding: 0.45rem 1rem; font-size: 0.8rem; }
         }
-
-        @media (max-width: 576px) {
-            .tools-table-wrapper {
-                border-radius: 1rem;
-            }
-            .workers-card {
-                margin-top: 0.5rem;
-            }
-        }
-
-        /* custom scrollbar styles */
-        .workers-list-custom::-webkit-scrollbar,
-        .table-responsive::-webkit-scrollbar {
-            width: 5px;
-            height: 5px;
-        }
-        .workers-list-custom::-webkit-scrollbar-track,
-        .table-responsive::-webkit-scrollbar-track {
-            background: #eef2f6;
-            border-radius: 10px;
-        }
-        .workers-list-custom::-webkit-scrollbar-thumb,
-        .table-responsive::-webkit-scrollbar-thumb {
-            background: #b9c3d0;
-            border-radius: 10px;
-        }
-
-        .spinner-custom {
-            width: 2rem;
-            height: 2rem;
-            border: 3px solid #e2e8f0;
-            border-top: 3px solid #2563eb;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            margin: 1rem auto;
-        }
+        .workers-list-custom::-webkit-scrollbar, .table-responsive::-webkit-scrollbar { width: 5px; height: 5px; }
+        .workers-list-custom::-webkit-scrollbar-track, .table-responsive::-webkit-scrollbar-track { background: #eef2f6; border-radius: 10px; }
+        .workers-list-custom::-webkit-scrollbar-thumb, .table-responsive::-webkit-scrollbar-thumb { background: #b9c3d0; border-radius: 10px; }
+        .spinner-custom { width: 2rem; height: 2rem; border: 3px solid #e2e8f0; border-top: 3px solid #2563eb; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 1rem auto; }
         @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* warning row للأدوات اللي فيها مشكلة */
+        .warn-row td { background: #fffbeb !important; }
+        .warn-row:hover { background-color: #fef3c7 !important; }
     </style>
 </head>
 <body>
-
 <div class="container-lg px-0 px-md-2" style="max-width: 1440px;">
     <div class="glass-panel p-3 p-md-5">
-        <!-- header area with branding -->
         <div class="premium-header d-flex flex-wrap justify-content-between align-items-center gap-3">
             <div class="d-flex align-items-center gap-3">
-                <div class="logo-icon">
-                    <i class="bi bi-tools fs-5"></i>
-                </div>
+                <div class="logo-icon"><i class="bi bi-tools fs-5"></i></div>
                 <div>
-                    <h3 class="fw-bold mb-0" style="letter-spacing: -0.3px;">ToolCustody<span style="font-weight: 500; color: #2c6e9e;"> · LiveTrack</span></h3>
+                    <h3 class="fw-bold mb-0" style="letter-spacing:-0.3px;">ToolCustody<span style="font-weight:500;color:#2c6e9e;"> · LiveTrack</span></h3>
                     <p class="text-muted small mb-0 mt-1">Daily custody & tool intelligence</p>
                 </div>
             </div>
             <div class="d-flex flex-wrap gap-2 align-items-center">
-                <select id="dateSelect" class="form-select form-premium" style="min-width: 220px; background: white;">
+                <select id="dateSelect" class="form-select form-premium" style="min-width:220px;background:white;">
                     <option value="">📅 Select date</option>
                 </select>
                 <button id="btnLoadData" class="btn btn-premium btn-premium-primary text-white">
@@ -308,13 +77,12 @@
             </div>
         </div>
 
-        <!-- KPI widgets (premium cards) -->
-        <div class="row g-4 mb-5" id="kpiSection" style="display: none;">
+        <div class="row g-4 mb-5" id="kpiSection" style="display:none;">
             <div class="col-md-6">
                 <div class="stat-card-premium bg-tools-premium text-white">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <span class="text-white-50 text-uppercase fw-semibold small tracking-wide">Checked out</span>
+                            <span class="text-white-50 text-uppercase fw-semibold small">Checked out</span>
                             <h2 class="display-5 fw-bold mb-0 mt-1" id="countOutTools">0</h2>
                             <span class="small opacity-75">active tool quantities</span>
                         </div>
@@ -336,9 +104,7 @@
             </div>
         </div>
 
-        <!-- main grid tools + attendance -->
         <div class="row g-4">
-            <!-- left: tools inventory -->
             <div class="col-lg-8">
                 <div class="d-flex align-items-center gap-2 mb-3">
                     <span class="section-badge"><i class="bi bi-box-seam me-1"></i> INVENTORY STATUS</span>
@@ -348,7 +114,12 @@
                     <div class="table-responsive">
                         <table class="table custom-table mb-0">
                             <thead>
-                                <tr><th class="text-center">Code</th><th>Tool description</th><th class="ps-3">Current holder(s)</th><th class="text-center">Qty out</th></tr>
+                                <tr>
+                                    <th class="text-center">Code</th>
+                                    <th>Tool description</th>
+                                    <th class="ps-3">Current holder(s)</th>
+                                    <th class="text-center">Qty out</th>
+                                </tr>
                             </thead>
                             <tbody id="toolsTableBody">
                                 <tr><td colspan="4" class="text-center text-muted py-5"><i class="bi bi-info-circle"></i> Select a date & click Load Report</td></tr>
@@ -358,7 +129,6 @@
                 </div>
             </div>
 
-            <!-- right: workers present -->
             <div class="col-lg-4">
                 <div class="d-flex align-items-center gap-2 mb-3">
                     <span class="section-badge"><i class="bi bi-person-check-fill me-1"></i> ON-SITE TEAM</span>
@@ -371,24 +141,23 @@
             </div>
         </div>
 
-        <!-- small footer note -->
-        <div class="mt-5 pt-2 text-center text-muted border-top" style="font-size: 0.7rem;">
+        <div class="mt-5 pt-2 text-center text-muted border-top" style="font-size:0.7rem;">
             <i class="bi bi-shield-check"></i> Real-time custody ledger · click any tool row to inspect daily transactions
         </div>
     </div>
 </div>
 
-<!-- Modal: Transaction details premium -->
+<!-- Modal -->
 <div class="modal fade" id="logModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-md">
-    <div class="modal-content" style="border-radius: 1.5rem; border: none; overflow: hidden;">
-      <div class="modal-header border-0" style="background: #0f2b3d; color: white;">
+    <div class="modal-content" style="border-radius:1.5rem;border:none;overflow:hidden;">
+      <div class="modal-header border-0" style="background:#0f2b3d;color:white;">
         <h6 class="modal-title fw-bold" id="logModalLabel"><i class="bi bi-journal-text me-2"></i>Tool log · daily trail</h6>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body p-4">
         <div class="fw-semibold text-primary mb-3 fs-6" id="modalToolInfo"></div>
-        <div class="bg-light rounded-3 p-3 border" style="max-height: 320px; overflow-y: auto;" id="modalLogContent">
+        <div class="bg-light rounded-3 p-3 border" style="max-height:320px;overflow-y:auto;" id="modalLogContent">
             <span class="text-secondary">loading events...</span>
         </div>
       </div>
@@ -400,29 +169,31 @@
 </div>
 
 <script>
-    // ---------- CONFIGURATION ----------
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyHXMuZcmFT7KrvqR8cygFl-t-oU_Jh4Vr2L4yp1eoT5AQAL00rbjBbUL0aKod3_C8l7g/exec";
-    const token = localStorage.getItem("session_token") || "abouamjad_secure_session_token";
 
-    // DOM elements
-    const dateSelect = document.getElementById("dateSelect");
-    const btnLoad = document.getElementById("btnLoadData");
-    const btnBack = document.getElementById("btnBack");
-    const toolsTBody = document.getElementById("toolsTableBody");
-    const workersContainer = document.getElementById("workersListGroup");
-    const kpiSection = document.getElementById("kpiSection");
-    const countOutSpan = document.getElementById("countOutTools");
-    const countWorkersSpan = document.getElementById("countWorkers");
+    // ✅ إصلاح 6 — توحيد مفتاح الـ token
+    const token = localStorage.getItem("token") || "abouamjad_secure_session_token";
+
+    // ✅ الأكواد المقبولة كأدوات — نفس الـ Terminal
+    const TOOL_PREFIXES = ['I', 'E', 'C', 'B'];
+    function isTool(code) { return TOOL_PREFIXES.includes(code.charAt(0)); }
+
+    const dateSelect      = document.getElementById("dateSelect");
+    const btnLoad         = document.getElementById("btnLoadData");
+    const btnBack         = document.getElementById("btnBack");
+    const toolsTBody      = document.getElementById("toolsTableBody");
+    const workersContainer= document.getElementById("workersListGroup");
+    const kpiSection      = document.getElementById("kpiSection");
+    const countOutSpan    = document.getElementById("countOutTools");
+    const countWorkersSpan= document.getElementById("countWorkers");
     const toolsCountBadge = document.getElementById("toolsCountBadge");
 
-    // Helper: show loading states
     function showToolsLoading() {
         toolsTBody.innerHTML = `<tr><td colspan="4" class="text-center py-5"><div class="spinner-custom"></div><span class="text-muted">Fetching ledger entries...</span></td></tr>`;
-        workersContainer.innerHTML = `<div class="text-center p-4"><div class="spinner-custom" style="width:1.5rem; height:1.5rem;"></div><span class="d-block mt-2 small">syncing...</span></div>`;
+        workersContainer.innerHTML = `<div class="text-center p-4"><div class="spinner-custom" style="width:1.5rem;height:1.5rem;"></div><span class="d-block mt-2 small">syncing...</span></div>`;
         kpiSection.style.display = "none";
     }
 
-    // Load available dates from backend
     async function loadAvailableDates() {
         dateSelect.innerHTML = '<option value="">⏳ loading dates...</option>';
         try {
@@ -448,91 +219,107 @@
         }
     }
 
-    // ---------- NEW PARSER LOGIC (STATEFUL & AUTOMATIC MATCHING) ----------
+    // ==========================================
+    // ✅ PARSER — كل الإصلاحات الستة هنا
+    // ==========================================
     function processLedgerData(rawRows, selectedDate) {
         if (!rawRows || rawRows.length === 0) {
-            return { toolsMap: [], workersPresent: [], totalToolsOut: 0, totalWorkers: 0 };
+            return { tools: [], workers: [], totalToolsOut: 0, totalWorkers: 0 };
         }
-        
-        let globalInventory = {};
+
+        let globalInventory  = {};
         let lastActivePerson = "General Store";
-        let lastMovement = "OUT"; 
-        
-        // 1. ترتيب الأسطر زمنياً لضمان دقة بناء الحالة التراكمية عبر الأيام
-        const sortedRows = [...rawRows].sort((a, b) => {
-            return (a.rowId || 0) - (b.rowId || 0); // ترتيب حسب الـ ID أو التسلسل الطبيعي للأسطر
-        });
-        
-        // 2. مسح تتابعي كامل لبناء حالة الـ Inventory التراكمية
+
+        // ✅ إصلاح 2 — null بدل "OUT" حتى ما تتسجل أدوات بغلط
+        let lastMovement = null;
+
+        // ✅ إصلاح 3 — نعتمد ترتيب المصفوفة مباشرة، الـ Backend يرسلها مرتبة
+        const sortedRows = rawRows;
+
         for (let row of sortedRows) {
             let code = (row.toolCode || "").toString().toUpperCase().trim();
             let desc = row.toolDescription || "—";
-            let isTarget = (row.date === selectedDate || row.isTargetDay === true || row.isTargetDay === "true");
-            
+
+            // ✅ إصلاح 4 — مقارنة موحدة للـ isTargetDay
+            let isTarget = String(row.isTargetDay) === "true";
+
             if (!code) continue;
-            
-            // كشف العمال (الأكواد التي تبدأ بـ P)
+
+            // ── شخص ──
             if (code.startsWith("P")) {
                 lastActivePerson = desc || code;
+
+                // ✅ إصلاح 1 — تصفير lastMovement عند كل P جديد
+                lastMovement = null;
+
                 if (!globalInventory[code]) {
                     globalInventory[code] = { description: desc, isPerson: true, scannedToday: false };
                 }
                 if (isTarget) globalInventory[code].scannedToday = true;
                 continue;
             }
-            
-            // كشف الاتجاهات
+
+            // ── اتجاه ──
             if (code === "IN" || code === "OUT") {
                 lastMovement = code;
                 continue;
             }
-            
-            // كشف الأدوات والقطع (أكواد تبدأ بـ I أو E)
+
+            // ✅ إصلاح 5 — فقط الأكواد المعروفة تتعامل كأدوات
+            if (!isTool(code)) continue;
+
+            // ── أداة أو معدة ──
             if (!globalInventory[code]) {
                 globalInventory[code] = {
                     description: desc,
                     isPerson: false,
                     scannedToday: false,
                     actionsToday: [],
-                    holdersList: [] // طابور يحمل العمال المستعيرين حالياً للقطعة
+                    holdersList: [],
+                    hasWarning: false
                 };
             }
-            
+
             if (isTarget) globalInventory[code].scannedToday = true;
-            
-            // معالجة منطق الحركة بناءً على الحالة التراكمية للـ holdersList
+
+            // ✅ إصلاح 1 — إذا ما في اتجاه: تجاهل الحركة وسجّل warning
+            if (!lastMovement) {
+                if (isTarget) {
+                    globalInventory[code].actionsToday.push(`⚠️ Scanned with no direction set · ${lastActivePerson}`);
+                    globalInventory[code].hasWarning = true;
+                }
+                continue;
+            }
+
             if (lastMovement === "IN") {
-                const idx = globalInventory[code].holdersList.indexOf(lastActivePerson);
-                
+                const idx = globalInventory[code].holdersList.lastIndexOf(lastActivePerson);
                 if (idx !== -1) {
-                    // أ) إرجاع طبيعي: نفس الشخص الذي أخذ القطعة يقوم بإرجاعها
+                    // إرجاع طبيعي
                     globalInventory[code].holdersList.splice(idx, 1);
                     if (isTarget) globalInventory[code].actionsToday.push(`📥 Returned by · ${lastActivePerson}`);
-                } else {
-                    // ب) معالجة القطعة المعثور عليها (Found Asset): شخص آخر سلم قطعة مسجلة على شخص قبله
-                    if (globalInventory[code].holdersList.length > 0) {
-                        const originalHolder = globalInventory[code].holdersList.shift(); // تبرئة الساحرة للأول
-                        if (isTarget) {
-                            globalInventory[code].actionsToday.push(`⚠️ Found & Returned by · ${lastActivePerson} (Lost by: ${originalHolder})`);
-                        }
-                    } else {
-                        // ج) حالة استثنائية: القطعة رجعت للمستودع بدون سجل خروج مسبق
-                        if (isTarget) globalInventory[code].actionsToday.push(`📥 Returned by · ${lastActivePerson} (Unregistered state)`);
+                } else if (globalInventory[code].holdersList.length > 0) {
+                    // Found Asset
+                    const originalHolder = globalInventory[code].holdersList.shift();
+                    if (isTarget) {
+                        globalInventory[code].actionsToday.push(`⚠️ Found & Returned by · ${lastActivePerson} (Lost by: ${originalHolder})`);
+                        globalInventory[code].hasWarning = true;
                     }
+                } else {
+                    if (isTarget) globalInventory[code].actionsToday.push(`📥 Returned by · ${lastActivePerson} (Unregistered state)`);
                 }
             } else {
-                // حركة خروج عادية (OUT): تضاف القطعة لذمة العامل الحالي
+                // OUT
                 globalInventory[code].holdersList.push(lastActivePerson);
                 if (isTarget) globalInventory[code].actionsToday.push(`📤 Checked out · ${lastActivePerson}`);
             }
         }
-        
-        // 3. بناء مصفوفة العرض وتجهيز الـ Badges المنظمة
-        let workersList = [];
-        let activeWorkersCount = 0;
-        let totalToolsOutSum = 0;
-        let toolsRenderArray = [];
-        
+
+        // بناء مصفوفة العرض
+        let workersList       = [];
+        let activeWorkersCount= 0;
+        let totalToolsOutSum  = 0;
+        let toolsRenderArray  = [];
+
         for (let [code, item] of Object.entries(globalInventory)) {
             if (item.isPerson) {
                 if (item.scannedToday) {
@@ -542,57 +329,47 @@
             } else {
                 const qtyOut = item.holdersList.length;
                 totalToolsOutSum += qtyOut;
-                
-                // عرض الأدوات إذا كان لها حركة اليوم، أو ما زالت بالخارج (عابرة للأيام)
+
                 if (item.scannedToday || qtyOut > 0) {
                     const holderCountMap = new Map();
                     item.holdersList.forEach(person => {
                         holderCountMap.set(person, (holderCountMap.get(person) || 0) + 1);
                     });
-                    
+
                     let holdersHtml = "";
                     if (holderCountMap.size === 0) {
                         holdersHtml = `<span class="text-success small fw-semibold"><i class="bi bi-house-door-fill me-1"></i>In store</span>`;
                     } else {
-                        holdersHtml = Array.from(holderCountMap.entries()).map(([person, qty]) => 
+                        holdersHtml = Array.from(holderCountMap.entries()).map(([person, qty]) =>
                             `<span class="badge-holder-modern d-inline-flex m-1"><i class="bi bi-person-circle"></i> ${person} <strong>×${qty}</strong></span>`
                         ).join("");
                     }
-                    
+
                     toolsRenderArray.push({
                         code,
                         description: item.description,
                         holdersDisplay: holdersHtml,
                         qtyOut,
                         actionsToday: item.actionsToday || [],
-                        hasActivity: item.scannedToday || qtyOut > 0
+                        hasWarning: item.hasWarning || false
                     });
                 }
             }
         }
-        
-        // ترتيب أبجدي للأدوات والعمال
-        toolsRenderArray.sort((a,b) => a.code.localeCompare(b.code));
-        workersList.sort((a,b) => a.name.localeCompare(b.name));
-        
+
+        toolsRenderArray.sort((a, b) => a.code.localeCompare(b.code));
+        workersList.sort((a, b) => a.name.localeCompare(b.name));
+
         return { tools: toolsRenderArray, workers: workersList, totalToolsOut: totalToolsOutSum, totalWorkers: activeWorkersCount };
     }
-    
-    // fetch & render for given date
+
     async function fetchReportData(date) {
-        if (!date) {
-            alert("Please pick a valid date from the dropdown.");
-            return;
-        }
+        if (!date) { alert("Please pick a valid date from the dropdown."); return; }
         showToolsLoading();
-        
         try {
             const response = await fetch(`${SCRIPT_URL}?action=getData&date=${encodeURIComponent(date)}&token=${encodeURIComponent(token)}`);
             const data = await response.json();
-            if (!data || data.error) {
-                throw new Error(data.error || "Invalid server response");
-            }
-            
+            if (!data || data.error) throw new Error(data.error || "Invalid server response");
             const processed = processLedgerData(data, date);
             renderDashboard(processed);
         } catch (err) {
@@ -602,34 +379,37 @@
             kpiSection.style.display = "none";
         }
     }
-    
+
     function renderDashboard(processed) {
         const { tools, workers, totalToolsOut, totalWorkers } = processed;
-        
-        // tools table rendering
+
         if (!tools.length) {
             toolsTBody.innerHTML = `<tr><td colspan="4" class="text-center py-5 text-secondary"><i class="bi bi-inbox"></i> No tool transactions or inventory on this date.</td></tr>`;
         } else {
             toolsTBody.innerHTML = "";
             tools.forEach(tool => {
                 const row = document.createElement("tr");
-                row.className = "clickable-row";
+                row.className = "clickable-row" + (tool.hasWarning ? " warn-row" : "");
                 row.onclick = (function(actionsArr, code, desc) {
                     return function() { showLogModal(code, desc, actionsArr); };
                 })(tool.actionsToday, tool.code, tool.description);
-                
+
                 row.innerHTML = `
-                    <td class="text-center fw-mono"><code class="bg-light px-2 py-1 rounded">${escapeHtml(tool.code)}</code></td>
+                    <td class="text-center">
+                        <code class="bg-light px-2 py-1 rounded">${escapeHtml(tool.code)}</code>
+                        ${tool.hasWarning ? '<i class="bi bi-exclamation-triangle-fill text-warning ms-1" title="Warning — check log"></i>' : ''}
+                    </td>
                     <td class="fw-semibold text-dark">${escapeHtml(tool.description)}</td>
-                    <td class="holder-badge-cell d-flex flex-wrap">${tool.holdersDisplay}</td>
-                    <td class="text-center fw-bold ${tool.qtyOut > 0 ? 'text-danger' : 'text-success'}"><span class="fs-5">${tool.qtyOut}</span></td>
+                    <td class="d-flex flex-wrap">${tool.holdersDisplay}</td>
+                    <td class="text-center fw-bold ${tool.qtyOut > 0 ? 'text-danger' : 'text-success'}">
+                        <span class="fs-5">${tool.qtyOut}</span>
+                    </td>
                 `;
                 toolsTBody.appendChild(row);
             });
         }
         toolsCountBadge.innerText = `${tools.length} tools listed`;
-        
-        // workers list rendering
+
         if (!workers.length) {
             workersContainer.innerHTML = `<div class="text-center text-muted p-4"><i class="bi bi-people"></i> No attendance logged today</div>`;
         } else {
@@ -644,54 +424,45 @@
                 workersContainer.appendChild(itemDiv);
             });
         }
-        
-        // Update KPI widgets
-        countOutSpan.textContent = totalToolsOut;
+
+        countOutSpan.textContent  = totalToolsOut;
         countWorkersSpan.textContent = totalWorkers;
-        kpiSection.style.display = "flex";
+        kpiSection.style.display  = "flex";
     }
-    
-    // modal show for tool logs
+
     function showLogModal(code, desc, actionsList) {
-        const modalToolInfo = document.getElementById("modalToolInfo");
+        document.getElementById("modalToolInfo").innerHTML =
+            `<i class="bi bi-wrench-adjustable-circle me-2"></i><strong>${escapeHtml(desc)}</strong> · <span class="text-secondary">${escapeHtml(code)}</span>`;
+
         const modalContent = document.getElementById("modalLogContent");
-        modalToolInfo.innerHTML = `<i class="bi bi-wrench-adjustable-circle me-2"></i><strong>${escapeHtml(desc)}</strong> · <span class="text-secondary">${escapeHtml(code)}</span>`;
-        
         if (!actionsList || actionsList.length === 0) {
             modalContent.innerHTML = `<div class="text-center text-muted py-3"><i class="bi bi-clock-history"></i> No checkouts/returns recorded today.<br><small>Item state from previous days.</small></div>`;
         } else {
-            modalContent.innerHTML = `<ul class="list-unstyled m-0">` + 
-                actionsList.map(act => `<li class="py-2 border-bottom d-flex"><span class="badge bg-light me-2 p-2 rounded-circle"><i class="bi bi-arrow-right-short"></i></span><span>${escapeHtml(act)}</span></li>`).join('') +
+            modalContent.innerHTML = `<ul class="list-unstyled m-0">` +
+                actionsList.map(act =>
+                    `<li class="py-2 border-bottom d-flex align-items-start gap-2">
+                        <span class="badge bg-light p-2 rounded-circle"><i class="bi bi-arrow-right-short"></i></span>
+                        <span>${escapeHtml(act)}</span>
+                    </li>`
+                ).join('') +
                 `</ul>`;
         }
-        const modal = new bootstrap.Modal(document.getElementById('logModal'));
-        modal.show();
+        new bootstrap.Modal(document.getElementById('logModal')).show();
     }
-    
-    function escapeHtml(str) { 
-        if(!str) return '';
-        return str.replace(/[&<>]/g, function(m) {
-            if(m === '&') return '&amp;';
-            if(m === '<') return '&lt;';
-            if(m === '>') return '&gt;';
-            return m;
-        }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
-            return c;
-        });
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m] || m));
     }
-    
-    // auto-load most recent date and bind events
+
     async function initDashboard() {
         const datesArray = await loadAvailableDates();
         if (datesArray && datesArray.length > 0) {
-            const firstDate = datesArray[0];
-            dateSelect.value = firstDate;
-            await fetchReportData(firstDate);
+            dateSelect.value = datesArray[0];
+            await fetchReportData(datesArray[0]);
         } else {
-            toolsTBody.innerHTML = `<tr><td colspan="4" class="text-center text-warning">⚠️ No date records available. Sync with backend first.</td></tr>`;
+            toolsTBody.innerHTML = `<tr><td colspan="4" class="text-center text-warning">⚠️ No date records available.</td></tr>`;
         }
-        
-        // manual load button trigger
         btnLoad.addEventListener("click", async () => {
             const selected = dateSelect.value;
             if (!selected) { alert("Please select a date from list."); return; }
@@ -699,8 +470,7 @@
         });
         btnBack.addEventListener("click", () => { window.location.href = "index.html"; });
     }
-    
-    // start app
+
     document.addEventListener("DOMContentLoaded", initDashboard);
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
