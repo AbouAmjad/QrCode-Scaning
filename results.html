@@ -138,11 +138,9 @@
   </div>
 </div>
 
+<script src="config.js"></script>
 <script>
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyHXMuZcmFT7KrvqR8cygFl-t-oU_Jh4Vr2L4yp1eoT5AQAL00rbjBbUL0aKod3_C8l7g/exec";
-const token = localStorage.getItem("token") || "abouamjad_secure_session_token";
-const TOOL_PREFIXES = ['I','E','C','B'];
-function isTool(c){ return TOOL_PREFIXES.includes(c.charAt(0)); }
+if (!requireAuth()) { /* redirecting */ }
 
 let allTools   = [];
 let allWorkers = [];
@@ -154,8 +152,8 @@ async function loadDates(){
   const sel = document.getElementById('dateSelect');
   sel.innerHTML = '<option value="">⏳ loading…</option>';
   try {
-    const r = await fetch(`${SCRIPT_URL}?action=getDates&token=${encodeURIComponent(token)}`);
-    const dates = await r.json();
+    const dates = await apiGet({ action: "getDates" });
+    if (dates.error === "UNAUTHORIZED") { clearToken(); window.location = "login.html"; return []; }
     if(!dates||!dates.length){ sel.innerHTML='<option value="">⚠️ No records</option>'; return []; }
     sel.innerHTML="";
     const rev = [...dates].reverse();
@@ -309,8 +307,8 @@ async function loadData(date){
   document.getElementById('workersList').innerHTML=`<div class="text-center p-4"><div class="spinner-wrap"><div class="spinner" style="width:1.5rem;height:1.5rem;border-width:2px;"></div></div></div>`;
   document.getElementById('kpiSection').style.display='none';
   try {
-    const r=await fetch(`${SCRIPT_URL}?action=getData&date=${encodeURIComponent(date)}&token=${encodeURIComponent(token)}`);
-    const data=await r.json();
+    const data = await apiGet({ action: "getData", date });
+    if (data.error === "UNAUTHORIZED") { clearToken(); window.location = "login.html"; return; }
     if(!data||data.error) throw new Error(data.error||"Server error");
     const p=parse(data,date);
     allTools=p.tools; allWorkers=p.workers;
@@ -327,8 +325,6 @@ async function loadData(date){
     document.getElementById('workersList').innerHTML=`<div class="text-center text-danger p-3"><i class="bi bi-wifi-off"></i> Error</div>`;
   }
 }
-
-function escHtml(s){ if(!s) return ''; return s.replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]||m)); }
 
 async function init(){
   const dates=await loadDates();
