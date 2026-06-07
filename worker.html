@@ -97,14 +97,10 @@
   </div>
 </div>
 
+<script src="config.js"></script>
 <script>
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyHXMuZcmFT7KrvqR8cygFl-t-oU_Jh4Vr2L4yp1eoT5AQAL00rbjBbUL0aKod3_C8l7g/exec";
-const token = localStorage.getItem("token") || "abouamjad_secure_session_token";
-const TOOL_PREFIXES = ['I','E','C','B'];
-function isTool(c){ return TOOL_PREFIXES.includes(c.charAt(0)); }
-function escHtml(s){ if(!s) return ''; return s.replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]||m)); }
+if (!requireAuth()) { /* redirecting */ }
 
-// URL params
 const params = new URLSearchParams(window.location.search);
 const TARGET_CODE = (params.get('code')||"").toUpperCase();
 const TARGET_DATE = params.get('date')||"";
@@ -230,8 +226,8 @@ async function init(){
   if(!TARGET_CODE){ showError("No worker code specified"); return; }
 
   try {
-    const r=await fetch(`${SCRIPT_URL}?action=getData&date=${encodeURIComponent(TARGET_DATE)}&token=${encodeURIComponent(token)}`);
-    const data=await r.json();
+    const data = await apiGet({ action: "getData", date: TARGET_DATE });
+    if (data.error === "UNAUTHORIZED") { clearToken(); window.location = "login.html"; return; }
     if(!data||data.error) throw new Error(data.error||"Server error");
 
     const {workerName, toolsHeld, workerDailyLog}=parseForWorker(data, TARGET_CODE, TARGET_DATE);
