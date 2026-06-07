@@ -177,27 +177,21 @@
   <div class="log-section" id="log"></div>
 </div>
 
+<script src="config.js"></script>
 <script>
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyHXMuZcmFT7KrvqR8cygFl-t-oU_Jh4Vr2L4yp1eoT5AQAL00rbjBbUL0aKod3_C8l7g/exec";
-
   let isProcessing  = false;
   let scanSeq       = Number(localStorage.getItem("scanSeq") || 1);
-  let tokenValue    = localStorage.getItem("token") || "";
+  let tokenValue    = getToken();
   let lastPerson    = null;
   let lastDirection = null;
   let scannerLocked = false;
 
-  const TOOL_PREFIXES = ['I', 'E', 'C', 'B'];
-  function isTool(code) { return TOOL_PREFIXES.includes(code.charAt(0)); }
-
-  // ── Description Cache — لا يكتب بالشيت أبداً ──
   const descCache = {};
   async function fetchDescription(code) {
     if (descCache[code]) return descCache[code];
     try {
-      const url = `${SCRIPT_URL}?action=getDesc&code=${encodeURIComponent(code)}&token=${tokenValue}`;
-      const res  = await fetch(url, { method: "GET", cache: "no-store" });
-      const data = await res.json();
+      const data = await apiGet({ action: "getDesc", code });
+      if (data.error === "UNAUTHORIZED") { clearToken(); window.location = "login.html"; return code; }
       const name = data.description || code;
       descCache[code] = name;
       return name;
@@ -303,7 +297,7 @@
   }
 
   // ── Storage ──
-  function isLoggedIn()    { return tokenValue && tokenValue.length > 0; }
+  function isLoggedIn()    { return !!getToken(); }
   function validateToken() { return isLoggedIn(); }
   function loadScans()     { return JSON.parse(localStorage.getItem("offlineScans") || "[]"); }
   function saveScans(s)    { localStorage.setItem("offlineScans", JSON.stringify(s)); localStorage.setItem("scanSeq", scanSeq); }
@@ -345,8 +339,14 @@
     // لا نلمس desc_ هنا أبداً
   }
 
+  function markFailed(id) {
+    const st = document.getElementById("st_" + id);
+    if (st) { st.textContent = '✗ SYNC FAILED'; st.className = "sync-status status-warn"; }
+  }
+
   function checkAuth() {
-    if (!validateToken()) { window.location = "login.html"; return false; }
+    if (!requireAuth()) return false;
+    tokenValue = getToken();
     return true;
   }
 
@@ -414,6 +414,7 @@
   // ── processQueue — يرسل بالترتيب، لا يلمس الـ description ──
   async function processQueue() {
     if (isProcessing || !navigator.onLine) { updateOnlineStatus(); return; }
+    if (!getToken()) return;
     isProcessing = true;
     try {
       let scans = loadScans();
@@ -421,26 +422,34 @@
       for (const scan of scans) {
         if (scan.sent) continue;
         try {
-          const syncUrl = `${SCRIPT_URL}?scanData=${encodeURIComponent(scan.code)}&token=${tokenValue}`;
-          await fetch(syncUrl, { method: "GET", mode: "no-cors", cache: "no-store" });
-          markSynced(scan.logId); // ✅ بس يغير الـ icon — ما يمسح الـ description
-          const updated = loadScans().map(s => s.seq === scan.seq ? {...s, sent: true} : s);
-          saveScans(updated); updateCounter();
+          const result = await syncScan(scan.code);
+          if (result.auth) { clearToken(); window.location = "login.html"; return; }
+          if (result.ok) {
+            markSynced(scan.logId);
+            const updated = loadScans().map(s => s.seq === scan.seq ? {...s, sent: true} : s);
+            saveScans(updated);
+            updateCounter();
+          } else {
+            markFailed(scan.logId);
+            break;
+          }
           await new Promise(r => setTimeout(r, 200));
         } catch (err) {
-          console.error("Sync break at:", scan.seq);
+          console.error("Sync break at:", scan.seq, err);
+          markFailed(scan.logId);
           break;
         }
       }
     } finally {
-      isProcessing = false; updateOnlineStatus();
+      isProcessing = false;
+      updateOnlineStatus();
     }
   }
 
   setInterval(processQueue, 5000);
   document.getElementById("scanInput").addEventListener("keydown", e => { if (e.key === "Enter") submitScan(); });
 
-  function logout()      { localStorage.removeItem("token"); window.location = "login.html"; }
+  function logout()      { clearToken(); window.location = "login.html"; }
   function viewResults() { window.location = "results.html"; }
 
   updateOnlineStatus();
