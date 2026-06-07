@@ -3,70 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>ToolCustody | Precision Ledger & Worksight</title>
+    <title>ToolCustody | Overview</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Inter', sans-serif;
-            background: radial-gradient(circle at 10% 20%, rgba(226,240,254,0.9), rgba(219,234,254,0.7)),
-                        repeating-linear-gradient(45deg, rgba(0,0,0,0.01) 0px, rgba(0,0,0,0.01) 2px, transparent 2px, transparent 8px);
-            color: #0a2540; padding: 1.8rem 1rem; min-height: 100vh;
-        }
-        .glass-panel {
-            background: rgba(255,255,255,0.92); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
-            border-radius: 2.5rem; box-shadow: 0 25px 45px -12px rgba(0,0,0,0.2), 0 1px 2px rgba(255,255,255,0.6) inset;
-            border: 1px solid rgba(255,255,255,0.7);
-        }
-        .premium-header { border-bottom: 2px solid rgba(15,43,61,0.08); padding-bottom: 1rem; margin-bottom: 2rem; }
-        .logo-icon { background: linear-gradient(145deg,#0f2b3d,#0b1f2c); width:48px; height:48px; display:inline-flex; align-items:center; justify-content:center; border-radius:1.2rem; color:white; box-shadow:0 10px 15px -6px rgba(0,0,0,0.25); }
-        .stat-card-premium { border-radius:1.8rem; padding:1.5rem 1.8rem; transition:transform 0.25s cubic-bezier(0.2,0.9,0.4,1.1),box-shadow 0.25s; border:none; position:relative; overflow:hidden; }
-        .stat-card-premium:hover { transform:translateY(-4px); box-shadow:0 24px 32px -16px rgba(0,0,0,0.25); }
-        .stat-icon { font-size:2.6rem; opacity:0.85; }
-        .bg-tools-premium     { background:linear-gradient(125deg,#dc2626,#b91c1c); box-shadow:0 12px 20px -10px rgba(220,38,38,0.5); }
-        .bg-attendance-premium{ background:linear-gradient(125deg,#059669,#047857); box-shadow:0 12px 20px -10px rgba(5,150,105,0.5); }
-        .bg-unique-out        { background:linear-gradient(125deg,#e67e22,#d35400); box-shadow:0 12px 20px -10px rgba(230,126,34,0.4); }
-        .bg-total-types       { background:linear-gradient(125deg,#3b82f6,#2563eb); box-shadow:0 12px 20px -10px rgba(59,130,246,0.4); }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Inter',sans-serif; background:linear-gradient(145deg,#f0f4fa,#e9eff5); color:#0a2540; padding:1.8rem 1rem; min-height:100vh; }
+        .glass-panel { background:rgba(255,255,255,0.92); backdrop-filter:blur(14px); border-radius:2.5rem; box-shadow:0 25px 45px -12px rgba(0,0,0,0.15); border:1px solid rgba(255,255,255,0.7); }
+        .premium-header { border-bottom:2px solid rgba(15,43,61,0.08); padding-bottom:1rem; margin-bottom:2rem; }
+        .logo-icon { background:linear-gradient(145deg,#0f2b3d,#0b1f2c); width:48px; height:48px; display:inline-flex; align-items:center; justify-content:center; border-radius:1.2rem; color:white; box-shadow:0 10px 15px -6px rgba(0,0,0,0.25); }
+        .stat-card { border-radius:1.8rem; padding:1.5rem 1.8rem; border:none; transition:transform 0.2s,box-shadow 0.2s; }
+        .stat-card:hover { transform:translateY(-3px); box-shadow:0 20px 30px -12px rgba(0,0,0,0.2); }
+        .stat-icon { font-size:2.4rem; opacity:0.85; }
+        .bg-red    { background:linear-gradient(125deg,#dc2626,#b91c1c); box-shadow:0 10px 18px -8px rgba(220,38,38,0.5); }
+        .bg-green  { background:linear-gradient(125deg,#059669,#047857); box-shadow:0 10px 18px -8px rgba(5,150,105,0.5); }
+        .bg-orange { background:linear-gradient(125deg,#e67e22,#d35400); box-shadow:0 10px 18px -8px rgba(230,126,34,0.4); }
+        .bg-blue   { background:linear-gradient(125deg,#3b82f6,#2563eb); box-shadow:0 10px 18px -8px rgba(59,130,246,0.4); }
         .section-badge { font-weight:700; font-size:0.75rem; letter-spacing:0.04em; background:rgba(15,43,61,0.08); padding:0.35rem 1.2rem; border-radius:60px; color:#1f3a6b; display:inline-block; margin-bottom:1rem; }
-        .tools-table-wrapper { border-radius:1.5rem; background:#ffffff; border:1px solid #eef2f8; overflow:hidden; }
+        .table-wrap { border-radius:1.5rem; background:#fff; border:1px solid #eef2f8; overflow:hidden; }
         .custom-table th { background:#0f2b3d; color:white; font-weight:600; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.06em; padding:1rem; border-bottom:none; }
-        .custom-table td { padding:1rem 0.9rem; vertical-align:middle; border-color:#edf2f7; font-size:0.85rem; font-weight:500; }
-        .badge-holder-modern { display:inline-flex; align-items:center; background:#fef9e3; color:#b45309; padding:0.35rem 0.9rem; border-radius:2rem; font-size:0.72rem; font-weight:600; margin:0.2rem; gap:8px; border:1px solid #ffe6b3; }
-        .workers-card { border-radius:1.5rem; background:#ffffff; border:1px solid #eef2f8; overflow:hidden; }
-        .workers-list-custom { max-height:560px; overflow-y:auto; scrollbar-width:thin; }
-        .worker-item { cursor:pointer; transition:background 0.15s; }
-        .worker-item:hover { background:#f0f7ff !important; }
-        .worker-avatar { width:38px; height:38px; border-radius:40px; background:linear-gradient(135deg,#eef2ff,#e0e7ff); display:inline-flex; align-items:center; justify-content:center; font-weight:700; font-size:0.85rem; color:#1f3a6b; flex-shrink:0; }
-        .status-badge-present { background:#e0f2fe; color:#0369a1; border-radius:40px; font-size:0.7rem; font-weight:700; padding:0.3rem 1rem; }
-        .clickable-row { cursor:pointer; transition:all 0.15s; }
-        .clickable-row:hover { background-color:#fefce8 !important; }
+        .custom-table td { padding:0.9rem; vertical-align:middle; border-color:#edf2f7; font-size:0.85rem; font-weight:500; }
+        .clickable-row { cursor:pointer; transition:background 0.15s; }
+        .clickable-row:hover td { background:#fefce8 !important; }
         .warn-row td { background:#fffbeb !important; border-left:3px solid #f59e0b; }
         .warn-row:hover td { background:#fef3c7 !important; }
-        .btn-premium { border-radius:60px; padding:0.6rem 1.6rem; font-weight:600; transition:all 0.2s; font-size:0.85rem; }
-        .btn-premium-primary { background:#1f3a6b; border:none; }
-        .btn-premium-primary:hover { background:#0f2a4f; transform:translateY(-1px); }
-        .form-premium { border-radius:60px; border:1px solid #e2e8f0; padding:0.55rem 1.2rem; background:white; font-weight:500; font-size:0.85rem; }
-        .search-input { border-radius:2rem; border:1px solid #e2edf2; padding:0.5rem 1rem 0.5rem 2.4rem; font-size:0.85rem; background:white url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="%238b9cb0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7"/><line x1="21" y1="21" x2="15" y2="15"/></svg>') no-repeat 12px center; background-size:1rem; transition:all 0.2s; width:100%; }
-        .search-input:focus { border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,0.2); outline:none; }
-        .filter-btn { border-radius:60px; font-size:0.75rem; font-weight:600; padding:0.35rem 1rem; border:1px solid #e2e8f0; background:white; cursor:pointer; transition:all 0.15s; color:#64748b; }
+        .badge-holder { display:inline-flex; align-items:center; background:#fef9e3; color:#b45309; padding:0.3rem 0.8rem; border-radius:2rem; font-size:0.72rem; font-weight:600; margin:0.15rem; gap:6px; border:1px solid #ffe6b3; }
+        .workers-card { border-radius:1.5rem; background:#fff; border:1px solid #eef2f8; overflow:hidden; }
+        .workers-list { max-height:560px; overflow-y:auto; }
+        .worker-item { cursor:pointer; transition:background 0.15s; padding:0.9rem 1rem; border-bottom:1px solid #edf2f7; display:flex; justify-content:space-between; align-items:center; }
+        .worker-item:hover { background:#f0f7ff; }
+        .worker-avatar { width:38px; height:38px; border-radius:50%; background:linear-gradient(135deg,#eef2ff,#e0e7ff); display:inline-flex; align-items:center; justify-content:center; font-weight:700; font-size:0.85rem; color:#1f3a6b; flex-shrink:0; }
+        .badge-present { background:#e0f2fe; color:#0369a1; border-radius:40px; font-size:0.7rem; font-weight:700; padding:0.25rem 0.85rem; }
+        .btn-prim { border-radius:60px; padding:0.6rem 1.6rem; font-weight:600; font-size:0.85rem; background:#1f3a6b; border:none; color:white; transition:all 0.2s; }
+        .btn-prim:hover { background:#0f2a4f; transform:translateY(-1px); color:white; }
+        .form-sel { border-radius:60px; border:1px solid #e2e8f0; padding:0.55rem 1.2rem; background:white; font-weight:500; font-size:0.85rem; }
+        .search-box { border-radius:2rem; border:1px solid #e2edf2; padding:0.5rem 1rem 0.5rem 2.2rem; font-size:0.85rem; width:100%; background:white url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="%238b9cb0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7"/><line x1="21" y1="21" x2="15" y2="15"/></svg>') no-repeat 10px center; }
+        .search-box:focus { border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,0.15); outline:none; }
+        .filter-btn { border-radius:60px; font-size:0.75rem; font-weight:600; padding:0.3rem 0.9rem; border:1px solid #e2e8f0; background:white; cursor:pointer; color:#64748b; transition:all 0.15s; }
         .filter-btn.active { background:#1f3a6b; color:white; border-color:#1f3a6b; }
-        .insight-chip { font-size:0.7rem; background:#f8fafc; border-radius:40px; padding:0.2rem 0.8rem; color:#2c5f8a; }
-        .spinner-custom { width:2rem; height:2rem; border:3px solid #e2e8f0; border-top:3px solid #2563eb; border-radius:50%; animation:spin 0.7s linear infinite; }
+        .spinner-wrap { display:flex; justify-content:center; }
+        .spinner { width:2rem; height:2rem; border:3px solid #e2e8f0; border-top:3px solid #2563eb; border-radius:50%; animation:spin 0.7s linear infinite; }
         @keyframes spin { to { transform:rotate(360deg); } }
-        @media (max-width:768px) {
-            body { padding:0.8rem; }
-            .stat-card-premium { padding:1rem; }
-            .custom-table td, .custom-table th { padding:0.6rem 0.4rem; font-size:0.7rem; }
-            .badge-holder-modern { font-size:0.6rem; padding:0.2rem 0.6rem; }
-            .btn-premium { padding:0.4rem 1rem; font-size:0.75rem; }
-        }
-        .glow-text { background:linear-gradient(120deg,#0f2b3d,#1f6392); -webkit-background-clip:text; background-clip:text; color:transparent; }
-
-        /* Worker Detail Modal */
-        .tool-held-badge { display:inline-flex; align-items:center; background:#fff7ed; color:#c2410c; border:1px solid #fed7aa; border-radius:2rem; padding:0.4rem 1rem; font-size:0.8rem; font-weight:600; margin:0.25rem; gap:6px; }
-        .tool-held-badge.in-store { background:#f0fdf4; color:#166534; border-color:#bbf7d0; }
+        @media(max-width:768px){ body{padding:0.8rem;} .stat-card{padding:1rem;} .custom-table td,.custom-table th{padding:0.6rem 0.4rem;font-size:0.72rem;} }
     </style>
 </head>
 <body>
@@ -78,543 +57,286 @@
       <div class="d-flex align-items-center gap-3">
         <div class="logo-icon"><i class="bi bi-tools fs-4"></i></div>
         <div>
-          <h3 class="fw-bold mb-0">ToolCustody<span class="fw-medium glow-text"> · Core Ledger</span></h3>
-          <div class="d-flex gap-2 mt-1">
-            <p class="text-muted small mb-0"><i class="bi bi-database"></i> live custody trail</p>
-            <span class="insight-chip"><i class="bi bi-shield-check"></i> token secured</span>
-          </div>
+          <h3 class="fw-bold mb-0">ToolCustody <span class="fw-medium text-secondary">· Overview</span></h3>
+          <p class="text-muted small mb-0 mt-1"><i class="bi bi-database me-1"></i>Live custody ledger</p>
         </div>
       </div>
       <div class="d-flex flex-wrap gap-2 align-items-center">
-        <div class="position-relative">
-          <i class="bi bi-calendar3 position-absolute start-0 top-50 translate-middle-y ms-3 text-secondary" style="z-index:2;font-size:0.8rem;"></i>
-          <select id="dateSelect" class="form-select form-premium ps-5" style="min-width:240px;background:white;">
-            <option value="">📅 Select shift date</option>
-          </select>
-        </div>
-        <button id="btnLoadData" class="btn btn-premium btn-premium-primary text-white">
-          <i class="bi bi-cloud-arrow-up-fill me-1"></i> Load Report
-        </button>
-        <button id="btnBack" class="btn btn-outline-secondary rounded-pill px-4">
+        <select id="dateSelect" class="form-select form-sel" style="min-width:220px;">
+          <option value="">📅 Select date</option>
+        </select>
+        <button id="btnLoad" class="btn btn-prim"><i class="bi bi-cloud-arrow-up-fill me-1"></i> Load</button>
+        <button onclick="window.location.href='index.html'" class="btn btn-outline-secondary rounded-pill px-3">
           <i class="bi bi-terminal-fill me-1"></i> Terminal
         </button>
       </div>
     </div>
 
-    <!-- KPI 4 cards -->
-    <div class="row g-4 mb-5" id="kpiSection" style="display:none;">
-      <div class="col-sm-6 col-lg-3">
-        <div class="stat-card-premium bg-tools-premium text-white">
-          <div class="d-flex justify-content-between align-items-center">
-            <div>
-              <span class="text-white-50 text-uppercase fw-semibold small">Total checked out</span>
-              <h2 class="display-5 fw-bold mb-0 mt-1" id="countOutTools">0</h2>
-              <span class="small opacity-75">units in field</span>
-            </div>
-            <div class="stat-icon"><i class="bi bi-hammer"></i></div>
-          </div>
-        </div>
-      </div>
-      <div class="col-sm-6 col-lg-3">
-        <div class="stat-card-premium bg-attendance-premium text-white">
-          <div class="d-flex justify-content-between align-items-center">
-            <div>
-              <span class="text-white-50 text-uppercase fw-semibold small">Workforce today</span>
-              <h2 class="display-5 fw-bold mb-0 mt-1" id="countWorkers">0</h2>
-              <span class="small opacity-75">active on site</span>
-            </div>
-            <div class="stat-icon"><i class="bi bi-people-fill"></i></div>
-          </div>
-        </div>
-      </div>
-      <div class="col-sm-6 col-lg-3">
-        <div class="stat-card-premium bg-unique-out text-white">
-          <div class="d-flex justify-content-between align-items-center">
-            <div>
-              <span class="text-white-50 text-uppercase fw-semibold small">Unique tools out</span>
-              <h2 class="display-5 fw-bold mb-0 mt-1" id="uniqueToolsOutSpan">0</h2>
-              <span class="small opacity-75">distinct assets</span>
-            </div>
-            <div class="stat-icon"><i class="bi bi-bar-chart-steps"></i></div>
-          </div>
-        </div>
-      </div>
-      <div class="col-sm-6 col-lg-3">
-        <div class="stat-card-premium bg-total-types text-white">
-          <div class="d-flex justify-content-between align-items-center">
-            <div>
-              <span class="text-white-50 text-uppercase fw-semibold small">Inventory types</span>
-              <h2 class="display-5 fw-bold mb-0 mt-1" id="totalToolTypesSpan">0</h2>
-              <span class="small opacity-75">active codes</span>
-            </div>
-            <div class="stat-icon"><i class="bi bi-grid-3x3-gap-fill"></i></div>
-          </div>
-        </div>
-      </div>
+    <!-- KPI -->
+    <div class="row g-3 mb-5" id="kpiSection" style="display:none;">
+      <div class="col-6 col-lg-3"><div class="stat-card bg-red text-white"><div class="d-flex justify-content-between align-items-center"><div><div class="text-white-50 small text-uppercase fw-semibold">Checked out</div><div class="display-5 fw-bold mt-1" id="kpiOut">0</div><div class="small opacity-75">units in field</div></div><div class="stat-icon"><i class="bi bi-hammer"></i></div></div></div></div>
+      <div class="col-6 col-lg-3"><div class="stat-card bg-green text-white"><div class="d-flex justify-content-between align-items-center"><div><div class="text-white-50 small text-uppercase fw-semibold">Workforce</div><div class="display-5 fw-bold mt-1" id="kpiWorkers">0</div><div class="small opacity-75">on site today</div></div><div class="stat-icon"><i class="bi bi-people-fill"></i></div></div></div></div>
+      <div class="col-6 col-lg-3"><div class="stat-card bg-orange text-white"><div class="d-flex justify-content-between align-items-center"><div><div class="text-white-50 small text-uppercase fw-semibold">Unique out</div><div class="display-5 fw-bold mt-1" id="kpiUnique">0</div><div class="small opacity-75">distinct assets</div></div><div class="stat-icon"><i class="bi bi-bar-chart-steps"></i></div></div></div></div>
+      <div class="col-6 col-lg-3"><div class="stat-card bg-blue text-white"><div class="d-flex justify-content-between align-items-center"><div><div class="text-white-50 small text-uppercase fw-semibold">Tool types</div><div class="display-5 fw-bold mt-1" id="kpiTypes">0</div><div class="small opacity-75">active codes</div></div><div class="stat-icon"><i class="bi bi-grid-3x3-gap-fill"></i></div></div></div></div>
     </div>
 
     <!-- Main Grid -->
     <div class="row g-4">
 
-      <!-- Tools Table -->
+      <!-- Tools -->
       <div class="col-lg-8">
         <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
           <div class="d-flex align-items-center gap-2 flex-wrap">
-            <span class="section-badge"><i class="bi bi-box-seam me-1"></i> SMART INVENTORY</span>
-            <span class="badge bg-secondary bg-opacity-10 text-dark rounded-pill px-3" id="toolsCountBadge">—</span>
-            <!-- ✅ فلتر الخارجة فقط -->
-            <button class="filter-btn active" id="filterAll" onclick="setFilter('all')">All</button>
-            <button class="filter-btn" id="filterOut" onclick="setFilter('out')">Out only</button>
-            <button class="filter-btn" id="filterIn" onclick="setFilter('in')">In store</button>
+            <span class="section-badge"><i class="bi bi-box-seam me-1"></i> INVENTORY</span>
+            <span class="badge bg-secondary bg-opacity-10 text-dark rounded-pill px-3" id="toolsBadge">—</span>
+            <button class="filter-btn active" id="fAll" onclick="setFilter('all')">All</button>
+            <button class="filter-btn" id="fOut" onclick="setFilter('out')">Out only</button>
+            <button class="filter-btn" id="fIn"  onclick="setFilter('in')">In store</button>
           </div>
-          <div style="width:220px;">
-            <input type="text" id="toolSearchInput" class="search-input" placeholder="Search code or name…">
-          </div>
+          <div style="width:210px;"><input type="text" id="searchInput" class="search-box" placeholder="Search…"></div>
         </div>
-        <div class="tools-table-wrapper">
+        <div class="table-wrap">
           <div class="table-responsive">
             <table class="table custom-table mb-0">
-              <thead>
-                <tr>
-                  <th class="text-center" style="width:90px;">Code</th>
-                  <th>Tool description</th>
-                  <th>Current holder(s)</th>
-                  <th class="text-center" style="width:80px;">Qty out</th>
-                </tr>
-              </thead>
-              <tbody id="toolsTableBody">
-                <tr><td colspan="4" class="text-center text-muted py-5"><i class="bi bi-info-circle"></i> Select a date & click Load Report</td></tr>
+              <thead><tr>
+                <th class="text-center" style="width:90px;">Code</th>
+                <th>Description</th>
+                <th>Holder(s)</th>
+                <th class="text-center" style="width:80px;">Qty</th>
+              </tr></thead>
+              <tbody id="toolsTBody">
+                <tr><td colspan="4" class="text-center text-muted py-5"><i class="bi bi-info-circle"></i> Select a date and load</td></tr>
               </tbody>
             </table>
           </div>
         </div>
-        <div class="mt-3 d-flex justify-content-end">
-          <span class="insight-chip"><i class="bi bi-info-circle-fill me-1"></i> Click any row → view daily custody trail</span>
+        <div class="mt-2 text-end" style="font-size:0.7rem;color:#64748b;">
+          <i class="bi bi-hand-point-up me-1"></i> Click any row → full tool history
         </div>
       </div>
 
-      <!-- Workers Panel -->
+      <!-- Workers -->
       <div class="col-lg-4">
         <div class="d-flex align-items-center gap-2 mb-3">
-          <span class="section-badge"><i class="bi bi-person-check-fill me-1"></i> FIELD TEAM · ATTENDANCE</span>
+          <span class="section-badge"><i class="bi bi-person-check-fill me-1"></i> ON-SITE TEAM</span>
         </div>
         <div class="workers-card">
-          <div class="workers-list-custom list-group list-group-flush" id="workersListGroup">
+          <div class="workers-list" id="workersList">
             <div class="text-center text-muted p-4"><i class="bi bi-person-x"></i> No attendance data</div>
           </div>
         </div>
-        <div class="mt-3 small text-muted bg-light bg-opacity-50 rounded-3 p-2 text-center">
-          <i class="bi bi-hand-index-thumb"></i> Tap a worker to see their tools
+        <div class="mt-2 text-center" style="font-size:0.7rem;color:#64748b;">
+          <i class="bi bi-hand-point-up me-1"></i> Click any worker → full custody profile
         </div>
       </div>
     </div>
 
-    <div class="mt-5 pt-3 text-center border-top d-flex justify-content-between flex-wrap gap-2" style="font-size:0.7rem;">
-      <span><i class="bi bi-shield-check text-success"></i> Real‑time custody ledger · integrity verified</span>
-      <span><i class="bi bi-arrow-repeat"></i> Daily snapshot: <span id="activeDateIndicator" class="fw-semibold">—</span></span>
-    </div>
-  </div>
-</div>
-
-<!-- ── Modal: Tool Log ── -->
-<div class="modal fade" id="logModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-md">
-    <div class="modal-content" style="border-radius:1.8rem;border:none;">
-      <div class="modal-header border-0" style="background:linear-gradient(115deg,#0f2b3d,#1b4a6e);color:white;border-radius:1.8rem 1.8rem 0 0;">
-        <h6 class="modal-title fw-bold"><i class="bi bi-journal-richtext me-2"></i>Daily transaction log</h6>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body p-4">
-        <div class="fw-semibold text-primary mb-3 fs-6" id="modalToolInfo"></div>
-        <div class="bg-light rounded-4 p-3 border" style="max-height:340px;overflow-y:auto;" id="modalLogContent"></div>
-        <div class="mt-3 alert alert-info py-2 small mb-0 rounded-pill text-center">
-          <i class="bi bi-binoculars"></i> Events from selected date only
-        </div>
-      </div>
-      <div class="modal-footer border-0 pt-0 pb-3">
-        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Close</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ── Modal: Worker Detail ── -->
-<div class="modal fade" id="workerModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-md">
-    <div class="modal-content" style="border-radius:1.8rem;border:none;">
-      <div class="modal-header border-0" style="background:linear-gradient(115deg,#047857,#065f46);color:white;border-radius:1.8rem 1.8rem 0 0;">
-        <h6 class="modal-title fw-bold"><i class="bi bi-person-badge me-2"></i>Worker custody snapshot</h6>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body p-4">
-        <!-- Worker info -->
-        <div class="d-flex align-items-center gap-3 mb-4 p-3 rounded-3" style="background:#f0fdf4;border:1px solid #bbf7d0;">
-          <div class="worker-avatar" id="workerModalAvatar" style="width:52px;height:52px;font-size:1.1rem;border-radius:50%;background:linear-gradient(135deg,#047857,#065f46);color:white;"></div>
-          <div>
-            <div class="fw-bold fs-5" id="workerModalName">—</div>
-            <div class="text-muted small" id="workerModalCode">—</div>
-          </div>
-        </div>
-        <!-- Tools held -->
-        <div class="fw-semibold mb-2 text-dark"><i class="bi bi-hammer me-1"></i> Tools currently held</div>
-        <div id="workerToolsList" class="mb-3"></div>
-        <!-- Actions today -->
-        <div class="fw-semibold mb-2 text-dark mt-3"><i class="bi bi-clock-history me-1"></i> Activity today</div>
-        <div class="bg-light rounded-4 p-3 border" style="max-height:220px;overflow-y:auto;" id="workerActionsLog"></div>
-      </div>
-      <div class="modal-footer border-0 pt-0 pb-3">
-        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Close</button>
-      </div>
+    <div class="mt-5 pt-3 border-top d-flex justify-content-between flex-wrap gap-2 text-muted" style="font-size:0.7rem;">
+      <span><i class="bi bi-shield-check text-success me-1"></i> Real-time custody ledger</span>
+      <span>Snapshot: <strong id="dateLabel">—</strong></span>
     </div>
   </div>
 </div>
 
 <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyHXMuZcmFT7KrvqR8cygFl-t-oU_Jh4Vr2L4yp1eoT5AQAL00rbjBbUL0aKod3_C8l7g/exec";
-    const token = localStorage.getItem("token") || "abouamjad_secure_session_token";
-    const TOOL_PREFIXES = ['I', 'E', 'C', 'B'];
-    function isTool(code) { return TOOL_PREFIXES.includes(code.charAt(0)); }
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyHXMuZcmFT7KrvqR8cygFl-t-oU_Jh4Vr2L4yp1eoT5AQAL00rbjBbUL0aKod3_C8l7g/exec";
+const token = localStorage.getItem("token") || "abouamjad_secure_session_token";
+const TOOL_PREFIXES = ['I','E','C','B'];
+function isTool(c){ return TOOL_PREFIXES.includes(c.charAt(0)); }
 
-    // ── State ──
-    let currentToolsRender = [];
-    let currentWorkersData = []; // { name, code, toolsHeld: [{code,desc,qty}], actionsToday: [] }
-    let activeFilter = 'all';
+let allTools   = [];
+let allWorkers = [];
+let activeFilter = 'all';
+let activeDate   = '';
 
-    // ── DOM ──
-    const dateSelect          = document.getElementById("dateSelect");
-    const btnLoad             = document.getElementById("btnLoadData");
-    const btnBack             = document.getElementById("btnBack");
-    const toolsTBody          = document.getElementById("toolsTableBody");
-    const workersContainer    = document.getElementById("workersListGroup");
-    const kpiSection          = document.getElementById("kpiSection");
-    const countOutSpan        = document.getElementById("countOutTools");
-    const countWorkersSpan    = document.getElementById("countWorkers");
-    const toolsCountBadge     = document.getElementById("toolsCountBadge");
-    const uniqueToolsOutSpan  = document.getElementById("uniqueToolsOutSpan");
-    const totalToolTypesSpan  = document.getElementById("totalToolTypesSpan");
-    const activeDateIndicator = document.getElementById("activeDateIndicator");
-    const toolSearchInput     = document.getElementById("toolSearchInput");
+// ── Dates ──
+async function loadDates(){
+  const sel = document.getElementById('dateSelect');
+  sel.innerHTML = '<option value="">⏳ loading…</option>';
+  try {
+    const r = await fetch(`${SCRIPT_URL}?action=getDates&token=${encodeURIComponent(token)}`);
+    const dates = await r.json();
+    if(!dates||!dates.length){ sel.innerHTML='<option value="">⚠️ No records</option>'; return []; }
+    sel.innerHTML="";
+    const rev = [...dates].reverse();
+    rev.forEach(d=>{ const o=document.createElement('option'); o.value=d; o.textContent=d; sel.appendChild(o); });
+    return rev;
+  } catch { sel.innerHTML='<option value="">❌ Error</option>'; return []; }
+}
 
-    function showToolsLoading() {
-        toolsTBody.innerHTML = `<tr><td colspan="4" class="text-center py-5"><div class="d-flex justify-content-center"><div class="spinner-custom"></div></div><span class="text-muted mt-2 d-block text-center">Loading custody ledger...</span></td></tr>`;
-        workersContainer.innerHTML = `<div class="text-center p-4"><div class="d-flex justify-content-center"><div class="spinner-custom" style="width:1.5rem;height:1.5rem;border-width:2px;"></div></div><div class="mt-2 small">syncing personnel</div></div>`;
-        kpiSection.style.display = "none";
+// ── Parser ──
+function parse(rows, date){
+  if(!rows||!rows.length) return {tools:[],workers:[],totalOut:0,totalWorkers:0};
+  let inv={}, lastPerson="General Store", lastPersonCode=null, lastDir=null;
+  for(let row of rows){
+    let code=(row.toolCode||"").toString().toUpperCase().trim();
+    let desc=row.toolDescription||"—";
+    let isToday=String(row.isTargetDay)==="true";
+    if(!code) continue;
+    if(code.startsWith("P")){
+      lastPerson=desc||code; lastPersonCode=code; lastDir=null;
+      if(!inv[code]) inv[code]={description:desc,isPerson:true,scannedToday:false,actionsToday:[]};
+      if(isToday) inv[code].scannedToday=true;
+      continue;
     }
-
-    async function loadAvailableDates() {
-        dateSelect.innerHTML = '<option value="">⏳ loading shift dates...</option>';
-        try {
-            const res = await fetch(`${SCRIPT_URL}?action=getDates&token=${encodeURIComponent(token)}`);
-            const dates = await res.json();
-            if (!dates || dates.error || !dates.length) { dateSelect.innerHTML = '<option value="">⚠️ No records found</option>'; return []; }
-            dateSelect.innerHTML = "";
-            const reversed = [...dates].reverse();
-            reversed.forEach(d => {
-                const o = document.createElement("option");
-                o.value = d; o.textContent = d;
-                dateSelect.appendChild(o);
-            });
-            return reversed;
-        } catch { dateSelect.innerHTML = '<option value="">❌ connection error</option>'; return []; }
+    if(code==="IN"||code==="OUT"){ lastDir=code; continue; }
+    if(!isTool(code)) continue;
+    if(!inv[code]) inv[code]={description:desc,isPerson:false,scannedToday:false,actionsToday:[],holdersList:[],hasWarning:false};
+    if(isToday) inv[code].scannedToday=true;
+    if(!lastDir){
+      if(isToday){ inv[code].actionsToday.push(`⚠️ No direction set · ${lastPerson}`); inv[code].hasWarning=true; }
+      continue;
     }
-
-    // ── Parser ──
-    function processLedgerData(rawRows, selectedDate) {
-        if (!rawRows || !rawRows.length) return { tools: [], workers: [], totalToolsOut: 0, totalWorkers: 0 };
-
-        let globalInventory  = {};
-        let lastActivePerson = "General Store";
-        let lastActiveCode   = null;
-        let lastMovement     = null; // ✅ null بدل "OUT"
-
-        for (let row of rawRows) { // ✅ ترتيب المصفوفة مباشرة
-            let code     = (row.toolCode || "").toString().toUpperCase().trim();
-            let desc     = row.toolDescription || "—";
-            let isTarget = String(row.isTargetDay) === "true"; // ✅ مقارنة موحدة
-
-            if (!code) continue;
-
-            // شخص
-            if (code.startsWith("P")) {
-                lastActivePerson = desc || code;
-                lastActiveCode   = code;
-                lastMovement     = null; // ✅ تصفير عند كل P
-
-                if (!globalInventory[code]) {
-                    globalInventory[code] = { description: desc, isPerson: true, scannedToday: false, actionsToday: [] };
-                }
-                if (isTarget) globalInventory[code].scannedToday = true;
-                continue;
-            }
-
-            // اتجاه
-            if (code === "IN" || code === "OUT") { lastMovement = code; continue; }
-
-            // ✅ فقط الأكواد المعروفة
-            if (!isTool(code)) continue;
-
-            if (!globalInventory[code]) {
-                globalInventory[code] = { description: desc, isPerson: false, scannedToday: false, actionsToday: [], holdersList: [], hasWarning: false };
-            }
-            if (isTarget) globalInventory[code].scannedToday = true;
-
-            // ✅ بدون اتجاه = warning وتجاهل
-            if (!lastMovement) {
-                if (isTarget) {
-                    globalInventory[code].actionsToday.push(`⚠️ Scanned with no direction · ${lastActivePerson}`);
-                    globalInventory[code].hasWarning = true;
-                    // سجّل بالـ Person كمان
-                    if (lastActiveCode && globalInventory[lastActiveCode]) {
-                        globalInventory[lastActiveCode].actionsToday.push(`⚠️ Scanned ${code} without direction`);
-                    }
-                }
-                continue;
-            }
-
-            if (lastMovement === "IN") {
-                const idx = globalInventory[code].holdersList.lastIndexOf(lastActivePerson);
-                if (idx !== -1) {
-                    globalInventory[code].holdersList.splice(idx, 1);
-                    if (isTarget) {
-                        globalInventory[code].actionsToday.push(`📥 Returned by · ${lastActivePerson}`);
-                        if (lastActiveCode && globalInventory[lastActiveCode]) globalInventory[lastActiveCode].actionsToday.push(`📥 Returned ${code} · ${desc}`);
-                    }
-                } else if (globalInventory[code].holdersList.length > 0) {
-                    const originalHolder = globalInventory[code].holdersList.shift();
-                    if (isTarget) {
-                        globalInventory[code].actionsToday.push(`⚠️ Found & Returned by · ${lastActivePerson} (Lost by: ${originalHolder})`);
-                        globalInventory[code].hasWarning = true;
-                        if (lastActiveCode && globalInventory[lastActiveCode]) globalInventory[lastActiveCode].actionsToday.push(`⚠️ Recovered ${code} (was lost by ${originalHolder})`);
-                    }
-                } else {
-                    if (isTarget) globalInventory[code].actionsToday.push(`📥 Returned · ${lastActivePerson} (clean state)`);
-                }
-            } else {
-                globalInventory[code].holdersList.push(lastActivePerson);
-                if (isTarget) {
-                    globalInventory[code].actionsToday.push(`📤 Checked out to · ${lastActivePerson}`);
-                    if (lastActiveCode && globalInventory[lastActiveCode]) globalInventory[lastActiveCode].actionsToday.push(`📤 Took ${code} · ${desc}`);
-                }
-            }
-        }
-
-        // بناء النتائج
-        let workersList = [], activeWorkersCount = 0, totalToolsOutSum = 0, toolsRenderArray = [];
-
-        // ابن خريطة: person → أدوات معه
-        let personToolsMap = {}; // personName → [{code, desc, qty}]
-        for (let [code, item] of Object.entries(globalInventory)) {
-            if (!item.isPerson) {
-                item.holdersList.forEach(person => {
-                    if (!personToolsMap[person]) personToolsMap[person] = {};
-                    personToolsMap[person][code] = personToolsMap[person][code] || { code, desc: item.description, qty: 0 };
-                    personToolsMap[person][code].qty++;
-                });
-            }
-        }
-
-        for (let [code, item] of Object.entries(globalInventory)) {
-            if (item.isPerson) {
-                if (item.scannedToday) {
-                    activeWorkersCount++;
-                    const toolsHeld = Object.values(personToolsMap[item.description] || {});
-                    workersList.push({ name: item.description, code, toolsHeld, actionsToday: item.actionsToday || [] });
-                }
-            } else {
-                const qtyOut = item.holdersList.length;
-                totalToolsOutSum += qtyOut;
-                if (item.scannedToday || qtyOut > 0) {
-                    const holderCountMap = new Map();
-                    item.holdersList.forEach(p => holderCountMap.set(p, (holderCountMap.get(p) || 0) + 1));
-                    let holdersHtml = holderCountMap.size === 0
-                        ? `<span class="text-success small fw-semibold"><i class="bi bi-house-fill me-1"></i>In store</span>`
-                        : Array.from(holderCountMap.entries()).map(([p, q]) =>
-                            `<span class="badge-holder-modern"><i class="bi bi-person-circle"></i> ${escapeHtml(p)} <strong>×${q}</strong></span>`).join("");
-                    toolsRenderArray.push({ code, description: item.description, holdersDisplay: holdersHtml, qtyOut, actionsToday: item.actionsToday || [], hasWarning: item.hasWarning || false });
-                }
-            }
-        }
-
-        toolsRenderArray.sort((a, b) => a.code.localeCompare(b.code));
-        workersList.sort((a, b) => a.name.localeCompare(b.name));
-        return { tools: toolsRenderArray, workers: workersList, totalToolsOut: totalToolsOutSum, totalWorkers: activeWorkersCount };
+    if(lastDir==="IN"){
+      const idx=inv[code].holdersList.lastIndexOf(lastPerson);
+      if(idx!==-1){
+        inv[code].holdersList.splice(idx,1);
+        if(isToday){ inv[code].actionsToday.push(`📥 Returned by · ${lastPerson}`); if(lastPersonCode&&inv[lastPersonCode]) inv[lastPersonCode].actionsToday.push(`📥 Returned ${code} · ${desc}`); }
+      } else if(inv[code].holdersList.length>0){
+        const orig=inv[code].holdersList.shift();
+        if(isToday){ inv[code].actionsToday.push(`⚠️ Found & Returned by · ${lastPerson} (Lost by: ${orig})`); inv[code].hasWarning=true; if(lastPersonCode&&inv[lastPersonCode]) inv[lastPersonCode].actionsToday.push(`⚠️ Recovered ${code} (was with ${orig})`); }
+      } else {
+        if(isToday) inv[code].actionsToday.push(`📥 Returned · ${lastPerson} (unregistered)`);
+      }
+    } else {
+      inv[code].holdersList.push(lastPerson);
+      if(isToday){ inv[code].actionsToday.push(`📤 Checked out to · ${lastPerson}`); if(lastPersonCode&&inv[lastPersonCode]) inv[lastPersonCode].actionsToday.push(`📤 Took ${code} · ${desc}`); }
     }
+  }
 
-    // ── Filter ──
-    function setFilter(f) {
-        activeFilter = f;
-        document.getElementById('filterAll').classList.toggle('active', f === 'all');
-        document.getElementById('filterOut').classList.toggle('active', f === 'out');
-        document.getElementById('filterIn').classList.toggle('active',  f === 'in');
-        renderToolsTable();
+  // personToolsMap
+  let personToolsMap={};
+  for(let [code,item] of Object.entries(inv)){
+    if(!item.isPerson){
+      item.holdersList.forEach(p=>{
+        if(!personToolsMap[p]) personToolsMap[p]={};
+        if(!personToolsMap[p][code]) personToolsMap[p][code]={code,desc:item.description,qty:0};
+        personToolsMap[p][code].qty++;
+      });
     }
+  }
 
-    function applyFilters(tools) {
-        const query = toolSearchInput.value.toLowerCase().trim();
-        return tools.filter(t => {
-            const matchSearch = !query || t.code.toLowerCase().includes(query) || t.description.toLowerCase().includes(query);
-            const matchFilter = activeFilter === 'all' || (activeFilter === 'out' && t.qtyOut > 0) || (activeFilter === 'in' && t.qtyOut === 0);
-            return matchSearch && matchFilter;
-        });
+  let tools=[],workers=[],totalOut=0,totalWorkers=0;
+  for(let [code,item] of Object.entries(inv)){
+    if(item.isPerson){
+      if(item.scannedToday){
+        totalWorkers++;
+        const toolsHeld=Object.values(personToolsMap[item.description]||{});
+        workers.push({name:item.description,code,toolsHeld,actionsToday:item.actionsToday||[]});
+      }
+    } else {
+      const qty=item.holdersList.length;
+      totalOut+=qty;
+      if(item.scannedToday||qty>0){
+        const hMap=new Map();
+        item.holdersList.forEach(p=>hMap.set(p,(hMap.get(p)||0)+1));
+        let holdersHtml=hMap.size===0
+          ?`<span class="text-success small fw-semibold"><i class="bi bi-house-fill me-1"></i>In store</span>`
+          :Array.from(hMap.entries()).map(([p,q])=>`<span class="badge-holder"><i class="bi bi-person-circle"></i>${escHtml(p)} <strong>×${q}</strong></span>`).join('');
+        tools.push({code,description:item.description,holdersHtml,qty,actionsToday:item.actionsToday||[],hasWarning:item.hasWarning||false,holderNames:Array.from(hMap.keys())});
+      }
     }
+  }
+  tools.sort((a,b)=>a.code.localeCompare(b.code));
+  workers.sort((a,b)=>a.name.localeCompare(b.name));
+  return {tools,workers,totalOut,totalWorkers};
+}
 
-    function renderToolsTable() {
-        const filtered = applyFilters(currentToolsRender);
-        if (!filtered.length) {
-            toolsTBody.innerHTML = `<tr><td colspan="4" class="text-center py-5 text-secondary"><i class="bi bi-search"></i> No tools match filter</td></tr>`;
-            return;
-        }
-        toolsTBody.innerHTML = "";
-        filtered.forEach(tool => {
-            const row = document.createElement("tr");
-            row.className = "clickable-row" + (tool.hasWarning ? " warn-row" : "");
-            row.onclick = () => showLogModal(tool.code, tool.description, tool.actionsToday);
-            row.innerHTML = `
-                <td class="text-center">
-                    <code class="bg-light px-2 py-1 rounded fw-bold">${escapeHtml(tool.code)}</code>
-                    ${tool.hasWarning ? '<i class="bi bi-exclamation-triangle-fill text-warning ms-1"></i>' : ''}
-                </td>
-                <td class="fw-semibold text-dark">${escapeHtml(tool.description)}</td>
-                <td class="d-flex flex-wrap">${tool.holdersDisplay}</td>
-                <td class="text-center fw-bold ${tool.qtyOut > 0 ? 'text-danger' : 'text-success'}">
-                    <span class="fs-5">${tool.qtyOut}</span>
-                </td>
-            `;
-            toolsTBody.appendChild(row);
-        });
-    }
+// ── Render ──
+function renderAll(){
+  const query=document.getElementById('searchInput').value.toLowerCase().trim();
+  const filtered=allTools.filter(t=>{
+    const ms=!query||t.code.toLowerCase().includes(query)||t.description.toLowerCase().includes(query);
+    const mf=activeFilter==='all'||(activeFilter==='out'&&t.qty>0)||(activeFilter==='in'&&t.qty===0);
+    return ms&&mf;
+  });
 
-    function renderDashboard(processed) {
-        const { tools, workers, totalToolsOut, totalWorkers } = processed;
-        currentToolsRender = tools;
-        currentWorkersData = workers;
+  const tbody=document.getElementById('toolsTBody');
+  if(!filtered.length){
+    tbody.innerHTML=`<tr><td colspan="4" class="text-center py-5 text-muted"><i class="bi bi-search"></i> No tools match</td></tr>`;
+  } else {
+    tbody.innerHTML="";
+    filtered.forEach(t=>{
+      const tr=document.createElement('tr');
+      tr.className="clickable-row"+(t.hasWarning?" warn-row":"");
+      tr.onclick=()=>{ window.location.href=`tool.html?code=${encodeURIComponent(t.code)}&date=${encodeURIComponent(activeDate)}`; };
+      tr.innerHTML=`
+        <td class="text-center"><code class="bg-light px-2 py-1 rounded fw-bold">${escHtml(t.code)}</code>${t.hasWarning?'<i class="bi bi-exclamation-triangle-fill text-warning ms-1"></i>':''}</td>
+        <td class="fw-semibold">${escHtml(t.description)}</td>
+        <td>${t.holdersHtml}</td>
+        <td class="text-center fw-bold ${t.qty>0?'text-danger':'text-success'}"><span class="fs-5">${t.qty}</span></td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
 
-        // KPI
-        countOutSpan.textContent       = totalToolsOut;
-        countWorkersSpan.textContent   = totalWorkers;
-        uniqueToolsOutSpan.textContent = tools.filter(t => t.qtyOut > 0).length;
-        totalToolTypesSpan.textContent = tools.length;
-        toolsCountBadge.innerText      = `${tools.length} tool types`;
-        if (dateSelect.value) activeDateIndicator.innerText = dateSelect.value;
+  const wList=document.getElementById('workersList');
+  if(!allWorkers.length){
+    wList.innerHTML=`<div class="text-center text-muted p-4"><i class="bi bi-people"></i> No attendance today</div>`;
+  } else {
+    wList.innerHTML="";
+    allWorkers.forEach(w=>{
+      const ini=w.name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase();
+      const toolCount=w.toolsHeld.reduce((s,t)=>s+t.qty,0);
+      const div=document.createElement('div');
+      div.className="worker-item";
+      div.onclick=()=>{ window.location.href=`worker.html?code=${encodeURIComponent(w.code)}&date=${encodeURIComponent(activeDate)}`; };
+      div.innerHTML=`
+        <div class="d-flex align-items-center gap-2">
+          <div class="worker-avatar">${ini}</div>
+          <div>
+            <div class="fw-semibold">${escHtml(w.name)}</div>
+            <div class="text-muted" style="font-size:0.7rem;">${toolCount>0?`<i class="bi bi-hammer me-1"></i>${toolCount} tool(s) held`:'<i class="bi bi-check2 me-1 text-success"></i>No tools held'}</div>
+          </div>
+        </div>
+        <span class="badge-present"><i class="bi bi-check-circle-fill me-1"></i>Present</span>
+      `;
+      wList.appendChild(div);
+    });
+  }
+}
 
-        // ✅ إصلاح 5 — استخدام classList بدل inline style
-        kpiSection.classList.remove('d-none');
-        kpiSection.style.display = "flex";
+function setFilter(f){
+  activeFilter=f;
+  ['All','Out','In'].forEach(x=>document.getElementById('f'+x).classList.remove('active'));
+  document.getElementById('f'+f.charAt(0).toUpperCase()+f.slice(1)).classList.add('active');
+  renderAll();
+}
 
-        renderToolsTable();
-        renderWorkersList();
-    }
+async function loadData(date){
+  activeDate=date;
+  document.getElementById('toolsTBody').innerHTML=`<tr><td colspan="4" class="text-center py-5"><div class="spinner-wrap"><div class="spinner"></div></div><div class="text-muted mt-2 text-center">Loading…</div></td></tr>`;
+  document.getElementById('workersList').innerHTML=`<div class="text-center p-4"><div class="spinner-wrap"><div class="spinner" style="width:1.5rem;height:1.5rem;border-width:2px;"></div></div></div>`;
+  document.getElementById('kpiSection').style.display='none';
+  try {
+    const r=await fetch(`${SCRIPT_URL}?action=getData&date=${encodeURIComponent(date)}&token=${encodeURIComponent(token)}`);
+    const data=await r.json();
+    if(!data||data.error) throw new Error(data.error||"Server error");
+    const p=parse(data,date);
+    allTools=p.tools; allWorkers=p.workers;
+    document.getElementById('kpiOut').textContent=p.totalOut;
+    document.getElementById('kpiWorkers').textContent=p.totalWorkers;
+    document.getElementById('kpiUnique').textContent=p.tools.filter(t=>t.qty>0).length;
+    document.getElementById('kpiTypes').textContent=p.tools.length;
+    document.getElementById('toolsBadge').textContent=`${p.tools.length} types`;
+    document.getElementById('dateLabel').textContent=date;
+    document.getElementById('kpiSection').style.display='flex';
+    renderAll();
+  } catch(e){
+    document.getElementById('toolsTBody').innerHTML=`<tr><td colspan="4" class="text-center text-danger py-4"><i class="bi bi-exclamation-triangle-fill"></i> ${e.message}</td></tr>`;
+    document.getElementById('workersList').innerHTML=`<div class="text-center text-danger p-3"><i class="bi bi-wifi-off"></i> Error</div>`;
+  }
+}
 
-    // ── Workers List ──
-    function renderWorkersList() {
-        if (!currentWorkersData.length) {
-            workersContainer.innerHTML = `<div class="text-center text-muted p-4"><i class="bi bi-people"></i> No attendance scanned today</div>`;
-            return;
-        }
-        workersContainer.innerHTML = "";
-        currentWorkersData.forEach(worker => {
-            const initials = worker.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
-            const toolCount = worker.toolsHeld.reduce((s, t) => s + t.qty, 0);
-            const div = document.createElement("div");
-            div.className = "list-group-item worker-item d-flex justify-content-between align-items-center";
-            div.onclick = () => showWorkerModal(worker);
-            div.innerHTML = `
-                <div class="d-flex align-items-center gap-2">
-                    <div class="worker-avatar">${initials}</div>
-                    <div>
-                        <div class="fw-semibold">${escapeHtml(worker.name)}</div>
-                        <div class="text-muted" style="font-size:0.7rem;">${toolCount > 0 ? `<i class="bi bi-hammer me-1"></i>${toolCount} tool(s) held` : '<i class="bi bi-check2 me-1"></i>No tools held'}</div>
-                    </div>
-                </div>
-                <span class="status-badge-present"><i class="bi bi-check-circle-fill me-1 small"></i> Present</span>
-            `;
-            workersContainer.appendChild(div);
-        });
-    }
+function escHtml(s){ if(!s) return ''; return s.replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]||m)); }
 
-    // ── Worker Detail Modal ──
-    function showWorkerModal(worker) {
-        const initials = worker.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
-        document.getElementById('workerModalAvatar').textContent = initials;
-        document.getElementById('workerModalName').textContent   = worker.name;
-        document.getElementById('workerModalCode').textContent   = worker.code;
-
-        // الأدوات اللي معه
-        const toolsList = document.getElementById('workerToolsList');
-        if (!worker.toolsHeld || worker.toolsHeld.length === 0) {
-            toolsList.innerHTML = `<div class="text-success small p-2"><i class="bi bi-check-circle me-1"></i> No tools currently held — all returned</div>`;
-        } else {
-            toolsList.innerHTML = worker.toolsHeld.map(t =>
-                `<span class="tool-held-badge"><i class="bi bi-tools"></i> <strong>${escapeHtml(t.code)}</strong> · ${escapeHtml(t.desc)} <span class="badge bg-warning text-dark ms-1">×${t.qty}</span></span>`
-            ).join('');
-        }
-
-        // الأنشطة اليوم
-        const actionsLog = document.getElementById('workerActionsLog');
-        if (!worker.actionsToday || worker.actionsToday.length === 0) {
-            actionsLog.innerHTML = `<div class="text-center text-muted py-2 small"><i class="bi bi-clock-history"></i> No activity logged today</div>`;
-        } else {
-            actionsLog.innerHTML = `<ul class="list-unstyled m-0">${
-                worker.actionsToday.map(act =>
-                    `<li class="py-2 border-bottom d-flex gap-2 align-items-start">
-                        <span class="badge bg-light p-2 rounded-circle"><i class="bi bi-arrow-right-short"></i></span>
-                        <span class="small">${escapeHtml(act)}</span>
-                    </li>`
-                ).join('')
-            }</ul>`;
-        }
-
-        new bootstrap.Modal(document.getElementById('workerModal')).show();
-    }
-
-    // ── Tool Log Modal ──
-    function showLogModal(code, desc, actionsList) {
-        document.getElementById("modalToolInfo").innerHTML =
-            `<i class="bi bi-wrench-adjustable-circle me-2"></i><strong>${escapeHtml(desc)}</strong> · <span class="text-secondary">${escapeHtml(code)}</span>`;
-        const el = document.getElementById("modalLogContent");
-        if (!actionsList || !actionsList.length) {
-            el.innerHTML = `<div class="text-center text-muted py-3"><i class="bi bi-clock-history"></i> No transactions on this day.<br><small>Tool state from previous shifts.</small></div>`;
-        } else {
-            el.innerHTML = `<ul class="list-unstyled m-0">${actionsList.map(act =>
-                `<li class="py-2 border-bottom d-flex gap-2"><span class="badge bg-light p-2 rounded-circle"><i class="bi bi-arrow-right-short"></i></span><span>${escapeHtml(act)}</span></li>`
-            ).join('')}</ul>`;
-        }
-        new bootstrap.Modal(document.getElementById('logModal')).show();
-    }
-
-    function escapeHtml(str) {
-        if (!str) return '';
-        return str.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m] || m));
-    }
-
-    async function fetchReportData(date) {
-        if (!date) { alert("Pick a valid date."); return; }
-        showToolsLoading();
-        try {
-            const res  = await fetch(`${SCRIPT_URL}?action=getData&date=${encodeURIComponent(date)}&token=${encodeURIComponent(token)}`);
-            const data = await res.json();
-            if (!data || data.error) throw new Error(data.error || "Invalid server response");
-            renderDashboard(processLedgerData(data, date));
-        } catch (err) {
-            toolsTBody.innerHTML = `<tr><td colspan="4" class="text-center text-danger py-4"><i class="bi bi-exclamation-triangle-fill"></i> Load error: ${err.message}</td></tr>`;
-            workersContainer.innerHTML = `<div class="text-center text-danger p-3"><i class="bi bi-wifi-off"></i> Data fetch failed</div>`;
-            kpiSection.style.display = "none";
-        }
-    }
-
-    async function initDashboard() {
-        const dates = await loadAvailableDates();
-        if (dates.length) { dateSelect.value = dates[0]; await fetchReportData(dates[0]); }
-        else toolsTBody.innerHTML = `<tr><td colspan="4" class="text-center text-warning">⚠️ No date records available.</td></tr>`;
-        btnLoad.addEventListener("click", async () => {
-            if (dateSelect.value) await fetchReportData(dateSelect.value);
-            else alert("Select a date first.");
-        });
-        btnBack.addEventListener("click", () => { window.location.href = "index.html"; });
-        toolSearchInput.addEventListener("input", renderToolsTable);
-    }
-
-    document.addEventListener("DOMContentLoaded", initDashboard);
+async function init(){
+  const dates=await loadDates();
+  if(dates.length){ document.getElementById('dateSelect').value=dates[0]; await loadData(dates[0]); }
+  document.getElementById('btnLoad').addEventListener('click',async()=>{ const d=document.getElementById('dateSelect').value; if(d) await loadData(d); });
+  document.getElementById('searchInput').addEventListener('input',renderAll);
+}
+document.addEventListener('DOMContentLoaded',init);
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
