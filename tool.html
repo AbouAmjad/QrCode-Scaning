@@ -87,82 +87,12 @@
 </div>
 
 <script src="config.js"></script>
+<script src="parser.js"></script>
 <script>
-if (!requireAuth()) { /* redirecting */ }
 
 const params = new URLSearchParams(window.location.search);
 const TARGET_CODE = (params.get('code')||"").toUpperCase();
 const TARGET_DATE = params.get('date')||"";
-
-function parseForTool(rows, toolCode, selectedDate){
-  let toolDesc = toolCode;
-  let holdersList = [];
-  let toolDailyLog = {};
-  let hasWarning = false;
-  let lastPerson = "General Store";
-  let lastPersonCode = null;
-  let lastDir = null;
-  let personCodeMap = {};
-
-  for(let row of rows){
-    let code=(row.toolCode||"").toString().toUpperCase().trim();
-    let desc=row.toolDescription||"—";
-    let rowDate=row.rowDate||"";
-    if(!code) continue;
-
-    if(code.startsWith("P")){
-      lastPerson=desc||code;
-      lastPersonCode=code;
-      lastDir=null;
-      personCodeMap[lastPerson]=code;
-      continue;
-    }
-    if(code==="IN"||code==="OUT"){ lastDir=code; continue; }
-    if(!isTool(code)) continue;
-    if(code!==toolCode) continue;
-
-    toolDesc=desc;
-
-    if(!lastDir){
-      if(!toolDailyLog[rowDate]) toolDailyLog[rowDate]=[];
-      toolDailyLog[rowDate].push({type:'warn', text:`⚠️ Scanned without direction · ${lastPerson}`, person:lastPerson, personCode:lastPersonCode});
-      hasWarning=true;
-      continue;
-    }
-
-    if(lastDir==="IN"){
-      const idx=holdersList.lastIndexOf(lastPerson);
-      if(idx!==-1){
-        holdersList.splice(idx,1);
-        if(!toolDailyLog[rowDate]) toolDailyLog[rowDate]=[];
-        toolDailyLog[rowDate].push({type:'in', text:`📥 Returned by · ${lastPerson}`, person:lastPerson, personCode:lastPersonCode});
-      } else if(holdersList.length>0){
-        const orig=holdersList.shift();
-        if(!toolDailyLog[rowDate]) toolDailyLog[rowDate]=[];
-        toolDailyLog[rowDate].push({type:'warn', text:`⚠️ Recovered by · ${lastPerson} (was with ${orig})`, person:lastPerson, personCode:lastPersonCode});
-        hasWarning=true;
-      } else {
-        if(!toolDailyLog[rowDate]) toolDailyLog[rowDate]=[];
-        toolDailyLog[rowDate].push({type:'in', text:`📥 Returned by · ${lastPerson} (unregistered)`, person:lastPerson, personCode:lastPersonCode});
-      }
-    } else {
-      holdersList.push(lastPerson);
-      if(!toolDailyLog[rowDate]) toolDailyLog[rowDate]=[];
-      toolDailyLog[rowDate].push({type:'out', text:`📤 Checked out to · ${lastPerson}`, person:lastPerson, personCode:lastPersonCode});
-    }
-  }
-
-  const hMap=new Map();
-  holdersList.forEach(p=>hMap.set(p,(hMap.get(p)||0)+1));
-  const currentHolders=Array.from(hMap.entries()).map(([name,qty])=>({
-    name, qty, personCode: personCodeMap[name]||null
-  }));
-
-  return {toolDesc, currentHolders, toolDailyLog, hasWarning, qtyOut:holdersList.length};
-}
-
-function dotClass(type){ return {out:'dot-out',in:'dot-in',warn:'dot-warn',info:'dot-info'}[type]||'dot-info'; }
-function dotIcon(type){ return {out:'bi-arrow-up-right',in:'bi-arrow-down-left',warn:'bi-exclamation-triangle-fill',info:'bi-info-circle'}[type]||'bi-info-circle'; }
 
 async function init(){
   if(!TARGET_CODE){ showError("No tool code specified"); return; }
@@ -170,10 +100,9 @@ async function init(){
 
   try {
     const data = await apiGet({ action: "getData", date: TARGET_DATE });
-    if (data.error === "UNAUTHORIZED") { clearToken(); window.location = "login.html"; return; }
-    if(!data||data.error) throw new Error(data.error||"Server error");
+    if (data && data.error) throw new Error(data.error);
 
-    const {toolDesc, currentHolders, toolDailyLog, hasWarning, qtyOut}=parseForTool(data, TARGET_CODE, TARGET_DATE);
+    const {toolDesc, currentHolders, toolDailyLog, hasWarning, qtyOut}=CustodyParser.parseForTool(data, TARGET_CODE);
 
     document.getElementById('toolCode').textContent=TARGET_CODE;
     document.getElementById('toolDesc').textContent=toolDesc;
@@ -234,7 +163,7 @@ async function init(){
             </div>
             ${actions.map(a=>`
               <div class="timeline-item">
-                <div class="timeline-dot ${dotClass(a.type)}"><i class="bi ${dotIcon(a.type)}"></i></div>
+                <div class="timeline-dot ${CustodyParser.dotClass(a.type)}"><i class="bi ${CustodyParser.dotIcon(a.type)}"></i></div>
                 <div class="small fw-500 pt-1">${escHtml(a.text)}</div>
               </div>
             `).join('')}
