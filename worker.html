@@ -98,139 +98,21 @@
 </div>
 
 <script src="config.js"></script>
+<script src="parser.js"></script>
 <script>
-if (!requireAuth()) { /* redirecting */ }
 
 const params = new URLSearchParams(window.location.search);
 const TARGET_CODE = (params.get('code')||"").toUpperCase();
 const TARGET_DATE = params.get('date')||"";
-
-// ── Parser — يبني كامل التاريخ للعامل ──
-function parseForWorker(rows, workerCode, selectedDate){
-  // نبني الـ inventory كامل
-  let inv={}, lastPerson="General Store", lastPersonCode=null, lastDir=null;
-  // نبني تاريخ العامل يوم بيوم
-  let workerDailyLog={}; // date → [actions]
-  let workerName=workerCode;
-
-  for(let row of rows){
-    let code=(row.toolCode||"").toString().toUpperCase().trim();
-    let desc=row.toolDescription||"—";
-    let rowDate=row.rowDate||"";
-    let isToday=String(row.isTargetDay)==="true";
-    if(!code) continue;
-
-    if(code.startsWith("P")){
-      lastPerson=desc||code; lastPersonCode=code; lastDir=null;
-      if(code===workerCode) workerName=desc;
-      if(!inv[code]) inv[code]={description:desc,isPerson:true};
-      continue;
-    }
-    if(code==="IN"||code==="OUT"){ lastDir=code; continue; }
-    if(!isTool(code)) continue;
-
-    if(!inv[code]) inv[code]={description:desc,isPerson:false,holdersList:[],hasWarning:false};
-
-    // سجّل بتاريخ العامل فقط إذا هو الشخص النشط
-    const isWorkerActive = (lastPersonCode===workerCode);
-
-    if(!lastDir){
-      if(isWorkerActive){
-        if(!workerDailyLog[rowDate]) workerDailyLog[rowDate]=[];
-        workerDailyLog[rowDate].push({type:'warn', text:`⚠️ Scanned ${code} (${desc}) — no direction set`});
-        inv[code].hasWarning=true;
-      }
-      continue;
-    }
-
-    if(lastDir==="IN"){
-      const idx=inv[code].holdersList.lastIndexOf(lastPerson);
-      if(idx!==-1){
-        inv[code].holdersList.splice(idx,1);
-        if(isWorkerActive){
-          if(!workerDailyLog[rowDate]) workerDailyLog[rowDate]=[];
-          workerDailyLog[rowDate].push({type:'in', text:`📥 Returned ${code} · ${desc}`});
-        }
-      } else if(inv[code].holdersList.length>0){
-        const orig=inv[code].holdersList.shift();
-        // لو العامل هو اللي أرجع قطعة كانت ضايعة
-        if(isWorkerActive){
-          if(!workerDailyLog[rowDate]) workerDailyLog[rowDate]=[];
-          workerDailyLog[rowDate].push({type:'warn', text:`⚠️ Recovered ${code} · ${desc} (was with ${orig})`});
-        }
-        // لو العامل هو اللي فقدها
-        if(orig===workerName){
-          if(!workerDailyLog[rowDate]) workerDailyLog[rowDate]=[];
-          workerDailyLog[rowDate].push({type:'warn', text:`⚠️ ${code} · ${desc} was recovered by ${lastPerson} (you lost it)`});
-        }
-        inv[code].hasWarning=true;
-      } else {
-        if(isWorkerActive){
-          if(!workerDailyLog[rowDate]) workerDailyLog[rowDate]=[];
-          workerDailyLog[rowDate].push({type:'in', text:`📥 Returned ${code} · ${desc} (unregistered state)`});
-        }
-      }
-    } else {
-      inv[code].holdersList.push(lastPerson);
-      if(isWorkerActive){
-        if(!workerDailyLog[rowDate]) workerDailyLog[rowDate]=[];
-        workerDailyLog[rowDate].push({type:'out', text:`📤 Took ${code} · ${desc}`});
-      }
-    }
-  }
-
-  // الأدوات اللي مع العامل هلق + كم يوم معه
-  let toolsHeld=[];
-  // نحسب متى أخذ كل أداة
-  let toolFirstTaken={}; // code → date
-  // نعيد قراءة سريعة لحساب تواريخ الأخذ
-  let tempPerson="General Store", tempPersonCode=null, tempDir=null;
-  let tempHolders={};
-  for(let row of rows){
-    let code=(row.toolCode||"").toString().toUpperCase().trim();
-    let desc=row.toolDescription||"—";
-    let rowDate=row.rowDate||"";
-    if(!code) continue;
-    if(code.startsWith("P")){ tempPerson=row.toolDescription||code; tempPersonCode=code; tempDir=null; continue; }
-    if(code==="IN"||code==="OUT"){ tempDir=code; continue; }
-    if(!isTool(code)) continue;
-    if(!tempHolders[code]) tempHolders[code]=[];
-    if(!tempDir) continue;
-    if(tempDir==="OUT"){
-      tempHolders[code].push({person:tempPerson,personCode:tempPersonCode,date:rowDate});
-      if(tempPersonCode===workerCode && !toolFirstTaken[code]) toolFirstTaken[code]=rowDate;
-    } else {
-      const idx=tempHolders[code].findIndex(h=>h.person===tempPerson);
-      if(idx!==-1) tempHolders[code].splice(idx,1);
-    }
-  }
-
-  // الأدوات اللي فعلاً مع العامل هلق
-  for(let [code,item] of Object.entries(inv)){
-    if(!item.isPerson){
-      const myCount=item.holdersList.filter(p=>p===workerName).length;
-      if(myCount>0){
-        const takenDate=toolFirstTaken[code]||"unknown";
-        toolsHeld.push({code,desc:item.description,qty:myCount,takenDate,isToday:takenDate===selectedDate});
-      }
-    }
-  }
-
-  return {workerName, toolsHeld, workerDailyLog};
-}
-
-function dotClass(type){ return {out:'dot-out',in:'dot-in',warn:'dot-warn',info:'dot-info'}[type]||'dot-info'; }
-function dotIcon(type){ return {out:'bi-arrow-up-right',in:'bi-arrow-down-left',warn:'bi-exclamation-triangle-fill',info:'bi-info-circle'}[type]||'bi-info-circle'; }
 
 async function init(){
   if(!TARGET_CODE){ showError("No worker code specified"); return; }
 
   try {
     const data = await apiGet({ action: "getData", date: TARGET_DATE });
-    if (data.error === "UNAUTHORIZED") { clearToken(); window.location = "login.html"; return; }
-    if(!data||data.error) throw new Error(data.error||"Server error");
+    if (data && data.error) throw new Error(data.error);
 
-    const {workerName, toolsHeld, workerDailyLog}=parseForWorker(data, TARGET_CODE, TARGET_DATE);
+    const {workerName, toolsHeld, workerDailyLog}=CustodyParser.parseForWorker(data, TARGET_CODE, TARGET_DATE);
 
     // Worker info
     const ini=workerName.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase();
@@ -284,7 +166,7 @@ async function init(){
             </div>
             ${actions.map(a=>`
               <div class="timeline-item">
-                <div class="timeline-dot ${dotClass(a.type)}"><i class="bi ${dotIcon(a.type)}"></i></div>
+                <div class="timeline-dot ${CustodyParser.dotClass(a.type)}"><i class="bi ${CustodyParser.dotIcon(a.type)}"></i></div>
                 <div class="small fw-500 pt-1">${escHtml(a.text)}</div>
               </div>
             `).join('')}
