@@ -3,7 +3,9 @@ const AppConfig = {
   SCRIPT_URL: "https://script.google.com/macros/s/AKfycbyHXMuZcmFT7KrvqR8cygFl-t-oU_Jh4Vr2L4yp1eoT5AQAL00rbjBbUL0aKod3_C8l7g/exec",
   TOKEN_KEY: "token",
   SESSION_TOKEN: "abouamjad_secure_session_token",
-  TOOL_PREFIXES: ["I", "E", "C", "B"]
+  TOOL_PREFIXES: ["I", "E", "C", "B"],
+  OVERDUE_DAYS: 1,
+  DASHBOARD_REFRESH_MS: 30000
 };
 
 function getToken() {
@@ -73,6 +75,37 @@ async function syncScan(code) {
   } catch {
     return { ok: false };
   }
+}
+
+async function loadDateOptions(selectEl) {
+  selectEl.innerHTML = '<option value="">⏳ loading…</option>';
+  try {
+    const dates = await apiGet({ action: "getDates" });
+    if (dates && dates.error) {
+      selectEl.innerHTML = `<option value="">❌ ${dates.error}</option>`;
+      return [];
+    }
+    if (!dates || !dates.length) {
+      selectEl.innerHTML = '<option value="">⚠️ No records</option>';
+      return [];
+    }
+    selectEl.innerHTML = "";
+    const rev = [...dates].reverse();
+    rev.forEach(d => {
+      const o = document.createElement("option");
+      o.value = d;
+      o.textContent = d;
+      selectEl.appendChild(o);
+    });
+    return rev;
+  } catch {
+    selectEl.innerHTML = '<option value="">❌ Error</option>';
+    return [];
+  }
+}
+
+function initials(name) {
+  return (name || "?").split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase();
 }
 
 async function loginRequest(user, pass) {
