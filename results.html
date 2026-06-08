@@ -66,6 +66,12 @@
           <option value="">📅 Select date</option>
         </select>
         <button id="btnLoad" class="btn btn-prim"><i class="bi bi-cloud-arrow-up-fill me-1"></i> Load</button>
+        <button id="btnExport" class="btn btn-outline-success rounded-pill px-3">
+          <i class="bi bi-download me-1"></i> CSV
+        </button>
+        <button onclick="window.location.href='dashboard.html'" class="btn btn-outline-primary rounded-pill px-3">
+          <i class="bi bi-speedometer2 me-1"></i> Dashboard
+        </button>
         <button onclick="window.location.href='index.html'" class="btn btn-outline-secondary rounded-pill px-3">
           <i class="bi bi-terminal-fill me-1"></i> Terminal
         </button>
@@ -139,108 +145,18 @@
 </div>
 
 <script src="config.js"></script>
+<script src="parser.js"></script>
 <script>
-if (!requireAuth()) { /* redirecting */ }
 
 let allTools   = [];
 let allWorkers = [];
 let activeFilter = 'all';
 let activeDate   = '';
 
-// ── Dates ──
 async function loadDates(){
-  const sel = document.getElementById('dateSelect');
-  sel.innerHTML = '<option value="">⏳ loading…</option>';
-  try {
-    const dates = await apiGet({ action: "getDates" });
-    if (dates.error === "UNAUTHORIZED") { clearToken(); window.location = "login.html"; return []; }
-    if(!dates||!dates.length){ sel.innerHTML='<option value="">⚠️ No records</option>'; return []; }
-    sel.innerHTML="";
-    const rev = [...dates].reverse();
-    rev.forEach(d=>{ const o=document.createElement('option'); o.value=d; o.textContent=d; sel.appendChild(o); });
-    return rev;
-  } catch { sel.innerHTML='<option value="">❌ Error</option>'; return []; }
+  return loadDateOptions(document.getElementById('dateSelect'));
 }
 
-// ── Parser ──
-function parse(rows, date){
-  if(!rows||!rows.length) return {tools:[],workers:[],totalOut:0,totalWorkers:0};
-  let inv={}, lastPerson="General Store", lastPersonCode=null, lastDir=null;
-  for(let row of rows){
-    let code=(row.toolCode||"").toString().toUpperCase().trim();
-    let desc=row.toolDescription||"—";
-    let isToday=String(row.isTargetDay)==="true";
-    if(!code) continue;
-    if(code.startsWith("P")){
-      lastPerson=desc||code; lastPersonCode=code; lastDir=null;
-      if(!inv[code]) inv[code]={description:desc,isPerson:true,scannedToday:false,actionsToday:[]};
-      if(isToday) inv[code].scannedToday=true;
-      continue;
-    }
-    if(code==="IN"||code==="OUT"){ lastDir=code; continue; }
-    if(!isTool(code)) continue;
-    if(!inv[code]) inv[code]={description:desc,isPerson:false,scannedToday:false,actionsToday:[],holdersList:[],hasWarning:false};
-    if(isToday) inv[code].scannedToday=true;
-    if(!lastDir){
-      if(isToday){ inv[code].actionsToday.push(`⚠️ No direction set · ${lastPerson}`); inv[code].hasWarning=true; }
-      continue;
-    }
-    if(lastDir==="IN"){
-      const idx=inv[code].holdersList.lastIndexOf(lastPerson);
-      if(idx!==-1){
-        inv[code].holdersList.splice(idx,1);
-        if(isToday){ inv[code].actionsToday.push(`📥 Returned by · ${lastPerson}`); if(lastPersonCode&&inv[lastPersonCode]) inv[lastPersonCode].actionsToday.push(`📥 Returned ${code} · ${desc}`); }
-      } else if(inv[code].holdersList.length>0){
-        const orig=inv[code].holdersList.shift();
-        if(isToday){ inv[code].actionsToday.push(`⚠️ Found & Returned by · ${lastPerson} (Lost by: ${orig})`); inv[code].hasWarning=true; if(lastPersonCode&&inv[lastPersonCode]) inv[lastPersonCode].actionsToday.push(`⚠️ Recovered ${code} (was with ${orig})`); }
-      } else {
-        if(isToday) inv[code].actionsToday.push(`📥 Returned · ${lastPerson} (unregistered)`);
-      }
-    } else {
-      inv[code].holdersList.push(lastPerson);
-      if(isToday){ inv[code].actionsToday.push(`📤 Checked out to · ${lastPerson}`); if(lastPersonCode&&inv[lastPersonCode]) inv[lastPersonCode].actionsToday.push(`📤 Took ${code} · ${desc}`); }
-    }
-  }
-
-  // personToolsMap
-  let personToolsMap={};
-  for(let [code,item] of Object.entries(inv)){
-    if(!item.isPerson){
-      item.holdersList.forEach(p=>{
-        if(!personToolsMap[p]) personToolsMap[p]={};
-        if(!personToolsMap[p][code]) personToolsMap[p][code]={code,desc:item.description,qty:0};
-        personToolsMap[p][code].qty++;
-      });
-    }
-  }
-
-  let tools=[],workers=[],totalOut=0,totalWorkers=0;
-  for(let [code,item] of Object.entries(inv)){
-    if(item.isPerson){
-      if(item.scannedToday){
-        totalWorkers++;
-        const toolsHeld=Object.values(personToolsMap[item.description]||{});
-        workers.push({name:item.description,code,toolsHeld,actionsToday:item.actionsToday||[]});
-      }
-    } else {
-      const qty=item.holdersList.length;
-      totalOut+=qty;
-      if(item.scannedToday||qty>0){
-        const hMap=new Map();
-        item.holdersList.forEach(p=>hMap.set(p,(hMap.get(p)||0)+1));
-        let holdersHtml=hMap.size===0
-          ?`<span class="text-success small fw-semibold"><i class="bi bi-house-fill me-1"></i>In store</span>`
-          :Array.from(hMap.entries()).map(([p,q])=>`<span class="badge-holder"><i class="bi bi-person-circle"></i>${escHtml(p)} <strong>×${q}</strong></span>`).join('');
-        tools.push({code,description:item.description,holdersHtml,qty,actionsToday:item.actionsToday||[],hasWarning:item.hasWarning||false,holderNames:Array.from(hMap.keys())});
-      }
-    }
-  }
-  tools.sort((a,b)=>a.code.localeCompare(b.code));
-  workers.sort((a,b)=>a.name.localeCompare(b.name));
-  return {tools,workers,totalOut,totalWorkers};
-}
-
-// ── Render ──
 function renderAll(){
   const query=document.getElementById('searchInput').value.toLowerCase().trim();
   const filtered=allTools.filter(t=>{
@@ -308,9 +224,8 @@ async function loadData(date){
   document.getElementById('kpiSection').style.display='none';
   try {
     const data = await apiGet({ action: "getData", date });
-    if (data.error === "UNAUTHORIZED") { clearToken(); window.location = "login.html"; return; }
-    if(!data||data.error) throw new Error(data.error||"Server error");
-    const p=parse(data,date);
+    if (data && data.error) throw new Error(data.error);
+    const p=CustodyParser.parseOverview(data);
     allTools=p.tools; allWorkers=p.workers;
     document.getElementById('kpiOut').textContent=p.totalOut;
     document.getElementById('kpiWorkers').textContent=p.totalWorkers;
@@ -331,6 +246,9 @@ async function init(){
   if(dates.length){ document.getElementById('dateSelect').value=dates[0]; await loadData(dates[0]); }
   document.getElementById('btnLoad').addEventListener('click',async()=>{ const d=document.getElementById('dateSelect').value; if(d) await loadData(d); });
   document.getElementById('searchInput').addEventListener('input',renderAll);
+  document.getElementById('btnExport').addEventListener('click',()=>{
+    if(allTools.length) CustodyParser.exportCsv(allTools, activeDate);
+  });
 }
 document.addEventListener('DOMContentLoaded',init);
 </script>
