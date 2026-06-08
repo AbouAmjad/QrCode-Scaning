@@ -141,6 +141,7 @@
   <div class="header">
     <h2>⚡ HYPERSCAN ⚡<span style="font-size:0.7rem;color:#2eff8c;"> // ABU AMJAD TERM</span></h2>
     <div class="nav-btns">
+      <button class="btn-report" onclick="viewDashboard()">📊 DASH</button>
       <button class="btn-report" onclick="viewResults()">📡 REPORT</button>
       <button class="btn-logout" onclick="logout()">⛔ EXFIL</button>
     </div>
@@ -191,7 +192,7 @@
     if (descCache[code]) return descCache[code];
     try {
       const data = await apiGet({ action: "getDesc", code });
-      if (data.error === "UNAUTHORIZED") { clearToken(); window.location = "login.html"; return code; }
+      if (data && data.error) return code;
       const name = data.description || code;
       descCache[code] = name;
       return name;
@@ -414,7 +415,6 @@
   // ── processQueue — يرسل بالترتيب، لا يلمس الـ description ──
   async function processQueue() {
     if (isProcessing || !navigator.onLine) { updateOnlineStatus(); return; }
-    if (!getToken()) return;
     isProcessing = true;
     try {
       let scans = loadScans();
@@ -423,20 +423,17 @@
         if (scan.sent) continue;
         try {
           const result = await syncScan(scan.code);
-          if (result.auth) { clearToken(); window.location = "login.html"; return; }
           if (result.ok) {
             markSynced(scan.logId);
             const updated = loadScans().map(s => s.seq === scan.seq ? {...s, sent: true} : s);
             saveScans(updated);
             updateCounter();
           } else {
-            markFailed(scan.logId);
             break;
           }
           await new Promise(r => setTimeout(r, 200));
         } catch (err) {
           console.error("Sync break at:", scan.seq, err);
-          markFailed(scan.logId);
           break;
         }
       }
@@ -451,6 +448,7 @@
 
   function logout()      { clearToken(); window.location = "login.html"; }
   function viewResults() { window.location = "results.html"; }
+  function viewDashboard(){ window.location = "dashboard.html"; }
 
   updateOnlineStatus();
   if (checkAuth()) { updateCounter(); processQueue(); }
