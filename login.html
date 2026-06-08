@@ -107,19 +107,18 @@
       button.textContent = "Authenticating...";
       button.style.background = 'linear-gradient(135deg, #6c757d 0%, #495057 100%)';
 
-      const url = `${AppConfig.SCRIPT_URL}?action=login&user=${encodeURIComponent(user)}&pass=${encodeURIComponent(pass)}`;
-
       try {
-        const res = await fetch(url, { method: "GET", cache: "no-store" });
-        const data = await res.json();
-
-        if (data.success && data.token) {
-          setToken(data.token);
+        const result = await loginRequest(user, pass);
+        if (result.ok && result.token) {
+          setToken(result.token);
           button.textContent = "Success! Redirecting...";
           button.style.background = 'linear-gradient(135deg, #28a745 0%, #20c997 100%)';
           setTimeout(() => { window.location = "index.html"; }, 1000);
-        } else {
+        } else if (result.badCreds) {
           showError("Invalid username or password");
+          resetButton();
+        } else {
+          showError("Network error - please try again");
           resetButton();
         }
       } catch (error) {
