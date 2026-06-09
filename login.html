@@ -59,9 +59,12 @@
 <body>
   <div class="particles" id="particles"></div>
   <div id="loginBox">
-    <div class="logo">
-      <h1>👑 ABU AMJAD 👑</h1>
-      <p>Secure Access Portal</p>
+    <div class="d-flex justify-content-between align-items-start gap-2 mb-3">
+      <div class="logo text-start mb-0" style="margin-bottom:0;">
+        <h1>👑 ABU AMJAD 👑</h1>
+        <p>Secure Access Portal</p>
+      </div>
+      <button type="button" class="login-btn theme-switch" style="width:auto;padding:.7rem 1rem;font-size:.8rem;white-space:nowrap;" onclick="toggleTheme();syncThemeControls()" data-theme-toggle>Switch to Red</button>
     </div>
     <div class="input-group">
       <input type="text" id="loginUser" placeholder=" " autocomplete="off">

@@ -1,0 +1,17 @@
+// انسخ هذا الملف إلى Google Apps Script (Code.gs)
+// ضع القيم الحقيقية في Script Properties:
+//   APP_USER, APP_PASS, APP_TOKEN, B_SHEET_ID
+
+const USER = "YOUR_USERNAME";
+const PASS = "YOUR_PASSWORD";
+const MAIN_SHEET_ID = "YOUR_MAIN_SHEET_ID";
+
+const SPREADSHEET_MAP = {
+  "P": { id: "YOUR_P_SHEET_ID", column: "E" },
+  "E": { id: "YOUR_E_SHEET_ID", column: "E" },
+  "I": { id: "YOUR_I_SHEET_ID", column: "E" },
+  "C": { id: "YOUR_C_SHEET_ID", column: "E" },
+  "B": { id: "YOUR_B_SHEET_ID", column: "E" }
+};
+
+// ... باقي الكود من Code.gs.txt

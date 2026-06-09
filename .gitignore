@@ -1,0 +1,13 @@
+# Secrets — لا ترفع على GitHub Public
+Code.gs.txt
+.env
+*.env
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor
+.vscode/
+.cursor/

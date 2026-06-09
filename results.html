@@ -66,8 +66,12 @@
           <option value="">📅 Select date</option>
         </select>
         <button id="btnLoad" class="btn btn-prim"><i class="bi bi-cloud-arrow-up-fill me-1"></i> Load</button>
+        <button type="button" class="nav-btn theme-switch" onclick="toggleTheme();syncThemeControls()" data-theme-toggle>Switch to Red</button>
         <button id="btnExport" class="btn btn-outline-success rounded-pill px-3">
           <i class="bi bi-download me-1"></i> CSV
+        </button>
+        <button onclick="window.location.href='damage.html'" class="btn btn-outline-danger rounded-pill px-3">
+          <i class="bi bi-exclamation-octagon me-1"></i> Damage
         </button>
         <button onclick="window.location.href='dashboard.html'" class="btn btn-outline-primary rounded-pill px-3">
           <i class="bi bi-speedometer2 me-1"></i> Dashboard

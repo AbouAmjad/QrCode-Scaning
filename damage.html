@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>ToolCustody | Damage Reports</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family:'Inter',sans-serif;
+      min-height:100vh;
+      padding:1.8rem 1rem;
+      color:#10213a;
+      background:
+        radial-gradient(circle at top left, rgba(59,130,246,0.18), transparent 34%),
+        radial-gradient(circle at top right, rgba(239,68,68,0.14), transparent 28%),
+        linear-gradient(145deg,#eef4fb,#dfeaf6 58%,#f7f9fc);
+    }
+    .glass-panel {
+      background:rgba(255,255,255,0.92);
+      backdrop-filter:blur(14px);
+      border-radius:2.5rem;
+      box-shadow:0 25px 45px -12px rgba(0,0,0,0.16);
+      border:1px solid rgba(255,255,255,0.7);
+    }
+    .premium-header {
+      border-bottom:2px solid rgba(15,43,61,0.08);
+      padding-bottom:1rem;
+      margin-bottom:2rem;
+    }
+    .logo-icon {
+      background:linear-gradient(145deg,#b91c1c,#7f1d1d);
+      width:48px;
+      height:48px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:1.2rem;
+      color:white;
+      box-shadow:0 10px 15px -6px rgba(0,0,0,0.25);
+    }
+    .stat-card {
+      border-radius:1.8rem;
+      padding:1.45rem 1.7rem;
+      border:none;
+      transition:transform 0.2s, box-shadow 0.2s;
+    }
+    .stat-card:hover { transform:translateY(-3px); box-shadow:0 20px 30px -12px rgba(0,0,0,0.2); }
+    .bg-red    { background:linear-gradient(125deg,#dc2626,#b91c1c); box-shadow:0 10px 18px -8px rgba(220,38,38,0.5); }
+    .bg-amber  { background:linear-gradient(125deg,#f59e0b,#d97706); box-shadow:0 10px 18px -8px rgba(245,158,11,0.4); }
+    .bg-slate  { background:linear-gradient(125deg,#334155,#1e293b); box-shadow:0 10px 18px -8px rgba(15,23,42,0.35); }
+    .bg-blue   { background:linear-gradient(125deg,#2563eb,#1d4ed8); box-shadow:0 10px 18px -8px rgba(59,130,246,0.35); }
+    .section-badge {
+      font-weight:700;
+      font-size:0.75rem;
+      letter-spacing:0.04em;
+      background:rgba(15,43,61,0.08);
+      padding:0.35rem 1.2rem;
+      border-radius:60px;
+      color:#1f3a6b;
+      display:inline-block;
+      margin-bottom:1rem;
+    }
+    .card-dark {
+      border-radius:1.5rem;
+      background:#fff;
+      border:1px solid #eef2f8;
+      overflow:hidden;
+    }
+    .form-sel {
+      border-radius:60px;
+      border:1px solid #e2e8f0;
+      padding:0.55rem 1.2rem;
+      background:white;
+      font-weight:500;
+      font-size:0.85rem;
+    }
+    .nav-btn {
+      border-radius:60px;
+      padding:.45rem 1.1rem;
+      font-size:.8rem;
+      font-weight:600;
+      border:1px solid rgba(148,163,184,0.25);
+      background:rgba(30,41,59,0.6);
+      color:#e2e8f0;
+      text-decoration:none;
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+    }
+    .nav-btn:hover { background:rgba(51,65,85,0.9); color:#fff; }
+    .nav-btn.primary { background:#2563eb; border-color:#2563eb; color:#fff; }
+    .spinner-wrap { display:flex; justify-content:center; }
+    .spinner {
+      width:2rem;
+      height:2rem;
+      border:3px solid #e2e8f0;
+      border-top:3px solid #ef4444;
+      border-radius:50%;
+      animation:spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .damage-grid { display:grid; gap:1rem; }
+    .damage-card {
+      display:grid;
+      grid-template-columns:110px 1fr auto;
+      gap:1rem;
+      align-items:stretch;
+      padding:1rem;
+      border:1px solid #edf2f7;
+      border-radius:1.5rem;
+      background:linear-gradient(180deg,#fff,#f8fbff);
+      box-shadow:0 14px 24px -18px rgba(15,23,42,0.25);
+    }
+    .damage-image {
+      width:110px;
+      min-height:110px;
+      border-radius:1.1rem;
+      object-fit:cover;
+      background:#e2e8f0;
+      border:1px solid #dbe5f0;
+    }
+    .damage-fallback {
+      width:110px;
+      min-height:110px;
+      border-radius:1.1rem;
+      background:linear-gradient(135deg,#dbeafe,#eff6ff);
+      color:#1d4ed8;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:2rem;
+      border:1px dashed #93c5fd;
+    }
+    .damage-title { font-weight:800; color:#0f2b3d; font-size:1rem; }
+    .damage-sub { color:#64748b; font-size:0.84rem; }
+    .damage-meta {
+      display:flex;
+      flex-wrap:wrap;
+      gap:.4rem;
+      margin-top:.65rem;
+    }
+    .meta-pill {
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      border-radius:999px;
+      padding:.32rem .75rem;
+      font-size:.72rem;
+      font-weight:700;
+      border:1px solid #e2e8f0;
+      background:#f8fafc;
+      color:#334155;
+    }
+    .meta-pill.warn { background:#fff7ed; color:#9a3412; border-color:#fed7aa; }
+    .meta-pill.red { background:#fef2f2; color:#b91c1c; border-color:#fecaca; }
+    .meta-pill.blue { background:#eff6ff; color:#1d4ed8; border-color:#bfdbfe; }
+    .damage-remark {
+      color:#334155;
+      font-size:.85rem;
+      line-height:1.55;
+      margin-top:.8rem;
+      background:#f8fafc;
+      border:1px solid #e2e8f0;
+      border-radius:1rem;
+      padding:.85rem .95rem;
+    }
+    .damage-count {
+      min-width:86px;
+      align-self:start;
+      justify-self:end;
+      text-align:center;
+      border-radius:1.2rem;
+      padding:.8rem .9rem;
+      background:linear-gradient(135deg,#b91c1c,#ef4444);
+      color:#fff;
+      box-shadow:0 12px 18px -10px rgba(185,28,28,0.5);
+    }
+    .damage-count .value { font-size:2rem; line-height:1; font-weight:800; }
+    .damage-count .label { font-size:.72rem; font-weight:700; opacity:.85; letter-spacing:.04em; text-transform:uppercase; }
+    .empty-state {
+      border:1px dashed #cbd5e1;
+      border-radius:1.5rem;
+      padding:2.5rem 1.5rem;
+      text-align:center;
+      color:#64748b;
+      background:linear-gradient(180deg,#fff,#f8fafc);
+    }
+    @media(max-width: 768px) {
+      body { padding:.8rem; }
+      .damage-card { grid-template-columns:1fr; }
+      .damage-image, .damage-fallback { width:100%; min-height:170px; }
+      .damage-count { justify-self:start; }
+    }
+  </style>
+</head>
+<body>
+<div class="container-lg px-0 px-md-2" style="max-width:1480px;">
+  <div class="glass-panel p-3 p-md-5">
+    <div class="premium-header d-flex flex-wrap justify-content-between align-items-center gap-3">
+      <div class="d-flex align-items-center gap-3">
+        <div class="logo-icon"><i class="bi bi-exclamation-octagon fs-4"></i></div>
+        <div>
+          <h3 class="fw-bold mb-0">ToolCustody <span class="fw-medium text-secondary">· Damage Reports</span></h3>
+          <p class="text-muted small mb-0 mt-1"><i class="bi bi-image me-1"></i> Product damage log with images, offenders, count and remarks</p>
+        </div>
+      </div>
+      <div class="d-flex flex-wrap gap-2 align-items-center">
+        <select id="dateSelect" class="form-select form-sel" style="min-width:220px;">
+          <option value="">📅 Select date</option>
+        </select>
+        <button id="btnLoad" class="btn btn-danger rounded-pill px-3 fw-semibold"><i class="bi bi-cloud-arrow-up-fill me-1"></i> Load</button>
+        <button id="btnRefresh" class="btn btn-outline-danger rounded-pill px-3"><i class="bi bi-arrow-clockwise me-1"></i> Refresh</button>
+        <button type="button" class="nav-btn theme-switch" onclick="toggleTheme();syncThemeControls()" data-theme-toggle>Switch to Red</button>
+        <a href="dashboard.html" class="nav-btn"><i class="bi bi-speedometer2"></i> Dashboard</a>
+        <a href="results.html" class="nav-btn"><i class="bi bi-table"></i> Overview</a>
+        <a href="index.html" class="nav-btn"><i class="bi bi-terminal"></i> Terminal</a>
+      </div>
+    </div>
+
+    <div id="loadingState" class="text-center py-5" style="display:none;">
+      <div class="spinner-wrap mb-3"><div class="spinner"></div></div>
+      <div class="text-secondary">Loading damage report…</div>
+    </div>
+
+    <div id="mainContent" style="display:none">
+      <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-3"><div class="stat-card bg-red text-white"><div class="small opacity-75">Damaged items</div><div class="display-6 fw-bold" id="kpiItems">0</div></div></div>
+        <div class="col-6 col-lg-3"><div class="stat-card bg-amber text-white"><div class="small opacity-75">Damage count</div><div class="display-6 fw-bold" id="kpiCount">0</div></div></div>
+        <div class="col-6 col-lg-3"><div class="stat-card bg-slate text-white"><div class="small opacity-75">Unique offenders</div><div class="display-6 fw-bold" id="kpiPeople">0</div></div></div>
+        <div class="col-6 col-lg-3"><div class="stat-card bg-blue text-white"><div class="small opacity-75">With remarks</div><div class="display-6 fw-bold" id="kpiRemarks">0</div></div></div>
+      </div>
+
+      <div class="card-dark p-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+          <div>
+            <span class="section-badge"><i class="bi bi-bug me-1"></i> DAMAGE LOG</span>
+            <h6 class="fw-bold mb-0">Product damage details</h6>
+          </div>
+          <div class="text-secondary small" id="reportState">Ready</div>
+        </div>
+        <div id="damageList" class="damage-grid"></div>
+        <div id="emptyState" class="empty-state" style="display:none;">
+          <i class="bi bi-folder2-open fs-1 text-secondary"></i>
+          <div class="fw-semibold mt-2">No damage records found for this date</div>
+          <div class="small mt-1">If the backend does not return damage data yet, this page is already ready to consume it later.</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="errorState" class="text-center py-5 text-danger" style="display:none">
+      <i class="bi bi-wifi-off fs-1"></i>
+      <div class="mt-2" id="errorMsg">Failed to load</div>
+    </div>
+  </div>
+</div>
+
+<script src="config.js"></script>
+<script>
+let activeDate = "";
+let lastDamageRows = [];
+
+function normalizeDamageRow(row) {
+  return {
+    code: (row.code || row.productCode || row.toolCode || "").toString().trim(),
+    name: row.name || row.productName || row.toolDescription || row.description || "Unnamed product",
+    image: row.image || row.photo || row.imageUrl || row.picture || row.productImage || "",
+    damagedBy: row.damagedBy || row.damageBy || row.offender || row.person || row.worker || "Unknown",
+    count: Number(row.count ?? row.damageCount ?? row.times ?? row.qty ?? 1) || 1,
+    remark: row.remark || row.remarks || row.note || row.notes || "No remark",
+    date: row.date || row.damageDate || row.rowDate || activeDate || ""
+  };
+}
+
+function renderDamage(items) {
+  const list = document.getElementById("damageList");
+  const empty = document.getElementById("emptyState");
+  list.innerHTML = "";
+
+  const totalItems = items.length;
+  const totalCount = items.reduce((sum, item) => sum + item.count, 0);
+  const uniquePeople = new Set(items.map(item => item.damagedBy).filter(Boolean)).size;
+  const remarksCount = items.filter(item => item.remark && item.remark !== "No remark").length;
+
+  document.getElementById("kpiItems").textContent = totalItems;
+  document.getElementById("kpiCount").textContent = totalCount;
+  document.getElementById("kpiPeople").textContent = uniquePeople;
+  document.getElementById("kpiRemarks").textContent = remarksCount;
+  document.getElementById("reportState").textContent = totalItems ? `Loaded ${totalItems} record(s)` : "No records";
+
+  if (!items.length) {
+    empty.style.display = "block";
+    return;
+  }
+
+  empty.style.display = "none";
+  items.forEach(item => {
+    const hasImage = !!item.image;
+    const imageBlock = hasImage
+      ? `<div style="position:relative; width:110px; min-height:110px;">
+           <img src="${escHtml(item.image)}" alt="${escHtml(item.name)}" class="damage-image" style="position:absolute; inset:0;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+           <div class="damage-fallback" style="display:none; position:absolute; inset:0;"><i class="bi bi-image-alt"></i></div>
+         </div>`
+      : `<div class="damage-fallback"><i class="bi bi-image-alt"></i></div>`;
+
+    const card = document.createElement("div");
+    card.className = "damage-card";
+    card.innerHTML = `
+      ${imageBlock}
+      <div>
+        <div class="damage-title">${escHtml(item.name)}</div>
+        <div class="damage-sub">${item.code ? escHtml(item.code) + " · " : ""}Damaged on ${escHtml(item.date || activeDate || "unknown date")}</div>
+        <div class="damage-meta">
+          <span class="meta-pill red"><i class="bi bi-person-exclamation"></i> ${escHtml(item.damagedBy)}</span>
+          <span class="meta-pill warn"><i class="bi bi-repeat"></i> ${item.count} time(s)</span>
+          <span class="meta-pill blue"><i class="bi bi-calendar-event"></i> ${escHtml(item.date || activeDate || "N/A")}</span>
+        </div>
+        <div class="damage-remark"><strong>Remark:</strong> ${escHtml(item.remark)}</div>
+      </div>
+      <div class="damage-count">
+        <div class="label">Count</div>
+        <div class="value">${item.count}</div>
+      </div>
+    `;
+    list.appendChild(card);
+  });
+}
+
+async function loadDamage(date) {
+  activeDate = date;
+  document.getElementById("loadingState").style.display = "block";
+  document.getElementById("mainContent").style.display = "none";
+  document.getElementById("errorState").style.display = "none";
+
+  try {
+    const response = await apiGet({ action: "getDamage", date });
+    if (response && response.error) throw new Error(response.error);
+
+    const rows = Array.isArray(response)
+      ? response
+      : Array.isArray(response.items)
+        ? response.items
+        : Array.isArray(response.rows)
+          ? response.rows
+          : Array.isArray(response.data)
+            ? response.data
+            : Array.isArray(response.damage)
+              ? response.damage
+              : [];
+
+    lastDamageRows = rows.map(normalizeDamageRow).filter(item => item.name || item.code || item.damagedBy);
+    renderDamage(lastDamageRows);
+
+    document.getElementById("loadingState").style.display = "none";
+    document.getElementById("mainContent").style.display = "block";
+  } catch (error) {
+    document.getElementById("loadingState").style.display = "none";
+    document.getElementById("errorState").style.display = "block";
+    document.getElementById("errorMsg").textContent = error.message || "Failed to load damage report";
+  }
+}
+
+async function init() {
+  const dates = await loadDateOptions(document.getElementById("dateSelect"));
+  if (dates.length) {
+    document.getElementById("dateSelect").value = dates[0];
+    await loadDamage(dates[0]);
+  }
+
+  document.getElementById("btnLoad").addEventListener("click", async () => {
+    const d = document.getElementById("dateSelect").value;
+    if (d) await loadDamage(d);
+  });
+
+  document.getElementById("btnRefresh").addEventListener("click", () => {
+    const d = document.getElementById("dateSelect").value;
+    if (d) loadDamage(d);
+  });
+
+  document.getElementById("dateSelect").addEventListener("change", e => {
+    if (e.target.value) loadDamage(e.target.value);
+  });
+}
+
+document.addEventListener("DOMContentLoaded", init);
+</script>
+</body>
+</html>
