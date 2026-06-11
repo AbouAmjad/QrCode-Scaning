@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>معجنات الاشلان</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script>
+tailwind.config = {
+theme: {
+extend: {
+colors: {
+amber: {
+50: '#fff8e1',
+100: '#ffecb3',
+200: '#ffe082',
+300: '#ffd54f',
+400: '#ffca28',
+500: '#ffc107',
+600: '#ffb300',
+700: '#ffa000',
+800: '#ff8f00',
+900: '#ff6f00',
+}
+},
+animation: {
+'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+'fade-in': 'fadeIn 0.6s ease forwards'
+},
+keyframes: {
+pulse: {
+'0%, 100%': { opacity: 1 },
+'50%': { opacity: .5 }
+},
+fadeIn: {
+'0%': { opacity: 0, transform: 'translateY(20px)' },
+'100%': { opacity: 1, transform: 'translateY(0)' }
+}
+}
+}
+}
+}
+</script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
+* {
+margin: 0;
+padding: 0;
+box-sizing: border-box;
+font-family: 'Cairo', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+body {
+background-color: #f8f5f0;
+color: #333;
+line-height: 1.6;
+min-height: 100vh;
+position: relative;
+overflow-x: hidden;
+}
+body::before {
+content: '';
+position: fixed;
+top: 0;
+right: 0;
+width: 100%;
+height: 100%;
+background-image: url('https://images.unsplash.com/photo-1620374645498-af6bd681a0bd?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80');
+background-size: cover;
+background-position: center;
+background-attachment: fixed;
+opacity: 0.25;
+z-index: -2;
+}
+.header-overlay {
+position: absolute;
+inset: 0;
+background: linear-gradient(to left, rgba(184, 28, 28, 0.9), rgba(212, 160, 23, 0.9));
+z-index: -1;
+}
+.menu-column:nth-child(1) { animation-delay: 0.1s; }
+.menu-column:nth-child(2) { animation-delay: 0.2s; }
+.menu-column:nth-child(3) { animation-delay: 0.3s; }
+.menu-column:nth-child(4) { animation-delay: 0.4s; }
+.menu-column:nth-child(5) { animation-delay: 0.5s; }
+@media (max-width: 1024px) {
+.grid-cols-5 {
+grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+}
+@media (max-width: 768px) {
+.grid-cols-5 {
+grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+}
+@media (max-width: 640px) {
+.grid-cols-5, .grid-cols-4, .grid-cols-3, .grid-cols-2 {
+grid-template-columns: 1fr;
+}
+.pizza-sizes {
+grid-template-columns: repeat(2, 1fr) !important;
+}
+.contact-info {
+flex-direction: column;
+align-items: center;
+}
+.contact-item {
+width: 100%;
+max-width: 400px;
+justify-content: center;
+}
+.map-container {
+height: 300px !important;
+}
+}
+.manakish-grid {
+display: grid;
+grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+gap: 1rem;
+}
+.manakish-item {
+background: white;
+border-radius: 1rem;
+padding: 1.25rem;
+text-align: center;
+box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+transition: all 0.3s ease;
+border: 1px solid #f5e9d5;
+}
+.manakish-item:hover {
+transform: translateY(-3px);
+box-shadow: 0 10px 15px rgba(0,0,0,0.1);
+border-color: #ffb300;
+}
+.size-option {
+background: #fff8e1;
+border-radius: 0.75rem;
+padding: 0.75rem;
+margin: 0.5rem 0;
+border: 1px dashed #ffca28;
+}
+.size-label {
+display: block;
+font-weight: 600;
+color: #b45309;
+font-size: 0.875rem;
+margin-bottom: 0.25rem;
+}
+.size-price {
+font-weight: 700;
+color: #b45309;
+font-size: 1.125rem;
+}
+.manakish-title {
+font-weight: 700;
+font-size: 1.25rem;
+color: #8c2d04;
+margin-bottom: 1rem;
+padding-bottom: 0.5rem;
+border-bottom: 1px solid #f5e9d5;
+}
+.single-price {
+font-weight: 700;
+color: #b45309;
+font-size: 1.5rem;
+margin-top: 0.5rem;
+}
+/* تخصيص لون التمرير */
+::-webkit-scrollbar {
+width: 10px;
+}
+::-webkit-scrollbar-track {
+background: #f1f1f1;
+border-radius: 5px;
+}
+::-webkit-scrollbar-thumb {
+background: #ffb300;
+border-radius: 5px;
+}
+::-webkit-scrollbar-thumb:hover {
+background: #ff8f00;
+}
+/* تأثيرات للخريطة */
+.map-container {
+border-radius: 1rem;
+overflow: hidden;
+box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+transition: all 0.3s ease;
+}
+.map-container:hover {
+box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+transform: translateY(-5px);
+}
+/* تأثيرات للبطاقات */
+.product-item, .manakish-item {
+transition: all 0.3s ease;
+}
+.product-item:hover, .manakish-item:hover {
+transform: translateY(-2px);
+box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+background-color: rgba(255, 193, 7, 0.05);
+}
+</style>
+</head>
+<body class="bg-[#f8f5f0] relative">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<!-- Header Section -->
+<header class="relative text-center py-10 mb-12 rounded-3xl overflow-hidden shadow-2xl">
+<div class="absolute inset-0 bg-gradient-to-l from-amber-900/90 to-amber-600/90 z-0"></div>
+<div class="absolute inset-0 bg-black/40 z-10"></div>
+<div class="relative z-20 px-4">
+<h1 class="text-4xl md:text-5xl font-bold mb-4 text-white drop-shadow-lg">
+معجنات الاشلان
+</h1>
+<div class="space-y-1.5">
+<p class="text-xl italic opacity-90 text-white">عجينة طرية</p>
+<p class="text-xl italic opacity-90 text-white">على القلب هنية</p>
+<p class="text-xl italic opacity-90 text-white">من قلب الزاهرية</p>
+<p class="text-lg italic opacity-90 text-amber-200">من الصبح لعشية 😉</p>
+</div>
+</div>
+</header>
+<!-- Menu Section -->
+<main>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 mb-16">
+<!-- المناقيش Column with new structure -->
+<div class="menu-column bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-xl border-r-4 border-amber-400 animate-fade-in opacity-0">
+<h2 class="text-3xl font-bold text-amber-800 text-center mb-8 pb-4 border-b-2 border-amber-200 relative">
+مناقيش
+<span class="absolute bottom-0 right-1/2 translate-x-1/2 w-20 h-1 bg-amber-400 rounded-full"></span>
+</h2>
+<div class="manakish-grid">
+<!-- زعتر بلدي -->
+<div class="manakish-item">
+<div class="manakish-title">زعتر بلدي</div>
+<div class="size-option">
+<span class="size-label">عادي</span>
+<span class="size-price">50.000 ل.ل.</span>
+</div>
+<div class="size-option">
+<span class="size-label">صغير</span>
+<span class="size-price">30.000 ل.ل.</span>
+</div>
+</div>
+
+<!-- زعتر حلبي -->
+<div class="manakish-item">
+<div class="manakish-title">زعتر حلبي</div>
+<div class="size-option">
+<span class="size-label">عادي</span>
+<span class="size-price">50.000 ل.ل.</span>
+</div>
+<div class="size-option">
+<span class="size-label">صغير</span>
+<span class="size-price">30.000 ل.ل.</span>
+</div>
+</div>
+
+<!-- زعتر خضره -->
+<div class="manakish-item">
+<div class="manakish-title">زعتر خضره</div>
+<span class="single-price">70.000 ل.ل.</span>
+</div>
+
+<!-- جبنه -->
+<div class="manakish-item">
+<div class="manakish-title">جبنه</div>
+<div class="size-option">
+<span class="size-label">عادي</span>
+<span class="size-price">120.000 ل.ل.</span>
+</div>
+<div class="size-option">
+<span class="size-label">صغير</span>
+<span class="size-price">80.000 ل.ل.</span>
+</div>
+</div>
+
+<!-- نص جبنه نص زعتر -->
+<div class="manakish-item">
+<div class="manakish-title">نص جبنه نص زعتر</div>
+<span class="single-price">90.000 ل.ل.</span>
+</div>
+
+<!-- جبنه خضرا -->
+<div class="manakish-item">
+<div class="manakish-title">جبنه خضرا</div>
+<span class="single-price">140.000 ل.ل.</span>
+</div>
+
+<!-- جبنه دره -->
+<div class="manakish-item">
+<div class="manakish-title">جبنه دره</div>
+<span class="single-price">140.000 ل.ل.</span>
+</div>
+
+<!-- جبنه سجق -->
+<div class="manakish-item">
+<div class="manakish-title">جبنه سجق</div>
+<span class="single-price">160.000 ل.ل.</span>
+</div>
+
+<!-- جبنه مرتديلا -->
+<div class="manakish-item">
+<div class="manakish-title">جبنه مرتديلا</div>
+<span class="single-price">160.000 ل.ل.</span>
+</div>
+
+<!-- جبنه بيبيروني -->
+<div class="manakish-item">
+<div class="manakish-title">جبنه بيبيروني</div>
+<span class="single-price">160.000 ل.ل.</span>
+</div>
+
+<!-- قريش -->
+<div class="manakish-item">
+<div class="manakish-title">قريش</div>
+<span class="single-price">100.000 ل.ل.</span>
+</div>
+
+<!-- قريش مع جبنه -->
+<div class="manakish-item">
+<div class="manakish-title">قريش مع جبنه</div>
+<span class="single-price">150.000 ل.ل.</span>
+</div>
+
+<!-- لحمه -->
+<div class="manakish-item">
+<div class="manakish-title">لحمه</div>
+<span class="single-price">150.000 ل.ل.</span>
+</div>
+
+<!-- لحمه مع جبنه -->
+<div class="manakish-item">
+<div class="manakish-title">لحمه مع جبنه</div>
+<span class="single-price">200.000 ل.ل.</span>
+</div>
+
+<!-- تركيه -->
+<div class="manakish-item">
+<div class="manakish-title">تركيه</div>
+<span class="single-price">100.000 ل.ل.</span>
+</div>
+
+<!-- فاهيتا -->
+<div class="manakish-item">
+<div class="manakish-title">فاهيتا</div>
+<span class="single-price">250.000 ل.ل.</span>
+</div>
+
+<!-- طاووق -->
+<div class="manakish-item">
+<div class="manakish-title">طاووق</div>
+<span class="single-price">250.000 ل.ل.</span>
+</div>
+
+<!-- جبنة مطبقة (new item) -->
+<div class="manakish-item">
+<div class="manakish-title">جبنة مطبقة</div>
+<span class="single-price">80.000 ل.ل.</span>
+</div>
+</div>
+</div>
+
+<!-- كعك Column - Updated Prices -->
+<div class="menu-column bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-xl border-r-4 border-amber-400 animate-fade-in opacity-0">
+<h2 class="text-3xl font-bold text-amber-800 text-center mb-8 pb-4 border-b-2 border-amber-200 relative">
+كعك
+<span class="absolute bottom-0 right-1/2 translate-x-1/2 w-20 h-1 bg-amber-400 rounded-full"></span>
+</h2>
+<div class="space-y-4">
+<div class="product-item flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:pr-4 transition-all duration-300">
+<span class="font-semibold text-lg text-gray-800 flex-1 pr-3">كعك جبنة</span>
+<span class="font-bold text-amber-700 text-lg bg-amber-50/50 px-4 py-2 rounded-full border border-amber-200 min-w-[120px] text-center">120.000 ل.ل.</span>
+</div>
+<div class="product-item flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:pr-4 transition-all duration-300">
+<span class="font-semibold text-lg text-gray-800 flex-1 pr-3">كعك جبنة خضرا</span>
+<span class="font-bold text-amber-700 text-lg bg-amber-50/50 px-4 py-2 rounded-full border border-amber-200 min-w-[120px] text-center">140.000 ل.ل.</span>
+</div>
+<div class="product-item flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:pr-4 transition-all duration-300">
+<span class="font-semibold text-lg text-gray-800 flex-1 pr-3">كعك جبنة مرتديلا</span>
+<span class="font-bold text-amber-700 text-lg bg-amber-50/50 px-4 py-2 rounded-full border border-amber-200 min-w-[120px] text-center">160.000 ل.ل.</span>
+</div>
+<div class="product-item flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:pr-4 transition-all duration-300">
+<span class="font-semibold text-lg text-gray-800 flex-1 pr-3">كعك جبنة سجق</span>
+<span class="font-bold text-amber-700 text-lg bg-amber-50/50 px-4 py-2 rounded-full border border-amber-200 min-w-[120px] text-center">160.000 ل.ل.</span>
+</div>
+<div class="product-item flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:pr-4 transition-all duration-300">
+<span class="font-semibold text-lg text-gray-800 flex-1 pr-3">كعك فاهيتا</span>
+<span class="font-bold text-amber-700 text-lg bg-amber-50/50 px-4 py-2 rounded-full border border-amber-200 min-w-[120px] text-center">250.000 ل.ل.</span>
+</div>
+<div class="product-item flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:pr-4 transition-all duration-300">
+<span class="font-semibold text-lg text-gray-800 flex-1 pr-3">كعك طاووق</span>
+<span class="font-bold text-amber-700 text-lg bg-amber-50/50 px-4 py-2 rounded-full border border-amber-200 min-w-[120px] text-center">250.000 ل.ل.</span>
+</div>
+</div>
+</div>
+
+<!-- سواريه Column - Unchanged -->
+<div class="menu-column bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-xl border-r-4 border-amber-400 animate-fade-in opacity-0">
+<h2 class="text-3xl font-bold text-amber-800 text-center mb-8 pb-4 border-b-2 border-amber-200 relative">
+سواريه
+<span class="absolute bottom-0 right-1/2 translate-x-1/2 w-20 h-1 bg-amber-400 rounded-full"></span>
+</h2>
+<div class="space-y-4">
+<div class="product-item flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:pr-4 transition-all duration-300">
+<span class="font-semibold text-lg text-gray-800 flex-1 pr-3">سواريه جبنة</span>
+<span class="font-bold text-amber-700 text-lg bg-amber-50/50 px-4 py-2 rounded-full border border-amber-200 min-w-[120px] text-center">25.000 ل.ل.</span>
+</div>
+<div class="product-item flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:pr-4 transition-all duration-300">
+<span class="font-semibold text-lg text-gray-800 flex-1 pr-3">سواريه رقاقات جبنة</span>
+<span class="font-bold text-amber-700 text-lg bg-amber-50/50 px-4 py-2 rounded-full border border-amber-200 min-w-[120px] text-center">25.000 ل.ل.</span>
+</div>
+<div class="product-item flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:pr-4 transition-all duration-300">
+<span class="font-semibold text-lg text-gray-800 flex-1 pr-3">سواريه رقاقات فاهيتا</span>
+<span class="font-bold text-amber-700 text-lg bg-amber-50/50 px-4 py-2 rounded-full border border-amber-200 min-w-[120px] text-center">25.000 ل.ل.</span>
+</div>
+<div class="product-item flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:pr-4 transition-all duration-300">
+<span class="font-semibold text-lg text-gray-800 flex-1 pr-3">سواريه رقاقات قريشة</span>
+<span class="font-bold text-amber-700 text-lg bg-amber-50/50 px-4 py-2 rounded-full border border-amber-200 min-w-[120px] text-center">25.000 ل.ل.</span>
+</div>
+<div class="product-item flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:pr-4 transition-all duration-300">
+<span class="font-semibold text-lg text-gray-800 flex-1 pr-3">سواريه لحمة بعجين</span>
+<span class="font-bold text-amber-700 text-lg bg-amber-50/50 px-4 py-2 rounded-full border border-amber-200 min-w-[120px] text-center">25.000 ل.ل.</span>
+</div>
+<div class="product-item flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:pr-4 transition-all duration-300">
+<span class="font-semibold text-lg text-gray-800 flex-1 pr-3">لحمة بعجين كبير</span>
+<span class="font-bold text-amber-700 text-lg bg-amber-50/50 px-4 py-2 rounded-full border border-amber-200 min-w-[120px] text-center">50.000 ل.ل.</span>
+</div>
+<div class="product-item flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:pr-4 transition-all duration-300">
+<span class="font-semibold text-lg text-gray-800 flex-1 pr-3">سواريه شعيبيات</span>
+<span class="font-bold text-amber-700 text-lg bg-amber-50/50 px-4 py-2 rounded-full border border-amber-200 min-w-[120px] text-center">25.000 ل.ل.</span>
+</div>
+<div class="product-item flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:pr-4 transition-all duration-300">
+<span class="font-semibold text-lg text-gray-800 flex-1 pr-3">دزينة سواريه</span>
+<span class="font-bold text-amber-700 text-lg bg-amber-50/50 px-4 py-2 rounded-full border border-amber-200 min-w-[120px] text-center">300.000 ل.ل.</span>
+</div>
+<div class="product-item flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:pr-4 transition-all duration-300">
+<span class="font-semibold text-lg text-gray-800 flex-1 pr-3">اوزي</span>
+<span class="font-bold text-amber-700 text-lg bg-amber-50/50 px-4 py-2 rounded-full border border-amber-200 min-w-[120px] text-center">100.000 ل.ل.</span>
+</div>
+</div>
+</div>
+
+<!-- بيتزا Column - Unchanged -->
+<div class="menu-column bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-xl border-r-4 border-amber-400 animate-fade-in opacity-0">
+<h2 class="text-3xl font-bold text-amber-800 text-center mb-8 pb-4 border-b-2 border-amber-200 relative">
+بيتزا
+<span class="absolute bottom-0 right-1/2 translate-x-1/2 w-20 h-1 bg-amber-400 rounded-full"></span>
+</h2>
+<div class="space-y-6">
+<!-- بيتزا خضرة -->
+<div class="pizza-item rounded-xl border border-amber-200 bg-white overflow-hidden hover:shadow-md transition-all duration-300">
+<div class="p-4">
+<h3 class="font-bold text-xl text-gray-800 mb-4 flex items-center justify-between">
+<span>بيتزا خضرة</span>
+<span class="text-sm font-normal text-gray-600 bg-amber-100 px-3 py-1 rounded-full">
+<i class="fas fa-leaf ml-2 text-green-600"></i>نباتية
+</span>
+</h3>
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+<div class="pizza-size-item text-center bg-amber-50 p-3 rounded-lg border border-amber-100">
+<div class="size-badge bg-amber-500 text-white mb-2 mx-auto">S</div>
+<p class="text-xs text-gray-600 mb-1">صغير</p>
+<p class="font-bold text-lg text-amber-700">300.000 ل.ل.</p>
+</div>
+<div class="pizza-size-item text-center bg-amber-50 p-3 rounded-lg border border-amber-100">
+<div class="size-badge bg-amber-600 text-white mb-2 mx-auto">M</div>
+<p class="text-xs text-gray-600 mb-1">وسط</p>
+<p class="font-bold text-lg text-amber-700">500.000 ل.ل.</p>
+</div>
+<div class="pizza-size-item text-center bg-amber-50 p-3 rounded-lg border border-amber-100">
+<div class="size-badge bg-amber-700 text-white mb-2 mx-auto">L</div>
+<p class="text-xs text-gray-600 mb-1">كبير</p>
+<p class="font-bold text-lg text-amber-700">650.000 ل.ل.</p>
+</div>
+<div class="pizza-size-item text-center bg-amber-50 p-3 rounded-lg border border-amber-100">
+<div class="size-badge bg-amber-800 text-white mb-2 mx-auto">XL</div>
+<p class="text-xs text-gray-600 mb-1">عائلي</p>
+<p class="font-bold text-lg text-amber-700">900.000 ل.ل.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- بيتزا سجق -->
+<div class="pizza-item rounded-xl border border-amber-200 bg-white overflow-hidden hover:shadow-md transition-all duration-300">
+<div class="p-4">
+<h3 class="font-bold text-xl text-gray-800 mb-4">بيتزا سجق</h3>
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+<div class="pizza-size-item text-center bg-amber-50 p-3 rounded-lg border border-amber-100">
+<div class="size-badge bg-amber-500 text-white mb-2 mx-auto">S</div>
+<p class="text-xs text-gray-600 mb-1">صغير</p>
+<p class="font-bold text-lg text-amber-700">400.000 ل.ل.</p>
+</div>
+<div class="pizza-size-item text-center bg-amber-50 p-3 rounded-lg border border-amber-100">
+<div class="size-badge bg-amber-600 text-white mb-2 mx-auto">M</div>
+<p class="text-xs text-gray-600 mb-1">وسط</p>
+<p class="font-bold text-lg text-amber-700">600.000 ل.ل.</p>
+</div>
+<div class="pizza-size-item text-center bg-amber-50 p-3 rounded-lg border border-amber-100">
+<div class="size-badge bg-amber-700 text-white mb-2 mx-auto">L</div>
+<p class="text-xs text-gray-600 mb-1">كبير</p>
+<p class="font-bold text-lg text-amber-700">800.000 ل.ل.</p>
+</div>
+<div class="pizza-size-item text-center bg-amber-50 p-3 rounded-lg border border-amber-100">
+<div class="size-badge bg-amber-800 text-white mb-2 mx-auto">XL</div>
+<p class="text-xs text-gray-600 mb-1">عائلي</p>
+<p class="font-bold text-lg text-amber-700">1,000.000 ل.ل.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- بيتزا مارغريتا -->
+<div class="pizza-item rounded-xl border border-amber-200 bg-white overflow-hidden hover:shadow-md transition-all duration-300">
+<div class="p-4">
+<h3 class="font-bold text-xl text-gray-800 mb-4 flex items-center justify-between">
+<span>بيتزا مارغريتا</span>
+<span class="text-sm font-normal text-gray-600 bg-amber-100 px-3 py-1 rounded-full">
+<i class="fas fa-leaf ml-2 text-green-600"></i>نباتية
+</span>
+</h3>
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+<div class="pizza-size-item text-center bg-amber-50 p-3 rounded-lg border border-amber-100">
+<div class="size-badge bg-amber-500 text-white mb-2 mx-auto">S</div>
+<p class="text-xs text-gray-600 mb-1">صغير</p>
+<p class="font-bold text-lg text-amber-700">270.000 ل.ل.</p>
+</div>
+<div class="pizza-size-item text-center bg-amber-50 p-3 rounded-lg border border-amber-100">
+<div class="size-badge bg-amber-600 text-white mb-2 mx-auto">M</div>
+<p class="text-xs text-gray-600 mb-1">وسط</p>
+<p class="font-bold text-lg text-amber-700">450.000 ل.ل.</p>
+</div>
+<div class="pizza-size-item text-center bg-amber-50 p-3 rounded-lg border border-amber-100">
+<div class="size-badge bg-amber-700 text-white mb-2 mx-auto">L</div>
+<p class="text-xs text-gray-600 mb-1">كبير</p>
+<p class="font-bold text-lg text-amber-700">600.000 ل.ل.</p>
+</div>
+<div class="pizza-size-item text-center bg-amber-50 p-3 rounded-lg border border-amber-100">
+<div class="size-badge bg-amber-800 text-white mb-2 mx-auto">XL</div>
+<p class="text-xs text-gray-600 mb-1">عائلي</p>
+<p class="font-bold text-lg text-amber-700">850.000 ل.ل.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- بيتزا بيبروني -->
+<div class="pizza-item rounded-xl border border-amber-200 bg-white overflow-hidden hover:shadow-md transition-all duration-300">
+<div class="p-4">
+<h3 class="font-bold text-xl text-gray-800 mb-4">بيتزا بيبروني</h3>
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+<div class="pizza-size-item text-center bg-amber-50 p-3 rounded-lg border border-amber-100">
+<div class="size-badge bg-amber-500 text-white mb-2 mx-auto">S</div>
+<p class="text-xs text-gray-600 mb-1">صغير</p>
+<p class="font-bold text-lg text-amber-700">400.000 ل.ل.</p>
+</div>
+<div class="pizza-size-item text-center bg-amber-50 p-3 rounded-lg border border-amber-100">
+<div class="size-badge bg-amber-600 text-white mb-2 mx-auto">M</div>
+<p class="text-xs text-gray-600 mb-1">وسط</p>
+<p class="font-bold text-lg text-amber-700">600.000 ل.ل.</p>
+</div>
+<div class="pizza-size-item text-center bg-amber-50 p-3 rounded-lg border border-amber-100">
+<div class="size-badge bg-amber-700 text-white mb-2 mx-auto">L</div>
+<p class="text-xs text-gray-600 mb-1">كبير</p>
+<p class="font-bold text-lg text-amber-700">800.000 ل.ل.</p>
+</div>
+<div class="pizza-size-item text-center bg-amber-50 p-3 rounded-lg border border-amber-100">
+<div class="size-badge bg-amber-800 text-white mb-2 mx-auto">XL</div>
+<p class="text-xs text-gray-600 mb-1">عائلي</p>
+<p class="font-bold text-lg text-amber-700">1,000.000 ل.ل.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- بيتزا فاهيتا -->
+<div class="pizza-item rounded-xl border border-amber-200 bg-white overflow-hidden hover:shadow-md transition-all duration-300">
+<div class="p-4">
+<h3 class="font-bold text-xl text-gray-800 mb-4">بيتزا فاهيتا</h3>
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+<div class="pizza-size-item text-center bg-amber-50 p-3 rounded-lg border border-amber-100">
+<div class="size-badge bg-amber-500 text-white mb-2 mx-auto">S</div>
+<p class="text-xs text-gray-600 mb-1">صغير</p>
+<p class="font-bold text-lg text-amber-700">400.000 ل.ل.</p>
+</div>
+<div class="pizza-size-item text-center bg-amber-50 p-3 rounded-lg border border-amber-100">
+<div class="size-badge bg-amber-600 text-white mb-2 mx-auto">M</div>
+<p class="text-xs text-gray-600 mb-1">وسط</p>
+<p class="font-bold text-lg text-amber-700">600.000 ل.ل.</p>
+</div>
+<div class="pizza-size-item text-center bg-amber-50 p-3 rounded-lg border border-amber-100">
+<div class="size-badge bg-amber-700 text-white mb-2 mx-auto">L</div>
+<p class="text-xs text-gray-600 mb-1">كبير</p>
+<p class="font-bold text-lg text-amber-700">850.000 ل.ل.</p>
+</div>
+<div class="pizza-size-item text-center bg-amber-50 p-3 rounded-lg border border-amber-100">
+<div class="size-badge bg-amber-800 text-white mb-2 mx-auto">XL</div>
+<p class="text-xs text-gray-600 mb-1">عائلي</p>
+<p class="font-bold text-lg text-amber-700">1,100.000 ل.ل.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- بيتزا طاووق -->
+<div class="pizza-item rounded-xl border border-amber-200 bg-white overflow-hidden hover:shadow-md transition-all duration-300">
+<div class="p-4">
+<h3 class="font-bold text-xl text-gray-800 mb-4">بيتزا طاووق</h3>
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+<div class="pizza-size-item text-center bg-amber-50 p-3 rounded-lg border border-amber-100">
+<div class="size-badge bg-amber-500 text-white mb-2 mx-auto">S</div>
+<p class="text-xs text-gray-600 mb-1">صغير</p>
+<p class="font-bold text-lg text-amber-700">450.000 ل.ل.</p>
+</div>
+<div class="pizza-size-item text-center bg-amber-50 p-3 rounded-lg border border-amber-100">
+<div class="size-badge bg-amber-600 text-white mb-2 mx-auto">M</div>
+<p class="text-xs text-gray-600 mb-1">وسط</p>
+<p class="font-bold text-lg text-amber-700">650.000 ل.ل.</p>
+</div>
+<div class="pizza-size-item text-center bg-amber-50 p-3 rounded-lg border border-amber-100">
+<div class="size-badge bg-amber-700 text-white mb-2 mx-auto">L</div>
+<p class="text-xs text-gray-600 mb-1">كبير</p>
+<p class="font-bold text-lg text-amber-700">900.000 ل.ل.</p>
+</div>
+<div class="pizza-size-item text-center bg-amber-50 p-3 rounded-lg border border-amber-100">
+<div class="size-badge bg-amber-800 text-white mb-2 mx-auto">XL</div>
+<p class="text-xs text-gray-600 mb-1">عائلي</p>
+<p class="font-bold text-lg text-amber-700">1,150.000 ل.ل.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- بيتزا مشكلة -->
+<div class="pizza-item rounded-xl border border-amber-200 bg-white overflow-hidden hover:shadow-md transition-all duration-300">
+<div class="p-4">
+<h3 class="font-bold text-xl text-gray-800 mb-4">بيتزا مشكلة</h3>
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+<div class="pizza-size-item text-center bg-amber-50 p-3 rounded-lg border border-amber-100">
+<div class="size-badge bg-amber-500 text-white mb-2 mx-auto">S</div>
+<p class="text-xs text-gray-600 mb-1">صغير</p>
+<p class="font-bold text-lg text-amber-700">450.000 ل.ل.</p>
+</div>
+<div class="pizza-size-item text-center bg-amber-50 p-3 rounded-lg border border-amber-100">
+<div class="size-badge bg-amber-600 text-white mb-2 mx-auto">M</div>
+<p class="text-xs text-gray-600 mb-1">وسط</p>
+<p class="font-bold text-lg text-amber-700">650.000 ل.ل.</p>
+</div>
+<div class="pizza-size-item text-center bg-amber-50 p-3 rounded-lg border border-amber-100">
+<div class="size-badge bg-amber-700 text-white mb-2 mx-auto">L</div>
+<p class="text-xs text-gray-600 mb-1">كبير</p>
+<p class="font-bold text-lg text-amber-700">950.000 ل.ل.</p>
+</div>
+<div class="pizza-size-item text-center bg-amber-50 p-3 rounded-lg border border-amber-100">
+<div class="size-badge bg-amber-800 text-white mb-2 mx-auto">XL</div>
+<p class="text-xs text-gray-600 mb-1">عائلي</p>
+<p class="font-bold text-lg text-amber-700">1,200.000 ل.ل.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- New كرواسان Column -->
+<div class="menu-column bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-xl border-r-4 border-amber-400 animate-fade-in opacity-0">
+<h2 class="text-3xl font-bold text-amber-800 text-center mb-8 pb-4 border-b-2 border-amber-200 relative">
+كرواسان
+<span class="absolute bottom-0 right-1/2 translate-x-1/2 w-20 h-1 bg-amber-400 rounded-full"></span>
+</h2>
+<div class="space-y-4">
+<div class="product-item flex justify-between items-center py-3 px-2 border-b border-dashed border-amber-100 last:border-b-0 rounded-lg hover:pr-4 transition-all duration-300">
+<span class="font-semibold text-lg text-gray-800 flex-1 pr-3">كرواسان</span>
+<span class="font-bold text-amber-700 text-lg bg-amber-50/50 px-4 py-2 rounded-full border border-amber-200 min-w-[120px] text-center">60.000 ل.ل.</span>
+</div>
+</div>
+</div>
+</div>
+</main>
+
+<!-- Location Map Section -->
+<div class="mb-16">
+<div class="bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-xl border-r-4 border-amber-400">
+<h2 class="text-3xl font-bold text-amber-800 text-center mb-8 pb-4 border-b-2 border-amber-200 relative">
+<i class="fas fa-map-marker-alt ml-3"></i> موقعنا
+<span class="absolute bottom-0 right-1/2 translate-x-1/2 w-20 h-1 bg-amber-400 rounded-full"></span>
+</h2>
+<div class="flex flex-col lg:flex-row gap-8 items-center">
+<div class="lg:w-1/2">
+<div class="map-container h-[400px] w-full">
+<iframe
+src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3280.123456789!2d35.123456789!3d33.123456789!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzPCsDA3JzI0LjQiTiAzNcKwMDcnNDEuMCJF!5e0!3m2!1sen!2slb!4v1234567890"
+width="100%"
+height="100%"
+style="border:0;"
+allowfullscreen=""
+loading="lazy"
+referrerpolicy="no-referrer-when-downgrade"
+title="موقع معجنات الاشلان في الزاهرية، طرابلس">
+</iframe>
+</div>
+</div>
+<div class="lg:w-1/2">
+<div class="bg-gradient-to-l from-amber-50 to-amber-100 rounded-xl p-6 border border-amber-200 shadow-lg">
+<h3 class="text-2xl font-bold text-amber-900 mb-6 flex items-center">
+<i class="fas fa-info-circle ml-3"></i> معلومات الموقع
+</h3>
+<div>
+<h4 class="font-bold text-lg text-gray-800">التوجيهات</h4>
+<p class="text-gray-700">استخدم خرائط جوجل للوصول إلينا</p>
+<a
+href="https://maps.app.goo.gl/JBZnko42hwUtx2yB6?g_st=awb"
+target="_blank"
+class="inline-flex items-center mt-3 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-lg transition-all duration-300 transform hover:scale-105"
+>
+<i class="fas fa-external-link-alt ml-2"></i>
+افتح في خرائط جوجل
+</a>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+<div class="bg-white p-4 rounded-xl border border-amber-200 shadow-sm">
+<div class="flex items-center">
+<i class="fas fa-motorcycle text-emerald-600 text-2xl ml-3"></i>
+<div>
+<h4 class="font-bold text-gray-800">خدمة التوصيل</h4>
+<p class="text-sm text-gray-600">متوفرة لجميع مناطق طرابلس</p>
+</div>
+</div>
+</div>
+<div class="bg-white p-4 rounded-xl border border-amber-200 shadow-sm">
+<div class="flex items-center">
+<i class="fas fa-phone text-amber-600 text-2xl ml-3"></i>
+<div>
+<h4 class="font-bold text-gray-800">اطلب عبر الهاتف</h4>
+<p class="text-sm text-gray-600">76/385-060</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Footer Section -->
+<footer class="text-center py-10 mt-8 bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl border-2 border-amber-200">
+<h3 class="text-3xl font-bold text-amber-800 mb-6 pb-4 border-b-2 border-dashed border-amber-300">
+نتشرف بخدمتكم في معجنات الاشلان
+</h3>
+<div class="contact-info flex flex-wrap justify-center gap-6 md:gap-10 my-8">
+<div class="contact-item flex items-center gap-3 bg-white/80 backdrop-blur-sm px-6 py-4 rounded-2xl border border-amber-200 shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+<i class="fas fa-phone-alt text-amber-700 text-2xl"></i>
+<span class="font-semibold text-lg">76/385-060</span>
+</div>
+<div class="contact-item flex items-center gap-3 bg-white/80 backdrop-blur-sm px-6 py-4 rounded-2xl border border-amber-200 shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+<i class="fas fa-map-marker-alt text-amber-700 text-2xl"></i>
+<span class="font-semibold text-lg">منطقة الزاهرية، طرابلس</span>
+</div>
+<div class="contact-item flex items-center gap-3 bg-white/80 backdrop-blur-sm px-6 py-4 rounded-2xl border border-amber-200 shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+<i class="fas fa-clock text-amber-700 text-2xl"></i>
+<span class="font-semibold text-lg">يومياً: ٦ صباحاً - ١٢ ليلاً</span>
+</div>
+</div>
+</footer>
+</div>
+
+<script>
+// Trigger animations on scroll
+document.addEventListener('DOMContentLoaded', function() {
+const observer = new IntersectionObserver((entries) => {
+entries.forEach(entry => {
+if (entry.isIntersecting) {
+entry.target.style.opacity = 1;
+entry.target.style.animationPlayState = 'running';
+}
+});
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.menu-column').forEach(column => {
+column.style.opacity = 0;
+column.style.animationPlayState = 'paused';
+observer.observe(column);
+});
+
+// إضافة تأثيرات للخريطة عند التمرير
+const mapSection = document.querySelector('.map-container');
+if (mapSection) {
+observer.observe(mapSection);
+}
+
+// إضافة تأثير لرابط خرائط جوجل
+const mapLink = document.querySelector('a[href*="maps.app.goo.gl"]');
+if (mapLink) {
+mapLink.addEventListener('click', function(e) {
+console.log('تم النقر على رابط الخريطة الخارجي');
+});
+}
+});
+
+// إضافة دالة للتعامل مع أخطاء تحميل الخريطة
+window.addEventListener('load', function() {
+const iframe = document.querySelector('iframe[title*="موقع معجنات الاشلان"]');
+if (iframe) {
+iframe.addEventListener('load', function() {
+console.log('تم تحميل الخريطة بنجاح');
+});
+
+iframe.addEventListener('error', function() {
+console.log('حدث خطأ في تحميل الخريطة');
+const mapContainer = document.querySelector('.map-container');
+if (mapContainer) {
+mapContainer.innerHTML = `
+<div class="h-full flex flex-col items-center justify-center bg-amber-50 p-6">
+<i class="fas fa-map-marked-alt text-amber-500 text-5xl mb-4"></i>
+<h3 class="text-xl font-bold text-amber-800 mb-2">تعذر تحميل الخريطة</h3>
+<p class="text-gray-700 mb-4 text-center">يمكنك استخدام الزر أدناه لفتح الخريطة في نافذة جديدة</p>
+<a
+href="https://maps.app.goo.gl/JBZnko42hwUtx2yB6?g_st=awb"
+target="_blank"
+class="px-6 py-3 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-lg transition-all duration-300"
+>
+<i class="fas fa-external-link-alt ml-2"></i>
+افتح خرائط جوجل
+</a>
+</div>
+`;
+}
+}
+});
+}
+});
+</script>
+</body>
+</html>
