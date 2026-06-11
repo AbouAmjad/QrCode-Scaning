@@ -1,0 +1,21 @@
+# Secrets — لا ترفع على GitHub
+Code.gs.txt
+.env
+*.env
+
+# Backups
+backup/
+*.bak
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor
+.vscode/
+.cursor/
+
+# Python
+__pycache__/
+*.pyc

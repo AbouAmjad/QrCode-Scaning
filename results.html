@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ToolCustody | Overview</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="app.css">
+  <script src="config.js"></script>
+  <script src="ui.js"></script>
+</head>
+<body class="tc-page">
+  <div class="tc-wrap">
+    <div class="tc-shell">
+      <div id="app-header"></div>
+
+      <div class="tc-kpi-grid" id="kpiSection" style="display:none">
+        <div class="tc-kpi red"><div class="label">Checked out</div><div class="value" id="kpiOut">0</div><div class="sub">units in field</div></div>
+        <div class="tc-kpi green"><div class="label">Workforce</div><div class="value" id="kpiWorkers">0</div><div class="sub">on site today</div></div>
+        <div class="tc-kpi orange"><div class="label">Unique out</div><div class="value" id="kpiUnique">0</div><div class="sub">distinct assets</div></div>
+        <div class="tc-kpi blue"><div class="label">Tool types</div><div class="value" id="kpiTypes">0</div><div class="sub">active codes</div></div>
+      </div>
+
+      <div class="row g-4">
+        <div class="col-lg-8">
+          <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+              <span class="tc-section-badge"><i class="bi bi-box-seam"></i> Inventory</span>
+              <span class="tc-badge-holder" id="toolsBadge">—</span>
+              <div class="tc-filter-group">
+                <button class="tc-filter active" id="fAll" onclick="setFilter('all')">All</button>
+                <button class="tc-filter" id="fOut" onclick="setFilter('out')">Out only</button>
+                <button class="tc-filter" id="fIn" onclick="setFilter('in')">In store</button>
+              </div>
+            </div>
+            <div style="min-width:200px;flex:1;max-width:260px"><input type="text" id="searchInput" class="tc-search" placeholder="Search…"></div>
+          </div>
+          <div class="tc-table-wrap">
+            <div class="table-responsive">
+              <table class="tc-table">
+                <thead><tr>
+                  <th class="text-center" style="width:90px">Code</th>
+                  <th>Description</th>
+                  <th>Holder(s)</th>
+                  <th class="text-center" style="width:70px">Qty</th>
+                </tr></thead>
+                <tbody id="toolsTBody">
+                  <tr><td colspan="4" class="text-center tc-text-muted py-5"><i class="bi bi-info-circle"></i> Select a date and load</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <p class="tc-text-muted small text-end mt-2"><i class="bi bi-hand-point-up"></i> Click row for tool history</p>
+        </div>
+        <div class="col-lg-4">
+          <span class="tc-section-badge"><i class="bi bi-person-check"></i> On-site team</span>
+          <div class="tc-card p-0 mt-2">
+            <div class="tc-worker-list" id="workersList">
+              <div class="text-center tc-text-muted p-4"><i class="bi bi-person-x"></i> No attendance data</div>
+            </div>
+          </div>
+          <p class="tc-text-muted small text-center mt-2"><i class="bi bi-hand-point-up"></i> Click worker for profile</p>
+        </div>
+      </div>
+
+      <div class="tc-footer">
+        <span><i class="bi bi-shield-check text-success"></i> Real-time custody ledger</span>
+        <span>Snapshot: <strong id="dateLabel">—</strong></span>
+      </div>
+    </div>
+  </div>
+
+  <script src="parser.js"></script>
+  <script>
+    let allTools = [], allWorkers = [], activeFilter = "all", activeDate = "";
+
+    document.addEventListener("DOMContentLoaded", () => {
+      TCUI.mountHeader("app-header", {
+        active: "overview",
+        title: "Overview",
+        subtitle: "Live custody ledger",
+        icon: "bi-table",
+        toolbar: `
+          <select id="dateSelect" class="tc-select"><option value="">📅 Select date</option></select>
+          <button id="btnLoad" class="tc-btn tc-btn-primary"><i class="bi bi-cloud-arrow-down"></i> Load</button>
+          <button id="btnExport" class="tc-btn"><i class="bi bi-download"></i> CSV</button>
+        `
+      });
+      init();
+    });
+
+    async function loadDates() { return loadDateOptions(document.getElementById("dateSelect")); }
+
+    function renderAll() {
+      const query = document.getElementById("searchInput").value.toLowerCase().trim();
+      const filtered = allTools.filter(t => {
+        const ms = !query || t.code.toLowerCase().includes(query) || t.description.toLowerCase().includes(query);
+        const mf = activeFilter === "all" || (activeFilter === "out" && t.qty > 0) || (activeFilter === "in" && t.qty === 0);
+        return ms && mf;
+      });
+
+      const tbody = document.getElementById("toolsTBody");
+      if (!filtered.length) {
+        tbody.innerHTML = `<tr><td colspan="4" class="text-center tc-text-muted py-5"><i class="bi bi-search"></i> No tools match</td></tr>`;
+      } else {
+        tbody.innerHTML = "";
+        filtered.forEach(t => {
+          const tr = document.createElement("tr");
+          tr.className = "clickable" + (t.hasWarning ? " warn" : "");
+          tr.onclick = () => { window.location.href = `tool.html?code=${encodeURIComponent(t.code)}&date=${encodeURIComponent(activeDate)}`; };
+          tr.innerHTML = `
+            <td class="text-center fw-bold">${escHtml(t.code)}${t.hasWarning ? ' <i class="bi bi-exclamation-triangle-fill text-warning"></i>' : ""}</td>
+            <td>${escHtml(t.description)}</td>
+            <td>${t.holdersHtml}</td>
+            <td class="text-center fw-bold ${t.qty > 0 ? "text-danger" : "text-success"}">${t.qty}</td>`;
+          tbody.appendChild(tr);
+        });
+      }
+
+      const wList = document.getElementById("workersList");
+      if (!allWorkers.length) {
+        wList.innerHTML = `<div class="text-center tc-text-muted p-4"><i class="bi bi-people"></i> No attendance today</div>`;
+      } else {
+        wList.innerHTML = "";
+        allWorkers.forEach(w => {
+          const ini = initials(w.name);
+          const toolCount = w.toolsHeld.reduce((s, t) => s + t.qty, 0);
+          const div = document.createElement("div");
+          div.className = "tc-worker-item";
+          div.onclick = () => { window.location.href = `worker.html?code=${encodeURIComponent(w.code)}&date=${encodeURIComponent(activeDate)}`; };
+          div.innerHTML = `
+            <div class="d-flex align-items-center gap-2">
+              <div class="tc-avatar">${ini}</div>
+              <div>
+                <div class="fw-semibold">${escHtml(w.name)}</div>
+                <div class="tc-text-muted small">${toolCount > 0 ? `<i class="bi bi-hammer"></i> ${toolCount} tool(s)` : '<i class="bi bi-check2 text-success"></i> No tools'}</div>
+              </div>
+            </div>
+            <span class="tc-badge-present"><i class="bi bi-check-circle-fill"></i> Present</span>`;
+          wList.appendChild(div);
+        });
+      }
+    }
+
+    function setFilter(f) {
+      activeFilter = f;
+      ["All", "Out", "In"].forEach(x => document.getElementById("f" + x).classList.remove("active"));
+      document.getElementById("f" + f.charAt(0).toUpperCase() + f.slice(1)).classList.add("active");
+      renderAll();
+    }
+
+    async function loadData(date) {
+      activeDate = date;
+      document.getElementById("toolsTBody").innerHTML = `<tr><td colspan="4" class="text-center py-5"><div class="tc-spinner"></div><div class="tc-text-muted mt-2">Loading…</div></td></tr>`;
+      document.getElementById("workersList").innerHTML = `<div class="text-center p-4"><div class="tc-spinner" style="width:1.5rem;height:1.5rem"></div></div>`;
+      document.getElementById("kpiSection").style.display = "none";
+      try {
+        const data = await apiGet({ action: "getData", date });
+        if (data && data.error) throw new Error(data.error);
+        const p = CustodyParser.parseOverview(data);
+        allTools = p.tools; allWorkers = p.workers;
+        document.getElementById("kpiOut").textContent = p.totalOut;
+        document.getElementById("kpiWorkers").textContent = p.totalWorkers;
+        document.getElementById("kpiUnique").textContent = p.tools.filter(t => t.qty > 0).length;
+        document.getElementById("kpiTypes").textContent = p.tools.length;
+        document.getElementById("toolsBadge").textContent = `${p.tools.length} types`;
+        document.getElementById("dateLabel").textContent = date;
+        document.getElementById("kpiSection").style.display = "grid";
+        renderAll();
+      } catch (e) {
+        document.getElementById("toolsTBody").innerHTML = `<tr><td colspan="4" class="text-center text-danger py-4"><i class="bi bi-exclamation-triangle-fill"></i> ${e.message}</td></tr>`;
+        document.getElementById("workersList").innerHTML = `<div class="text-center text-danger p-3"><i class="bi bi-wifi-off"></i> Error</div>`;
+      }
+    }
+
+    async function init() {
+      const dates = await loadDates();
+      if (dates.length) { document.getElementById("dateSelect").value = dates[0]; await loadData(dates[0]); }
+      document.getElementById("btnLoad").addEventListener("click", async () => {
+        const d = document.getElementById("dateSelect").value;
+        if (d) await loadData(d);
+      });
+      document.getElementById("searchInput").addEventListener("input", renderAll);
+      document.getElementById("btnExport").addEventListener("click", () => {
+        if (allTools.length) CustodyParser.exportCsv(allTools, activeDate);
+      });
+    }
+  </script>
+</body>
+</html>

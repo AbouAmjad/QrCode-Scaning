@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>ToolCustody | Scan Terminal</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="app.css">
+  <script src="config.js"></script>
+  <script src="ui.js"></script>
+</head>
+<body class="tc-page tc-terminal">
+  <div class="tc-wrap">
+    <div class="tc-shell" id="mainContainer">
+      <div id="app-header"></div>
+
+      <div class="d-flex gap-2 flex-wrap mb-3">
+        <div id="status" class="tc-status-pill online">Online · sync active</div>
+        <div id="counterShell" class="tc-status-pill online">0 pending</div>
+      </div>
+
+      <div class="tc-grid-2">
+        <div class="tc-card">
+          <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+            <h3 class="fw-bold mb-0">Live Scan</h3>
+            <span class="tc-text-muted small">Use IN / OUT before tools</span>
+          </div>
+
+          <div class="tc-person-strip">
+            <div>
+              <div class="tc-text-muted small fw-semibold">Operative</div>
+              <div class="fw-bold" id="activePersonName">Standing by</div>
+            </div>
+            <span class="tc-dir-badge tc-dir-none" id="dirBadge">No vector</span>
+          </div>
+
+          <div class="tc-warning-panel" id="warningPanel">
+            <div class="fw-bold text-danger mb-1">Direction required</div>
+            <div class="fw-800 fs-5 mb-2" id="warnCode">ERR-00</div>
+            <p class="small mb-3">
+              Tool scanned without direction under <strong id="warnPerson">—</strong>.
+              Select IN or OUT and scan again.
+            </p>
+            <div class="tc-dir-btns">
+              <button type="button" class="tc-dir-btn out" onclick="setDirection('OUT')">OUT<small>Leave / Exfil</small></button>
+              <button type="button" class="tc-dir-btn in" onclick="setDirection('IN')">IN<small>Return / Storage</small></button>
+            </div>
+          </div>
+
+          <div class="tc-scan-area">
+            <input type="text" id="scanInput" class="tc-scan-input" placeholder="Ready for tool / person code" autocomplete="off">
+            <span class="tc-counter-badge" id="counter">0</span>
+          </div>
+
+          <div class="d-flex gap-2">
+            <button type="button" class="tc-btn flex-fill" onclick="setDirection('OUT')">OUT</button>
+            <button type="button" class="tc-btn tc-btn-primary flex-fill" onclick="setDirection('IN')">IN</button>
+          </div>
+        </div>
+
+        <div class="tc-card">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3 class="fw-bold mb-0">Activity Log</h3>
+            <span class="tc-text-muted small">Newest first</span>
+          </div>
+          <div class="tc-log" id="log"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="settingsModal" class="tc-modal-backdrop">
+    <div class="tc-modal">
+      <div class="tc-modal-head">
+        <div>
+          <div class="fw-bold fs-5">Settings</div>
+          <div class="tc-text-muted small">Scan console preferences</div>
+        </div>
+        <button type="button" class="tc-btn tc-btn-sm" onclick="closeSettings()"><i class="bi bi-x-lg"></i> Close</button>
+      </div>
+      <div class="tc-modal-body">
+        <div class="mb-3">
+          <div class="fw-semibold mb-2">Auto direction</div>
+          <div class="d-flex flex-wrap gap-2">
+            <label class="tc-setting-row flex-grow-1" style="cursor:pointer">
+              <span><strong>Manual</strong><br><span class="tc-text-muted small">Require IN/OUT before tools</span></span>
+              <input type="radio" name="autoDirectionMode" value="manual" id="sd_autoDir_manual">
+            </label>
+            <label class="tc-setting-row flex-grow-1" style="cursor:pointer">
+              <span><strong>Last direction</strong><br><span class="tc-text-muted small">Auto-use last IN/OUT</span></span>
+              <input type="radio" name="autoDirectionMode" value="last" id="sd_autoDir_last">
+            </label>
+          </div>
+        </div>
+        <div class="tc-setting-grid">
+          <label class="tc-setting-row"><span class="fw-semibold">Auto-hide warning</span><input type="checkbox" id="sd_autoHideWarning"></label>
+          <label class="tc-setting-row"><span class="fw-semibold">Sound</span><input type="checkbox" id="sd_soundEnabled"></label>
+          <label class="tc-setting-row"><span class="fw-semibold">Hotkeys (I/O)</span><input type="checkbox" id="sd_hotkeysEnabled"></label>
+          <div class="tc-setting-row flex-column align-items-stretch">
+            <span class="fw-semibold mb-2">Offline queue limit</span>
+            <input type="number" id="sd_offlineQueueLimit" class="tc-input" min="10" step="10">
+          </div>
+        </div>
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-3">
+          <span class="tc-text-muted small">Undo removes only unsynced scans</span>
+          <button type="button" class="tc-btn" onclick="undoLastScan()" id="undoBtn"><i class="bi bi-arrow-counterclockwise"></i> Undo last</button>
+        </div>
+        <div class="text-end mt-3">
+          <button type="button" class="tc-btn tc-btn-primary" onclick="saveSettingsFromUI()"><i class="bi bi-check-lg"></i> Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let isProcessing = false;
+    let scanSeq = Number(localStorage.getItem("scanSeq") || 1);
+    let lastPerson = null;
+    let lastDirection = null;
+    let scannerLocked = false;
+    let settings = (typeof getSettings === "function") ? getSettings() : {};
+    const descCache = {};
+
+    function refreshSettingsUI() {
+      const s = settings || {};
+      const sd_manual = document.getElementById("sd_autoDir_manual");
+      const sd_last = document.getElementById("sd_autoDir_last");
+      if (sd_manual) sd_manual.checked = s.autoDirectionMode !== "last";
+      if (sd_last) sd_last.checked = s.autoDirectionMode === "last";
+      const ah = document.getElementById("sd_autoHideWarning");
+      if (ah) ah.checked = !!s.autoHideWarning;
+      const se = document.getElementById("sd_soundEnabled");
+      if (se) se.checked = !!s.soundEnabled;
+      const hk = document.getElementById("sd_hotkeysEnabled");
+      if (hk) hk.checked = !!s.hotkeysEnabled;
+      const ql = document.getElementById("sd_offlineQueueLimit");
+      if (ql) ql.value = Number(s.offlineQueueLimit || 300);
+      const undoBtn = document.getElementById("undoBtn");
+      if (undoBtn) undoBtn.disabled = !getLastUnsyncedQueueItem();
+    }
+
+    function openSettings() {
+      settings = (typeof getSettings === "function") ? getSettings() : settings;
+      refreshSettingsUI();
+      const m = document.getElementById("settingsModal");
+      if (m) m.style.display = "block";
+    }
+
+    function closeSettings() {
+      const m = document.getElementById("settingsModal");
+      if (m) m.style.display = "none";
+    }
+
+    function saveSettingsFromUI() {
+      const next = {};
+      const sd_last = document.getElementById("sd_autoDir_last");
+      next.autoDirectionMode = (sd_last && sd_last.checked) ? "last" : "manual";
+      next.autoHideWarning = !!document.getElementById("sd_autoHideWarning")?.checked;
+      next.soundEnabled = !!document.getElementById("sd_soundEnabled")?.checked;
+      next.hotkeysEnabled = !!document.getElementById("sd_hotkeysEnabled")?.checked;
+      const val = Number(document.getElementById("sd_offlineQueueLimit")?.value);
+      next.offlineQueueLimit = Number.isFinite(val) ? Math.max(10, Math.floor(val / 10) * 10) : 300;
+      settings = (typeof setSettings === "function") ? setSettings(next) : { ...settings, ...next };
+      closeSettings();
+      refreshSettingsUI();
+      if (settings?.autoHideWarning) {
+        const w = document.getElementById("warningPanel");
+        if (w?.classList.contains("visible") && !scannerLocked) w.classList.remove("visible");
+      }
+    }
+
+    function loadScans() { return JSON.parse(localStorage.getItem("offlineScans") || "[]"); }
+    function saveScans(scans) {
+      localStorage.setItem("offlineScans", JSON.stringify(scans));
+      localStorage.setItem("scanSeq", scanSeq);
+    }
+
+    function updateCounter() {
+      const el = document.getElementById("counter");
+      if (el) el.innerText = loadScans().filter(s => !s.sent).length;
+    }
+
+    function updateOnlineStatus() {
+      const el = document.getElementById("status");
+      const shell = document.getElementById("counterShell");
+      const pending = loadScans().filter(s => !s.sent).length;
+      if (navigator.onLine) {
+        if (el) { el.className = "tc-status-pill online"; el.innerText = "Online · sync active"; }
+      } else {
+        if (el) { el.className = "tc-status-pill offline"; el.innerText = "Offline · local queue"; }
+      }
+      if (shell) shell.innerText = `${pending} pending`;
+    }
+
+    window.addEventListener("online", updateOnlineStatus);
+    window.addEventListener("offline", updateOnlineStatus);
+
+    function getLastUnsyncedQueueItem() {
+      const scans = loadScans();
+      for (let i = scans.length - 1; i >= 0; i--) if (!scans[i].sent) return scans[i];
+      return null;
+    }
+
+    function undoLastScan() {
+      const last = getLastUnsyncedQueueItem();
+      if (!last) return;
+      const el = document.getElementById(last.logId);
+      if (el?.parentNode) el.parentNode.removeChild(el);
+      const scans = loadScans();
+      const idx = scans.findIndex(s => s.seq === last.seq);
+      if (idx !== -1) scans.splice(idx, 1);
+      saveScans(scans);
+      updateCounter();
+      refreshSettingsUI();
+    }
+
+    function logout() { clearToken(); window.location = "login.html"; }
+
+    let audioCtx = null;
+    function getCtx() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      return audioCtx;
+    }
+    function playDanger() {
+      if (!settings?.soundEnabled) return;
+      const ctx = getCtx();
+      [0, 0.18, 0.36, 0.54].forEach(t => {
+        const o = ctx.createOscillator(), g = ctx.createGain();
+        o.connect(g); g.connect(ctx.destination);
+        o.type = "sawtooth";
+        o.frequency.setValueAtTime(220, ctx.currentTime + t);
+        o.frequency.exponentialRampToValueAtTime(80, ctx.currentTime + t + 0.15);
+        g.gain.setValueAtTime(0.5, ctx.currentTime + t);
+        g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + t + 0.15);
+        o.start(ctx.currentTime + t); o.stop(ctx.currentTime + t + 0.16);
+      });
+    }
+    function playSuccess() {
+      if (!settings?.soundEnabled) return;
+      const ctx = getCtx(), o = ctx.createOscillator(), g = ctx.createGain();
+      o.connect(g); g.connect(ctx.destination); o.type = "sine";
+      o.frequency.setValueAtTime(660, ctx.currentTime);
+      o.frequency.setValueAtTime(880, ctx.currentTime + 0.1);
+      g.gain.setValueAtTime(0.2, ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+      o.start(ctx.currentTime); o.stop(ctx.currentTime + 0.26);
+    }
+    function playDirSet() {
+      if (!settings?.soundEnabled) return;
+      const ctx = getCtx(), o = ctx.createOscillator(), g = ctx.createGain();
+      o.connect(g); g.connect(ctx.destination); o.type = "sine";
+      o.frequency.setValueAtTime(440, ctx.currentTime);
+      o.frequency.setValueAtTime(550, ctx.currentTime + 0.08);
+      g.gain.setValueAtTime(0.25, ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
+      o.start(ctx.currentTime); o.stop(ctx.currentTime + 0.21);
+    }
+
+    function lockScanner() {
+      scannerLocked = true;
+      const i = document.getElementById("scanInput");
+      i.disabled = true;
+      i.classList.add("locked");
+      i.placeholder = "Locked — select direction first";
+      document.body.classList.add("danger-mode");
+    }
+
+    function unlockScanner() {
+      scannerLocked = false;
+      const i = document.getElementById("scanInput");
+      i.disabled = false;
+      i.classList.remove("locked");
+      i.placeholder = "Ready for tool / person code";
+      document.body.classList.remove("danger-mode");
+      setTimeout(() => i.focus(), 50);
+    }
+
+    function showWarning(blockedCode) {
+      document.getElementById("warnCode").textContent = blockedCode;
+      document.getElementById("warnPerson").textContent = lastPerson || "—";
+      document.getElementById("warningPanel")?.classList.add("visible");
+      lockScanner();
+      playDanger();
+    }
+
+    function hideWarning() {
+      document.getElementById("warningPanel")?.classList.remove("visible");
+      unlockScanner();
+    }
+
+    function updateDirBadge() {
+      const b = document.getElementById("dirBadge");
+      if (!b) return;
+      if (lastDirection === "OUT") { b.className = "tc-dir-badge tc-dir-out"; b.textContent = "OUT · Exfil"; }
+      else if (lastDirection === "IN") { b.className = "tc-dir-badge tc-dir-in"; b.textContent = "IN · Return"; }
+      else { b.className = "tc-dir-badge tc-dir-none"; b.textContent = "No vector"; }
+    }
+
+    function addLog(code, description = "Sync pending…", isWarn = false) {
+      const id = "log_" + Date.now() + "_" + Math.random();
+      const div = document.createElement("div");
+      div.className = "tc-log-item" + (isWarn ? " warn-log" : "");
+      div.id = id;
+      div.innerHTML = `
+        <div class="tc-log-header">
+          <div class="tc-log-code">${String(code).toUpperCase()}</div>
+          <span class="${isWarn ? "tc-sync-warn" : "tc-sync-pending"}" id="st_${id}">${isWarn ? "Blocked" : "Pending"}</span>
+        </div>
+        <div class="tc-log-desc" id="desc_${id}">${escHtml(String(description))}</div>
+        <div class="tc-log-time">${new Date().toLocaleTimeString()}</div>`;
+      document.getElementById("log").prepend(div);
+      return id;
+    }
+
+    function markSynced(id) {
+      document.getElementById(id)?.classList.add("synced");
+      const st = document.getElementById("st_" + id);
+      if (st) { st.textContent = "Synced"; st.className = "tc-sync-ok"; }
+    }
+
+    function fetchDescription(code) {
+      if (descCache[code]) return Promise.resolve(descCache[code]);
+      return apiGet({ action: "getDesc", code }).then(d => {
+        const name = (d && !d.error && d.description) ? d.description : code;
+        descCache[code] = name;
+        return name;
+      }).catch(() => code);
+    }
+
+    function enrichLog(logId, code, dirLabel) {
+      fetchDescription(code).then(name => {
+        const d = document.getElementById("desc_" + logId);
+        if (d) d.textContent = `${name} · ${dirLabel}`;
+      });
+    }
+
+    function pushWithLimit(payload) {
+      const limit = Number(settings?.offlineQueueLimit || 300) || 300;
+      const scans = loadScans();
+      scans.push(payload);
+      if (scans.length > limit) {
+        let overflow = scans.length - limit;
+        for (let i = 0; i < scans.length && overflow > 0; i++) {
+          if (!scans[i].sent) { scans.splice(i, 1); i--; overflow--; }
+        }
+      }
+      saveScans(scans);
+      updateCounter();
+      processQueue();
+    }
+
+    function setDirection(dir) {
+      lastDirection = dir;
+      updateDirBadge();
+      if (settings?.autoHideWarning) document.getElementById("warningPanel")?.classList.remove("visible");
+      hideWarning();
+      playDirSet();
+      const logId = addLog(dir, dir === "OUT" ? "Direction: OUT" : "Direction: IN");
+      pushWithLimit({ code: dir, seq: scanSeq++, sent: false, logId, timestamp: Date.now() });
+    }
+
+    function submitScan() {
+      const input = document.getElementById("scanInput");
+      const code = input.value.trim().toUpperCase();
+      if (!code) return;
+      input.value = "";
+      input.focus();
+
+      if (code === "IN" || code === "OUT") {
+        lastDirection = code;
+        updateDirBadge();
+        if (settings?.autoHideWarning) document.getElementById("warningPanel")?.classList.remove("visible");
+        if (scannerLocked) hideWarning();
+        playDirSet();
+        const logId = addLog(code, code === "OUT" ? "Command: OUT" : "Command: IN");
+        pushWithLimit({ code, seq: scanSeq++, sent: false, logId, timestamp: Date.now() });
+        return;
+      }
+
+      if (code.startsWith("P")) {
+        lastPerson = code;
+        lastDirection = null;
+        updateDirBadge();
+        document.getElementById("activePersonName").textContent = code;
+        const logId = addLog(code, "Person detected — awaiting direction");
+        pushWithLimit({ code, seq: scanSeq++, sent: false, logId, timestamp: Date.now() });
+        fetchDescription(code).then(name => {
+          lastPerson = name;
+          document.getElementById("activePersonName").textContent = name;
+          const d = document.getElementById("desc_" + logId);
+          if (d) d.textContent = `Operative: ${name} — standing by`;
+        });
+        return;
+      }
+
+      if (isTool(code)) {
+        if (!lastDirection) {
+          addLog(code, "Blocked — no direction set", true);
+          showWarning(code);
+          return;
+        }
+        const dirLabel = lastDirection === "OUT"
+          ? `OUT · ${lastPerson || "unassigned"}`
+          : `IN · ${lastPerson || "unassigned"}`;
+        const logId = addLog(code, dirLabel);
+        playSuccess();
+        pushWithLimit({ code, seq: scanSeq++, sent: false, logId, timestamp: Date.now() });
+        enrichLog(logId, code, dirLabel);
+        return;
+      }
+
+      addLog(code, "Unknown code — ignored", true);
+    }
+
+    async function processQueue() {
+      if (isProcessing || !navigator.onLine) { updateOnlineStatus(); return; }
+      isProcessing = true;
+      try {
+        const scans = loadScans().sort((a, b) => a.seq - b.seq);
+        for (const scan of scans) {
+          if (scan.sent) continue;
+          try {
+            const result = await syncScan(scan.code);
+            if (result.ok) {
+              markSynced(scan.logId);
+              saveScans(loadScans().map(s => s.seq === scan.seq ? { ...s, sent: true } : s));
+              updateCounter();
+            } else break;
+            await new Promise(r => setTimeout(r, 200));
+          } catch (e) { console.error("Sync break:", scan.seq, e); break; }
+        }
+      } finally { isProcessing = false; updateOnlineStatus(); }
+    }
+
+    document.addEventListener("keydown", e => {
+      if (!settings?.hotkeysEnabled) return;
+      if (e.key === "Escape") {
+        const m = document.getElementById("settingsModal");
+        if (m?.style.display === "block") closeSettings();
+      }
+      if (document.activeElement?.id === "scanInput") return;
+      if (e.key.toLowerCase() === "i") setDirection("IN");
+      if (e.key.toLowerCase() === "o") setDirection("OUT");
+    });
+
+    function requireAuth() {
+      if (!getToken()) { window.location = "login.html"; return false; }
+      return true;
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      TCUI.mountHeader("app-header", {
+        active: "terminal",
+        title: "Scan Terminal",
+        subtitle: "Fast tool & personnel scanning",
+        icon: "bi-terminal",
+        toolbar: `
+          <button type="button" class="tc-btn" onclick="openSettings()"><i class="bi bi-gear"></i> Settings</button>
+          <button type="button" class="tc-btn tc-btn-danger" onclick="logout()"><i class="bi bi-box-arrow-right"></i> Logout</button>`
+      });
+      refreshSettingsUI();
+      updateOnlineStatus();
+      updateCounter();
+      const input = document.getElementById("scanInput");
+      input.focus();
+      input.addEventListener("keydown", e => { if (e.key === "Enter") submitScan(); });
+      if (requireAuth()) {
+        updateOnlineStatus();
+        updateCounter();
+        processQueue();
+        setInterval(processQueue, 5000);
+      }
+    });
+
+    window.setDirection = setDirection;
+    window.submitScan = submitScan;
+    window.logout = logout;
+    window.openSettings = openSettings;
+    window.closeSettings = closeSettings;
+    window.saveSettingsFromUI = saveSettingsFromUI;
+    window.undoLastScan = undoLastScan;
+  </script>
+</body>
+</html>

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ToolCustody | Tool History</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="app.css">
+  <script src="config.js"></script>
+  <script src="ui.js"></script>
+</head>
+<body class="tc-page">
+  <div class="tc-wrap narrow">
+    <div class="tc-shell">
+      <div id="app-header"></div>
+      <button class="tc-btn tc-btn-sm mb-3" onclick="history.back()"><i class="bi bi-arrow-left"></i> Back</button>
+
+      <div id="loadingState" class="text-center py-5">
+        <div class="tc-spinner mb-3"></div>
+        <div class="tc-text-muted">Loading tool history…</div>
+      </div>
+
+      <div id="mainContent" style="display:none">
+        <div class="tc-card mb-4 d-flex align-items-center gap-3 flex-wrap" id="toolHeader">
+          <div class="tc-avatar lg" id="toolAvatar">🔧</div>
+          <div class="flex-grow-1">
+            <h2 class="fw-bold mb-1" id="toolCode">—</h2>
+            <div id="toolDesc">—</div>
+            <div class="tc-text-muted small mt-1" id="toolDate">—</div>
+            <div class="d-flex gap-2 mt-2 flex-wrap">
+              <span class="tc-badge-present" id="statusBadge">—</span>
+              <span class="tc-badge-holder" id="holderCount">0 holder(s)</span>
+            </div>
+          </div>
+        </div>
+
+        <span class="tc-section-badge"><i class="bi bi-person-check"></i> Current holder(s)</span>
+        <div id="currentHolders" class="row g-3 mb-4 mt-2"></div>
+
+        <span class="tc-section-badge"><i class="bi bi-calendar3"></i> Activity history</span>
+        <div id="fullHistory" class="mt-2"></div>
+      </div>
+
+      <div id="errorState" class="text-center py-5 text-danger" style="display:none">
+        <i class="bi bi-exclamation-triangle-fill fs-1"></i>
+        <div class="mt-2" id="errorMsg">Failed to load</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="parser.js"></script>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const TARGET_CODE = (params.get("code") || "").toUpperCase();
+    const TARGET_DATE = params.get("date") || "";
+
+    document.addEventListener("DOMContentLoaded", () => {
+      TCUI.mountHeader("app-header", {
+        active: "overview",
+        title: "Tool",
+        subtitle: "Custody history",
+        icon: "bi-tools"
+      });
+      init();
+    });
+
+    async function init() {
+      if (!TARGET_CODE) { showError("No tool code specified"); return; }
+      if (!isTool(TARGET_CODE)) { showError("Invalid tool code — must start with I, E, C, or B"); return; }
+
+      try {
+        const data = await apiGet({ action: "getData", date: TARGET_DATE });
+        if (data && data.error) throw new Error(data.error);
+        const { toolDesc, currentHolders, toolDailyLog, hasWarning, qtyOut } = CustodyParser.parseForTool(data, TARGET_CODE);
+
+        document.getElementById("toolCode").textContent = TARGET_CODE;
+        document.getElementById("toolDesc").textContent = toolDesc;
+        document.getElementById("toolDate").textContent = "Snapshot · " + TARGET_DATE;
+
+        const badge = document.getElementById("statusBadge");
+        if (qtyOut === 0) {
+          badge.textContent = "In store";
+          badge.style.background = "#dcfce7";
+          badge.style.color = "#166534";
+        } else if (hasWarning) {
+          badge.textContent = "Out · warnings";
+          badge.style.background = "#fef3c7";
+          badge.style.color = "#92400e";
+        } else {
+          badge.textContent = "Checked out";
+          badge.style.background = "#fee2e2";
+          badge.style.color = "#b91c1c";
+        }
+        document.getElementById("holderCount").textContent = `${qtyOut} unit(s) out`;
+
+        const holdersDiv = document.getElementById("currentHolders");
+        if (!currentHolders.length) {
+          holdersDiv.innerHTML = `<div class="col-12"><div class="tc-empty"><i class="bi bi-house-fill text-success"></i> In store — no holders</div></div>`;
+        } else {
+          holdersDiv.innerHTML = currentHolders.map(h => `
+            <div class="col-md-6">
+              <div class="tc-entity-card" ${h.personCode ? `onclick="location.href='worker.html?code=${encodeURIComponent(h.personCode)}&date=${encodeURIComponent(TARGET_DATE)}'"` : ""}>
+                <div class="tc-avatar">${initials(h.name)}</div>
+                <div class="flex-grow-1">
+                  <div class="fw-bold">${escHtml(h.name)}</div>
+                  <div class="tc-text-muted small">${h.qty > 1 ? "Holding ×" + h.qty : "Current holder"}</div>
+                </div>
+                ${h.personCode ? '<i class="bi bi-chevron-right tc-text-muted"></i>' : ""}
+              </div>
+            </div>`).join("");
+        }
+
+        const histDiv = document.getElementById("fullHistory");
+        const dates = Object.keys(toolDailyLog).sort();
+        if (!dates.length) {
+          histDiv.innerHTML = `<div class="tc-empty"><i class="bi bi-calendar-x"></i> No activity for this tool</div>`;
+        } else {
+          histDiv.innerHTML = dates.reverse().map(d => `
+            <div class="tc-day-group">
+              <div class="tc-day-label"><i class="bi bi-calendar3"></i> ${escHtml(d)}${d === TARGET_DATE ? '<span class="tc-chip-today">Selected</span>' : ""}</div>
+              ${toolDailyLog[d].map(a => `
+                <div class="tc-timeline-item">
+                  <div class="tc-timeline-dot ${CustodyParser.dotClass(a.type)}"><i class="bi ${CustodyParser.dotIcon(a.type)}"></i></div>
+                  <div class="small pt-1">${escHtml(a.text)}</div>
+                </div>`).join("")}
+            </div>`).join("");
+        }
+
+        document.getElementById("loadingState").style.display = "none";
+        document.getElementById("mainContent").style.display = "block";
+      } catch (e) { showError(e.message); }
+    }
+
+    function showError(msg) {
+      document.getElementById("loadingState").style.display = "none";
+      document.getElementById("errorState").style.display = "block";
+      document.getElementById("errorMsg").textContent = msg;
+    }
+  </script>
+</body>
+</html>

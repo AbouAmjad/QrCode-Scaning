@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ToolCustody | Damage Reports</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="app.css">
+  <script src="config.js"></script>
+  <script src="ui.js"></script>
+</head>
+<body class="tc-page">
+  <div class="tc-wrap">
+    <div class="tc-shell">
+      <div id="app-header"></div>
+
+      <div id="loadingState" class="text-center py-5" style="display:none">
+        <div class="tc-spinner mb-3"></div>
+        <div class="tc-text-muted">Loading damage report…</div>
+      </div>
+
+      <div id="mainContent" style="display:none">
+        <div class="tc-kpi-grid mb-4">
+          <div class="tc-kpi red"><div class="label">Damaged items</div><div class="value" id="kpiItems">0</div></div>
+          <div class="tc-kpi orange"><div class="label">Damage count</div><div class="value" id="kpiCount">0</div></div>
+          <div class="tc-kpi slate"><div class="label">Unique offenders</div><div class="value" id="kpiPeople">0</div></div>
+          <div class="tc-kpi blue"><div class="label">With remarks</div><div class="value" id="kpiRemarks">0</div></div>
+        </div>
+
+        <div class="tc-card">
+          <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+            <span class="tc-section-badge"><i class="bi bi-bug"></i> Damage log</span>
+            <span class="tc-text-muted small" id="reportState">Ready</span>
+          </div>
+          <div id="damageList" class="tc-damage-grid"></div>
+          <div id="emptyState" class="tc-empty mt-3" style="display:none">
+            <i class="bi bi-folder2-open fs-3"></i>
+            <div class="fw-semibold mt-2">No damage records for this date</div>
+            <div class="small mt-1">Add a <strong>Damage</strong> tab to your Google Sheet (Date, Code, Name, Image, DamagedBy, Count, Remark) and redeploy Code.gs.</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="errorState" class="text-center py-5 text-danger" style="display:none">
+        <i class="bi bi-wifi-off fs-1"></i>
+        <div class="mt-2" id="errorMsg">Failed to load</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let activeDate = "";
+    let lastDamageRows = [];
+
+    document.addEventListener("DOMContentLoaded", () => {
+      TCUI.mountHeader("app-header", {
+        active: "damage",
+        title: "Damage Reports",
+        subtitle: "Product damage log with images, offenders, and remarks",
+        icon: "bi-exclamation-octagon",
+        toolbar: `
+          <select id="dateSelect" class="tc-select"><option value="">Select date</option></select>
+          <button id="btnLoad" class="tc-btn tc-btn-primary"><i class="bi bi-cloud-download"></i> Load</button>
+          <button id="btnRefresh" class="tc-btn"><i class="bi bi-arrow-clockwise"></i></button>`
+      });
+      init();
+    });
+
+    function normalizeDamageRow(row) {
+      return {
+        code: (row.code || row.productCode || row.toolCode || "").toString().trim(),
+        name: row.name || row.productName || row.toolDescription || row.description || "Unnamed product",
+        image: row.image || row.photo || row.imageUrl || row.picture || row.productImage || "",
+        damagedBy: row.damagedBy || row.damageBy || row.offender || row.person || row.worker || "Unknown",
+        count: Number(row.count ?? row.damageCount ?? row.times ?? row.qty ?? 1) || 1,
+        remark: row.remark || row.remarks || row.note || row.notes || "No remark",
+        date: row.date || row.damageDate || row.rowDate || activeDate || ""
+      };
+    }
+
+    function renderDamage(items) {
+      const list = document.getElementById("damageList");
+      const empty = document.getElementById("emptyState");
+      list.innerHTML = "";
+
+      document.getElementById("kpiItems").textContent = items.length;
+      document.getElementById("kpiCount").textContent = items.reduce((s, i) => s + i.count, 0);
+      document.getElementById("kpiPeople").textContent = new Set(items.map(i => i.damagedBy).filter(Boolean)).size;
+      document.getElementById("kpiRemarks").textContent = items.filter(i => i.remark && i.remark !== "No remark").length;
+      document.getElementById("reportState").textContent = items.length ? `Loaded ${items.length} record(s)` : "No records";
+
+      if (!items.length) { empty.style.display = "block"; return; }
+      empty.style.display = "none";
+
+      items.forEach(item => {
+        const card = document.createElement("div");
+        card.className = "tc-damage-card";
+        const imgBlock = item.image
+          ? `<img src="${escHtml(item.image)}" alt="" class="tc-damage-img" onerror="this.outerHTML='<div class=\\'tc-damage-fallback\\'><i class=\\'bi bi-image\\'></i></div>'">`
+          : `<div class="tc-damage-fallback"><i class="bi bi-image"></i></div>`;
+        card.innerHTML = `
+          ${imgBlock}
+          <div class="tc-damage-body">
+            <div class="tc-damage-title">${escHtml(item.name)}</div>
+            <div class="tc-damage-sub">${item.code ? escHtml(item.code) + " · " : ""}${escHtml(item.date || activeDate || "—")}</div>
+            <div class="tc-damage-meta">
+              <span class="tc-meta-pill red"><i class="bi bi-person-exclamation"></i> ${escHtml(item.damagedBy)}</span>
+              <span class="tc-meta-pill warn"><i class="bi bi-repeat"></i> ${item.count}×</span>
+              <span class="tc-meta-pill blue"><i class="bi bi-calendar-event"></i> ${escHtml(item.date || activeDate || "N/A")}</span>
+            </div>
+            <div class="tc-damage-remark"><strong>Remark:</strong> ${escHtml(item.remark)}</div>
+          </div>
+          <div class="tc-damage-count"><div class="lbl">Count</div><div class="val">${item.count}</div></div>`;
+        list.appendChild(card);
+      });
+    }
+
+    async function loadDamage(date) {
+      activeDate = date;
+      document.getElementById("loadingState").style.display = "block";
+      document.getElementById("mainContent").style.display = "none";
+      document.getElementById("errorState").style.display = "none";
+
+      try {
+        const response = await apiGet({ action: "getDamage", date });
+        if (response && response.error) throw new Error(response.error);
+        const rows = Array.isArray(response) ? response
+          : Array.isArray(response?.items) ? response.items
+          : Array.isArray(response?.rows) ? response.rows
+          : Array.isArray(response?.data) ? response.data
+          : Array.isArray(response?.damage) ? response.damage : [];
+        lastDamageRows = rows.map(normalizeDamageRow).filter(i => i.name || i.code || i.damagedBy);
+        renderDamage(lastDamageRows);
+        document.getElementById("loadingState").style.display = "none";
+        document.getElementById("mainContent").style.display = "block";
+      } catch (error) {
+        document.getElementById("loadingState").style.display = "none";
+        document.getElementById("errorState").style.display = "block";
+        document.getElementById("errorMsg").textContent = error.message || "Failed to load";
+      }
+    }
+
+    async function init() {
+      const dates = await loadDateOptions(document.getElementById("dateSelect"));
+      if (dates.length) {
+        document.getElementById("dateSelect").value = dates[0];
+        await loadDamage(dates[0]);
+      }
+      document.getElementById("btnLoad").addEventListener("click", () => {
+        const d = document.getElementById("dateSelect").value;
+        if (d) loadDamage(d);
+      });
+      document.getElementById("btnRefresh").addEventListener("click", () => {
+        const d = document.getElementById("dateSelect").value;
+        if (d) loadDamage(d);
+      });
+      document.getElementById("dateSelect").addEventListener("change", e => {
+        if (e.target.value) loadDamage(e.target.value);
+      });
+    }
+  </script>
+</body>
+</html>

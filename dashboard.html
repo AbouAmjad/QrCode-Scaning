@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ToolCustody | Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="app.css">
+  <script src="config.js"></script>
+  <script src="ui.js"></script>
+</head>
+<body class="tc-page">
+  <div class="tc-wrap">
+    <div class="tc-shell">
+      <div id="app-header"></div>
+
+      <div id="loadingState" class="text-center py-5">
+        <div class="tc-spinner mb-3"></div>
+        <div class="tc-text-muted">Loading dashboard…</div>
+      </div>
+
+      <div id="mainContent" style="display:none">
+        <div class="tc-kpi-grid mb-4">
+          <div class="tc-kpi red"><div class="label">Checked out</div><div class="value" id="kpiOut">0</div></div>
+          <div class="tc-kpi green"><div class="label">Workers today</div><div class="value" id="kpiWorkers">0</div></div>
+          <div class="tc-kpi orange"><div class="label">Warnings</div><div class="value" id="kpiWarn">0</div></div>
+          <div class="tc-kpi purple"><div class="label">Overdue tools</div><div class="value" id="kpiOverdue">0</div></div>
+        </div>
+
+        <div class="row g-4">
+          <div class="col-lg-7">
+            <div class="tc-card mb-4">
+              <span class="tc-section-badge"><i class="bi bi-exclamation-triangle"></i> Alerts</span>
+              <div id="alertsBox" class="mt-2"></div>
+            </div>
+            <div class="tc-card">
+              <span class="tc-section-badge"><i class="bi bi-search"></i> Quick lookup</span>
+              <input type="text" id="quickSearch" class="tc-search mt-2" placeholder="Tool code (I/E/C/B) or worker (P)…">
+              <div id="searchResult"></div>
+            </div>
+          </div>
+          <div class="col-lg-5">
+            <div class="tc-card mb-4">
+              <span class="tc-section-badge"><i class="bi bi-trophy"></i> Top holders</span>
+              <div id="topHolders" class="mt-2"></div>
+            </div>
+            <div class="tc-card">
+              <span class="tc-section-badge"><i class="bi bi-lightning"></i> Actions</span>
+              <div class="d-grid gap-2 mt-2">
+                <button class="tc-btn tc-btn-primary" id="btnExport"><i class="bi bi-download"></i> Export CSV</button>
+                <a href="results.html" class="tc-btn text-center" id="linkResults"><i class="bi bi-box-seam"></i> Full inventory</a>
+                <a href="damage.html" class="tc-btn text-center" id="linkDamage"><i class="bi bi-exclamation-octagon"></i> Damage <span id="damageBadge" class="badge bg-danger ms-1">0</span></a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="errorState" class="text-center py-5 text-danger" style="display:none">
+        <i class="bi bi-wifi-off fs-1"></i>
+        <div class="mt-2" id="errorMsg">Failed to load</div>
+      </div>
+
+      <div class="tc-footer">
+        <span><span class="tc-live-dot"></span> Auto-refresh every 30s</span>
+        <span>Updated: <strong id="lastUpdate">—</strong></span>
+      </div>
+    </div>
+  </div>
+
+  <script src="parser.js"></script>
+  <script>
+    let activeDate = "", lastRows = [], lastOverview = null, refreshTimer = null;
+
+    document.addEventListener("DOMContentLoaded", () => {
+      TCUI.mountHeader("app-header", {
+        active: "dashboard",
+        title: "Dashboard",
+        subtitle: "Live operations center",
+        icon: "bi-speedometer2",
+        toolbar: `
+          <select id="dateSelect" class="tc-select" style="min-width:200px"></select>
+          <button class="tc-btn tc-btn-primary" id="btnRefresh"><i class="bi bi-arrow-clockwise"></i> Refresh</button>
+        `
+      });
+      init();
+    });
+
+    async function loadDashboard(date) {
+      activeDate = date;
+      document.getElementById("loadingState").style.display = "block";
+      document.getElementById("mainContent").style.display = "none";
+      document.getElementById("errorState").style.display = "none";
+
+      try {
+        const data = await apiGet({ action: "getData", date });
+        if (data && data.error) throw new Error(data.error);
+        lastRows = data;
+        const dash = CustodyParser.parseDashboard(data, date);
+        lastOverview = dash;
+
+        document.getElementById("kpiOut").textContent = dash.totalOut;
+        document.getElementById("kpiWorkers").textContent = dash.totalWorkers;
+        document.getElementById("kpiWarn").textContent = dash.warnings;
+        document.getElementById("kpiOverdue").textContent = dash.overdueCount;
+
+        const alertsBox = document.getElementById("alertsBox");
+        if (dash.allClear) {
+          alertsBox.innerHTML = `<div class="tc-alert ok"><i class="bi bi-check-circle-fill"></i><span>All clear — every tool is back in store.</span></div>`;
+        } else if (!dash.alerts.length) {
+          alertsBox.innerHTML = `<div class="tc-alert ok"><i class="bi bi-info-circle"></i><span>${dash.totalOut} tool(s) out — no critical warnings.</span></div>`;
+        } else {
+          alertsBox.innerHTML = dash.alerts.map(a => {
+            const cls = a.type === "overdue" ? "overdue" : a.type === "error" ? "error" : "warn";
+            const icon = a.type === "overdue" ? "bi-clock-history" : "bi-exclamation-triangle-fill";
+            return `<div class="tc-alert ${cls}"><i class="bi ${icon}"></i><span>${escHtml(a.text)}</span></div>`;
+          }).join("");
+        }
+
+        const topDiv = document.getElementById("topHolders");
+        if (!dash.topHolders.length) {
+          topDiv.innerHTML = `<div class="tc-text-muted small">No tools currently held</div>`;
+        } else {
+          topDiv.innerHTML = dash.topHolders.map((h, i) => `
+            <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+              <span><strong>#${i + 1}</strong> ${escHtml(h.name)}</span>
+              <span class="badge bg-danger">${h.qty} tool(s)</span>
+            </div>`).join("");
+        }
+
+        try {
+          const dmg = await apiGet({ action: "getDamage", date });
+          const items = (dmg && dmg.items) ? dmg.items : [];
+          const badge = document.getElementById("damageBadge");
+          if (badge) badge.textContent = items.length;
+        } catch { /* optional */ }
+
+        document.getElementById("lastUpdate").textContent = new Date().toLocaleTimeString();
+        document.getElementById("loadingState").style.display = "none";
+        document.getElementById("mainContent").style.display = "block";
+      } catch (e) {
+        document.getElementById("loadingState").style.display = "none";
+        document.getElementById("errorState").style.display = "block";
+        document.getElementById("errorMsg").textContent = e.message;
+      }
+    }
+
+    document.getElementById("quickSearch").addEventListener("input", e => {
+      const q = e.target.value.trim();
+      const box = document.getElementById("searchResult");
+      if (!q || !lastRows.length) { box.innerHTML = ""; return; }
+      const hit = CustodyParser.lookupTool(lastRows, q);
+      if (!hit) {
+        box.innerHTML = `<div class="tc-card mt-2 tc-text-muted small"><i class="bi bi-search"></i> No match for "${escHtml(q.toUpperCase())}"</div>`;
+        return;
+      }
+      if (hit.type === "tool") {
+        box.innerHTML = `<div class="tc-card mt-2">
+          <div class="fw-bold">${escHtml(hit.code)} — ${escHtml(hit.description)}</div>
+          <div class="small tc-text-muted mt-1">${hit.qty > 0 ? "OUT · " + hit.holderNames.join(", ") : "In store"}</div>
+          <a href="tool.html?code=${encodeURIComponent(hit.code)}&date=${encodeURIComponent(activeDate)}" class="tc-btn tc-btn-primary tc-btn-sm mt-2">View history</a>
+        </div>`;
+      } else {
+        const cnt = hit.toolsHeld.reduce((s, t) => s + t.qty, 0);
+        box.innerHTML = `<div class="tc-card mt-2">
+          <div class="fw-bold">${escHtml(hit.name)} (${escHtml(hit.code)})</div>
+          <div class="small tc-text-muted mt-1">${cnt} tool(s) held</div>
+          <a href="worker.html?code=${encodeURIComponent(hit.code)}&date=${encodeURIComponent(activeDate)}" class="tc-btn tc-btn-primary tc-btn-sm mt-2">View profile</a>
+        </div>`;
+      }
+    });
+
+    document.getElementById("btnExport").addEventListener("click", () => {
+      if (lastOverview) CustodyParser.exportCsv(lastOverview.tools, activeDate);
+    });
+
+    document.getElementById("btnRefresh").addEventListener("click", () => {
+      const d = document.getElementById("dateSelect").value;
+      if (d) loadDashboard(d);
+    });
+
+    async function init() {
+      const dates = await loadDateOptions(document.getElementById("dateSelect"));
+      if (dates.length) {
+        document.getElementById("dateSelect").value = dates[0];
+        await loadDashboard(dates[0]);
+      }
+      document.getElementById("dateSelect").addEventListener("change", e => {
+        if (e.target.value) loadDashboard(e.target.value);
+      });
+      refreshTimer = setInterval(() => {
+        const d = document.getElementById("dateSelect").value;
+        if (d) loadDashboard(d);
+      }, AppConfig.DASHBOARD_REFRESH_MS);
+    }
+  </script>
+</body>
+</html>

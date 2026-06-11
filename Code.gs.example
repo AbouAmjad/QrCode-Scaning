@@ -1,0 +1,229 @@
+// ==========================================
+// انسخ هذا الملف إلى Google Apps Script (Code.gs)
+// ضع القيم الحقيقية في Script Properties:
+//   APP_USER, APP_PASS, APP_TOKEN, B_SHEET_ID, DAMAGE_SHEET_ID
+// ==========================================
+
+const USER = "YOUR_USERNAME";
+const PASS = "YOUR_PASSWORD";
+const MAIN_SHEET_ID = "YOUR_MAIN_SHEET_ID";
+
+const SPREADSHEET_MAP = {
+  "P": { id: "YOUR_P_SHEET_ID", column: "E" },
+  "E": { id: "YOUR_E_SHEET_ID", column: "E" },
+  "I": { id: "YOUR_I_SHEET_ID", column: "E" },
+  "C": { id: "YOUR_C_SHEET_ID", column: "E" },
+  "B": { id: "YOUR_B_SHEET_ID", column: "E" }
+};
+
+// تبويب Damage: A=Date B=Code C=Name D=ImageURL E=DamagedBy F=Count G=Remark
+const DAMAGE_TAB_NAME = "Damage";
+
+function getConfig_() {
+  const props = PropertiesService.getScriptProperties();
+  const bSheetId = props.getProperty("B_SHEET_ID");
+  if (bSheetId) SPREADSHEET_MAP["B"].id = bSheetId;
+  return {
+    user: props.getProperty("APP_USER") || USER,
+    pass: props.getProperty("APP_PASS") || PASS,
+    token: props.getProperty("APP_TOKEN") || "abouamjad_secure_session_token",
+    damageSheetId: props.getProperty("DAMAGE_SHEET_ID") || MAIN_SHEET_ID
+  };
+}
+
+function isAuthorized_(token) {
+  return token && token === getConfig_().token;
+}
+
+function extractDate_(cellValue) {
+  if (!cellValue) return "";
+  const s = cellValue.toString().trim();
+  const match = s.match(/\{([^}]+)\}/);
+  return match ? match[0].trim() : s;
+}
+
+function internalGetDescription(scanData) {
+  if (!scanData) return "NO CODE";
+  const firstChar = scanData.charAt(0).toUpperCase();
+  const sheetInfo = SPREADSHEET_MAP[firstChar];
+  if (!sheetInfo) return "UNKNOWN CODE TYPE";
+  try {
+    const sheet = SpreadsheetApp.openById(sheetInfo.id).getActiveSheet();
+    const lastRow = sheet.getLastRow();
+    if (lastRow === 0) return "EMPTY SHEET";
+    const values = sheet.getRange(1, 1, lastRow, sheet.getLastColumn()).getDisplayValues();
+    const rowIndex = values.findIndex(row => row[0].toUpperCase() === scanData.toUpperCase());
+    if (rowIndex !== -1) {
+      const descColumn = sheetInfo.column.charCodeAt(0) - 65;
+      return values[rowIndex][descColumn] || "NO DESCRIPTION WRITTEN";
+    }
+    return "DESCRIPTION NOT FOUND";
+  } catch (e) {
+    return "ERROR FETCHING";
+  }
+}
+
+function internalGetDamage_(targetDate) {
+  const cfg = getConfig_();
+  try {
+    const ss = SpreadsheetApp.openById(cfg.damageSheetId);
+    let sheet = ss.getSheetByName(DAMAGE_TAB_NAME);
+    if (!sheet) return [];
+
+    const lastRow = sheet.getLastRow();
+    if (lastRow < 2) return [];
+
+    const rows = sheet.getRange(2, 1, lastRow - 1, 7).getDisplayValues();
+    const items = [];
+
+    rows.forEach(row => {
+      const rowDate = extractDate_(row[0]);
+      if (targetDate && rowDate !== targetDate) return;
+
+      const code = (row[1] || "").toString().trim();
+      const name = (row[2] || "").toString().trim();
+      const image = (row[3] || "").toString().trim();
+      const damagedBy = (row[4] || "").toString().trim() || "Unknown";
+      const count = Number(row[5]) || 1;
+      const remark = (row[6] || "").toString().trim() || "No remark";
+
+      if (!code && !name && !damagedBy) return;
+
+      items.push({
+        code: code,
+        name: name || internalGetDescription(code) || code || "Unnamed product",
+        image: image,
+        damagedBy: damagedBy,
+        count: count,
+        remark: remark,
+        date: rowDate
+      });
+    });
+
+    return items;
+  } catch (err) {
+    return { error: err.message };
+  }
+}
+
+function doGet(e) {
+  const params = (e && e.parameter) || {};
+  const action = params.action;
+  const cfg = getConfig_();
+
+  if (action === "options") return json({ ok: true });
+
+  if (action === "login") {
+    if (params.user === cfg.user && params.pass === cfg.pass) {
+      return json({ success: true, token: cfg.token });
+    }
+    return json({ success: false });
+  }
+
+  if (action === "getDesc") {
+    if (!isAuthorized_(params.token)) return json({ error: "UNAUTHORIZED" });
+    const code = (params.code || "").toUpperCase().trim();
+    if (!code) return json({ description: "NO CODE" });
+    return json({ description: internalGetDescription(code) });
+  }
+
+  const scanData = params.scanData;
+  if (scanData) {
+    if (!isAuthorized_(params.token)) return json({ error: "UNAUTHORIZED" });
+    const lock = LockService.getScriptLock();
+    try {
+      lock.waitLock(5000);
+      const sheet = SpreadsheetApp.openById(MAIN_SHEET_ID).getActiveSheet();
+      const colBValues = sheet.getRange("B1:B").getValues();
+      let nextRow = 2;
+      for (let i = 1; i < colBValues.length; i++) {
+        if (!colBValues[i][0] || colBValues[i][0].toString().trim() === "") {
+          nextRow = i + 1;
+          break;
+        }
+      }
+      sheet.getRange(nextRow, 2).setValue(scanData.toUpperCase());
+      return json({ status: "OK" });
+    } catch (error) {
+      return json({ error: "SERVER_BUSY" });
+    } finally {
+      lock.releaseLock();
+    }
+  }
+
+  if (action && !isAuthorized_(params.token)) {
+    return json({ error: "UNAUTHORIZED" });
+  }
+
+  if (action === "getDates") {
+    try {
+      const sheet = SpreadsheetApp.openById(MAIN_SHEET_ID).getActiveSheet();
+      const lastRow = sheet.getLastRow();
+      if (lastRow < 2) return json([]);
+
+      const rows = sheet.getRange(2, 8, lastRow - 1, 1).getDisplayValues();
+      const datesList = [];
+      rows.forEach(row => {
+        const cellValue = row[0].trim();
+        if (!cellValue) return;
+        datesList.push(extractDate_(cellValue));
+      });
+      return json([...new Set(datesList)].filter(String));
+    } catch (err) {
+      return json({ error: err.message });
+    }
+  }
+
+  if (action === "getData") {
+    const targetDate = params.date;
+    try {
+      const sheet = SpreadsheetApp.openById(MAIN_SHEET_ID).getActiveSheet();
+      const lastRow = sheet.getLastRow();
+      if (lastRow < 2) return json([]);
+
+      const rows = sheet.getRange(2, 1, lastRow - 1, 8).getDisplayValues();
+      const historyData = [];
+
+      for (let i = 0; i < rows.length; i++) {
+        const qrCode = rows[i][1];
+        const timestamp = (rows[i][7] || "").toString().trim();
+        if (!qrCode) continue;
+        historyData.push({
+          toolCode: qrCode,
+          rowDate: extractDate_(timestamp),
+          timestamp: timestamp
+        });
+      }
+
+      const uniqueCodes = [...new Set(historyData.map(d => d.toolCode))];
+      const descMap = {};
+      uniqueCodes.forEach(c => { descMap[c] = internalGetDescription(c); });
+
+      return json(historyData.map(d => ({
+        toolCode: d.toolCode,
+        toolDescription: descMap[d.toolCode],
+        rowDate: d.rowDate,
+        isTargetDay: (d.rowDate === targetDate)
+      })));
+    } catch (err) {
+      return json({ error: err.message });
+    }
+  }
+
+  if (action === "getDamage") {
+    const targetDate = params.date || "";
+    const result = internalGetDamage_(targetDate);
+    if (result && result.error) return json(result);
+    return json({ items: result });
+  }
+
+  return json({ error: "NO ACTION SPECIFIED" });
+}
+
+function json(o) {
+  return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON);
+}
+
+function doPost(e) {
+  return doGet(e);
+}

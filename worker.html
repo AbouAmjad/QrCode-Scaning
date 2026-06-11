@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ToolCustody | Worker Profile</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="app.css">
+  <script src="config.js"></script>
+  <script src="ui.js"></script>
+</head>
+<body class="tc-page">
+  <div class="tc-wrap narrow">
+    <div class="tc-shell">
+      <div id="app-header"></div>
+      <button class="tc-btn tc-btn-sm mb-3" onclick="history.back()"><i class="bi bi-arrow-left"></i> Back</button>
+
+      <div id="loadingState" class="text-center py-5">
+        <div class="tc-spinner mb-3"></div>
+        <div class="tc-text-muted">Loading worker profile…</div>
+      </div>
+
+      <div id="mainContent" style="display:none">
+        <div class="tc-card mb-4 d-flex align-items-center gap-3 flex-wrap">
+          <div class="tc-avatar lg" id="workerAvatar">—</div>
+          <div class="flex-grow-1">
+            <h2 class="fw-bold mb-1" id="workerName">—</h2>
+            <div class="tc-text-muted small" id="workerCode">—</div>
+            <div class="d-flex gap-2 mt-2 flex-wrap">
+              <span class="tc-badge-present"><i class="bi bi-check-circle-fill"></i> Present</span>
+              <span class="tc-badge-holder" id="workerToolCount">0 tools held</span>
+            </div>
+          </div>
+        </div>
+
+        <span class="tc-section-badge"><i class="bi bi-hammer"></i> Currently holding</span>
+        <div id="toolsHeldNow" class="row g-3 mb-4 mt-2"></div>
+
+        <span class="tc-section-badge"><i class="bi bi-calendar3"></i> Activity history</span>
+        <div id="fullHistory" class="mt-2"></div>
+      </div>
+
+      <div id="errorState" class="text-center py-5 text-danger" style="display:none">
+        <i class="bi bi-exclamation-triangle-fill fs-1"></i>
+        <div class="mt-2" id="errorMsg">Failed to load</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="parser.js"></script>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const TARGET_CODE = (params.get("code") || "").toUpperCase();
+    const TARGET_DATE = params.get("date") || "";
+
+    document.addEventListener("DOMContentLoaded", () => {
+      TCUI.mountHeader("app-header", {
+        active: "overview",
+        title: "Worker",
+        subtitle: "Custody profile",
+        icon: "bi-person-badge"
+      });
+      init();
+    });
+
+    async function init() {
+      if (!TARGET_CODE) { showError("No worker code specified"); return; }
+      try {
+        const data = await apiGet({ action: "getData", date: TARGET_DATE });
+        if (data && data.error) throw new Error(data.error);
+        const { workerName, toolsHeld, workerDailyLog } = CustodyParser.parseForWorker(data, TARGET_CODE, TARGET_DATE);
+
+        document.getElementById("workerAvatar").textContent = initials(workerName);
+        document.getElementById("workerName").textContent = workerName;
+        document.getElementById("workerCode").textContent = TARGET_CODE + " · " + TARGET_DATE;
+        document.getElementById("workerToolCount").textContent = `${toolsHeld.reduce((s, t) => s + t.qty, 0)} tool(s) held`;
+
+        const toolsDiv = document.getElementById("toolsHeldNow");
+        if (!toolsHeld.length) {
+          toolsDiv.innerHTML = `<div class="col-12"><div class="tc-empty"><i class="bi bi-check-circle-fill text-success"></i> No tools held — all returned</div></div>`;
+        } else {
+          toolsDiv.innerHTML = toolsHeld.map(t => `
+            <div class="col-md-6">
+              <div class="tc-entity-card${t.isToday ? "" : " overdue"}" onclick="location.href='tool.html?code=${encodeURIComponent(t.code)}&date=${encodeURIComponent(TARGET_DATE)}'">
+                <div class="tc-avatar">🔧</div>
+                <div class="flex-grow-1">
+                  <div class="fw-bold">${escHtml(t.code)}</div>
+                  <div class="tc-text-muted small">${escHtml(t.desc)}</div>
+                  <span class="tc-badge-holder mt-1">${t.isToday ? "Taken today" : "Since " + escHtml(t.takenDate)}${t.qty > 1 ? " ×" + t.qty : ""}</span>
+                </div>
+                <i class="bi bi-chevron-right tc-text-muted"></i>
+              </div>
+            </div>`).join("");
+        }
+
+        const histDiv = document.getElementById("fullHistory");
+        const dates = Object.keys(workerDailyLog).sort();
+        if (!dates.length) {
+          histDiv.innerHTML = `<div class="tc-empty"><i class="bi bi-calendar-x"></i> No activity recorded</div>`;
+        } else {
+          histDiv.innerHTML = dates.reverse().map(d => `
+            <div class="tc-day-group">
+              <div class="tc-day-label"><i class="bi bi-calendar3"></i> ${escHtml(d)}${d === TARGET_DATE ? '<span class="tc-chip-today">Selected</span>' : ""}</div>
+              ${workerDailyLog[d].map(a => `
+                <div class="tc-timeline-item">
+                  <div class="tc-timeline-dot ${CustodyParser.dotClass(a.type)}"><i class="bi ${CustodyParser.dotIcon(a.type)}"></i></div>
+                  <div class="small pt-1">${escHtml(a.text)}</div>
+                </div>`).join("")}
+            </div>`).join("");
+        }
+
+        document.getElementById("loadingState").style.display = "none";
+        document.getElementById("mainContent").style.display = "block";
+      } catch (e) { showError(e.message); }
+    }
+
+    function showError(msg) {
+      document.getElementById("loadingState").style.display = "none";
+      document.getElementById("errorState").style.display = "block";
+      document.getElementById("errorMsg").textContent = msg;
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ToolCustody | Login</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="app.css">
+  <script src="config.js"></script>
+</head>
+<body class="tc-page tc-login">
+  <div class="tc-login-card">
+    <div class="d-flex justify-content-between align-items-start gap-2 mb-4">
+      <div>
+        <h1>Abu Amjad</h1>
+        <p class="subtitle">Tool custody secure portal</p>
+      </div>
+      <button type="button" class="tc-btn tc-btn-sm theme-switch" onclick="toggleTheme();syncThemeControls()" data-theme-toggle>Theme</button>
+    </div>
+
+    <div class="tc-field">
+      <label for="loginUser">Username</label>
+      <input type="text" id="loginUser" autocomplete="off" placeholder="Enter username">
+    </div>
+    <div class="tc-field">
+      <label for="loginPass">Password</label>
+      <input type="password" id="loginPass" autocomplete="off" placeholder="Enter password">
+    </div>
+
+    <button class="tc-btn tc-btn-primary w-100" id="loginBtn" onclick="login()">
+      <i class="bi bi-shield-lock"></i> Secure Login
+    </button>
+    <div class="tc-error" id="errorMessage">Invalid username or password</div>
+  </div>
+
+  <script src="ui.js"></script>
+  <script>
+    async function login() {
+      const user = document.getElementById("loginUser").value;
+      const pass = document.getElementById("loginPass").value;
+      const button = document.getElementById("loginBtn");
+      const errorDiv = document.getElementById("errorMessage");
+
+      errorDiv.style.display = "none";
+      if (!user || !pass) {
+        errorDiv.textContent = "Please enter both username and password";
+        errorDiv.style.display = "block";
+        return;
+      }
+
+      button.disabled = true;
+      button.innerHTML = '<i class="bi bi-hourglass-split"></i> Authenticating...';
+
+      try {
+        const result = await loginRequest(user, pass);
+        if (result.ok && result.token) {
+          setToken(result.token);
+          button.innerHTML = '<i class="bi bi-check-circle"></i> Success!';
+          setTimeout(() => { window.location = "index.html"; }, 800);
+        } else if (result.badCreds) {
+          errorDiv.textContent = "Invalid username or password";
+          errorDiv.style.display = "block";
+          resetButton();
+        } else {
+          errorDiv.textContent = "Network error — please try again";
+          errorDiv.style.display = "block";
+          resetButton();
+        }
+      } catch {
+        errorDiv.textContent = "Network error — please try again";
+        errorDiv.style.display = "block";
+        resetButton();
+      }
+    }
+
+    function resetButton() {
+      const button = document.getElementById("loginBtn");
+      button.disabled = false;
+      button.innerHTML = '<i class="bi bi-shield-lock"></i> Secure Login';
+    }
+
+    document.addEventListener("keypress", e => { if (e.key === "Enter") login(); });
+    window.onload = () => {
+      if (getToken()) { window.location = "index.html"; return; }
+      document.getElementById("loginUser").focus();
+    };
+  </script>
+</body>
+</html>
