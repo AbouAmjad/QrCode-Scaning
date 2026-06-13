@@ -290,34 +290,31 @@
 
       try {
         const date = document.getElementById("dateSelect").value || "";
-        const payload = {
-          action: "submitDamage",
+
+        const result = await apiSubmitDamage({
           toolCode,
           personCode,
           qty,
           remark: remark || "No remark",
-          date: date || undefined
-        };
-        if (photoDataUrl) payload.imageBase64 = photoDataUrl;
-
-        const result = await apiPost(payload);
+          date: date || undefined,
+          imageBase64: photoDataUrl || undefined
+        });
+        if (result && result.error === "NO ACTION SPECIFIED") {
+          throw new Error("Apps Script not updated. Copy Code.gs.example → Deploy → New version (Anyone).");
+        }
         if (result && result.error) throw new Error(result.error);
-        if (!result || !result.success) throw new Error("Submit failed");
+        if (!result || !result.success) throw new Error("Submit failed — redeploy Code.gs with submitDamage");
 
-        showFormMsg("Report saved successfully!", "ok");
+        let msg = "Report saved to Google Sheet!";
+        if (result.imageSkipped) msg += " (without photo)";
+        if (result.warning) msg += " " + result.warning;
+        showFormMsg(msg, "ok");
         document.getElementById("damageForm").reset();
         setPhotoPreview("");
         document.getElementById("toolDescHint").textContent = "";
 
-        const reloadDate = date || (result.item && result.item.date) || "";
-        if (reloadDate) {
-          document.getElementById("dateSelect").value = reloadDate;
-          await loadDamage(reloadDate);
-        } else if (activeDate) {
-          await loadDamage(activeDate);
-        } else {
-          document.getElementById("mainContent").style.display = "block";
-        }
+        const reloadDate = (result.item && result.item.date) || date || "";
+        await loadDamage(reloadDate);
       } catch (err) {
         showFormMsg(err.message || "Failed to submit", "err");
       } finally {
@@ -349,13 +346,8 @@
         showFormMsg("", "");
       });
 
-      const dates = await loadDateOptions(document.getElementById("dateSelect"));
-      if (dates.length) {
-        document.getElementById("dateSelect").value = dates[0];
-        await loadDamage(dates[0]);
-      } else {
-        document.getElementById("mainContent").style.display = "block";
-      }
+      const dates = await loadDamageDateOptions(document.getElementById("dateSelect"));
+      await loadDamage("");
 
       document.getElementById("btnLoad").addEventListener("click", () => {
         const d = document.getElementById("dateSelect").value;
@@ -366,7 +358,7 @@
         if (d) loadDamage(d);
       });
       document.getElementById("dateSelect").addEventListener("change", e => {
-        if (e.target.value) loadDamage(e.target.value);
+        loadDamage(e.target.value);
       });
     }
   </script>

@@ -120,11 +120,12 @@ function internalSubmitDamage_(params) {
 
   const toolName = internalGetDescription(toolCode);
   let imageUrl = "";
+  let finalRemark = remark;
   if (imageBase64) {
     try {
       imageUrl = uploadDamageImage_(imageBase64, toolCode);
     } catch (err) {
-      return { error: "Image upload failed: " + err.message };
+      finalRemark = remark + " [Photo failed: " + err.message + "]";
     }
   }
 
@@ -139,7 +140,7 @@ function internalSubmitDamage_(params) {
       imageUrl,
       personCode,
       count,
-      remark
+      finalRemark
     ]]);
     return {
       success: true,
@@ -151,9 +152,29 @@ function internalSubmitDamage_(params) {
         image: imageUrl,
         damagedBy: personCode,
         count: count,
-        remark: remark
+        remark: finalRemark
       }
     };
+  } catch (err) {
+    return { error: "Sheet write failed: " + err.message + " (check script access to sheet " + cfg.damageSheetId + ")" };
+  }
+}
+
+function normalizeDateKey_(cellValue) {
+  if (!cellValue) return "";
+  return extractDate_(cellValue).replace(/[{}]/g, "").trim();
+}
+
+function internalGetDamageDates_() {
+  const cfg = getConfig_();
+  try {
+    const ss = SpreadsheetApp.openById(cfg.damageSheetId);
+    const sheet = ss.getSheetByName(DAMAGE_TAB_NAME);
+    if (!sheet || sheet.getLastRow() < 2) return [];
+
+    const rows = sheet.getRange(2, 1, sheet.getLastRow(), 1).getDisplayValues();
+    const dates = rows.map(r => normalizeDateKey_(r[0])).filter(String);
+    return [...new Set(dates)].reverse();
   } catch (err) {
     return { error: err.message };
   }
@@ -173,8 +194,9 @@ function internalGetDamage_(targetDate) {
     const items = [];
 
     rows.forEach(row => {
-      const rowDate = extractDate_(row[0]);
-      if (targetDate && rowDate !== targetDate) return;
+      const rowDate = normalizeDateKey_(row[0]);
+      const filterDate = normalizeDateKey_(targetDate);
+      if (targetDate && rowDate !== filterDate) return;
 
       const code = (row[1] || "").toString().trim();
       const name = (row[2] || "").toString().trim();
@@ -305,6 +327,12 @@ function handleRequest_(params) {
     }
   }
 
+  if (action === "getDamageDates") {
+    const result = internalGetDamageDates_();
+    if (result && result.error) return json(result);
+    return json(result);
+  }
+
   if (action === "getDamage") {
     const targetDate = params.date || "";
     const result = internalGetDamage_(targetDate);
@@ -326,11 +354,10 @@ function doGet(e) {
 }
 
 function doPost(e) {
-  let params = (e && e.parameter) || {};
+  var params = (e && e.parameter) ? e.parameter : {};
   if (e && e.postData && e.postData.contents) {
-    const type = (e.postData.type || "").toLowerCase();
-    // text/plain POST avoids browser CORS preflight on GitHub Pages
-    if (type.indexOf("application/json") >= 0 || type.indexOf("text/plain") >= 0) {
+    var type = (e.postData.type || "").toLowerCase();
+    if (type.indexOf("text/plain") >= 0 || type.indexOf("application/json") >= 0) {
       try {
         params = JSON.parse(e.postData.contents);
       } catch (err) {

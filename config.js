@@ -156,19 +156,78 @@ async function apiGet(params) {
   return data;
 }
 
-/** POST — uses text/plain to avoid GAS CORS preflight (application/json is blocked) */
-async function apiPost(body) {
-  const payload = { ...body, token: getApiToken() };
+/** POST form fields — most reliable for Google Apps Script from GitHub Pages */
+async function apiPostForm(fields) {
+  const payload = { ...fields, token: getApiToken() };
+  const form = new URLSearchParams();
+  Object.entries(payload).forEach(([k, v]) => {
+    if (v !== undefined && v !== null && v !== "") form.append(k, String(v));
+  });
   const res = await fetch(AppConfig.SCRIPT_URL, {
     method: "POST",
-    headers: { "Content-Type": "text/plain;charset=utf-8" },
-    body: JSON.stringify(payload),
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: form.toString(),
     cache: "no-store",
     redirect: "follow"
   });
   const data = parseApiResponse(await res.text());
   if (data === null) throw new Error("Invalid server response");
   return data;
+}
+
+/** Submit damage — GET without photo, form POST with photo (GAS-compatible) */
+async function apiSubmitDamage({ toolCode, personCode, qty, remark, date, imageBase64 }) {
+  const base = {
+    action: "submitDamage",
+    toolCode,
+    personCode,
+    qty: String(qty || 1),
+    remark: remark || "No remark"
+  };
+  if (date) base.date = date;
+
+  if (!imageBase64) {
+    return apiGet(base);
+  }
+
+  try {
+    return await apiPostForm({ ...base, imageBase64 });
+  } catch (err) {
+    const fallback = await apiGet(base);
+    if (fallback && fallback.success) {
+      fallback.imageSkipped = true;
+      fallback.warning = "Saved without photo — redeploy Code.gs or retry upload.";
+      return fallback;
+    }
+    throw err;
+  }
+}
+
+async function loadDamageDateOptions(selectEl) {
+  selectEl.innerHTML = '<option value="">⏳ loading…</option>';
+  try {
+    const dates = await apiGet({ action: "getDamageDates" });
+    selectEl.innerHTML = "";
+    const allOpt = document.createElement("option");
+    allOpt.value = "";
+    allOpt.textContent = "All dates";
+    selectEl.appendChild(allOpt);
+    if (dates && dates.error) {
+      allOpt.textContent = "All dates (calendar unavailable)";
+      return [];
+    }
+    const list = Array.isArray(dates) ? dates : [];
+    list.forEach(d => {
+      const o = document.createElement("option");
+      o.value = d;
+      o.textContent = d;
+      selectEl.appendChild(o);
+    });
+    return list;
+  } catch {
+    selectEl.innerHTML = '<option value="">All dates</option>';
+    return [];
+  }
 }
 
 /** sync — no-cors مثل النسخة الأصلية (GAS + file:// ما بيدعموا قراءة الرد دائماً) */
