@@ -867,6 +867,47 @@ body.tc-terminal .tc-shell { max-width: 1180px; margin: 0 auto; }
 .tc-meta-pill.red { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
 .tc-meta-pill.blue { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
 
+/* ── Damage report form ── */
+.tc-damage-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem 1rem;
+}
+@media (max-width: 768px) { .tc-damage-form-grid { grid-template-columns: 1fr; } }
+
+.tc-photo-box {
+  border: 2px dashed var(--tc-border);
+  border-radius: var(--tc-radius-lg);
+  background: var(--tc-surface-2);
+  min-height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+}
+.tc-photo-box img {
+  width: 100%;
+  max-height: 280px;
+  object-fit: contain;
+}
+.tc-photo-placeholder {
+  text-align: center;
+  color: var(--tc-muted);
+  padding: 1.5rem;
+}
+.tc-photo-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
+.tc-form-msg {
+  display: none;
+  margin-top: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--tc-radius-md);
+  font-size: 0.85rem;
+}
+.tc-form-msg.ok { display: block; background: #ecfdf5; border: 1px solid #a7f3d0; color: #047857; }
+.tc-form-msg.err { display: block; background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; }
+.tc-form-msg.busy { display: block; background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; }
+
 body.tc-terminal.danger-mode .tc-shell {
   animation: tc-shake 0.35s ease;
   border-color: var(--tc-danger);

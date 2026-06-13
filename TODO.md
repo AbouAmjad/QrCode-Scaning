@@ -11,10 +11,11 @@
 - [x] `.gitignore` للـ secrets
 
 ## Backend (أنت)
-- [ ] انسخ `Code.gs.txt` → Google Apps Script
+- [ ] انسخ `Code.gs.example` → Google Apps Script (أضف `submitDamage` + sheet ID)
 - [ ] Deploy → **New version** → Anyone
-- [ ] أضف تبويب **Damage** بالشيت الرئيسي:
-  - A: Date | B: Code | C: Name | D: Image URL | E: Damaged By | F: Count | G: Remark
+- [ ] Damage sheet ID: `17nQDnJogZapc8W5RHU8HN8hoSHg_ctym8H37tQWpw68`
+- [ ] تبويب **Damage**: A=Date B=Code C=Name D=ImageURL E=DamagedBy F=Count G=Remark
+- [ ] (اختياري) Script Property `DAMAGE_DRIVE_FOLDER_ID` لمجلد صور Drive
 - [ ] إذا شيت B مختلف: Script Property `B_SHEET_ID`
 
 ## Next features

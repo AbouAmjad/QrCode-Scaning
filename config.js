@@ -156,6 +156,21 @@ async function apiGet(params) {
   return data;
 }
 
+/** POST JSON — for damage submit with image payload */
+async function apiPost(body) {
+  const payload = { ...body, token: getApiToken() };
+  const res = await fetch(AppConfig.SCRIPT_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+    cache: "no-store",
+    redirect: "follow"
+  });
+  const data = parseApiResponse(await res.text());
+  if (data === null) throw new Error("Invalid server response");
+  return data;
+}
+
 /** sync — no-cors مثل النسخة الأصلية (GAS + file:// ما بيدعموا قراءة الرد دائماً) */
 async function syncScan(code) {
   const qs = new URLSearchParams({ scanData: code, token: getApiToken() });
