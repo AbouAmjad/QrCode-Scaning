@@ -8,6 +8,10 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="app.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1e3a5f">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="apple-touch-icon" href="icons/icon.svg">
   <script src="config.js"></script>
   <script src="ui.js"></script>
 </head>
@@ -445,12 +449,7 @@
       if (e.key.toLowerCase() === "o") setDirection("OUT");
     });
 
-    function requireAuth() {
-      if (!getToken()) { window.location = "login.html"; return false; }
-      return true;
-    }
-
-    document.addEventListener("DOMContentLoaded", () => {
+    document.addEventListener("DOMContentLoaded", () => TCUI.bootPage(() => {
       TCUI.mountHeader("app-header", {
         active: "terminal",
         title: "Scan Terminal",
@@ -466,13 +465,11 @@
       const input = document.getElementById("scanInput");
       input.focus();
       input.addEventListener("keydown", e => { if (e.key === "Enter") submitScan(); });
-      if (requireAuth()) {
-        updateOnlineStatus();
-        updateCounter();
-        processQueue();
-        setInterval(processQueue, 5000);
-      }
-    });
+      updateOnlineStatus();
+      updateCounter();
+      processQueue();
+      setInterval(processQueue, 5000);
+    }));
 
     window.setDirection = setDirection;
     window.submitScan = submitScan;

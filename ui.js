@@ -1,4 +1,4 @@
-/** واجهة موحدة — شريط تنقل + هيدر */
+/** واجهة موحدة — شريط تنقل + هيدر + boot */
 const TCUI = (() => {
   const PAGES = [
     { id: "terminal", href: "index.html", icon: "bi-terminal", label: "Terminal" },
@@ -6,6 +6,22 @@ const TCUI = (() => {
     { id: "overview", href: "results.html", icon: "bi-table", label: "Overview" },
     { id: "damage", href: "damage.html", icon: "bi-exclamation-octagon", label: "Damage" }
   ];
+
+  let pwaRegistered = false;
+
+  function registerPWA() {
+    if (pwaRegistered || !("serviceWorker" in navigator)) return;
+    pwaRegistered = true;
+    navigator.serviceWorker.register("./sw.js").catch(() => {});
+  }
+
+  /** Gate protected pages + register PWA, then run callback */
+  function bootPage(callback, options = {}) {
+    const login = options.login !== false;
+    if (login && typeof requireAuth === "function" && !requireAuth()) return;
+    registerPWA();
+    if (typeof callback === "function") callback();
+  }
 
   function renderNav(activeId) {
     return `<nav class="tc-nav" aria-label="Main navigation">${
@@ -47,5 +63,5 @@ const TCUI = (() => {
     return `${footer ? `<div class="tc-footer">${footer}</div>` : ""}</div></div>`;
   }
 
-  return { renderNav, renderHeader, mountHeader, pageShellStart, pageShellEnd, PAGES };
+  return { bootPage, registerPWA, renderNav, renderHeader, mountHeader, pageShellStart, pageShellEnd, PAGES };
 })();
