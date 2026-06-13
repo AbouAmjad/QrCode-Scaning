@@ -175,7 +175,7 @@
         return;
       }
       try {
-        setPhotoPreview(await compressImage(file));
+        setPhotoPreview(await compressImage(file, 1000, 0.75));
         showFormMsg("", "");
       } catch (e) {
         showFormMsg(e.message || "Could not process image", "err");

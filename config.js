@@ -156,12 +156,12 @@ async function apiGet(params) {
   return data;
 }
 
-/** POST JSON — for damage submit with image payload */
+/** POST — uses text/plain to avoid GAS CORS preflight (application/json is blocked) */
 async function apiPost(body) {
   const payload = { ...body, token: getApiToken() };
   const res = await fetch(AppConfig.SCRIPT_URL, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
     body: JSON.stringify(payload),
     cache: "no-store",
     redirect: "follow"

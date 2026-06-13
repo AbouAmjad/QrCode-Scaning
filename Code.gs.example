@@ -327,11 +327,15 @@ function doGet(e) {
 
 function doPost(e) {
   let params = (e && e.parameter) || {};
-  if (e && e.postData && e.postData.type === "application/json") {
-    try {
-      params = JSON.parse(e.postData.contents);
-    } catch (err) {
-      return json({ error: "INVALID_JSON" });
+  if (e && e.postData && e.postData.contents) {
+    const type = (e.postData.type || "").toLowerCase();
+    // text/plain POST avoids browser CORS preflight on GitHub Pages
+    if (type.indexOf("application/json") >= 0 || type.indexOf("text/plain") >= 0) {
+      try {
+        params = JSON.parse(e.postData.contents);
+      } catch (err) {
+        return json({ error: "INVALID_JSON" });
+      }
     }
   }
   return handleRequest_(params);
