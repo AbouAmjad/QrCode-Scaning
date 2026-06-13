@@ -175,7 +175,22 @@ async function apiPostForm(fields) {
   return data;
 }
 
-/** Submit damage — GET without photo, form POST with photo (GAS-compatible) */
+/** POST JSON as text/plain (large photo payloads) */
+async function apiPostPlain(body) {
+  const payload = { ...body, token: getApiToken() };
+  const res = await fetch(AppConfig.SCRIPT_URL, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify(payload),
+    cache: "no-store",
+    redirect: "follow"
+  });
+  const data = parseApiResponse(await res.text());
+  if (data === null) throw new Error("Invalid server response");
+  return data;
+}
+
+/** Submit damage — GET without photo; POST with photo */
 async function apiSubmitDamage({ toolCode, personCode, qty, remark, date, imageBase64 }) {
   const base = {
     action: "submitDamage",
@@ -191,15 +206,13 @@ async function apiSubmitDamage({ toolCode, personCode, qty, remark, date, imageB
   }
 
   try {
-    return await apiPostForm({ ...base, imageBase64 });
-  } catch (err) {
-    const fallback = await apiGet(base);
-    if (fallback && fallback.success) {
-      fallback.imageSkipped = true;
-      fallback.warning = "Saved without photo — redeploy Code.gs or retry upload.";
-      return fallback;
+    return await apiPostPlain({ ...base, imageBase64 });
+  } catch (e1) {
+    try {
+      return await apiPostForm({ ...base, imageBase64 });
+    } catch (e2) {
+      throw e2;
     }
-    throw err;
   }
 }
 

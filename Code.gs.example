@@ -80,9 +80,27 @@ function getOrCreateDamageSheet_(ss) {
   return sheet;
 }
 
+function getDamagePhotoFolder_() {
+  const cfg = getConfig_();
+  const FOLDER_NAME = "ToolCustody-Damage-Photos";
+
+  if (cfg.damageDriveFolderId) {
+    return DriveApp.getFolderById(cfg.damageDriveFolderId);
+  }
+
+  const ssFile = DriveApp.getFileById(cfg.damageSheetId);
+  const parents = ssFile.getParents();
+  if (!parents.hasNext()) {
+    throw new Error("Could not find Drive folder for damage spreadsheet");
+  }
+  const parent = parents.next();
+  const existing = parent.getFoldersByName(FOLDER_NAME);
+  if (existing.hasNext()) return existing.next();
+  return parent.createFolder(FOLDER_NAME);
+}
+
 function uploadDamageImage_(base64Data, toolCode) {
   if (!base64Data) return "";
-  const cfg = getConfig_();
   const match = String(base64Data).match(/^data:(image\/\w+);base64,(.+)$/);
   const contentType = match ? match[1] : "image/jpeg";
   const raw = match ? match[2] : String(base64Data).replace(/^data:image\/\w+;base64,/, "");
@@ -92,13 +110,7 @@ function uploadDamageImage_(base64Data, toolCode) {
   const filename = "damage_" + safeCode + "_" + new Date().getTime() + "." + ext;
   const blob = Utilities.newBlob(bytes, contentType, filename);
 
-  let folder;
-  if (cfg.damageDriveFolderId) {
-    folder = DriveApp.getFolderById(cfg.damageDriveFolderId);
-  } else {
-    folder = DriveApp.getRootFolder();
-  }
-
+  const folder = getDamagePhotoFolder_();
   const file = folder.createFile(blob);
   file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
   return "https://drive.google.com/uc?export=view&id=" + file.getId();
@@ -132,16 +144,8 @@ function internalSubmitDamage_(params) {
   try {
     const ss = SpreadsheetApp.openById(cfg.damageSheetId);
     const sheet = getOrCreateDamageSheet_(ss);
-    const nextRow = Math.max(sheet.getLastRow(), 1) + 1;
-    sheet.getRange(nextRow, 1, nextRow, 7).setValues([[
-      rowDate,
-      toolCode,
-      toolName,
-      imageUrl,
-      personCode,
-      count,
-      finalRemark
-    ]]);
+    sheet.appendRow([rowDate, toolCode, toolName, imageUrl, personCode, count, finalRemark]);
+    const nextRow = sheet.getLastRow();
     return {
       success: true,
       row: nextRow,
