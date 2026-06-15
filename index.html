@@ -29,7 +29,7 @@
         <div class="tc-card">
           <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
             <h3 class="fw-bold mb-0">Live Scan</h3>
-            <span class="tc-text-muted small">Use IN / OUT before tools</span>
+            <span class="tc-text-muted small">Person → IN/OUT → tools</span>
           </div>
 
           <div class="tc-person-strip">
@@ -70,6 +70,28 @@
             <span class="tc-text-muted small">Newest first</span>
           </div>
           <div class="tc-log" id="log"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="directionConflictModal" class="tc-modal-backdrop" style="display:none">
+    <div class="tc-modal">
+      <div class="tc-modal-head">
+        <div>
+          <div class="fw-bold fs-5">Direction conflict</div>
+          <div class="tc-text-muted small">IN and OUT both scanned — choose one</div>
+        </div>
+      </div>
+      <div class="tc-modal-body">
+        <p class="mb-3">
+          You scanned <strong>IN</strong> and <strong>OUT</strong> for
+          <strong id="conflictPersonName">—</strong>.
+          What is your final direction?
+        </p>
+        <div class="tc-dir-btns">
+          <button type="button" class="tc-dir-btn out" onclick="resolveDirectionConflict('OUT')">OUT<small>Check out tools</small></button>
+          <button type="button" class="tc-dir-btn in" onclick="resolveDirectionConflict('IN')">IN<small>Return tools</small></button>
         </div>
       </div>
     </div>
@@ -126,6 +148,89 @@
     let scannerLocked = false;
     let settings = (typeof getSettings === "function") ? getSettings() : {};
     const descCache = {};
+
+    /** Strict session: P → IN|OUT → tool(s) → repeat */
+    let session = {
+      personCode: null,
+      personLabel: null,
+      direction: null,
+      toolCount: 0,
+      awaitingDirectionChoice: false
+    };
+
+    function syncSessionUi() {
+      lastPerson = session.personLabel || session.personCode;
+      lastDirection = session.direction;
+      updateDirBadge();
+      const el = document.getElementById("activePersonName");
+      if (el) el.textContent = session.personLabel || session.personCode || "Standing by";
+    }
+
+    function resetSession() {
+      session = { personCode: null, personLabel: null, direction: null, toolCount: 0, awaitingDirectionChoice: false };
+      syncSessionUi();
+    }
+
+    function rebuildSessionFromUnsynced() {
+      session = { personCode: null, personLabel: null, direction: null, toolCount: 0, awaitingDirectionChoice: false };
+      const pending = loadScans().filter(s => !s.sent).sort((a, b) => a.seq - b.seq);
+      for (const scan of pending) {
+        const code = String(scan.code || "").toUpperCase();
+        if (code.startsWith("P")) {
+          session.personCode = code;
+          session.personLabel = descCache[code] || code;
+          session.direction = null;
+          session.toolCount = 0;
+          session.awaitingDirectionChoice = false;
+        } else if (code === "IN" || code === "OUT") {
+          session.direction = code;
+          session.toolCount = 0;
+          session.awaitingDirectionChoice = false;
+        } else if (typeof isTool === "function" && isTool(code)) {
+          session.toolCount++;
+        }
+      }
+      syncSessionUi();
+    }
+
+    function removeLastUnsyncedScanMatching(codes) {
+      const scans = loadScans();
+      for (let i = scans.length - 1; i >= 0; i--) {
+        const c = String(scans[i].code || "").toUpperCase();
+        if (!scans[i].sent && codes.includes(c)) {
+          const removed = scans.splice(i, 1)[0];
+          document.getElementById(removed.logId)?.remove();
+          saveScans(scans);
+          updateCounter();
+          refreshSettingsUI();
+          return removed;
+        }
+      }
+      return null;
+    }
+
+    function showDirectionConflictModal() {
+      document.getElementById("conflictPersonName").textContent = session.personLabel || session.personCode || "—";
+      document.getElementById("directionConflictModal").style.display = "block";
+      lockScanner();
+      playDanger();
+    }
+
+    function closeDirectionConflictModal() {
+      document.getElementById("directionConflictModal").style.display = "none";
+      if (!session.awaitingDirectionChoice) unlockScanner();
+    }
+
+    function resolveDirectionConflict(dir) {
+      closeDirectionConflictModal();
+      session.awaitingDirectionChoice = false;
+      session.direction = dir;
+      syncSessionUi();
+      playDirSet();
+      const logId = addLog(dir, dir === "OUT" ? "Direction: OUT (confirmed)" : "Direction: IN (confirmed)");
+      pushWithLimit({ code: dir, seq: scanSeq++, sent: false, logId, timestamp: Date.now() });
+      unlockScanner();
+    }
 
     function refreshSettingsUI() {
       const s = settings || {};
@@ -210,13 +315,13 @@
     function undoLastScan() {
       const last = getLastUnsyncedQueueItem();
       if (!last) return;
-      const el = document.getElementById(last.logId);
-      if (el?.parentNode) el.parentNode.removeChild(el);
+      document.getElementById(last.logId)?.remove();
       const scans = loadScans();
       const idx = scans.findIndex(s => s.seq === last.seq);
       if (idx !== -1) scans.splice(idx, 1);
       saveScans(scans);
       updateCounter();
+      rebuildSessionFromUnsynced();
       refreshSettingsUI();
     }
 
@@ -356,15 +461,43 @@
     }
 
     function applyDirection(dir, okDesc) {
-      if (lastDirection === dir) {
-        const msg = dir === "IN"
-          ? "Already IN — scan the tool to return"
-          : "Already OUT — scan the tool to check out";
-        addLog(dir, msg, true);
+      if (session.awaitingDirectionChoice) {
+        addLog(dir, "Pick IN or OUT in the dialog first", true);
+        playDanger();
         return false;
       }
-      lastDirection = dir;
-      updateDirBadge();
+
+      if (!session.personCode) {
+        addLog(dir, "Scan person (P code) first", true);
+        playDanger();
+        return false;
+      }
+
+      if (session.direction === dir) {
+        addLog(dir, dir === "IN"
+          ? "Already IN — scan tools for this person"
+          : "Already OUT — scan tools for this person", true);
+        return false;
+      }
+
+      if (session.direction && session.toolCount > 0) {
+        addLog(dir, `Blocked — scan a new person (P) before ${dir}`, true);
+        playDanger();
+        return false;
+      }
+
+      if (session.direction && session.direction !== dir) {
+        removeLastUnsyncedScanMatching(["IN", "OUT"]);
+        session.direction = null;
+        session.awaitingDirectionChoice = true;
+        syncSessionUi();
+        showDirectionConflictModal();
+        addLog(dir, "IN and OUT conflict — choose final direction", true);
+        return false;
+      }
+
+      session.direction = dir;
+      syncSessionUi();
       if (settings?.autoHideWarning) document.getElementById("warningPanel")?.classList.remove("visible");
       hideWarning();
       playDirSet();
@@ -375,6 +508,50 @@
 
     function setDirection(dir) {
       applyDirection(dir, dir === "OUT" ? "Direction: OUT" : "Direction: IN");
+    }
+
+    function scanPerson(code) {
+      session.personCode = code;
+      session.personLabel = code;
+      session.direction = null;
+      session.toolCount = 0;
+      session.awaitingDirectionChoice = false;
+      closeDirectionConflictModal();
+      syncSessionUi();
+      const logId = addLog(code, "Person — select IN or OUT");
+      pushWithLimit({ code, seq: scanSeq++, sent: false, logId, timestamp: Date.now() });
+      fetchDescription(code).then(name => {
+        session.personLabel = name;
+        descCache[code] = name;
+        syncSessionUi();
+        const d = document.getElementById("desc_" + logId);
+        if (d) d.textContent = `${name} — select IN or OUT, then scan tools`;
+      });
+    }
+
+    function scanTool(code) {
+      if (session.awaitingDirectionChoice) {
+        addLog(code, "Choose IN or OUT in the dialog first", true);
+        playDanger();
+        return;
+      }
+      if (!session.personCode) {
+        addLog(code, "Scan person (P code) first", true);
+        playDanger();
+        return;
+      }
+      if (!session.direction) {
+        addLog(code, "Blocked — select IN or OUT first", true);
+        showWarning(code);
+        return;
+      }
+      const who = session.personLabel || session.personCode;
+      const dirLabel = session.direction === "OUT" ? `OUT · ${who}` : `IN · ${who}`;
+      const logId = addLog(code, dirLabel);
+      playSuccess();
+      pushWithLimit({ code, seq: scanSeq++, sent: false, logId, timestamp: Date.now() });
+      enrichLog(logId, code, dirLabel);
+      session.toolCount++;
     }
 
     function submitScan() {
@@ -390,34 +567,12 @@
       }
 
       if (code.startsWith("P")) {
-        lastPerson = code;
-        lastDirection = null;
-        updateDirBadge();
-        document.getElementById("activePersonName").textContent = code;
-        const logId = addLog(code, "Person detected — awaiting direction");
-        pushWithLimit({ code, seq: scanSeq++, sent: false, logId, timestamp: Date.now() });
-        fetchDescription(code).then(name => {
-          lastPerson = name;
-          document.getElementById("activePersonName").textContent = name;
-          const d = document.getElementById("desc_" + logId);
-          if (d) d.textContent = `Operative: ${name} — standing by`;
-        });
+        scanPerson(code);
         return;
       }
 
       if (isTool(code)) {
-        if (!lastDirection) {
-          addLog(code, "Blocked — no direction set", true);
-          showWarning(code);
-          return;
-        }
-        const dirLabel = lastDirection === "OUT"
-          ? `OUT · ${lastPerson || "unassigned"}`
-          : `IN · ${lastPerson || "unassigned"}`;
-        const logId = addLog(code, dirLabel);
-        playSuccess();
-        pushWithLimit({ code, seq: scanSeq++, sent: false, logId, timestamp: Date.now() });
-        enrichLog(logId, code, dirLabel);
+        scanTool(code);
         return;
       }
 
@@ -447,6 +602,8 @@
     document.addEventListener("keydown", e => {
       if (!settings?.hotkeysEnabled) return;
       if (e.key === "Escape") {
+        const cm = document.getElementById("directionConflictModal");
+        if (cm?.style.display === "block") return;
         const m = document.getElementById("settingsModal");
         if (m?.style.display === "block") closeSettings();
       }
@@ -466,6 +623,7 @@
           <button type="button" class="tc-btn tc-btn-danger" onclick="logout()"><i class="bi bi-box-arrow-right"></i> Logout</button>`
       });
       refreshSettingsUI();
+      rebuildSessionFromUnsynced();
       updateOnlineStatus();
       updateCounter();
       const input = document.getElementById("scanInput");
@@ -479,6 +637,7 @@
 
     window.setDirection = setDirection;
     window.submitScan = submitScan;
+    window.resolveDirectionConflict = resolveDirectionConflict;
     window.logout = logout;
     window.openSettings = openSettings;
     window.closeSettings = closeSettings;
