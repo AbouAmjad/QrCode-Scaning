@@ -57,7 +57,8 @@
               <button type="button" class="tc-btn" id="btnGallery"><i class="bi bi-image"></i> Upload photo</button>
               <button type="button" class="tc-btn" id="btnClearPhoto" style="display:none"><i class="bi bi-x-circle"></i> Remove</button>
             </div>
-            <input type="file" id="photoInput" accept="image/*" capture="environment" style="display:none">
+            <input type="file" id="photoInputCamera" accept="image/*" capture="environment" style="display:none">
+            <input type="file" id="photoInputGallery" accept="image/*" style="display:none">
           </div>
 
           <div class="d-flex flex-wrap gap-2 mt-3">
@@ -102,10 +103,118 @@
     </div>
   </div>
 
+  <div id="cameraModal" class="tc-camera-modal" hidden aria-hidden="true">
+    <div class="tc-camera-panel">
+      <div class="tc-camera-header">
+        <span><i class="bi bi-camera-fill"></i> Take damage photo</span>
+        <button type="button" class="tc-btn tc-btn-sm" id="btnCloseCamera" aria-label="Close"><i class="bi bi-x-lg"></i></button>
+      </div>
+      <div class="tc-camera-viewport">
+        <video id="cameraVideo" autoplay playsinline muted></video>
+      </div>
+      <div class="tc-camera-controls">
+        <button type="button" class="tc-btn" id="btnSwitchCamera" title="Switch camera"><i class="bi bi-arrow-repeat"></i></button>
+        <button type="button" class="tc-btn tc-btn-primary tc-camera-snap" id="btnSnap" title="Capture"><i class="bi bi-circle-fill"></i></button>
+        <span aria-hidden="true"></span>
+      </div>
+      <p class="tc-text-muted small text-center mb-0 mt-2" id="cameraHint">Point at the damaged item, then tap the button</p>
+    </div>
+  </div>
+
   <script>
     let activeDate = "";
     let lastDamageRows = [];
     let photoDataUrl = "";
+    let cameraStream = null;
+    let cameraFacing = "environment";
+
+    function dataUrlToFile(dataUrl, name = "photo.jpg") {
+      const [head, b64] = dataUrl.split(",");
+      const mime = (head.match(/data:([^;]+)/) || [])[1] || "image/jpeg";
+      const bin = atob(b64);
+      const arr = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+      return new File([arr], name, { type: mime });
+    }
+
+    async function setPhotoFromDataUrl(dataUrl) {
+      try {
+        setPhotoPreview(await compressImageForSheet(dataUrlToFile(dataUrl)));
+        showFormMsg("", "");
+      } catch (e) {
+        showFormMsg(e.message || "Could not process image", "err");
+      }
+    }
+
+    function stopCameraStream() {
+      if (cameraStream) {
+        cameraStream.getTracks().forEach(t => t.stop());
+        cameraStream = null;
+      }
+      const video = document.getElementById("cameraVideo");
+      if (video) video.srcObject = null;
+    }
+
+    function closeCameraModal() {
+      stopCameraStream();
+      const modal = document.getElementById("cameraModal");
+      modal.hidden = true;
+      modal.setAttribute("aria-hidden", "true");
+    }
+
+    async function startCameraStream() {
+      stopCameraStream();
+      const video = document.getElementById("cameraVideo");
+      const hint = document.getElementById("cameraHint");
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error("Camera API not available");
+      }
+      hint.textContent = "Starting camera…";
+      cameraStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal: cameraFacing }, width: { ideal: 1280 }, height: { ideal: 720 } },
+        audio: false
+      });
+      video.srcObject = cameraStream;
+      await video.play();
+      hint.textContent = "Point at the damaged item, then tap the button";
+    }
+
+    async function openCameraModal() {
+      const modal = document.getElementById("cameraModal");
+      modal.hidden = false;
+      modal.setAttribute("aria-hidden", "false");
+      try {
+        await startCameraStream();
+      } catch (err) {
+        closeCameraModal();
+        showFormMsg("Could not open camera — trying device camera…", "busy");
+        document.getElementById("photoInputCamera").click();
+      }
+    }
+
+    async function snapPhoto() {
+      const video = document.getElementById("cameraVideo");
+      if (!video.videoWidth) {
+        showFormMsg("Camera not ready yet — wait a moment.", "err");
+        return;
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      canvas.getContext("2d").drawImage(video, 0, 0);
+      const dataUrl = canvas.toDataURL("image/jpeg", 0.92);
+      closeCameraModal();
+      await setPhotoFromDataUrl(dataUrl);
+    }
+
+    function bindFileInput(inputId) {
+      const input = document.getElementById(inputId);
+      input.addEventListener("change", e => {
+        const f = e.target.files && e.target.files[0];
+        if (f) handlePhotoFile(f);
+        e.target.value = "";
+      });
+    }
 
     document.addEventListener("DOMContentLoaded", () => TCUI.bootPage(() => {
       TCUI.mountHeader("app-header", {
@@ -354,20 +463,25 @@
     }
 
     async function init() {
-      const photoInput = document.getElementById("photoInput");
-      document.getElementById("btnCamera").addEventListener("click", () => {
-        photoInput.setAttribute("capture", "environment");
-        photoInput.click();
-      });
+      document.getElementById("btnCamera").addEventListener("click", () => openCameraModal());
       document.getElementById("btnGallery").addEventListener("click", () => {
-        photoInput.removeAttribute("capture");
-        photoInput.click();
+        document.getElementById("photoInputGallery").click();
       });
-      photoInput.addEventListener("change", e => {
-        const f = e.target.files && e.target.files[0];
-        if (f) handlePhotoFile(f);
-        e.target.value = "";
+      document.getElementById("btnCloseCamera").addEventListener("click", closeCameraModal);
+      document.getElementById("btnSnap").addEventListener("click", () => snapPhoto());
+      document.getElementById("btnSwitchCamera").addEventListener("click", async () => {
+        cameraFacing = cameraFacing === "environment" ? "user" : "environment";
+        try {
+          await startCameraStream();
+        } catch {
+          showFormMsg("Could not switch camera.", "err");
+        }
       });
+      document.getElementById("cameraModal").addEventListener("click", e => {
+        if (e.target.id === "cameraModal") closeCameraModal();
+      });
+      bindFileInput("photoInputCamera");
+      bindFileInput("photoInputGallery");
       document.getElementById("btnClearPhoto").addEventListener("click", () => setPhotoPreview(""));
       document.getElementById("toolCode").addEventListener("blur", e => lookupToolDesc(e.target.value.trim().toUpperCase()));
       document.getElementById("damageForm").addEventListener("submit", submitDamageReport);
