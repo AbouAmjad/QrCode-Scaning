@@ -355,14 +355,26 @@
       processQueue();
     }
 
-    function setDirection(dir) {
+    function applyDirection(dir, okDesc) {
+      if (lastDirection === dir) {
+        const msg = dir === "IN"
+          ? "Already IN — scan the tool to return"
+          : "Already OUT — scan the tool to check out";
+        addLog(dir, msg, true);
+        return false;
+      }
       lastDirection = dir;
       updateDirBadge();
       if (settings?.autoHideWarning) document.getElementById("warningPanel")?.classList.remove("visible");
       hideWarning();
       playDirSet();
-      const logId = addLog(dir, dir === "OUT" ? "Direction: OUT" : "Direction: IN");
+      const logId = addLog(dir, okDesc);
       pushWithLimit({ code: dir, seq: scanSeq++, sent: false, logId, timestamp: Date.now() });
+      return true;
+    }
+
+    function setDirection(dir) {
+      applyDirection(dir, dir === "OUT" ? "Direction: OUT" : "Direction: IN");
     }
 
     function submitScan() {
@@ -373,13 +385,7 @@
       input.focus();
 
       if (code === "IN" || code === "OUT") {
-        lastDirection = code;
-        updateDirBadge();
-        if (settings?.autoHideWarning) document.getElementById("warningPanel")?.classList.remove("visible");
-        if (scannerLocked) hideWarning();
-        playDirSet();
-        const logId = addLog(code, code === "OUT" ? "Command: OUT" : "Command: IN");
-        pushWithLimit({ code, seq: scanSeq++, sent: false, logId, timestamp: Date.now() });
+        applyDirection(code, code === "OUT" ? "Command: OUT" : "Command: IN");
         return;
       }
 
