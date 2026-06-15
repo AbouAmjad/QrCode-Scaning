@@ -20,6 +20,7 @@ TRACKED = [
     "parser.js",
     "app.css",
     "ui.js",
+    "scan.js",
     "manifest.json",
     "sw.js",
     "icons/icon.svg",

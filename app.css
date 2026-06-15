@@ -80,7 +80,191 @@ body.tc-page {
   .tc-shell { padding: 1.75rem 2rem 2.25rem; }
 }
 
-/* ── App header ── */
+/* ── Sticky top bar (global navigation) ── */
+.tc-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 1100;
+  width: 100%;
+  background: color-mix(in srgb, var(--tc-surface-2) 92%, transparent);
+  border-bottom: 1px solid var(--tc-border);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 8px 28px -18px rgba(15, 23, 42, 0.25);
+}
+
+.tc-topbar-inner {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0.55rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.tc-topbar-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  text-decoration: none;
+  color: var(--tc-text);
+  flex-shrink: 0;
+}
+
+.tc-topbar-logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--tc-nav-active);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+}
+
+.tc-topbar-brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+
+.tc-topbar-brand-text strong {
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.tc-topbar-brand-text small {
+  font-size: 0.68rem;
+  color: var(--tc-muted);
+  font-weight: 600;
+}
+
+.tc-topbar-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex: 1;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding: 0.15rem 0;
+}
+
+.tc-topbar-nav::-webkit-scrollbar { display: none; }
+
+.tc-topbar-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.48rem 0.9rem;
+  border-radius: var(--tc-radius-pill);
+  border: 1px solid var(--tc-border);
+  background: var(--tc-surface-2);
+  color: var(--tc-text);
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.tc-topbar-link:hover {
+  background: var(--tc-accent-soft);
+  border-color: var(--tc-accent);
+}
+
+.tc-topbar-link.active {
+  background: var(--tc-nav-active);
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 8px 18px -8px rgba(15, 23, 42, 0.35);
+}
+
+.tc-topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.tc-topbar-icon-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  border: 1px solid var(--tc-border);
+  background: var(--tc-surface-2);
+  color: var(--tc-text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.tc-topbar-icon-btn:hover {
+  background: var(--tc-accent-soft);
+  border-color: var(--tc-accent);
+}
+
+.tc-topbar-icon-btn.danger:hover {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #b91c1c;
+}
+
+/* ── In-page title row ── */
+.tc-page-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding-bottom: 1.15rem;
+  margin-bottom: 1.25rem;
+  border-bottom: 1px solid var(--tc-border);
+}
+
+.tc-page-head-main {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.tc-page-head-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 13px;
+  background: var(--tc-accent-soft);
+  color: var(--tc-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+  flex-shrink: 0;
+}
+
+.tc-page-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.tc-page-subtitle {
+  font-size: 0.8rem;
+  color: var(--tc-muted);
+  margin-top: 0.15rem;
+}
+
+.tc-page-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* ── App header (legacy — kept for compat) ── */
 .tc-header {
   display: flex;
   flex-wrap: wrap;
@@ -530,26 +714,104 @@ body.tc-page {
 
 /* ── Login page ── */
 body.tc-login {
+  min-height: 100vh;
+}
+
+body.tc-login .tc-wrap {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1.5rem;
+  min-height: calc(100vh - 58px);
+  padding-top: 1rem;
+  padding-bottom: 2rem;
+}
+
+.tc-login-shell {
+  width: 100%;
+  max-width: 480px;
+}
+
+.tc-login-shell .tc-page-head {
+  margin-bottom: 1rem;
+  padding-bottom: 0.85rem;
 }
 
 .tc-login-card {
   width: 100%;
-  max-width: 420px;
-  background: var(--tc-surface);
+  background: var(--tc-surface-2);
   border: 1px solid var(--tc-border);
-  border-radius: var(--tc-radius-xl);
-  box-shadow: var(--tc-shadow);
-  padding: 2rem 1.75rem;
+  border-radius: var(--tc-radius-lg);
+  padding: 1.5rem 1.35rem 1.75rem;
 }
 
 .tc-login-card h1 {
-  font-size: 1.65rem;
+  font-size: 1.35rem;
   font-weight: 800;
   letter-spacing: -0.02em;
+}
+
+/* ── Scan terminal steps ── */
+.tc-scan-steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  margin-bottom: 0.65rem;
+}
+
+.tc-step {
+  text-align: center;
+  padding: 0.55rem 0.35rem;
+  border-radius: var(--tc-radius-md);
+  border: 1px dashed var(--tc-border);
+  background: var(--tc-surface-2);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--tc-muted);
+  transition: all 0.15s ease;
+}
+
+.tc-step-num {
+  display: inline-flex;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 50%;
+  align-items: center;
+  justify-content: center;
+  background: var(--tc-accent-soft);
+  color: var(--tc-accent);
+  font-size: 0.65rem;
+  margin-inline-end: 0.2rem;
+}
+
+.tc-step.active {
+  border-style: solid;
+  border-color: var(--tc-accent);
+  color: var(--tc-text);
+  background: var(--tc-accent-soft);
+}
+
+.tc-step.done {
+  border-color: var(--tc-success);
+  color: var(--tc-success);
+  background: #ecfdf5;
+}
+
+.tc-step.done .tc-step-num {
+  background: var(--tc-success);
+  color: #fff;
+}
+
+.tc-scan-step-hint {
+  font-size: 0.78rem;
+  color: var(--tc-muted);
+  margin-bottom: 0.85rem;
+  font-weight: 600;
+}
+
+@media (max-width: 480px) {
+  .tc-topbar-brand-text small { display: none; }
+  .tc-topbar-link span { display: none; }
+  .tc-topbar-link { padding: 0.48rem 0.65rem; }
 }
 
 .tc-login-card .subtitle { color: var(--tc-muted); font-size: 0.88rem; margin-top: 0.35rem; }

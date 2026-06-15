@@ -13,33 +13,31 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <link rel="apple-touch-icon" href="icons/icon.svg">
   <script src="config.js"></script>
+  <script src="ui.js"></script>
 </head>
 <body class="tc-page tc-login">
-  <div class="tc-login-card">
-    <div class="d-flex justify-content-between align-items-start gap-2 mb-4">
-      <div>
-        <h1>Abu Amjad</h1>
-        <p class="subtitle">Tool custody secure portal</p>
+  <div class="tc-wrap">
+    <div class="tc-shell tc-login-shell">
+      <div id="app-header"></div>
+
+      <div class="tc-login-card">
+        <div class="tc-field">
+          <label for="loginUser">Username</label>
+          <input type="text" id="loginUser" autocomplete="off" placeholder="Enter username">
+        </div>
+        <div class="tc-field">
+          <label for="loginPass">Password</label>
+          <input type="password" id="loginPass" autocomplete="off" placeholder="Enter password">
+        </div>
+
+        <button class="tc-btn tc-btn-primary w-100" id="loginBtn" onclick="login()">
+          <i class="bi bi-shield-lock"></i> Secure Login
+        </button>
+        <div class="tc-error" id="errorMessage">Invalid username or password</div>
       </div>
-      <button type="button" class="tc-btn tc-btn-sm theme-switch" onclick="toggleTheme();syncThemeControls()" data-theme-toggle>Theme</button>
     </div>
-
-    <div class="tc-field">
-      <label for="loginUser">Username</label>
-      <input type="text" id="loginUser" autocomplete="off" placeholder="Enter username">
-    </div>
-    <div class="tc-field">
-      <label for="loginPass">Password</label>
-      <input type="password" id="loginPass" autocomplete="off" placeholder="Enter password">
-    </div>
-
-    <button class="tc-btn tc-btn-primary w-100" id="loginBtn" onclick="login()">
-      <i class="bi bi-shield-lock"></i> Secure Login
-    </button>
-    <div class="tc-error" id="errorMessage">Invalid username or password</div>
   </div>
 
-  <script src="ui.js"></script>
   <script>
     async function login() {
       const user = document.getElementById("loginUser").value;
@@ -87,6 +85,7 @@
 
     document.addEventListener("keypress", e => { if (e.key === "Enter") login(); });
     window.onload = () => {
+      TCUI.mountLoginPage("app-header");
       TCUI.registerPWA();
       if (getToken()) { window.location = "index.html"; return; }
       document.getElementById("loginUser").focus();
