@@ -118,7 +118,7 @@
             <td class="text-center fw-bold">${escHtml(t.code)}${t.hasWarning ? ' <i class="bi bi-exclamation-triangle-fill text-warning"></i>' : ""}</td>
             <td>${escHtml(t.description)}</td>
             <td>${t.holdersHtml}</td>
-            <td class="text-center fw-bold ${t.qty > 0 ? "text-danger" : "text-success"}">${t.qty}</td>`;
+            <td class="text-center fw-bold ${t.isConsumable ? "text-primary" : (t.qty > 0 ? "text-danger" : "text-success")}">${t.isConsumable ? (t.qty || "—") : t.qty}</td>`;
           tbody.appendChild(tr);
         });
       }

@@ -139,7 +139,7 @@ const ScanEngine = (() => {
         session.awaitingDirectionChoice = false;
       } else if (kind === "tool") {
         session.toolCount++;
-        if (!session.toolsInBatch.includes(code)) session.toolsInBatch.push(code);
+        session.toolsInBatch.push(code);
       }
     }
     syncUi();
@@ -223,12 +223,11 @@ const ScanEngine = (() => {
       if (!session.direction) {
         return { ok: false, type: "tool", code, message: "Select IN or OUT first", needsWarning: true, danger: true };
       }
-      if (session.toolsInBatch.includes(code)) {
-        return { ok: false, type: "tool", code, message: `${code} already scanned this batch`, danger: true };
-      }
-
       const who = session.personLabel || session.personCode;
-      const dirLabel = session.direction === "OUT" ? `OUT · ${who}` : `IN · ${who}`;
+      const isCons = typeof isConsumable === "function" && isConsumable(code);
+      const dirLabel = session.direction === "OUT"
+        ? (isCons ? `Issued · ${who}` : `OUT · ${who}`)
+        : (isCons ? `IN log · ${who}` : `IN · ${who}`);
       session.toolCount++;
       session.toolsInBatch.push(code);
       syncUi();

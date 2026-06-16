@@ -16,6 +16,7 @@ TRACKED = [
     "worker.html",
     "tool.html",
     "damage.html",
+    "consumables.html",
     "config.js",
     "parser.js",
     "app.css",

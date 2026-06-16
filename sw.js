@@ -1,4 +1,4 @@
-const CACHE = "toolcustody-v3";
+const CACHE = "toolcustody-v4";
 const ASSETS = [
   "./",
   "./index.html",
@@ -8,6 +8,7 @@ const ASSETS = [
   "./worker.html",
   "./tool.html",
   "./damage.html",
+  "./consumables.html",
   "./config.js",
   "./parser.js",
   "./ui.js",

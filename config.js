@@ -129,6 +129,12 @@ function isTool(code) {
   return AppConfig.TOOL_PREFIXES.includes(code.charAt(0).toUpperCase());
 }
 
+/** Consumables (C…) — log issuance only, no return/custody tracking */
+function isConsumable(code) {
+  if (!code) return false;
+  return code.charAt(0).toUpperCase() === "C";
+}
+
 function escHtml(s) {
   if (!s) return "";
   return String(s).replace(/[&<>]/g, m => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[m] || m));

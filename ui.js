@@ -4,6 +4,7 @@ const TCUI = (() => {
     { id: "terminal", href: "index.html", icon: "bi-terminal", label: "Terminal" },
     { id: "dashboard", href: "dashboard.html", icon: "bi-speedometer2", label: "Dashboard" },
     { id: "overview", href: "results.html", icon: "bi-table", label: "Overview" },
+    { id: "consumables", href: "consumables.html", icon: "bi-box-seam", label: "Consumables" },
     { id: "damage", href: "damage.html", icon: "bi-exclamation-octagon", label: "Damage" }
   ];
 

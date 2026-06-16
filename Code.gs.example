@@ -324,6 +324,7 @@ function handleRequest_(params) {
         toolCode: d.toolCode,
         toolDescription: descMap[d.toolCode],
         rowDate: d.rowDate,
+        timestamp: d.timestamp,
         isTargetDay: (d.rowDate === targetDate)
       })));
     } catch (err) {

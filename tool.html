@@ -40,7 +40,7 @@
           </div>
         </div>
 
-        <span class="tc-section-badge"><i class="bi bi-person-check"></i> Current holder(s)</span>
+        <span class="tc-section-badge" id="holdersSectionLabel"><i class="bi bi-person-check"></i> Current holder(s)</span>
         <div id="currentHolders" class="row g-3 mb-4 mt-2"></div>
 
         <span class="tc-section-badge"><i class="bi bi-calendar3"></i> Activity history</span>
@@ -77,13 +77,22 @@
       try {
         const data = await apiGet({ action: "getData", date: TARGET_DATE });
         if (data && data.error) throw new Error(data.error);
-        const { toolDesc, currentHolders, toolDailyLog, hasWarning, qtyOut } = CustodyParser.parseForTool(data, TARGET_CODE);
+        const parsed = CustodyParser.parseForTool(data, TARGET_CODE);
+        const { toolDesc, currentHolders, toolDailyLog, hasWarning, qtyOut, isConsumable, issuedTotal } = parsed;
 
         document.getElementById("toolCode").textContent = TARGET_CODE;
         document.getElementById("toolDesc").textContent = toolDesc;
         document.getElementById("toolDate").textContent = "Snapshot · " + TARGET_DATE;
 
         const badge = document.getElementById("statusBadge");
+        if (isConsumable) {
+          badge.textContent = "Consumable";
+          badge.style.background = "#e0e7ff";
+          badge.style.color = "#3730a3";
+          document.getElementById("holderCount").textContent = `${issuedTotal || 0} issuance(s) logged`;
+          document.getElementById("holdersSectionLabel").innerHTML = '<i class="bi bi-box-seam"></i> Consumable — no return tracking';
+          document.getElementById("currentHolders").innerHTML = `<div class="col-12"><div class="tc-empty"><i class="bi bi-info-circle text-primary"></i> Consumables are logged when issued (OUT). No custody or return control.</div></div>`;
+        } else {
         if (qtyOut === 0) {
           badge.textContent = "In store";
           badge.style.background = "#dcfce7";
@@ -114,6 +123,7 @@
                 ${h.personCode ? '<i class="bi bi-chevron-right tc-text-muted"></i>' : ""}
               </div>
             </div>`).join("");
+        }
         }
 
         const histDiv = document.getElementById("fullHistory");

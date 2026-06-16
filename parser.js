@@ -28,6 +28,35 @@ const CustodyParser = (() => {
       }
       if (!isTool(code)) continue;
 
+      if (isConsumable(code)) {
+        if (!inv[code]) {
+          inv[code] = {
+            description: desc, isPerson: false, isConsumable: true, scannedToday: false,
+            actionsToday: [], holdersList: [], hasWarning: false, code, issuedToday: 0
+          };
+        }
+        if (isToday) inv[code].scannedToday = true;
+        if (!lastDir) {
+          if (isToday) {
+            inv[code].actionsToday.push(`⚠️ No direction set · ${lastPerson}`);
+            inv[code].hasWarning = true;
+          }
+          continue;
+        }
+        if (lastDir === "OUT") {
+          if (isToday) {
+            inv[code].issuedToday = (inv[code].issuedToday || 0) + 1;
+            inv[code].actionsToday.push(`📦 Issued to · ${lastPerson}`);
+            if (lastPersonCode && inv[lastPersonCode]) {
+              inv[lastPersonCode].actionsToday.push(`📦 Took consumable ${code} · ${desc}`);
+            }
+          }
+        } else if (isToday) {
+          inv[code].actionsToday.push(`📦 Return noted · ${lastPerson} (consumable — no custody)`);
+        }
+        continue;
+      }
+
       if (!inv[code]) {
         inv[code] = {
           description: desc, isPerson: false, scannedToday: false,
@@ -82,7 +111,7 @@ const CustodyParser = (() => {
   function buildPersonToolsMap(inv) {
     const map = {};
     for (const [code, item] of Object.entries(inv)) {
-      if (item.isPerson) continue;
+      if (item.isPerson || item.isConsumable) continue;
       item.holdersList.forEach(p => {
         if (!map[p]) map[p] = {};
         if (!map[p][code]) map[p][code] = { code, desc: item.description, qty: 0 };
@@ -106,7 +135,7 @@ const CustodyParser = (() => {
         continue;
       }
       if (code === "IN" || code === "OUT") { dir = code; continue; }
-      if (!isTool(code)) continue;
+      if (!isTool(code) || isConsumable(code)) continue;
       if (dir === "OUT" && personCode === workerCode && !taken[code]) {
         taken[code] = rowDate;
       }
@@ -127,7 +156,7 @@ const CustodyParser = (() => {
         continue;
       }
       if (code === "IN" || code === "OUT") { dir = code; continue; }
-      if (!isTool(code)) continue;
+      if (!isTool(code) || isConsumable(code)) continue;
       if (dir === "OUT") {
         if (!taken[code]) taken[code] = {};
         taken[code][person] = rowDate;
@@ -151,6 +180,19 @@ const CustodyParser = (() => {
             name: item.description, code,
             toolsHeld: Object.values(personToolsMap[item.description] || {}),
             actionsToday: item.actionsToday || []
+          });
+        }
+      } else if (item.isConsumable) {
+        if (item.hasWarning) warnings++;
+        if (item.scannedToday) {
+          tools.push({
+            code, description: item.description,
+            holdersHtml: `<span class="badge-holder"><i class="bi bi-box-seam"></i> Consumable · logged only</span>`,
+            qty: item.issuedToday || 0,
+            isConsumable: true,
+            actionsToday: item.actionsToday || [],
+            hasWarning: item.hasWarning || false,
+            holderNames: []
           });
         }
       } else {
@@ -202,6 +244,14 @@ const CustodyParser = (() => {
       if (code === "IN" || code === "OUT") { lastDir = code; continue; }
       if (!isTool(code)) continue;
 
+      if (isConsumable(code)) {
+        if (active && lastDir === "OUT") {
+          if (!workerDailyLog[rowDate]) workerDailyLog[rowDate] = [];
+          workerDailyLog[rowDate].push({ type: "info", text: `📦 Took consumable ${code} · ${desc}` });
+        }
+        continue;
+      }
+
       if (!inv[code]) inv[code] = { description: desc, isPerson: false, holdersList: [], hasWarning: false };
       const active = lastPersonCode === workerCode;
 
@@ -249,7 +299,7 @@ const CustodyParser = (() => {
     const toolFirstTaken = computeToolTakenDates(rows, workerCode);
     const toolsHeld = [];
     for (const [code, item] of Object.entries(inv)) {
-      if (item.isPerson) continue;
+      if (item.isPerson || item.isConsumable) continue;
       const myCount = item.holdersList.filter(p => p === workerName).length;
       if (myCount > 0) {
         const takenDate = toolFirstTaken[code] || "unknown";
@@ -263,6 +313,8 @@ const CustodyParser = (() => {
   }
 
   function parseForTool(rows, toolCode) {
+    if (isConsumable(toolCode)) return parseForConsumable(rows, toolCode);
+
     let toolDesc = toolCode;
     const holdersList = [];
     const toolDailyLog = {};
@@ -320,6 +372,50 @@ const CustodyParser = (() => {
     return { toolDesc, currentHolders, toolDailyLog, hasWarning, qtyOut: holdersList.length };
   }
 
+  function parseForConsumable(rows, toolCode) {
+    let toolDesc = toolCode;
+    const toolDailyLog = {};
+    let issuedTotal = 0;
+    let hasWarning = false;
+    let lastPerson = "General Store", lastPersonCode = null, lastDir = null;
+
+    for (const row of rows || []) {
+      const code = (row.toolCode || "").toString().toUpperCase().trim();
+      const desc = row.toolDescription || "—";
+      const rowDate = row.rowDate || "";
+      if (!code) continue;
+
+      if (code.startsWith("P")) {
+        lastPerson = desc || code;
+        lastPersonCode = code;
+        lastDir = null;
+        continue;
+      }
+      if (code === "IN" || code === "OUT") { lastDir = code; continue; }
+      if (code !== toolCode) continue;
+
+      toolDesc = desc;
+      if (!lastDir) {
+        if (!toolDailyLog[rowDate]) toolDailyLog[rowDate] = [];
+        toolDailyLog[rowDate].push({ type: "warn", text: `⚠️ Scanned without direction · ${lastPerson}`, personCode: lastPersonCode });
+        hasWarning = true;
+        continue;
+      }
+      if (!toolDailyLog[rowDate]) toolDailyLog[rowDate] = [];
+      if (lastDir === "OUT") {
+        issuedTotal++;
+        toolDailyLog[rowDate].push({ type: "out", text: `📦 Issued to · ${lastPerson}`, personCode: lastPersonCode });
+      } else {
+        toolDailyLog[rowDate].push({ type: "info", text: `📦 Return noted · ${lastPerson} (no custody)`, personCode: lastPersonCode });
+      }
+    }
+
+    return {
+      toolDesc, currentHolders: [], toolDailyLog, hasWarning,
+      qtyOut: 0, isConsumable: true, issuedTotal
+    };
+  }
+
   function parseDashboard(rows, selectedDate) {
     const overview = parseOverview(rows);
     const inv = runInventory(rows);
@@ -329,6 +425,7 @@ const CustodyParser = (() => {
     const holderRank = {};
 
     for (const t of overview.tools) {
+      if (t.isConsumable) continue;
       if (t.hasWarning) {
         t.actionsToday.forEach(a => {
           if (a.includes("⚠️")) alerts.push({ type: "warn", text: `${t.code} · ${t.description}: ${a}` });
@@ -397,6 +494,88 @@ const CustodyParser = (() => {
     }[type] || "bi-info-circle";
   }
 
+  function extractTimeFromTimestamp(ts) {
+    if (!ts) return "";
+    const s = String(ts);
+    const brace = s.indexOf("}");
+    if (brace >= 0 && brace < s.length - 1) return s.slice(brace + 1).trim();
+    return s;
+  }
+
+  function parseConsumableIssues(rows, selectedDates) {
+    const dateSet = selectedDates instanceof Set ? selectedDates : new Set(selectedDates || []);
+    const issues = [];
+    let lastPerson = "General Store", lastPersonCode = null, lastDir = null;
+
+    for (const row of rows || []) {
+      const code = (row.toolCode || "").toString().toUpperCase().trim();
+      const desc = row.toolDescription || "—";
+      const rowDate = row.rowDate || "";
+      const timestamp = row.timestamp || "";
+      if (!code) continue;
+
+      if (code.startsWith("P")) {
+        lastPerson = desc || code;
+        lastPersonCode = code;
+        lastDir = null;
+        continue;
+      }
+      if (code === "IN" || code === "OUT") { lastDir = code; continue; }
+      if (!isConsumable(code)) continue;
+      if (dateSet.size && !dateSet.has(rowDate)) continue;
+      if (lastDir !== "OUT") continue;
+
+      issues.push({
+        date: rowDate,
+        time: extractTimeFromTimestamp(timestamp),
+        person: lastPerson,
+        personCode: lastPersonCode || "",
+        code,
+        description: desc
+      });
+    }
+    return issues;
+  }
+
+  function downloadBlob(filename, blob) {
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  }
+
+  function exportConsumablesCsv(issues, label) {
+    const lines = ["Date,Time,Person,PersonCode,Code,Description"];
+    (issues || []).forEach(r => {
+      lines.push([
+        `"${(r.date || "").replace(/"/g, '""')}"`,
+        `"${(r.time || "").replace(/"/g, '""')}"`,
+        `"${(r.person || "").replace(/"/g, '""')}"`,
+        `"${(r.personCode || "").replace(/"/g, '""')}"`,
+        r.code,
+        `"${(r.description || "").replace(/"/g, '""')}"`
+      ].join(","));
+    });
+    const blob = new Blob(["\uFEFF" + lines.join("\n")], { type: "text/csv;charset=utf-8" });
+    downloadBlob(`consumables-${label || "export"}.csv`, blob);
+  }
+
+  function exportConsumablesXlsx(issues, label) {
+    if (typeof XLSX === "undefined") {
+      exportConsumablesCsv(issues, label);
+      return;
+    }
+    const rows = [
+      ["Date", "Time", "Person", "Person Code", "Code", "Description"],
+      ...(issues || []).map(r => [r.date, r.time, r.person, r.personCode, r.code, r.description])
+    ];
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Consumables");
+    XLSX.writeFile(wb, `consumables-${label || "export"}.xlsx`);
+  }
+
   function exportCsv(tools, date) {
     const lines = ["Code,Description,Qty,Status,Holder"];
     tools.forEach(t => {
@@ -411,7 +590,8 @@ const CustodyParser = (() => {
   }
 
   return {
-    parseOverview, parseForWorker, parseForTool, parseDashboard,
-    lookupTool, dotClass, dotIcon, exportCsv
+    parseOverview, parseForWorker, parseForTool, parseForConsumable, parseDashboard,
+    parseConsumableIssues, lookupTool, dotClass, dotIcon, exportCsv,
+    exportConsumablesCsv, exportConsumablesXlsx
   };
 })();
