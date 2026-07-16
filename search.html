@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ToolCustody | Search</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="app.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1e3a5f">
+  <script src="config.js"></script>
+  <script src="ui.js"></script>
+</head>
+<body class="tc-page">
+  <div class="tc-wrap">
+    <div class="tc-shell">
+      <div id="app-header"></div>
+      <div class="tc-card mb-4">
+        <div class="d-flex gap-2 flex-wrap">
+          <input id="q" class="tc-search flex-grow-1" placeholder="Worker · Tool · QR · Date · Operation…">
+          <button class="tc-btn tc-btn-primary" id="btnGo"><i class="bi bi-search"></i> Search</button>
+        </div>
+      </div>
+      <div class="tc-card">
+        <span class="tc-section-badge"><i class="bi bi-list-ul"></i> Results</span>
+        <div id="results" class="mt-2 tc-text-muted">Type a query to search the ledger.</div>
+      </div>
+    </div>
+  </div>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => TCUI.bootPage(() => {
+      TCUI.mountHeader("app-header", {
+        active: "search", title: "Search", subtitle: "Unified ledger search",
+        icon: "bi-search"
+      });
+      document.getElementById("btnGo").onclick = runSearch;
+      document.getElementById("q").addEventListener("keydown", e => { if (e.key === "Enter") runSearch(); });
+      const params = new URLSearchParams(location.search);
+      if (params.get("q")) {
+        document.getElementById("q").value = params.get("q");
+        runSearch();
+      }
+    }, { minRole: "viewer" }));
+
+    async function runSearch() {
+      const q = document.getElementById("q").value.trim();
+      const host = document.getElementById("results");
+      if (!q) { host.textContent = "Enter a query."; return; }
+      host.innerHTML = `<div class="tc-spinner"></div>`;
+      try {
+        const data = await apiGet({ action: "searchAll", q });
+        if (data.error) { host.innerHTML = `<div class="text-danger">${escHtml(data.error)}</div>`; return; }
+        const items = data.items || [];
+        if (!items.length) { host.innerHTML = `<div class="tc-text-muted">No matches for <strong>${escHtml(q)}</strong></div>`; return; }
+        host.innerHTML = `<div class="table-responsive"><table class="table tc-table mb-0">
+          <thead><tr><th>Type</th><th>Code</th><th>Date</th><th>Timestamp</th><th></th></tr></thead>
+          <tbody>${items.map(i => {
+            let href = "#";
+            if (i.type === "person" || (i.code || "").charAt(0) === "P") href = "worker.html?code=" + encodeURIComponent(i.code);
+            else if (i.type === "tool" || /^[IECB]/.test(i.code || "")) href = "tool.html?code=" + encodeURIComponent(i.code);
+            return `<tr>
+              <td>${escHtml(i.type || "")}</td>
+              <td><strong>${escHtml(i.code || "")}</strong></td>
+              <td>${escHtml(i.rowDate || "")}</td>
+              <td>${escHtml(i.timestamp || "")}</td>
+              <td>${href !== "#" ? `<a class="tc-btn" href="${href}">Open</a>` : ""}</td>
+            </tr>`;
+          }).join("")}</tbody></table></div>`;
+      } catch (e) {
+        host.innerHTML = `<div class="text-danger">${escHtml(e.message || "Error")}</div>`;
+      }
+    }
+  </script>
+</body>
+</html>

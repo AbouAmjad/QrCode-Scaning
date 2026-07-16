@@ -205,7 +205,11 @@
 
     function queueScan(code, logDesc) {
       const logId = addLog(code, logDesc);
-      pushWithLimit({ code, seq: scanSeq++, sent: false, logId, timestamp: Date.now() });
+      const ok = pushWithLimit({ code, seq: scanSeq++, sent: false, logId, timestamp: Date.now() });
+      if (!ok) {
+        document.getElementById(logId)?.remove();
+        addLog(code, "Queue full — sync pending items first", true);
+      }
       return logId;
     }
 
@@ -440,7 +444,7 @@
       div.id = id;
       div.innerHTML = `
         <div class="tc-log-header">
-          <div class="tc-log-code">${String(code).toUpperCase()}</div>
+          <div class="tc-log-code">${escHtml(String(code).toUpperCase())}</div>
           <span class="${isWarn ? "tc-sync-warn" : "tc-sync-pending"}" id="st_${id}">${isWarn ? "Blocked" : "Pending"}</span>
         </div>
         <div class="tc-log-desc" id="desc_${id}">${escHtml(String(description))}</div>
@@ -474,16 +478,21 @@
     function pushWithLimit(payload) {
       const limit = Number(settings?.offlineQueueLimit || 300) || 300;
       const scans = loadScans();
-      scans.push(payload);
-      if (scans.length > limit) {
-        let overflow = scans.length - limit;
-        for (let i = 0; i < scans.length && overflow > 0; i++) {
-          if (!scans[i].sent) { scans.splice(i, 1); i--; overflow--; }
+      const unsentCount = scans.filter(s => !s.sent).length;
+      if (unsentCount >= limit) {
+        return false;
+      }
+      // Trim oldest SENT rows only if total grows past soft cap
+      if (scans.length >= limit) {
+        for (let i = 0; i < scans.length && scans.length >= limit; i++) {
+          if (scans[i].sent) { scans.splice(i, 1); i--; }
         }
       }
+      scans.push(payload);
       saveScans(scans);
       updateCounter();
       processQueue();
+      return true;
     }
 
     function applyDirection(dir) {

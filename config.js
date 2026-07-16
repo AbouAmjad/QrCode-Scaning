@@ -2,11 +2,16 @@
 const AppConfig = {
   SCRIPT_URL: "https://script.google.com/macros/s/AKfycbyHXMuZcmFT7KrvqR8cygFl-t-oU_Jh4Vr2L4yp1eoT5AQAL00rbjBbUL0aKod3_C8l7g/exec",
   TOKEN_KEY: "token",
+  ROLE_KEY: "tc_role",
+  USER_KEY: "tc_user",
   THEME_KEY: "uiTheme",
-  SESSION_TOKEN: "abouamjad_secure_session_token",
+  /** @deprecated Never use as API fallback — login must return a server token */
+  SESSION_TOKEN: "",
   TOOL_PREFIXES: ["I", "E", "C", "B"],
   OVERDUE_DAYS: 1,
   DASHBOARD_REFRESH_MS: 30000,
+  ROLES: ["admin", "store_keeper", "supervisor", "viewer"],
+  ROLE_RANK: { viewer: 1, store_keeper: 2, supervisor: 3, admin: 4 },
 
   // Settings
   SETTINGS_KEY: "toolcustody_settings_v1",
@@ -44,17 +49,44 @@ function getToken() {
   return localStorage.getItem(AppConfig.TOKEN_KEY) || "";
 }
 
-/** token للـ API — يستخدم fallback إذا ما في جلسة (مثل النسخة القديمة) */
+/** API token from login session only — never a public hardcoded fallback */
 function getApiToken() {
-  return getToken() || AppConfig.SESSION_TOKEN;
+  return getToken();
 }
 
 function setToken(token) {
+  if (!token) {
+    clearToken();
+    return;
+  }
   localStorage.setItem(AppConfig.TOKEN_KEY, token);
 }
 
 function clearToken() {
   localStorage.removeItem(AppConfig.TOKEN_KEY);
+  localStorage.removeItem(AppConfig.ROLE_KEY);
+  localStorage.removeItem(AppConfig.USER_KEY);
+}
+
+function getRole() {
+  const r = (localStorage.getItem(AppConfig.ROLE_KEY) || "").toLowerCase();
+  return AppConfig.ROLES.includes(r) ? r : "";
+}
+
+function getSessionUser() {
+  return localStorage.getItem(AppConfig.USER_KEY) || "";
+}
+
+function setSession({ token, role, user } = {}) {
+  if (token) setToken(token);
+  if (role) localStorage.setItem(AppConfig.ROLE_KEY, String(role).toLowerCase());
+  if (user) localStorage.setItem(AppConfig.USER_KEY, String(user));
+}
+
+function hasMinRole(minRole) {
+  const rank = AppConfig.ROLE_RANK[getRole()] || 0;
+  const need = AppConfig.ROLE_RANK[minRole] || 99;
+  return rank >= need;
 }
 
 function getTheme() {
@@ -121,6 +153,9 @@ function requireAuth() {
     window.location = "login.html";
     return false;
   }
+  if (!getRole()) {
+    localStorage.setItem(AppConfig.ROLE_KEY, "store_keeper");
+  }
   return true;
 }
 
@@ -154,7 +189,9 @@ function parseApiResponse(text) {
 }
 
 async function apiGet(params) {
-  const qs = new URLSearchParams({ ...params, token: getApiToken() });
+  const token = getApiToken();
+  if (!token) return { error: "UNAUTHORIZED" };
+  const qs = new URLSearchParams({ ...params, token });
   const url = `${AppConfig.SCRIPT_URL}?${qs}`;
   const res = await fetch(url, { method: "GET", cache: "no-store", redirect: "follow" });
   const data = parseApiResponse(await res.text());
@@ -164,7 +201,9 @@ async function apiGet(params) {
 
 /** POST form fields — most reliable for Google Apps Script from GitHub Pages */
 async function apiPostForm(fields) {
-  const payload = { ...fields, token: getApiToken() };
+  const token = getApiToken();
+  if (!token && fields.action !== "login") return { error: "UNAUTHORIZED" };
+  const payload = { ...fields, token };
   const form = new URLSearchParams();
   Object.entries(payload).forEach(([k, v]) => {
     if (v !== undefined && v !== null && v !== "") form.append(k, String(v));
@@ -183,7 +222,9 @@ async function apiPostForm(fields) {
 
 /** POST JSON as text/plain (large photo payloads) */
 async function apiPostPlain(body) {
-  const payload = { ...body, token: getApiToken() };
+  const token = getApiToken();
+  if (!token) return { error: "UNAUTHORIZED" };
+  const payload = { ...body, token };
   const res = await fetch(AppConfig.SCRIPT_URL, {
     method: "POST",
     headers: { "Content-Type": "text/plain;charset=utf-8" },
@@ -249,13 +290,34 @@ async function loadDamageDateOptions(selectEl) {
   }
 }
 
-/** sync — no-cors مثل النسخة الأصلية (GAS + file:// ما بيدعموا قراءة الرد دائماً) */
+/** Sync scan — requires readable JSON ack (no optimistic no-cors) */
 async function syncScan(code) {
-  const qs = new URLSearchParams({ scanData: code, token: getApiToken() });
-  const url = `${AppConfig.SCRIPT_URL}?${qs}`;
   try {
-    await fetch(url, { method: "GET", mode: "no-cors", cache: "no-store" });
-    return { ok: true };
+    if (!getApiToken()) return { ok: false, error: "UNAUTHORIZED" };
+    const data = await apiGet({ scanData: code });
+    if (data && data.status === "OK") return { ok: true };
+    if (data && data.error) return { ok: false, error: data.error };
+    return { ok: false, error: "SYNC_FAILED" };
+  } catch {
+    return { ok: false, error: "NETWORK" };
+  }
+}
+
+/** Client audit helper (server appends when supported) */
+async function logAudit(action, detail = {}, before = "", after = "") {
+  try {
+    if (!getApiToken()) return { ok: false };
+    const data = await apiPostForm({
+      action: "auditLog",
+      auditAction: action,
+      detail: typeof detail === "string" ? detail : JSON.stringify(detail),
+      before: typeof before === "string" ? before : JSON.stringify(before),
+      after: typeof after === "string" ? after : JSON.stringify(after),
+      user: getSessionUser(),
+      role: getRole(),
+      device: (navigator.userAgent || "").slice(0, 180)
+    });
+    return { ok: !!(data && (data.success || data.ok)) };
   } catch {
     return { ok: false };
   }
@@ -266,7 +328,7 @@ async function loadDateOptions(selectEl) {
   try {
     const dates = await apiGet({ action: "getDates" });
     if (dates && dates.error) {
-      selectEl.innerHTML = `<option value="">❌ ${dates.error}</option>`;
+      selectEl.innerHTML = `<option value="">❌ ${escHtml(dates.error)}</option>`;
       return [];
     }
     if (!dates || !dates.length) {
@@ -297,12 +359,16 @@ async function loginRequest(user, pass) {
   try {
     const res = await fetch(url, { method: "GET", cache: "no-store", redirect: "follow" });
     const data = parseApiResponse(await res.text());
-    if (data && data.success && data.token) return { ok: true, token: data.token };
+    if (data && data.success && data.token) {
+      return {
+        ok: true,
+        token: data.token,
+        role: (data.role || "admin").toLowerCase(),
+        user: data.user || user
+      };
+    }
     if (data && data.success === false) return { ok: false, badCreds: true };
-  } catch { /* جرب no-cors */ }
-  try {
-    await fetch(url, { method: "GET", mode: "no-cors", cache: "no-store" });
-    return { ok: true, token: AppConfig.SESSION_TOKEN, fallback: true };
+    return { ok: false, network: true };
   } catch {
     return { ok: false, network: true };
   }

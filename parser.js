@@ -222,7 +222,8 @@ const CustodyParser = (() => {
   }
 
   function parseForWorker(rows, workerCode, selectedDate) {
-    const inv = runInventory(rows);
+    // Single-pass ledger only — do NOT pre-run runInventory (would double-count holdings).
+    const inv = {};
     const workerDailyLog = {};
     let workerName = workerCode;
     let lastPerson = "General Store", lastPersonCode = null, lastDir = null;
@@ -244,6 +245,8 @@ const CustodyParser = (() => {
       if (code === "IN" || code === "OUT") { lastDir = code; continue; }
       if (!isTool(code)) continue;
 
+      const active = lastPersonCode === workerCode;
+
       if (isConsumable(code)) {
         if (active && lastDir === "OUT") {
           if (!workerDailyLog[rowDate]) workerDailyLog[rowDate] = [];
@@ -253,7 +256,6 @@ const CustodyParser = (() => {
       }
 
       if (!inv[code]) inv[code] = { description: desc, isPerson: false, holdersList: [], hasWarning: false };
-      const active = lastPersonCode === workerCode;
 
       if (!lastDir) {
         if (active) {

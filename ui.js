@@ -1,14 +1,30 @@
 /** ToolCustody — top bar + page chrome */
 const TCUI = (() => {
   const PAGES = [
-    { id: "terminal", href: "index.html", icon: "bi-terminal", label: "Terminal" },
-    { id: "dashboard", href: "dashboard.html", icon: "bi-speedometer2", label: "Dashboard" },
-    { id: "overview", href: "results.html", icon: "bi-table", label: "Overview" },
-    { id: "consumables", href: "consumables.html", icon: "bi-box-seam", label: "Consumables" },
-    { id: "damage", href: "damage.html", icon: "bi-exclamation-octagon", label: "Damage" }
+    { id: "terminal", href: "index.html", icon: "bi-terminal", label: "Terminal", minRole: "store_keeper" },
+    { id: "dashboard", href: "dashboard.html", icon: "bi-speedometer2", label: "Dashboard", minRole: "viewer" },
+    { id: "overview", href: "results.html", icon: "bi-table", label: "Overview", minRole: "viewer" },
+    { id: "search", href: "search.html", icon: "bi-search", label: "Search", minRole: "viewer" },
+    { id: "receiving", href: "receiving.html", icon: "bi-box-arrow-in-down", label: "Receiving", minRole: "store_keeper" },
+    { id: "repair", href: "repair.html", icon: "bi-wrench", label: "Repair", minRole: "supervisor" },
+    { id: "labels", href: "qr-labels.html", icon: "bi-qr-code", label: "Labels", minRole: "store_keeper" },
+    { id: "reports", href: "reports.html", icon: "bi-file-earmark-bar-graph", label: "Reports", minRole: "supervisor" },
+    { id: "notifications", href: "notifications.html", icon: "bi-bell", label: "Alerts", minRole: "viewer" },
+    { id: "audit", href: "audit.html", icon: "bi-journal-text", label: "Audit", minRole: "admin" },
+    { id: "consumables", href: "consumables.html", icon: "bi-box-seam", label: "Consumables", minRole: "viewer" },
+    { id: "damage", href: "damage.html", icon: "bi-exclamation-octagon", label: "Damage", minRole: "store_keeper" }
   ];
 
   let pwaRegistered = false;
+
+  function roleOk(minRole) {
+    if (typeof hasMinRole === "function") return hasMinRole(minRole || "viewer");
+    return true;
+  }
+
+  function visiblePages() {
+    return PAGES.filter(p => roleOk(p.minRole));
+  }
 
   function registerPWA() {
     if (pwaRegistered || !("serviceWorker" in navigator)) return;
@@ -19,6 +35,10 @@ const TCUI = (() => {
   function bootPage(callback, options = {}) {
     const login = options.login !== false;
     if (login && typeof requireAuth === "function" && !requireAuth()) return;
+    if (options.minRole && !roleOk(options.minRole)) {
+      window.location.href = "dashboard.html";
+      return;
+    }
     registerPWA();
     if (typeof callback === "function") callback();
   }
@@ -40,15 +60,23 @@ const TCUI = (() => {
   }
 
   function renderTopbar(activeId, { showNav = true, showLogout = true } = {}) {
+    const pages = visiblePages();
     const nav = showNav
-      ? `<nav class="tc-topbar-nav" aria-label="Main">${PAGES.map(p => {
+      ? `<nav class="tc-topbar-nav" aria-label="Main">${pages.map(p => {
           const cls = p.id === activeId ? "active" : "";
           return `<a href="${p.href}" class="tc-topbar-link ${cls}"><i class="bi ${p.icon}"></i><span>${p.label}</span></a>`;
         }).join("")}</nav>`
       : "";
 
+    const role = typeof getRole === "function" ? getRole() : "";
+    const user = typeof getSessionUser === "function" ? getSessionUser() : "";
+    const meta = (user || role)
+      ? `<span class="tc-topbar-user" title="${escHtml ? escHtml(user) : user}">${role || "user"}</span>`
+      : "";
+
     const actions = `
       <div class="tc-topbar-actions">
+        ${meta}
         <button type="button" class="tc-topbar-icon-btn theme-switch" onclick="toggleTheme();syncThemeControls()" data-theme-toggle title="Theme">
           <i class="bi bi-palette"></i>
         </button>
@@ -108,7 +136,22 @@ const TCUI = (() => {
     });
   }
 
+  function toast(msg, kind = "info") {
+    let host = document.getElementById("tc-toast-host");
+    if (!host) {
+      host = document.createElement("div");
+      host.id = "tc-toast-host";
+      host.className = "tc-toast-host";
+      document.body.appendChild(host);
+    }
+    const el = document.createElement("div");
+    el.className = "tc-toast tc-toast-" + kind;
+    el.textContent = msg;
+    host.appendChild(el);
+    setTimeout(() => el.remove(), 4200);
+  }
+
   return {
-    bootPage, registerPWA, logout, mountLayout, mountHeader, mountLoginPage, PAGES
+    bootPage, registerPWA, logout, mountLayout, mountHeader, mountLoginPage, toast, PAGES, visiblePages
   };
 })();

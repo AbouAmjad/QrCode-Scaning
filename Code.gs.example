@@ -7,7 +7,7 @@
 const USER = "YOUR_USERNAME";
 const PASS = "YOUR_PASSWORD";
 const MAIN_SHEET_ID = "YOUR_MAIN_SHEET_ID";
-const DEFAULT_DAMAGE_SHEET_ID = "17nQDnJogZapc8W5RHU8HN8hoSHg_ctym8H37tQWpw68";
+const DEFAULT_DAMAGE_SHEET_ID = ""; // set DAMAGE_SHEET_ID Script Property (required for damage)
 
 const SPREADSHEET_MAP = {
   "P": { id: "YOUR_P_SHEET_ID", column: "E" },
@@ -19,6 +19,12 @@ const SPREADSHEET_MAP = {
 
 // Damage tab: A=Date B=Code C=Name D=ImageURL E=DamagedBy F=Count G=Remark
 const DAMAGE_TAB_NAME = "Damage";
+const AUDIT_TAB_NAME = "AuditLog";
+const RECEIVING_TAB_NAME = "Receiving";
+const LIFECYCLE_TAB_NAME = "ToolLifecycle";
+const CREDENTIALS_TAB_NAME = "Credentials";
+
+const ROLE_RANK = { viewer: 1, store_keeper: 2, supervisor: 3, admin: 4 };
 
 function getConfig_() {
   const props = PropertiesService.getScriptProperties();
@@ -27,14 +33,78 @@ function getConfig_() {
   return {
     user: props.getProperty("APP_USER") || USER,
     pass: props.getProperty("APP_PASS") || PASS,
-    token: props.getProperty("APP_TOKEN") || "abouamjad_secure_session_token",
+    token: props.getProperty("APP_TOKEN") || "CHANGE_ME_ROTATE_TOKEN",
+    role: (props.getProperty("APP_ROLE") || "admin").toLowerCase(),
     damageSheetId: props.getProperty("DAMAGE_SHEET_ID") || DEFAULT_DAMAGE_SHEET_ID,
-    damageDriveFolderId: props.getProperty("DAMAGE_DRIVE_FOLDER_ID") || ""
+    damageDriveFolderId: props.getProperty("DAMAGE_DRIVE_FOLDER_ID") || "",
+    opsSheetId: props.getProperty("OPS_SHEET_ID") || MAIN_SHEET_ID
   };
 }
 
 function isAuthorized_(token) {
   return token && token === getConfig_().token;
+}
+
+function roleAtLeast_(role, minRole) {
+  return (ROLE_RANK[role] || 0) >= (ROLE_RANK[minRole] || 99);
+}
+
+function resolveLogin_(user, pass) {
+  const cfg = getConfig_();
+  if (user === cfg.user && pass === cfg.pass) {
+    return { user: cfg.user, role: cfg.role, token: cfg.token };
+  }
+  try {
+    const ss = SpreadsheetApp.openById(cfg.opsSheetId);
+    const sheet = ss.getSheetByName(CREDENTIALS_TAB_NAME);
+    if (!sheet || sheet.getLastRow() < 2) return null;
+    const rows = sheet.getRange(2, 1, sheet.getLastRow(), 3).getDisplayValues();
+    for (let i = 0; i < rows.length; i++) {
+      const u = String(rows[i][0] || "").trim();
+      const p = String(rows[i][1] || "").trim();
+      const r = String(rows[i][2] || "viewer").trim().toLowerCase();
+      if (u && u === user && p === pass) {
+        return { user: u, role: ROLE_RANK[r] ? r : "viewer", token: cfg.token };
+      }
+    }
+  } catch (e) { /* credentials sheet optional */ }
+  return null;
+}
+
+function getOpsSpreadsheet_() {
+  return SpreadsheetApp.openById(getConfig_().opsSheetId);
+}
+
+function getOrCreateNamedSheet_(ss, name, headers) {
+  let sheet = ss.getSheetByName(name);
+  if (!sheet) {
+    sheet = ss.insertSheet(name);
+    sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+    sheet.getRange(1, 1, 1, headers.length).setFontWeight("bold");
+  }
+  return sheet;
+}
+
+function appendAudit_(entry) {
+  try {
+    const ss = getOpsSpreadsheet_();
+    const sheet = getOrCreateNamedSheet_(ss, AUDIT_TAB_NAME, [
+      "Timestamp", "User", "Role", "Action", "Before", "After", "Detail", "Device"
+    ]);
+    sheet.appendRow([
+      entry.timestamp || new Date().toISOString(),
+      entry.user || "",
+      entry.role || "",
+      entry.action || "",
+      entry.before || "",
+      entry.after || "",
+      entry.detail || "",
+      entry.device || ""
+    ]);
+    return true;
+  } catch (e) {
+    return false;
+  }
 }
 
 function extractDate_(cellValue) {
@@ -112,7 +182,7 @@ function uploadDamageImage_(base64Data, toolCode) {
 
   const folder = getDamagePhotoFolder_();
   const file = folder.createFile(blob);
-  file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+  // Inherit folder ACL — do not publish Anyone-with-link
   return "https://drive.google.com/uc?export=view&id=" + file.getId();
 }
 
@@ -235,8 +305,21 @@ function handleRequest_(params) {
   if (action === "options") return json({ ok: true });
 
   if (action === "login") {
-    if (params.user === cfg.user && params.pass === cfg.pass) {
-      return json({ success: true, token: cfg.token });
+    const account = resolveLogin_(params.user, params.pass);
+    if (account) {
+      appendAudit_({
+        user: account.user,
+        role: account.role,
+        action: "LOGIN",
+        detail: "success",
+        device: params.device || ""
+      });
+      return json({
+        success: true,
+        token: account.token,
+        role: account.role,
+        user: account.user
+      });
     }
     return json({ success: false });
   }
@@ -348,7 +431,181 @@ function handleRequest_(params) {
   if (action === "submitDamage") {
     const result = internalSubmitDamage_(params);
     if (result && result.error) return json(result);
+    appendAudit_({
+      user: params.user || "",
+      role: params.role || "",
+      action: "DAMAGE_CREATE",
+      after: JSON.stringify(result && result.item ? result.item : {}),
+      device: params.device || ""
+    });
     return json(result);
+  }
+
+  if (action === "auditLog") {
+    const ok = appendAudit_({
+      user: params.user || "",
+      role: params.role || "",
+      action: params.auditAction || params.event || "CLIENT_EVENT",
+      before: params.before || "",
+      after: params.after || "",
+      detail: params.detail || "",
+      device: params.device || ""
+    });
+    return json({ success: ok, ok: ok });
+  }
+
+  if (action === "getAuditLog") {
+    try {
+      const ss = getOpsSpreadsheet_();
+      const sheet = ss.getSheetByName(AUDIT_TAB_NAME);
+      if (!sheet || sheet.getLastRow() < 2) return json({ items: [] });
+      const last = sheet.getLastRow();
+      const start = Math.max(2, last - 199);
+      const rows = sheet.getRange(start, 1, last, 8).getDisplayValues();
+      const items = rows.map(r => ({
+        timestamp: r[0], user: r[1], role: r[2], action: r[3],
+        before: r[4], after: r[5], detail: r[6], device: r[7]
+      })).reverse();
+      return json({ items: items });
+    } catch (err) {
+      return json({ error: err.message, items: [] });
+    }
+  }
+
+  if (action === "receiveItem") {
+    const code = (params.code || "").toString().trim().toUpperCase();
+    const description = (params.description || "").toString().trim();
+    const supplier = (params.supplier || "").toString().trim();
+    const invoice = (params.invoice || "").toString().trim();
+    const po = (params.po || params.purchaseOrder || "").toString().trim();
+    const cost = (params.cost || "").toString().trim();
+    const warranty = (params.warranty || "").toString().trim();
+    if (!code) return json({ error: "Code required" });
+    if (!/^[PIECB]/.test(code)) return json({ error: "Code must start with P, I, E, C, or B" });
+    if (!description) return json({ error: "Description required" });
+    try {
+      const prefix = code.charAt(0);
+      const sheetInfo = SPREADSHEET_MAP[prefix];
+      if (!sheetInfo || !sheetInfo.id || sheetInfo.id.indexOf("YOUR_") === 0) {
+        return json({ error: "Catalog sheet not configured for " + prefix });
+      }
+      const cat = SpreadsheetApp.openById(sheetInfo.id).getActiveSheet();
+      cat.appendRow([code, "", "", "", description]);
+      const ss = getOpsSpreadsheet_();
+      const recv = getOrCreateNamedSheet_(ss, RECEIVING_TAB_NAME, [
+        "Timestamp", "Code", "Description", "Supplier", "Invoice", "PO", "Cost", "Warranty", "ByUser"
+      ]);
+      recv.appendRow([
+        new Date().toISOString(), code, description, supplier, invoice, po, cost, warranty,
+        params.user || ""
+      ]);
+      const life = getOrCreateNamedSheet_(ss, LIFECYCLE_TAB_NAME, [
+        "Code", "State", "UpdatedAt", "Note", "ByUser"
+      ]);
+      life.appendRow([code, "Active", new Date().toISOString(), "Received", params.user || ""]);
+      appendAudit_({
+        user: params.user || "",
+        role: params.role || "",
+        action: "RECEIVE_ITEM",
+        after: JSON.stringify({ code: code, description: description, supplier: supplier, cost: cost }),
+        device: params.device || ""
+      });
+      return json({ success: true, code: code, description: description });
+    } catch (err) {
+      return json({ error: err.message });
+    }
+  }
+
+  if (action === "getReceiving") {
+    try {
+      const ss = getOpsSpreadsheet_();
+      const sheet = ss.getSheetByName(RECEIVING_TAB_NAME);
+      if (!sheet || sheet.getLastRow() < 2) return json({ items: [] });
+      const rows = sheet.getRange(2, 1, sheet.getLastRow(), 9).getDisplayValues().reverse();
+      return json({
+        items: rows.slice(0, 100).map(r => ({
+          timestamp: r[0], code: r[1], description: r[2], supplier: r[3],
+          invoice: r[4], po: r[5], cost: r[6], warranty: r[7], byUser: r[8]
+        }))
+      });
+    } catch (err) {
+      return json({ error: err.message, items: [] });
+    }
+  }
+
+  if (action === "setLifecycle") {
+    const code = (params.code || "").toString().trim().toUpperCase();
+    const state = (params.state || "").toString().trim();
+    const note = (params.note || "").toString().trim();
+    const allowed = ["Active", "Under Repair", "Awaiting Parts", "Scrap", "Returned"];
+    if (!code) return json({ error: "Code required" });
+    if (allowed.indexOf(state) < 0) return json({ error: "Invalid state" });
+    try {
+      const ss = getOpsSpreadsheet_();
+      const sheet = getOrCreateNamedSheet_(ss, LIFECYCLE_TAB_NAME, [
+        "Code", "State", "UpdatedAt", "Note", "ByUser"
+      ]);
+      sheet.appendRow([code, state, new Date().toISOString(), note, params.user || ""]);
+      appendAudit_({
+        user: params.user || "",
+        role: params.role || "",
+        action: "LIFECYCLE_CHANGE",
+        after: JSON.stringify({ code: code, state: state, note: note }),
+        device: params.device || ""
+      });
+      return json({ success: true, code: code, state: state });
+    } catch (err) {
+      return json({ error: err.message });
+    }
+  }
+
+  if (action === "getLifecycle") {
+    try {
+      const ss = getOpsSpreadsheet_();
+      const sheet = ss.getSheetByName(LIFECYCLE_TAB_NAME);
+      if (!sheet || sheet.getLastRow() < 2) return json({ items: [] });
+      const rows = sheet.getRange(2, 1, sheet.getLastRow(), 5).getDisplayValues();
+      const latest = {};
+      rows.forEach(r => {
+        const code = String(r[0] || "").toUpperCase();
+        if (!code) return;
+        latest[code] = { code: code, state: r[1], updatedAt: r[2], note: r[3], byUser: r[4] };
+      });
+      const filter = (params.code || "").toString().trim().toUpperCase();
+      let items = Object.keys(latest).map(k => latest[k]);
+      if (filter) items = items.filter(i => i.code === filter);
+      return json({ items: items });
+    } catch (err) {
+      return json({ error: err.message, items: [] });
+    }
+  }
+
+  if (action === "searchAll") {
+    const q = (params.q || "").toString().trim().toUpperCase();
+    if (!q || q.length < 1) return json({ items: [] });
+    try {
+      const sheet = SpreadsheetApp.openById(MAIN_SHEET_ID).getActiveSheet();
+      const lastRow = sheet.getLastRow();
+      if (lastRow < 2) return json({ items: [] });
+      const rows = sheet.getRange(2, 1, lastRow, 8).getDisplayValues();
+      const items = [];
+      for (let i = rows.length - 1; i >= 0 && items.length < 80; i--) {
+        const code = String(rows[i][1] || "").toUpperCase();
+        const ts = String(rows[i][7] || "");
+        if (!code) continue;
+        if (code.indexOf(q) >= 0 || ts.toUpperCase().indexOf(q) >= 0) {
+          items.push({
+            type: code.charAt(0) === "P" ? "person" : (code === "IN" || code === "OUT" ? "direction" : "tool"),
+            code: code,
+            timestamp: ts,
+            rowDate: extractDate_(ts)
+          });
+        }
+      }
+      return json({ items: items, q: q });
+    } catch (err) {
+      return json({ error: err.message, items: [] });
+    }
   }
 
   return json({ error: "NO ACTION SPECIFIED" });

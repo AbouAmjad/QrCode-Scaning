@@ -58,7 +58,7 @@
       try {
         const result = await loginRequest(user, pass);
         if (result.ok && result.token) {
-          setToken(result.token);
+          setSession({ token: result.token, role: result.role || "admin", user: result.user || user });
           button.innerHTML = '<i class="bi bi-check-circle"></i> Success!';
           setTimeout(() => { window.location = "index.html"; }, 800);
         } else if (result.badCreds) {

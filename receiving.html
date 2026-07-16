@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ToolCustody | Receiving</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="app.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1e3a5f">
+  <script src="config.js"></script>
+  <script src="ui.js"></script>
+</head>
+<body class="tc-page">
+  <div class="tc-wrap">
+    <div class="tc-shell">
+      <div id="app-header"></div>
+      <div class="row g-4">
+        <div class="col-lg-5">
+          <div class="tc-card">
+            <span class="tc-section-badge"><i class="bi bi-box-arrow-in-down"></i> New intake</span>
+            <div class="tc-field mt-3"><label>Code (P/I/E/C/B…)</label><input id="code" class="form-control" placeholder="I1001"></div>
+            <div class="tc-field"><label>Description</label><input id="description" class="form-control" placeholder="Tool name"></div>
+            <div class="tc-field"><label>Supplier</label><input id="supplier" class="form-control"></div>
+            <div class="tc-field"><label>Invoice</label><input id="invoice" class="form-control"></div>
+            <div class="tc-field"><label>Purchase Order</label><input id="po" class="form-control"></div>
+            <div class="tc-field"><label>Cost</label><input id="cost" class="form-control" type="number" step="0.01"></div>
+            <div class="tc-field"><label>Warranty</label><input id="warranty" class="form-control" placeholder="12 months"></div>
+            <button class="tc-btn tc-btn-primary w-100 mt-2" id="btnSave"><i class="bi bi-check2"></i> Receive &amp; catalog</button>
+            <p class="tc-text-muted small mt-2 mb-0">Creates catalog row + Receiving log + Active lifecycle. Not a checkout (OUT).</p>
+          </div>
+        </div>
+        <div class="col-lg-7">
+          <div class="tc-card">
+            <span class="tc-section-badge"><i class="bi bi-clock-history"></i> Recent receiving</span>
+            <div class="table-responsive mt-2">
+              <table class="table tc-table mb-0">
+                <thead><tr><th>When</th><th>Code</th><th>Desc</th><th>Supplier</th><th>Cost</th></tr></thead>
+                <tbody id="recvBody"><tr><td colspan="5" class="tc-text-muted text-center">Loading…</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => TCUI.bootPage(() => {
+      TCUI.mountHeader("app-header", {
+        active: "receiving", title: "Receiving", subtitle: "Supplier · Invoice · PO · Cost · Warranty",
+        icon: "bi-box-arrow-in-down"
+      });
+      loadList();
+      document.getElementById("btnSave").onclick = saveItem;
+    }, { minRole: "store_keeper" }));
+
+    async function loadList() {
+      const body = document.getElementById("recvBody");
+      try {
+        const data = await apiGet({ action: "getReceiving" });
+        const items = (data && data.items) || [];
+        if (!items.length) {
+          body.innerHTML = `<tr><td colspan="5" class="tc-text-muted text-center">No receiving rows yet</td></tr>`;
+          return;
+        }
+        body.innerHTML = items.map(i => `<tr>
+          <td>${escHtml(i.timestamp || "")}</td>
+          <td><strong>${escHtml(i.code || "")}</strong></td>
+          <td>${escHtml(i.description || "")}</td>
+          <td>${escHtml(i.supplier || "")}</td>
+          <td>${escHtml(i.cost || "")}</td>
+        </tr>`).join("");
+      } catch (e) {
+        body.innerHTML = `<tr><td colspan="5" class="text-danger text-center">${escHtml(e.message || "Error")}</td></tr>`;
+      }
+    }
+
+    async function saveItem() {
+      const payload = {
+        action: "receiveItem",
+        code: document.getElementById("code").value.trim(),
+        description: document.getElementById("description").value.trim(),
+        supplier: document.getElementById("supplier").value.trim(),
+        invoice: document.getElementById("invoice").value.trim(),
+        po: document.getElementById("po").value.trim(),
+        cost: document.getElementById("cost").value.trim(),
+        warranty: document.getElementById("warranty").value.trim(),
+        user: getSessionUser(),
+        role: getRole()
+      };
+      try {
+        const res = await apiPostForm(payload);
+        if (res.error) { TCUI.toast(res.error, "err"); return; }
+        TCUI.toast("Received " + (res.code || ""), "ok");
+        ["code","description","supplier","invoice","po","cost","warranty"].forEach(id => document.getElementById(id).value = "");
+        loadList();
+      } catch (e) {
+        TCUI.toast(e.message || "Failed", "err");
+      }
+    }
+  </script>
+</body>
+</html>

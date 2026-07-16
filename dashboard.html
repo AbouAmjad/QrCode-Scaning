@@ -47,6 +47,10 @@
           </div>
           <div class="col-lg-5">
             <div class="tc-card mb-4">
+              <span class="tc-section-badge"><i class="bi bi-bar-chart"></i> Snapshot chart</span>
+              <canvas id="dashChart" height="120" class="mt-2 w-100"></canvas>
+            </div>
+            <div class="tc-card mb-4">
               <span class="tc-section-badge"><i class="bi bi-trophy"></i> Top holders</span>
               <div id="topHolders" class="mt-2"></div>
             </div>
@@ -109,6 +113,31 @@
         document.getElementById("kpiWorkers").textContent = dash.totalWorkers;
         document.getElementById("kpiWarn").textContent = dash.warnings;
         document.getElementById("kpiOverdue").textContent = dash.overdueCount;
+
+        const canvas = document.getElementById("dashChart");
+        if (canvas && canvas.getContext) {
+          const ctx = canvas.getContext("2d");
+          const w = canvas.width = canvas.clientWidth || 320;
+          const h = canvas.height = 120;
+          ctx.clearRect(0, 0, w, h);
+          const vals = [
+            { label: "Out", v: dash.totalOut || 0, c: "#dc2626" },
+            { label: "Workers", v: dash.totalWorkers || 0, c: "#16a34a" },
+            { label: "Warn", v: dash.warnings || 0, c: "#ea580c" },
+            { label: "Overdue", v: dash.overdueCount || 0, c: "#7c3aed" }
+          ];
+          const max = Math.max(1, ...vals.map(x => x.v));
+          const barW = w / (vals.length * 2);
+          vals.forEach((x, i) => {
+            const bh = (x.v / max) * (h - 28);
+            const x0 = barW + i * barW * 2;
+            ctx.fillStyle = x.c;
+            ctx.fillRect(x0, h - 18 - bh, barW, bh);
+            ctx.fillStyle = "#64748b";
+            ctx.font = "11px sans-serif";
+            ctx.fillText(x.label, x0, h - 4);
+          });
+        }
 
         const alertsBox = document.getElementById("alertsBox");
         if (dash.allClear) {

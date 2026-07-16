@@ -174,7 +174,7 @@
         document.getElementById("kpiSection").style.display = "grid";
         renderAll();
       } catch (e) {
-        document.getElementById("toolsTBody").innerHTML = `<tr><td colspan="4" class="text-center text-danger py-4"><i class="bi bi-exclamation-triangle-fill"></i> ${e.message}</td></tr>`;
+        document.getElementById("toolsTBody").innerHTML = `<tr><td colspan="4" class="text-center text-danger py-4"><i class="bi bi-exclamation-triangle-fill"></i> ${escHtml(e.message || "Error")}</td></tr>`;
         document.getElementById("workersList").innerHTML = `<div class="text-center text-danger p-3"><i class="bi bi-wifi-off"></i> Error</div>`;
       }
     }
