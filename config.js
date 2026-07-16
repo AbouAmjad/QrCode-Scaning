@@ -10,8 +10,25 @@ const AppConfig = {
   TOOL_PREFIXES: ["I", "E", "C", "B"],
   OVERDUE_DAYS: 1,
   DASHBOARD_REFRESH_MS: 30000,
-  ROLES: ["admin", "store_keeper", "supervisor", "viewer"],
-  ROLE_RANK: { viewer: 1, store_keeper: 2, supervisor: 3, admin: 4 },
+  /** employee=موظف · engineer=مهندس · admin=أدمن */
+  ROLES: ["employee", "engineer", "admin"],
+  ROLE_RANK: { employee: 1, engineer: 2, admin: 3 },
+  ROLE_HOME: {
+    employee: "index.html",
+    engineer: "inventory.html",
+    admin: "dashboard.html"
+  },
+  ROLE_LABELS: {
+    employee: "موظف",
+    engineer: "مهندس",
+    admin: "أدمن"
+  },
+  /** pages each role may open (admin gets all) */
+  ROLE_PAGES: {
+    employee: ["terminal", "outstanding", "receiving", "damage"],
+    engineer: ["inventory", "requests", "overview", "search", "consumables", "notifications"],
+    admin: ["*"]
+  },
 
   // Settings
   SETTINGS_KEY: "toolcustody_settings_v1",
@@ -69,8 +86,46 @@ function clearToken() {
 }
 
 function getRole() {
-  const r = (localStorage.getItem(AppConfig.ROLE_KEY) || "").toLowerCase();
+  const r = normalizeRole(localStorage.getItem(AppConfig.ROLE_KEY) || "");
   return AppConfig.ROLES.includes(r) ? r : "";
+}
+
+function normalizeRole(role) {
+  const raw = String(role || "").trim().toLowerCase();
+  if (!raw) return "";
+  const map = {
+    employee: "employee",
+    "موظف": "employee",
+    store_keeper: "employee",
+    storekeeper: "employee",
+    keeper: "employee",
+    staff: "employee",
+    engineer: "engineer",
+    "مهندس": "engineer",
+    supervisor: "engineer",
+    viewer: "engineer",
+    tech: "engineer",
+    admin: "admin",
+    administrator: "admin",
+    "أدمن": "admin",
+    "ادمن": "admin"
+  };
+  return map[raw] || (AppConfig.ROLES.includes(raw) ? raw : "employee");
+}
+
+function roleLabel(role = getRole()) {
+  return AppConfig.ROLE_LABELS[normalizeRole(role)] || role || "";
+}
+
+function homePageForRole(role = getRole()) {
+  return AppConfig.ROLE_HOME[normalizeRole(role)] || "index.html";
+}
+
+function canAccessPage(pageId) {
+  const role = getRole() || "employee";
+  if (role === "admin") return true;
+  const allowed = AppConfig.ROLE_PAGES[role] || [];
+  return allowed.includes("*") || allowed.includes(pageId);
 }
 
 function getSessionUser() {
@@ -79,13 +134,13 @@ function getSessionUser() {
 
 function setSession({ token, role, user } = {}) {
   if (token) setToken(token);
-  if (role) localStorage.setItem(AppConfig.ROLE_KEY, String(role).toLowerCase());
+  if (role) localStorage.setItem(AppConfig.ROLE_KEY, normalizeRole(role));
   if (user) localStorage.setItem(AppConfig.USER_KEY, String(user));
 }
 
 function hasMinRole(minRole) {
   const rank = AppConfig.ROLE_RANK[getRole()] || 0;
-  const need = AppConfig.ROLE_RANK[minRole] || 99;
+  const need = AppConfig.ROLE_RANK[normalizeRole(minRole)] || 99;
   return rank >= need;
 }
 
@@ -154,7 +209,7 @@ function requireAuth() {
     return false;
   }
   if (!getRole()) {
-    localStorage.setItem(AppConfig.ROLE_KEY, "store_keeper");
+    localStorage.setItem(AppConfig.ROLE_KEY, "employee");
   }
   return true;
 }
@@ -363,7 +418,7 @@ async function loginRequest(user, pass) {
       return {
         ok: true,
         token: data.token,
-        role: (data.role || "admin").toLowerCase(),
+        role: normalizeRole(data.role || "admin"),
         user: data.user || user
       };
     }

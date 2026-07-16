@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ToolCustody | Inventory</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="app.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1e3a5f">
+  <script src="config.js"></script>
+  <script src="ui.js"></script>
+  <script src="parser.js"></script>
+</head>
+<body class="tc-page">
+  <div class="tc-wrap">
+    <div class="tc-shell">
+      <div id="app-header"></div>
+      <div class="tc-kpi-grid mb-4">
+        <div class="tc-kpi green"><div class="label">Tools available</div><div class="value" id="kToolAv">—</div></div>
+        <div class="tc-kpi red"><div class="label">Tools out</div><div class="value" id="kToolOut">—</div></div>
+        <div class="tc-kpi orange"><div class="label">Tools damaged</div><div class="value" id="kToolDmg">—</div></div>
+        <div class="tc-kpi purple"><div class="label">Consumables available</div><div class="value" id="kConsAv">—</div></div>
+      </div>
+      <p class="tc-text-muted small mb-3">المعادلة: <strong>المتوفر = المستلم − التالف − (خارج / مصروف)</strong></p>
+      <div class="row g-4">
+        <div class="col-lg-6">
+          <div class="tc-card">
+            <span class="tc-section-badge"><i class="bi bi-tools"></i> Tools</span>
+            <div class="table-responsive mt-2">
+              <table class="table tc-table mb-0">
+                <thead><tr><th>Code</th><th>Received</th><th>Damaged</th><th>Out</th><th>Available</th></tr></thead>
+                <tbody id="toolsBody"><tr><td colspan="5" class="text-center tc-text-muted">Loading…</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <div class="tc-card">
+            <span class="tc-section-badge"><i class="bi bi-box-seam"></i> Consumables</span>
+            <div class="table-responsive mt-2">
+              <table class="table tc-table mb-0">
+                <thead><tr><th>Code</th><th>Received</th><th>Damaged</th><th>Issued</th><th>Available</th></tr></thead>
+                <tbody id="consBody"><tr><td colspan="5" class="text-center tc-text-muted">Loading…</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => TCUI.bootPage(() => {
+      TCUI.mountHeader("app-header", {
+        active: "inventory",
+        title: "Inventory / الجرد",
+        subtitle: "Tools + Consumables quantities (damage deducted)",
+        icon: "bi-boxes",
+        toolbar: `<button class="tc-btn tc-btn-primary" id="btnRefresh"><i class="bi bi-arrow-clockwise"></i> Refresh</button>`
+      });
+      document.getElementById("btnRefresh").onclick = load;
+      load();
+    }, { pageId: "inventory" }));
+
+    async function load() {
+      try {
+        const dates = await apiGet({ action: "getDates" });
+        const day = Array.isArray(dates) && dates.length ? dates[dates.length - 1] : "";
+        const rows = day ? await apiGet({ action: "getData", date: day }) : [];
+        if (rows && rows.error) throw new Error(rows.error);
+
+        let receiving = [], damage = [];
+        try {
+          const r = await apiGet({ action: "getReceiving" });
+          receiving = (r && r.items) || [];
+        } catch (_) {}
+        try {
+          const d = await apiGet({ action: "getDamage", date: "" });
+          damage = (d && d.items) || [];
+        } catch (_) {}
+
+        const stock = CustodyParser.buildStockReport(Array.isArray(rows) ? rows : [], receiving, damage);
+        document.getElementById("kToolAv").textContent = stock.totals.toolsAvailable;
+        document.getElementById("kToolOut").textContent = stock.totals.toolsOut;
+        document.getElementById("kToolDmg").textContent = stock.totals.toolsDamaged;
+        document.getElementById("kConsAv").textContent = stock.totals.consAvailable;
+
+        const toolsBody = document.getElementById("toolsBody");
+        if (!stock.tools.length) {
+          toolsBody.innerHTML = `<tr><td colspan="5" class="tc-text-muted text-center">No tools — add via Receiving</td></tr>`;
+        } else {
+          toolsBody.innerHTML = stock.tools.map(t => `<tr>
+            <td><strong>${escHtml(t.code)}</strong><div class="small tc-text-muted">${escHtml(t.description)}</div></td>
+            <td>${t.received}</td>
+            <td class="${t.damaged ? "text-danger" : ""}">${t.damaged}</td>
+            <td class="${t.out ? "text-warning" : ""}">${t.out}</td>
+            <td><strong>${t.available}</strong></td>
+          </tr>`).join("");
+        }
+
+        const consBody = document.getElementById("consBody");
+        if (!stock.consumables.length) {
+          consBody.innerHTML = `<tr><td colspan="5" class="tc-text-muted text-center">No consumables — add via Receiving</td></tr>`;
+        } else {
+          consBody.innerHTML = stock.consumables.map(t => `<tr>
+            <td><strong>${escHtml(t.code)}</strong><div class="small tc-text-muted">${escHtml(t.description)}</div></td>
+            <td>${t.received}</td>
+            <td class="${t.damaged ? "text-danger" : ""}">${t.damaged}</td>
+            <td>${t.issued}</td>
+            <td><strong>${t.available}</strong></td>
+          </tr>`).join("");
+        }
+      } catch (e) {
+        TCUI.toast(e.message || "Load failed", "err");
+      }
+    }
+  </script>
+</body>
+</html>

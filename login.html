@@ -58,9 +58,10 @@
       try {
         const result = await loginRequest(user, pass);
         if (result.ok && result.token) {
-          setSession({ token: result.token, role: result.role || "admin", user: result.user || user });
+          const role = normalizeRole(result.role || "admin");
+          setSession({ token: result.token, role, user: result.user || user });
           button.innerHTML = '<i class="bi bi-check-circle"></i> Success!';
-          setTimeout(() => { window.location = "index.html"; }, 800);
+          setTimeout(() => { window.location = homePageForRole(role); }, 800);
         } else if (result.badCreds) {
           errorDiv.textContent = "Invalid username or password";
           errorDiv.style.display = "block";
@@ -87,7 +88,7 @@
     window.onload = () => {
       TCUI.mountLoginPage("app-header");
       TCUI.registerPWA();
-      if (getToken()) { window.location = "index.html"; return; }
+      if (getToken()) { window.location = homePageForRole(); return; }
       document.getElementById("loginUser").focus();
     };
   </script>

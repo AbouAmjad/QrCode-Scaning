@@ -54,7 +54,7 @@
       });
       loadList();
       document.getElementById("btnSave").onclick = saveItem;
-    }, { minRole: "store_keeper" }));
+    }, { pageId: "receiving" }));
 
     async function loadList() {
       const body = document.getElementById("recvBody");

@@ -591,9 +591,127 @@ const CustodyParser = (() => {
     a.click();
   }
 
+  /**
+   * Stock = Received − Damaged − (Out for tools | Issued for consumables)
+   * receivingItems: [{code, description, qty?}]
+   * damageItems: [{code, name, count}]
+   */
+  function buildStockReport(rows, receivingItems, damageItems) {
+    const map = {};
+    const ensure = (code, desc, kind) => {
+      const c = String(code || "").toUpperCase().trim();
+      if (!c) return null;
+      if (!map[c]) {
+        map[c] = {
+          code: c,
+          description: desc || c,
+          kind: kind || (typeof isConsumable === "function" && isConsumable(c) ? "consumable" : "tool"),
+          received: 0,
+          damaged: 0,
+          out: 0,
+          issued: 0,
+          holders: []
+        };
+      } else if (desc && map[c].description === c) {
+        map[c].description = desc;
+      }
+      return map[c];
+    };
+
+    (receivingItems || []).forEach(r => {
+      const item = ensure(r.code, r.description || r.desc);
+      if (!item) return;
+      item.received += Math.max(1, Number(r.qty || r.quantity || 1) || 1);
+    });
+
+    (damageItems || []).forEach(d => {
+      const item = ensure(d.code, d.name || d.description);
+      if (!item) return;
+      item.damaged += Math.max(1, Number(d.count || d.qty || 1) || 1);
+    });
+
+    // Issued consumables (all-time OUT) + tool holders from custody ledger
+    let lastPerson = "General Store", lastDir = null;
+    for (const row of rows || []) {
+      const code = (row.toolCode || "").toString().toUpperCase().trim();
+      const desc = row.toolDescription || "";
+      if (!code) continue;
+      if (code.startsWith("P")) { lastPerson = desc || code; lastDir = null; continue; }
+      if (code === "IN" || code === "OUT") { lastDir = code; continue; }
+      if (typeof isTool === "function" && !isTool(code)) continue;
+      const item = ensure(code, desc);
+      if (!item) continue;
+      if (item.kind === "consumable") {
+        if (lastDir === "OUT") item.issued += 1;
+      }
+    }
+
+    const inv = runInventory(rows || []);
+    Object.keys(inv).forEach(code => {
+      const invItem = inv[code];
+      if (invItem.isPerson) return;
+      const item = ensure(code, invItem.description, invItem.isConsumable ? "consumable" : "tool");
+      if (!item) return;
+      if (invItem.isConsumable) {
+        item.kind = "consumable";
+      } else {
+        item.kind = "tool";
+        item.out = invItem.holdersList.length;
+        const hMap = new Map();
+        invItem.holdersList.forEach(p => hMap.set(p, (hMap.get(p) || 0) + 1));
+        item.holders = Array.from(hMap.entries()).map(([name, qty]) => ({ name, qty }));
+      }
+    });
+
+    const tools = [];
+    const consumables = [];
+    Object.values(map).forEach(item => {
+      const locked = item.kind === "consumable" ? item.issued : item.out;
+      item.available = Math.max(0, item.received - item.damaged - locked);
+      item.hasCatalog = item.received > 0;
+      if (item.kind === "consumable") consumables.push(item);
+      else tools.push(item);
+    });
+
+    tools.sort((a, b) => a.code.localeCompare(b.code));
+    consumables.sort((a, b) => a.code.localeCompare(b.code));
+    return {
+      tools,
+      consumables,
+      totals: {
+        tools: tools.length,
+        consumables: consumables.length,
+        toolsAvailable: tools.reduce((s, t) => s + t.available, 0),
+        toolsOut: tools.reduce((s, t) => s + t.out, 0),
+        toolsDamaged: tools.reduce((s, t) => s + t.damaged, 0),
+        consAvailable: consumables.reduce((s, t) => s + t.available, 0),
+        consIssued: consumables.reduce((s, t) => s + t.issued, 0),
+        consDamaged: consumables.reduce((s, t) => s + t.damaged, 0)
+      }
+    };
+  }
+
+  /** Who still has tools (not returned) */
+  function buildOutstanding(rows) {
+    const inv = runInventory(rows || []);
+    const byPerson = {};
+    Object.keys(inv).forEach(code => {
+      const item = inv[code];
+      if (item.isPerson || item.isConsumable) return;
+      const hMap = new Map();
+      (item.holdersList || []).forEach(p => hMap.set(p, (hMap.get(p) || 0) + 1));
+      hMap.forEach((qty, person) => {
+        if (!byPerson[person]) byPerson[person] = { person, tools: [], qty: 0 };
+        byPerson[person].tools.push({ code, description: item.description, qty });
+        byPerson[person].qty += qty;
+      });
+    });
+    return Object.values(byPerson).sort((a, b) => b.qty - a.qty);
+  }
+
   return {
     parseOverview, parseForWorker, parseForTool, parseForConsumable, parseDashboard,
     parseConsumableIssues, lookupTool, dotClass, dotIcon, exportCsv,
-    exportConsumablesCsv, exportConsumablesXlsx
+    exportConsumablesCsv, exportConsumablesXlsx, buildStockReport, buildOutstanding
   };
 })();

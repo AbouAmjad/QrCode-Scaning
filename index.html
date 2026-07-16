@@ -565,7 +565,7 @@
       updateCounter();
       processQueue();
       setInterval(processQueue, 5000);
-    }));
+    }, { pageId: "terminal" }));
 
     window.setDirection = setDirection;
     window.submitScan = submitScan;

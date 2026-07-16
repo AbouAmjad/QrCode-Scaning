@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ToolCustody | Store request</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="app.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1e3a5f">
+  <script src="config.js"></script>
+  <script src="ui.js"></script>
+</head>
+<body class="tc-page">
+  <div class="tc-wrap">
+    <div class="tc-shell">
+      <div id="app-header"></div>
+      <div class="row g-4">
+        <div class="col-lg-5">
+          <div class="tc-card">
+            <span class="tc-section-badge"><i class="bi bi-cart-plus"></i> طلب للمخزن</span>
+            <div class="tc-field mt-3"><label>What do you need?</label>
+              <textarea id="items" class="form-control" rows="5" placeholder="I1001 ×2&#10;C50 tape&#10;Gloves…"></textarea>
+            </div>
+            <div class="tc-field"><label>Note</label>
+              <input id="note" class="form-control" placeholder="Job / site / urgency">
+            </div>
+            <button class="tc-btn tc-btn-primary w-100" id="btnSend"><i class="bi bi-send"></i> Send request</button>
+            <a href="inventory.html" class="tc-btn w-100 mt-2 text-center">View inventory first</a>
+          </div>
+        </div>
+        <div class="col-lg-7">
+          <div class="tc-card">
+            <span class="tc-section-badge"><i class="bi bi-clock-history"></i> My / open requests</span>
+            <div id="list" class="mt-2">Loading…</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => TCUI.bootPage(() => {
+      TCUI.mountHeader("app-header", {
+        active: "requests",
+        title: "Store request",
+        subtitle: "Engineer requests materials from the store",
+        icon: "bi-cart-plus"
+      });
+      document.getElementById("btnSend").onclick = sendReq;
+      loadList();
+    }, { pageId: "requests" }));
+
+    async function sendReq() {
+      const items = document.getElementById("items").value.trim();
+      if (!items) { TCUI.toast("Write what you need", "err"); return; }
+      try {
+        const res = await apiPostForm({
+          action: "createStoreRequest",
+          items,
+          note: document.getElementById("note").value.trim(),
+          user: getSessionUser(),
+          role: getRole()
+        });
+        if (res.error) { TCUI.toast(res.error, "err"); return; }
+        TCUI.toast("Request sent", "ok");
+        document.getElementById("items").value = "";
+        document.getElementById("note").value = "";
+        loadList();
+      } catch (e) {
+        TCUI.toast(e.message || "Failed — redeploy Code.gs if needed", "err");
+      }
+    }
+
+    async function loadList() {
+      const host = document.getElementById("list");
+      try {
+        const data = await apiGet({ action: "getStoreRequests" });
+        const items = (data && data.items) || [];
+        if (!items.length) {
+          host.innerHTML = `<div class="tc-text-muted text-center py-3">No requests yet</div>`;
+          return;
+        }
+        host.innerHTML = items.map(i => `
+          <div class="border-bottom py-2">
+            <div class="d-flex justify-content-between gap-2 flex-wrap">
+              <strong>${escHtml(i.byUser || "")}</strong>
+              <span class="badge ${i.status === "Done" ? "bg-success" : "bg-secondary"}">${escHtml(i.status || "Open")}</span>
+            </div>
+            <div class="small" style="white-space:pre-wrap">${escHtml(i.items || "")}</div>
+            <div class="small tc-text-muted">${escHtml(i.note || "")} · ${escHtml(i.timestamp || "")}</div>
+          </div>`).join("");
+      } catch (e) {
+        host.innerHTML = `<div class="text-danger">${escHtml(e.message || "Error — deploy updated Code.gs")}</div>`;
+      }
+    }
+  </script>
+</body>
+</html>

@@ -24,7 +24,29 @@ const RECEIVING_TAB_NAME = "Receiving";
 const LIFECYCLE_TAB_NAME = "ToolLifecycle";
 const CREDENTIALS_TAB_NAME = "Credentials";
 
-const ROLE_RANK = { viewer: 1, store_keeper: 2, supervisor: 3, admin: 4 };
+const ROLE_RANK = { employee: 1, engineer: 2, admin: 3 };
+const STORE_REQUESTS_TAB = "StoreRequests";
+
+function normalizeRole_(role) {
+  const raw = String(role || "").trim().toLowerCase();
+  const map = {
+    employee: "employee",
+    "موظف": "employee",
+    store_keeper: "employee",
+    storekeeper: "employee",
+    keeper: "employee",
+    staff: "employee",
+    engineer: "engineer",
+    "مهندس": "engineer",
+    supervisor: "engineer",
+    viewer: "engineer",
+    admin: "admin",
+    administrator: "admin",
+    "أدمن": "admin",
+    "ادمن": "admin"
+  };
+  return map[raw] || (ROLE_RANK[raw] ? raw : "employee");
+}
 
 function getConfig_() {
   const props = PropertiesService.getScriptProperties();
@@ -34,7 +56,7 @@ function getConfig_() {
     user: props.getProperty("APP_USER") || USER,
     pass: props.getProperty("APP_PASS") || PASS,
     token: props.getProperty("APP_TOKEN") || "CHANGE_ME_ROTATE_TOKEN",
-    role: (props.getProperty("APP_ROLE") || "admin").toLowerCase(),
+    role: normalizeRole_(props.getProperty("APP_ROLE") || "admin"),
     damageSheetId: props.getProperty("DAMAGE_SHEET_ID") || DEFAULT_DAMAGE_SHEET_ID,
     damageDriveFolderId: props.getProperty("DAMAGE_DRIVE_FOLDER_ID") || "",
     opsSheetId: props.getProperty("OPS_SHEET_ID") || MAIN_SHEET_ID
@@ -46,7 +68,7 @@ function isAuthorized_(token) {
 }
 
 function roleAtLeast_(role, minRole) {
-  return (ROLE_RANK[role] || 0) >= (ROLE_RANK[minRole] || 99);
+  return (ROLE_RANK[normalizeRole_(role)] || 0) >= (ROLE_RANK[normalizeRole_(minRole)] || 99);
 }
 
 function resolveLogin_(user, pass) {
@@ -62,9 +84,9 @@ function resolveLogin_(user, pass) {
     for (let i = 0; i < rows.length; i++) {
       const u = String(rows[i][0] || "").trim();
       const p = String(rows[i][1] || "").trim();
-      const r = String(rows[i][2] || "viewer").trim().toLowerCase();
+      const r = normalizeRole_(rows[i][2] || "employee");
       if (u && u === user && p === pass) {
-        return { user: u, role: ROLE_RANK[r] ? r : "viewer", token: cfg.token };
+        return { user: u, role: r, token: cfg.token };
       }
     }
   } catch (e) { /* credentials sheet optional */ }
@@ -603,6 +625,52 @@ function handleRequest_(params) {
         }
       }
       return json({ items: items, q: q });
+    } catch (err) {
+      return json({ error: err.message, items: [] });
+    }
+  }
+
+  if (action === "createStoreRequest") {
+    const items = (params.items || "").toString().trim();
+    const note = (params.note || "").toString().trim();
+    if (!items) return json({ error: "Items required" });
+    try {
+      const ss = getOpsSpreadsheet_();
+      const sheet = getOrCreateNamedSheet_(ss, STORE_REQUESTS_TAB, [
+        "Timestamp", "ByUser", "Role", "Items", "Note", "Status"
+      ]);
+      sheet.appendRow([
+        new Date().toISOString(),
+        params.user || "",
+        normalizeRole_(params.role || "engineer"),
+        items,
+        note,
+        "Open"
+      ]);
+      appendAudit_({
+        user: params.user || "",
+        role: params.role || "",
+        action: "STORE_REQUEST",
+        detail: items.slice(0, 200),
+        device: params.device || ""
+      });
+      return json({ success: true });
+    } catch (err) {
+      return json({ error: err.message });
+    }
+  }
+
+  if (action === "getStoreRequests") {
+    try {
+      const ss = getOpsSpreadsheet_();
+      const sheet = ss.getSheetByName(STORE_REQUESTS_TAB);
+      if (!sheet || sheet.getLastRow() < 2) return json({ items: [] });
+      const rows = sheet.getRange(2, 1, sheet.getLastRow(), 6).getDisplayValues().reverse();
+      return json({
+        items: rows.slice(0, 80).map(r => ({
+          timestamp: r[0], byUser: r[1], role: r[2], items: r[3], note: r[4], status: r[5]
+        }))
+      });
     } catch (err) {
       return json({ error: err.message, items: [] });
     }
