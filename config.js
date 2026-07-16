@@ -458,18 +458,41 @@ async function getProductImages(code) {
   const params = { action: "getProductImages" };
   if (code) params.code = code;
   const data = await apiGet(params);
-  if (data && data.error) throw new Error(data.error);
+  if (data && data.error) {
+    if (String(data.error).includes("NO ACTION")) {
+      throw new Error("السيرفر قديم — لازم Deploy لـ Code.gs (صور المنتجات)");
+    }
+    throw new Error(data.error);
+  }
   return (data && data.images) || {};
 }
 
 async function setProductImage(code, imageBase64) {
-  return apiPostPlain({
-    action: "setProductImage",
-    code,
-    imageBase64,
-    user: getSessionUser(),
-    role: getRole()
-  });
+  let data;
+  try {
+    data = await apiPostPlain({
+      action: "setProductImage",
+      code,
+      imageBase64,
+      user: getSessionUser(),
+      role: getRole()
+    });
+  } catch (e1) {
+    data = await apiPostForm({
+      action: "setProductImage",
+      code,
+      imageBase64,
+      user: getSessionUser(),
+      role: getRole()
+    });
+  }
+  if (data && data.error) {
+    if (String(data.error).includes("NO ACTION")) {
+      throw new Error("السيرفر قديم — انسخ Code.gs.txt وعمل Deploy New version");
+    }
+    throw new Error(data.error);
+  }
+  return data;
 }
 
 function productThumbHtml(url, code, size = 48) {

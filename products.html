@@ -17,6 +17,15 @@
   <div class="tc-wrap">
     <div class="tc-shell">
       <div id="app-header"></div>
+      <div id="deployBanner" class="tc-card mb-3" style="display:none;border-color:#fecaca;background:#fef2f2">
+        <strong class="text-danger">السيرفر لسا ما فيه أوامر الصور</strong>
+        <ol class="small mb-0 mt-2">
+          <li>افتح <a href="https://script.google.com" target="_blank" rel="noopener">script.google.com</a></li>
+          <li>الصق محتوى الملف المحلي <code>Code.gs.txt</code> مكان الكود كله</li>
+          <li>Deploy → Manage deployments → ✏️ Edit → <strong>New version</strong> → Deploy</li>
+          <li>ارجع لهون واضغط Refresh</li>
+        </ol>
+      </div>
       <div class="row g-4">
         <div class="col-lg-4">
           <div class="tc-card">
@@ -76,24 +85,34 @@
       }
     }
 
+    function showDeployHelp(show) {
+      const el = document.getElementById("deployBanner");
+      if (el) el.style.display = show ? "block" : "none";
+    }
+
     async function savePhoto() {
       const code = document.getElementById("code").value.trim().toUpperCase();
       if (!code) { TCUI.toast("Enter product code", "err"); return; }
       if (!pendingDataUrl) { TCUI.toast("Choose a photo", "err"); return; }
       const btn = document.getElementById("btnSave");
       btn.disabled = true;
+      btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Uploading…';
       try {
         const res = await setProductImage(code, pendingDataUrl);
-        if (res.error) throw new Error(res.error);
+        if (res && res.error) throw new Error(res.error);
+        showDeployHelp(false);
         TCUI.toast("Saved photo for " + code, "ok");
         pendingDataUrl = "";
         document.getElementById("file").value = "";
         document.getElementById("previewWrap").style.display = "none";
         loadGallery();
       } catch (err) {
-        TCUI.toast(err.message || "Upload failed — redeploy Code.gs", "err");
+        const msg = err.message || "Upload failed";
+        if (/Deploy|السيرفر|NO ACTION/i.test(msg)) showDeployHelp(true);
+        TCUI.toast(msg, "err");
       } finally {
         btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-cloud-upload"></i> Save photo';
       }
     }
 
@@ -101,6 +120,7 @@
       const host = document.getElementById("gallery");
       try {
         const images = await getProductImages();
+        showDeployHelp(false);
         const codes = Object.keys(images).sort();
         if (!codes.length) {
           host.innerHTML = `<div class="tc-text-muted text-center py-4">No product photos yet</div>`;
@@ -112,7 +132,9 @@
             <strong>${escHtml(code)}</strong>
           </a>`).join("");
       } catch (e) {
-        host.innerHTML = `<div class="text-danger">${escHtml(e.message || "Error")}</div>`;
+        const msg = e.message || "Error";
+        if (/Deploy|السيرفر|NO ACTION/i.test(msg)) showDeployHelp(true);
+        host.innerHTML = `<div class="text-danger text-center py-3">${escHtml(msg)}</div>`;
       }
     }
   </script>
