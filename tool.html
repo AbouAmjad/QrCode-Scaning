@@ -28,7 +28,7 @@
 
       <div id="mainContent" style="display:none">
         <div class="tc-card mb-4 d-flex align-items-center gap-3 flex-wrap" id="toolHeader">
-          <div class="tc-avatar lg" id="toolAvatar">🔧</div>
+          <div id="toolPhotoWrap">${productThumbHtml("", "", 88)}</div>
           <div class="flex-grow-1">
             <h2 class="fw-bold mb-1" id="toolCode">—</h2>
             <div id="toolDesc">—</div>
@@ -36,6 +36,7 @@
             <div class="d-flex gap-2 mt-2 flex-wrap">
               <span class="tc-badge-present" id="statusBadge">—</span>
               <span class="tc-badge-holder" id="holderCount">0 holder(s)</span>
+              <a class="tc-btn tc-btn-sm" id="linkPhoto" href="products.html"><i class="bi bi-camera"></i> Photo</a>
             </div>
           </div>
         </div>
@@ -83,6 +84,12 @@
         document.getElementById("toolCode").textContent = TARGET_CODE;
         document.getElementById("toolDesc").textContent = toolDesc;
         document.getElementById("toolDate").textContent = "Snapshot · " + TARGET_DATE;
+        document.getElementById("linkPhoto").href = "products.html?code=" + encodeURIComponent(TARGET_CODE);
+        try {
+          const imgs = await getProductImages(TARGET_CODE);
+          const url = imgs[TARGET_CODE] || "";
+          document.getElementById("toolPhotoWrap").innerHTML = productThumbHtml(url, TARGET_CODE, 88);
+        } catch (_) {}
 
         const badge = document.getElementById("statusBadge");
         if (isConsumable) {

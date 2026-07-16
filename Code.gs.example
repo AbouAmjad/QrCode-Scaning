@@ -676,6 +676,59 @@ function handleRequest_(params) {
     }
   }
 
+  if (action === "setProductImage") {
+    const code = (params.code || "").toString().trim().toUpperCase();
+    const imageBase64 = params.imageBase64 || params.image || "";
+    if (!code) return json({ error: "Code required" });
+    if (!imageBase64) return json({ error: "Image required" });
+    try {
+      let imageUrl = "";
+      if (typeof uploadDamageImage_ === "function") {
+        imageUrl = uploadDamageImage_(imageBase64, "product_" + code);
+      } else {
+        imageUrl = imageBase64;
+      }
+      const ss = getOpsSpreadsheet_();
+      const sheet = getOrCreateNamedSheet_(ss, "ProductPhotos", ["Code", "ImageURL", "UpdatedAt", "ByUser"]);
+      const last = sheet.getLastRow();
+      let found = -1;
+      if (last >= 2) {
+        const codes = sheet.getRange(2, 1, last, 1).getDisplayValues();
+        for (let i = 0; i < codes.length; i++) {
+          if (String(codes[i][0] || "").toUpperCase() === code) { found = i + 2; break; }
+        }
+      }
+      if (found > 0) {
+        sheet.getRange(found, 2, found, 4).setValues([[imageUrl, new Date().toISOString(), params.user || ""]]);
+      } else {
+        sheet.appendRow([code, imageUrl, new Date().toISOString(), params.user || ""]);
+      }
+      return json({ success: true, code: code, image: imageUrl });
+    } catch (err) {
+      return json({ error: err.message });
+    }
+  }
+
+  if (action === "getProductImages") {
+    try {
+      const ss = getOpsSpreadsheet_();
+      const sheet = ss.getSheetByName("ProductPhotos");
+      if (!sheet || sheet.getLastRow() < 2) return json({ images: {} });
+      const rows = sheet.getRange(2, 1, sheet.getLastRow(), 2).getDisplayValues();
+      const images = {};
+      rows.forEach(r => {
+        const c = String(r[0] || "").toUpperCase().trim();
+        const u = String(r[1] || "").trim();
+        if (c && u) images[c] = u;
+      });
+      const only = (params.code || "").toString().trim().toUpperCase();
+      if (only) return json({ images: images[only] ? { [only]: images[only] } : {}, image: images[only] || "" });
+      return json({ images: images });
+    } catch (err) {
+      return json({ error: err.message, images: {} });
+    }
+  }
+
   return json({ error: "NO ACTION SPECIFIED" });
 }
 

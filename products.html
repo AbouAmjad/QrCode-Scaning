@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ToolCustody | Product photos</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="app.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1e3a5f">
+  <script src="config.js"></script>
+  <script src="ui.js"></script>
+</head>
+<body class="tc-page">
+  <div class="tc-wrap">
+    <div class="tc-shell">
+      <div id="app-header"></div>
+      <div class="row g-4">
+        <div class="col-lg-4">
+          <div class="tc-card">
+            <span class="tc-section-badge"><i class="bi bi-camera"></i> Upload product photo</span>
+            <div class="tc-field mt-3"><label>Product code (I/E/C/B…)</label>
+              <input id="code" class="form-control" placeholder="I1001">
+            </div>
+            <div class="tc-field"><label>Photo</label>
+              <input id="file" type="file" accept="image/*" capture="environment" class="form-control">
+            </div>
+            <div id="previewWrap" class="text-center my-3" style="display:none">
+              <img id="preview" class="tc-product-preview" alt="Preview">
+            </div>
+            <button class="tc-btn tc-btn-primary w-100" id="btnSave"><i class="bi bi-cloud-upload"></i> Save photo</button>
+            <p class="tc-text-muted small mt-2 mb-0">صورة واحدة لكل كود منتج — تظهر بالجرد وصفحة الأداة.</p>
+          </div>
+        </div>
+        <div class="col-lg-8">
+          <div class="tc-card">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+              <span class="tc-section-badge"><i class="bi bi-images"></i> Gallery</span>
+              <button class="tc-btn" id="btnRefresh"><i class="bi bi-arrow-clockwise"></i></button>
+            </div>
+            <div id="gallery" class="tc-product-gallery">Loading…</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    let pendingDataUrl = "";
+
+    document.addEventListener("DOMContentLoaded", () => TCUI.bootPage(() => {
+      TCUI.mountHeader("app-header", {
+        active: "products",
+        title: "Product photos",
+        subtitle: "صورة لكل منتج / أداة / استهلاكي",
+        icon: "bi-images"
+      });
+      document.getElementById("file").onchange = onFile;
+      document.getElementById("btnSave").onclick = savePhoto;
+      document.getElementById("btnRefresh").onclick = loadGallery;
+      const q = new URLSearchParams(location.search).get("code");
+      if (q) document.getElementById("code").value = q.toUpperCase();
+      loadGallery();
+    }, { pageId: "products" }));
+
+    async function onFile(e) {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      try {
+        pendingDataUrl = await compressImageFile(file, 900, 0.7);
+        document.getElementById("preview").src = pendingDataUrl;
+        document.getElementById("previewWrap").style.display = "block";
+      } catch (err) {
+        TCUI.toast(err.message || "Image error", "err");
+      }
+    }
+
+    async function savePhoto() {
+      const code = document.getElementById("code").value.trim().toUpperCase();
+      if (!code) { TCUI.toast("Enter product code", "err"); return; }
+      if (!pendingDataUrl) { TCUI.toast("Choose a photo", "err"); return; }
+      const btn = document.getElementById("btnSave");
+      btn.disabled = true;
+      try {
+        const res = await setProductImage(code, pendingDataUrl);
+        if (res.error) throw new Error(res.error);
+        TCUI.toast("Saved photo for " + code, "ok");
+        pendingDataUrl = "";
+        document.getElementById("file").value = "";
+        document.getElementById("previewWrap").style.display = "none";
+        loadGallery();
+      } catch (err) {
+        TCUI.toast(err.message || "Upload failed — redeploy Code.gs", "err");
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    async function loadGallery() {
+      const host = document.getElementById("gallery");
+      try {
+        const images = await getProductImages();
+        const codes = Object.keys(images).sort();
+        if (!codes.length) {
+          host.innerHTML = `<div class="tc-text-muted text-center py-4">No product photos yet</div>`;
+          return;
+        }
+        host.innerHTML = codes.map(code => `
+          <a class="tc-product-card" href="tool.html?code=${encodeURIComponent(code)}">
+            <img src="${escHtml(images[code])}" alt="${escHtml(code)}" loading="lazy">
+            <strong>${escHtml(code)}</strong>
+          </a>`).join("");
+      } catch (e) {
+        host.innerHTML = `<div class="text-danger">${escHtml(e.message || "Error")}</div>`;
+      }
+    }
+  </script>
+</body>
+</html>

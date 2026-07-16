@@ -31,8 +31,8 @@
             <span class="tc-section-badge"><i class="bi bi-tools"></i> Tools</span>
             <div class="table-responsive mt-2">
               <table class="table tc-table mb-0">
-                <thead><tr><th>Code</th><th>Received</th><th>Damaged</th><th>Out</th><th>Available</th></tr></thead>
-                <tbody id="toolsBody"><tr><td colspan="5" class="text-center tc-text-muted">Loading…</td></tr></tbody>
+                <thead><tr><th></th><th>Code</th><th>Received</th><th>Damaged</th><th>Out</th><th>Available</th></tr></thead>
+                <tbody id="toolsBody"><tr><td colspan="6" class="text-center tc-text-muted">Loading…</td></tr></tbody>
               </table>
             </div>
           </div>
@@ -42,8 +42,8 @@
             <span class="tc-section-badge"><i class="bi bi-box-seam"></i> Consumables</span>
             <div class="table-responsive mt-2">
               <table class="table tc-table mb-0">
-                <thead><tr><th>Code</th><th>Received</th><th>Damaged</th><th>Issued</th><th>Available</th></tr></thead>
-                <tbody id="consBody"><tr><td colspan="5" class="text-center tc-text-muted">Loading…</td></tr></tbody>
+                <thead><tr><th></th><th>Code</th><th>Received</th><th>Damaged</th><th>Issued</th><th>Available</th></tr></thead>
+                <tbody id="consBody"><tr><td colspan="6" class="text-center tc-text-muted">Loading…</td></tr></tbody>
               </table>
             </div>
           </div>
@@ -71,7 +71,7 @@
         const rows = day ? await apiGet({ action: "getData", date: day }) : [];
         if (rows && rows.error) throw new Error(rows.error);
 
-        let receiving = [], damage = [];
+        let receiving = [], damage = [], images = {};
         try {
           const r = await apiGet({ action: "getReceiving" });
           receiving = (r && r.items) || [];
@@ -79,6 +79,9 @@
         try {
           const d = await apiGet({ action: "getDamage", date: "" });
           damage = (d && d.items) || [];
+        } catch (_) {}
+        try {
+          images = await getProductImages();
         } catch (_) {}
 
         const stock = CustodyParser.buildStockReport(Array.isArray(rows) ? rows : [], receiving, damage);
@@ -89,10 +92,13 @@
 
         const toolsBody = document.getElementById("toolsBody");
         if (!stock.tools.length) {
-          toolsBody.innerHTML = `<tr><td colspan="5" class="tc-text-muted text-center">No tools — add via Receiving</td></tr>`;
+          toolsBody.innerHTML = `<tr><td colspan="6" class="tc-text-muted text-center">No tools — add via Receiving / Product photos</td></tr>`;
         } else {
           toolsBody.innerHTML = stock.tools.map(t => `<tr>
-            <td><strong>${escHtml(t.code)}</strong><div class="small tc-text-muted">${escHtml(t.description)}</div></td>
+            <td>${productThumbHtml(images[t.code], t.code, 44)}</td>
+            <td><a href="tool.html?code=${encodeURIComponent(t.code)}"><strong>${escHtml(t.code)}</strong></a>
+              <div class="small tc-text-muted">${escHtml(t.description)}</div>
+              <a class="small" href="products.html?code=${encodeURIComponent(t.code)}">📷 photo</a></td>
             <td>${t.received}</td>
             <td class="${t.damaged ? "text-danger" : ""}">${t.damaged}</td>
             <td class="${t.out ? "text-warning" : ""}">${t.out}</td>
@@ -102,10 +108,13 @@
 
         const consBody = document.getElementById("consBody");
         if (!stock.consumables.length) {
-          consBody.innerHTML = `<tr><td colspan="5" class="tc-text-muted text-center">No consumables — add via Receiving</td></tr>`;
+          consBody.innerHTML = `<tr><td colspan="6" class="tc-text-muted text-center">No consumables — add via Receiving</td></tr>`;
         } else {
           consBody.innerHTML = stock.consumables.map(t => `<tr>
-            <td><strong>${escHtml(t.code)}</strong><div class="small tc-text-muted">${escHtml(t.description)}</div></td>
+            <td>${productThumbHtml(images[t.code], t.code, 44)}</td>
+            <td><strong>${escHtml(t.code)}</strong>
+              <div class="small tc-text-muted">${escHtml(t.description)}</div>
+              <a class="small" href="products.html?code=${encodeURIComponent(t.code)}">📷 photo</a></td>
             <td>${t.received}</td>
             <td class="${t.damaged ? "text-danger" : ""}">${t.damaged}</td>
             <td>${t.issued}</td>

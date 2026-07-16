@@ -28,6 +28,9 @@
             <div class="tc-field"><label>Purchase Order</label><input id="po" class="form-control"></div>
             <div class="tc-field"><label>Cost</label><input id="cost" class="form-control" type="number" step="0.01"></div>
             <div class="tc-field"><label>Warranty</label><input id="warranty" class="form-control" placeholder="12 months"></div>
+            <div class="tc-field"><label>Product photo (optional)</label>
+              <input id="photo" type="file" accept="image/*" capture="environment" class="form-control">
+            </div>
             <button class="tc-btn tc-btn-primary w-100 mt-2" id="btnSave"><i class="bi bi-check2"></i> Receive &amp; catalog</button>
             <p class="tc-text-muted small mt-2 mb-0">Creates catalog row + Receiving log + Active lifecycle. Not a checkout (OUT).</p>
           </div>
@@ -78,9 +81,10 @@
     }
 
     async function saveItem() {
+      const code = document.getElementById("code").value.trim().toUpperCase();
       const payload = {
         action: "receiveItem",
-        code: document.getElementById("code").value.trim(),
+        code,
         description: document.getElementById("description").value.trim(),
         supplier: document.getElementById("supplier").value.trim(),
         invoice: document.getElementById("invoice").value.trim(),
@@ -93,8 +97,21 @@
       try {
         const res = await apiPostForm(payload);
         if (res.error) { TCUI.toast(res.error, "err"); return; }
-        TCUI.toast("Received " + (res.code || ""), "ok");
+        const file = document.getElementById("photo").files && document.getElementById("photo").files[0];
+        if (file) {
+          try {
+            const dataUrl = await compressImageFile(file, 900, 0.7);
+            const imgRes = await setProductImage(code, dataUrl);
+            if (imgRes.error) TCUI.toast("Received, but photo failed: " + imgRes.error, "err");
+            else TCUI.toast("Received " + code + " + photo", "ok");
+          } catch (pe) {
+            TCUI.toast("Received " + code + " (photo failed)", "err");
+          }
+        } else {
+          TCUI.toast("Received " + (res.code || ""), "ok");
+        }
         ["code","description","supplier","invoice","po","cost","warranty"].forEach(id => document.getElementById(id).value = "");
+        document.getElementById("photo").value = "";
         loadList();
       } catch (e) {
         TCUI.toast(e.message || "Failed", "err");

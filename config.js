@@ -25,8 +25,8 @@ const AppConfig = {
   },
   /** pages each role may open (admin gets all) */
   ROLE_PAGES: {
-    employee: ["terminal", "outstanding", "receiving", "damage"],
-    engineer: ["inventory", "requests", "overview", "search", "consumables", "notifications"],
+    employee: ["terminal", "outstanding", "receiving", "damage", "products"],
+    engineer: ["inventory", "requests", "overview", "search", "consumables", "notifications", "products"],
     admin: ["*"]
   },
 
@@ -427,4 +427,55 @@ async function loginRequest(user, pass) {
   } catch {
     return { ok: false, network: true };
   }
+}
+
+/** Compress image for GAS upload (keeps payload small) */
+function compressImageFile(file, maxSide = 900, quality = 0.72) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error("Could not read image"));
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = () => reject(new Error("Invalid image"));
+      img.onload = () => {
+        let w = img.width, h = img.height;
+        const scale = Math.min(1, maxSide / Math.max(w, h));
+        w = Math.round(w * scale);
+        h = Math.round(h * scale);
+        const canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+        canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL("image/jpeg", quality));
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+async function getProductImages(code) {
+  const params = { action: "getProductImages" };
+  if (code) params.code = code;
+  const data = await apiGet(params);
+  if (data && data.error) throw new Error(data.error);
+  return (data && data.images) || {};
+}
+
+async function setProductImage(code, imageBase64) {
+  return apiPostPlain({
+    action: "setProductImage",
+    code,
+    imageBase64,
+    user: getSessionUser(),
+    role: getRole()
+  });
+}
+
+function productThumbHtml(url, code, size = 48) {
+  const esc = typeof escHtml === "function" ? escHtml : (s => String(s || ""));
+  if (url) {
+    return `<img class="tc-product-thumb" src="${esc(url)}" alt="${esc(code || "")}" width="${size}" height="${size}" loading="lazy">`;
+  }
+  return `<div class="tc-product-thumb placeholder" style="width:${size}px;height:${size}px"><i class="bi bi-image"></i></div>`;
 }
