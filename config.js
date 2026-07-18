@@ -1,6 +1,9 @@
-/** إعدادات مشتركة */
+/** إعدادات مشتركة — VPS + PostgreSQL API */
 const AppConfig = {
-  SCRIPT_URL: "https://script.google.com/macros/s/AKfycbyHXMuZcmFT7KrvqR8cygFl-t-oU_Jh4Vr2L4yp1eoT5AQAL00rbjBbUL0aKod3_C8l7g/exec",
+  // Same-origin API on aics.iskndr.com / VPS IP (nginx → Node)
+  SCRIPT_URL: (typeof location !== "undefined" && location.protocol && location.protocol !== "file:")
+    ? (location.origin + "/api")
+    : "https://aics.iskndr.com/api",
   TOKEN_KEY: "token",
   ROLE_KEY: "tc_role",
   USER_KEY: "tc_user",
