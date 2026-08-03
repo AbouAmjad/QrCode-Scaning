@@ -221,7 +221,9 @@
               subtitleKey: "labelsSub",
               icon: "bi-qr-code"
             });
-            if (typeof TCI18N !== "undefined") TCI18N.apply(document);
+            if (typeof TCI18N !== "undefined" && typeof TCI18N.applyDocumentLang === "function") {
+              TCI18N.applyDocumentLang();
+            }
             await bootLabelApp();
           }, { pageId: "labels" });
         } else {
