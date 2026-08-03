@@ -117,6 +117,7 @@
 
 #editorHost { pointer-events: none; }
 #editorHost .le-studio.open { pointer-events: auto; }
+.le-studio {
   position: fixed;
   inset: 0;
   z-index: 90;
