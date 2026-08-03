@@ -3,6 +3,7 @@
  *
  * Print test → measure → enter values → auto-calc → save profile.
  */
+import { printInFrame } from "./label-print.js";
 import { renderLabel, sharedPrintCss, ensureQrLibrary } from "./label-renderer.js";
 import { createTemplate } from "./label-model.js";
 import {
@@ -120,19 +121,12 @@ export async function printCalibrationPage(labelW = 50, labelH = 30) {
     mode: "print",
     applyCalibration: false
   });
-  const w = window.open("", "_blank", "noopener,noreferrer,width=600,height=500");
-  if (!w) throw new Error("Popup blocked");
-  w.document.open();
-  w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8">
-<title>Calibration test</title>
-<style>${sharedPrintCss(tpl)}
-body{display:flex;align-items:center;justify-content:center;min-height:100vh}
-</style></head><body></body></html>`);
-  w.document.close();
-  w.document.body.appendChild(label);
-  await new Promise((r) => setTimeout(r, 150));
-  w.focus();
-  w.print();
+  const css =
+    sharedPrintCss(tpl) +
+    "\nbody{display:flex;align-items:center;justify-content:center;min-height:100vh}";
+  await printInFrame("Calibration test", css, (_doc, body) => {
+    body.appendChild(label);
+  });
 }
 
 /**
