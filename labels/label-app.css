@@ -115,8 +115,8 @@
   margin: .35rem 0;
 }
 
-/* —— Studio —— */
-.le-studio {
+#editorHost { pointer-events: none; }
+#editorHost .le-studio.open { pointer-events: auto; }
   position: fixed;
   inset: 0;
   z-index: 90;

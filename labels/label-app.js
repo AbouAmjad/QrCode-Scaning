@@ -217,6 +217,12 @@ export async function bootLabelApp() {
     readSizeFieldsIntoTemplate();
     editor.open(template);
   };
+  // Extra binding — some environments swallow the first onclick assignment
+  document.getElementById("btnOpenStudio").addEventListener("click", (e) => {
+    e.preventDefault();
+    readSizeFieldsIntoTemplate();
+    editor.open(template);
+  });
 
   async function saveTpl(forceNew) {
     readSizeFieldsIntoTemplate();
