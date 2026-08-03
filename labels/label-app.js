@@ -124,7 +124,10 @@ export async function bootLabelApp() {
     }
     host.innerHTML = templates
       .map((tpl) => {
-        const cfg = typeof tpl.config === "string" ? JSON.parse(tpl.config) : tpl.config || {};
+        let cfg = tpl.config || {};
+        if (typeof cfg === "string") {
+          try { cfg = JSON.parse(cfg); } catch { cfg = {}; }
+        }
         return `<button type="button" class="ql-tpl ${tpl.id === activeId ? "active" : ""}" data-id="${tpl.id}">
           <div>
             <div class="name">${escapeHtml(tpl.name)}</div>
