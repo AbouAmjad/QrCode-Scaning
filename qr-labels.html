@@ -136,7 +136,7 @@
       <div class="tc-modal-head d-flex align-items-start justify-content-between gap-2">
         <div>
           <h3 class="h5 mb-0" id="previewModalTitle"><i class="bi bi-eye"></i> <span data-i18n="printPreview">Print preview</span></h3>
-          <p class="tc-text-muted small mb-0 mt-1">Same renderer as Design Studio &amp; Print — true WYSIWYG.</p>
+          <p class="tc-text-muted small mb-0 mt-1">Same renderer as Design Studio — prints via hidden frame (no popup).</p>
         </div>
         <span class="ql-chip badge text-bg-light text-dark" id="previewMeta"></span>
         <button type="button" class="tc-btn tc-btn-sm" id="btnClosePreview"><i class="bi bi-x-lg"></i></button>
@@ -209,7 +209,7 @@
   <div id="editorHost"></div>
 
   <script type="module">
-    import { bootLabelApp } from "./labels/label-app.js?v=3";
+    import { bootLabelApp } from "./labels/label-app.js?v=4";
 
     document.addEventListener("DOMContentLoaded", () => {
       const start = async () => {
