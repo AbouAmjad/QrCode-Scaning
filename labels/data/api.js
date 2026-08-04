@@ -1,6 +1,5 @@
 /**
- * label-api.js — Server template + catalog helpers.
- * Uses global apiGet / apiPostForm from config.js when available.
+ * data/api.js — server templates & catalog (uses config.js helpers when present).
  */
 async function callGet(params) {
   if (typeof apiGet === "function") return apiGet(params);
@@ -69,11 +68,3 @@ export async function listCatalog() {
   if (data?.error) throw new Error(data.error);
   return data.items || [];
 }
-
-export default {
-  listTemplates,
-  saveTemplate,
-  deleteTemplate,
-  listPeople,
-  listCatalog
-};

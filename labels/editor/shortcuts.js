@@ -1,7 +1,7 @@
 /**
- * label-shortcuts.js — Keyboard shortcuts for the design studio.
+ * editor/shortcuts.js
  */
-export function bindShortcuts(handlers, { target = window, isEnabled } = {}) {
+export function bindShortcuts(handlers, { isEnabled } = {}) {
   const onKey = (e) => {
     if (typeof isEnabled === "function" && !isEnabled()) return;
     const tag = (e.target && e.target.tagName) || "";
@@ -26,39 +26,22 @@ export function bindShortcuts(handlers, { target = window, isEnabled } = {}) {
     }
     if (typing) return;
 
-    if (mod && key.toLowerCase() === "c") {
+    const map = {
+      c: () => handlers.copy?.(),
+      x: () => handlers.cut?.(),
+      v: () => handlers.paste?.(),
+      d: () => handlers.duplicate?.(),
+      a: () => handlers.selectAll?.()
+    };
+    if (mod && map[key.toLowerCase()]) {
       e.preventDefault();
-      handlers.copy?.();
+      map[key.toLowerCase()]();
       return;
     }
-    if (mod && key.toLowerCase() === "x") {
+    if (mod && key.toLowerCase() === "g") {
       e.preventDefault();
-      handlers.cut?.();
-      return;
-    }
-    if (mod && key.toLowerCase() === "v") {
-      e.preventDefault();
-      handlers.paste?.();
-      return;
-    }
-    if (mod && key.toLowerCase() === "d") {
-      e.preventDefault();
-      handlers.duplicate?.();
-      return;
-    }
-    if (mod && key.toLowerCase() === "a") {
-      e.preventDefault();
-      handlers.selectAll?.();
-      return;
-    }
-    if (mod && key.toLowerCase() === "g" && !shift) {
-      e.preventDefault();
-      handlers.group?.();
-      return;
-    }
-    if (mod && key.toLowerCase() === "g" && shift) {
-      e.preventDefault();
-      handlers.ungroup?.();
+      if (shift) handlers.ungroup?.();
+      else handlers.group?.();
       return;
     }
     if (key === "Delete" || key === "Backspace") {
@@ -72,17 +55,6 @@ export function bindShortcuts(handlers, { target = window, isEnabled } = {}) {
       const dx = key === "ArrowLeft" ? -step : key === "ArrowRight" ? step : 0;
       const dy = key === "ArrowUp" ? -step : key === "ArrowDown" ? step : 0;
       handlers.nudge?.(dx, dy);
-      return;
-    }
-    if (key === "]" && mod) {
-      e.preventDefault();
-      handlers.bringForward?.();
-      return;
-    }
-    if (key === "[" && mod) {
-      e.preventDefault();
-      handlers.sendBackward?.();
-      return;
     }
   };
 
@@ -90,16 +62,13 @@ export function bindShortcuts(handlers, { target = window, isEnabled } = {}) {
     if (!(e.ctrlKey || e.metaKey)) return;
     if (typeof isEnabled === "function" && !isEnabled()) return;
     e.preventDefault();
-    handlers.zoom?.(e.deltaY > 0 ? -1 : 1, e);
+    handlers.zoom?.(e.deltaY > 0 ? -1 : 1);
   };
 
-  target.addEventListener("keydown", onKey);
-  target.addEventListener("wheel", onWheel, { passive: false });
-
+  window.addEventListener("keydown", onKey);
+  window.addEventListener("wheel", onWheel, { passive: false });
   return () => {
-    target.removeEventListener("keydown", onKey);
-    target.removeEventListener("wheel", onWheel);
+    window.removeEventListener("keydown", onKey);
+    window.removeEventListener("wheel", onWheel);
   };
 }
-
-export default { bindShortcuts };

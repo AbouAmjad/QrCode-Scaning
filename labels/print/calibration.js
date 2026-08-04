@@ -1,23 +1,20 @@
 /**
- * label-calibration.js — Guided printer calibration wizard.
- *
- * Print test → measure → enter values → auto-calc → save profile.
+ * Guided printer calibration — measure printed test → compute profile.
  */
-import { printInFrame } from "./label-print.js";
-import { renderLabel, sharedPrintCss, ensureQrLibrary } from "./label-renderer.js";
-import { createTemplate } from "./label-model.js";
+import { createDocument } from "../core/document.js";
+import { renderLabel, sharedPrintCss, ensureQrLibrary } from "../render/engine.js";
+import { printInFrame } from "./frame.js";
 import {
   loadCalibration,
   saveCalibration,
   listPrinterProfiles,
-  setActivePrinter,
-  defaultCalibration
-} from "./label-storage.js";
-import { roundMm } from "./label-units.js";
+  setActivePrinter
+} from "../data/storage.js";
 
-/** Build a test template: 50×30 with crosshair + rulers. */
-function testTemplate(labelW = 50, labelH = 30) {
-  return createTemplate({
+export { computeCalibration } from "./calibration-math.js";
+
+function testDocument(labelW = 50, labelH = 30) {
+  return createDocument({
     labelW,
     labelH,
     page: "thermal",
@@ -34,7 +31,6 @@ function testTemplate(labelW = 50, labelH = 30) {
         fill: "transparent",
         stroke: "#0f172a",
         strokeWidth: 0.35,
-        radius: 0,
         visible: true,
         z: 1
       },
@@ -88,58 +84,28 @@ function testTemplate(labelW = 50, labelH = 30) {
   });
 }
 
-/**
- * Compute calibration from expected vs measured dimensions / offsets.
- * measuredW/H: physical size of printed label border.
- * measuredOffsetX/Y: how far the crosshair center is off from true center.
- */
-export function computeCalibration({
-  expectedW,
-  expectedH,
-  measuredW,
-  measuredH,
-  measuredOffsetX = 0,
-  measuredOffsetY = 0,
-  base = null
-}) {
-  const prev = { ...defaultCalibration(), ...(base || loadCalibration()) };
-  const sx = measuredW > 0 ? expectedW / measuredW : 1;
-  const sy = measuredH > 0 ? expectedH / measuredH : 1;
-  const scale = roundMm((sx + sy) / 2, 4);
-  return {
-    ...prev,
-    scale: Math.max(0.9, Math.min(1.1, scale)),
-    offsetXMm: roundMm(-(Number(measuredOffsetX) || 0), 2),
-    offsetYMm: roundMm(-(Number(measuredOffsetY) || 0), 2)
-  };
-}
-
 export async function printCalibrationPage(labelW = 50, labelH = 30) {
   await ensureQrLibrary();
-  const tpl = testTemplate(labelW, labelH);
-  const label = await renderLabel(tpl, null, {
+  const doc = testDocument(labelW, labelH);
+  const label = await renderLabel(doc, null, {
     mode: "print",
     applyCalibration: false
   });
   const css =
-    sharedPrintCss(tpl) +
+    sharedPrintCss(doc) +
     "\nbody{display:flex;align-items:center;justify-content:center;min-height:100vh}";
-  await printInFrame("Calibration test", css, (_doc, body) => {
+  await printInFrame("Calibration test", css, (_d, body) => {
     body.appendChild(label);
   });
 }
 
-/**
- * Mount a simple wizard UI into `host`.
- * onSaved(cal) when done.
- */
 export function mountCalibrationWizard(host, { labelW = 50, labelH = 30, onSaved } = {}) {
   const cal = loadCalibration();
   const profiles = listPrinterProfiles();
   host.innerHTML = `
     <div class="cal-wizard">
       <h3>Printer calibration</h3>
-      <p class="hint">Print a test label, measure it with a ruler, enter the results — we compute offset & scale.</p>
+      <p class="hint">Print a test label, measure with a ruler, enter results — we compute offset &amp; scale.</p>
       <label>Printer profile
         <select id="calProfile">${Object.keys(profiles)
           .map(
@@ -198,13 +164,8 @@ export function mountCalibrationWizard(host, { labelW = 50, labelH = 30, onSaved
     pending.dpi = Number(host.querySelector("#calDpi").value) || pending.dpi;
     const saved = saveCalibration(pending);
     setActivePrinter(name);
-    host.querySelector("#calResult").textContent = "Saved:\n" + JSON.stringify(saved, null, 2);
+    host.querySelector("#calResult").textContent =
+      "Saved:\n" + JSON.stringify(saved, null, 2);
     onSaved?.(saved);
   };
 }
-
-export default {
-  computeCalibration,
-  printCalibrationPage,
-  mountCalibrationWizard
-};

@@ -1,5 +1,5 @@
 /**
- * label-storage.js — Local preferences, last template, printer profiles.
+ * data/storage.js — local preferences & printer profiles.
  */
 const KEYS = {
   lastTpl: "tc_last_label_tpl_id",
@@ -24,7 +24,7 @@ function writeJson(key, value) {
   try {
     localStorage.setItem(key, JSON.stringify(value));
   } catch {
-    /* ignore quota */
+    /* quota */
   }
 }
 
@@ -44,7 +44,10 @@ export function defaultCalibration() {
     offsetXMm: 0,
     offsetYMm: 0,
     scale: 1,
-    feedMm: 0
+    feedMm: 0,
+    rotationDeg: 0,
+    labelGapMm: 0,
+    paperOffsetMm: 0
   };
 }
 
@@ -55,7 +58,6 @@ export function loadCalibration() {
 export function saveCalibration(cal) {
   const next = { ...defaultCalibration(), ...cal };
   writeJson(KEYS.calibration, next);
-  // Also mirror into active profile
   const name = next.printerName || "default";
   const profiles = listPrinterProfiles();
   profiles[name] = { ...next };
@@ -68,12 +70,9 @@ export function listPrinterProfiles() {
   return readJson(KEYS.profiles, {
     default: defaultCalibration(),
     ITPP130: {
+      ...defaultCalibration(),
       printerName: "ITPP130",
-      dpi: 203,
-      offsetXMm: 0,
-      offsetYMm: 0,
-      scale: 1,
-      feedMm: 0
+      dpi: 203
     }
   });
 }
@@ -87,13 +86,6 @@ export function setActivePrinter(name) {
   const profile = profiles[name] || { ...defaultCalibration(), printerName: name };
   localStorage.setItem(KEYS.activeProfile, name);
   return saveCalibration(profile);
-}
-
-export function savePrinterProfile(name, cal) {
-  const profiles = listPrinterProfiles();
-  profiles[name] = { ...defaultCalibration(), ...cal, printerName: name };
-  writeJson(KEYS.profiles, profiles);
-  return profiles[name];
 }
 
 export function getStudioZoom() {
@@ -113,19 +105,3 @@ export function getGridMm() {
 export function setGridMm(g) {
   localStorage.setItem(KEYS.gridMm, String(g));
 }
-
-export default {
-  getLastTemplateId,
-  setLastTemplateId,
-  loadCalibration,
-  saveCalibration,
-  defaultCalibration,
-  listPrinterProfiles,
-  getActivePrinterName,
-  setActivePrinter,
-  savePrinterProfile,
-  getStudioZoom,
-  setStudioZoom,
-  getGridMm,
-  setGridMm
-};

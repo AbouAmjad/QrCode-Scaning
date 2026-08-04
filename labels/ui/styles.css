@@ -369,3 +369,16 @@
 .tc-modal-head, .tc-modal-foot { padding: 1rem 1.15rem; }
 .tc-modal-body { padding: 0 1.15rem 1.15rem; }
 .tc-modal-foot { border-top: 1px solid var(--tc-border, #e2e8f0); }
+
+/* Studio status bar */
+.le-studio-status {
+  padding: .35rem .75rem;
+  font-size: .72rem;
+  color: #94a3b8;
+  border-top: 1px solid rgba(148,163,184,.2);
+  background: #0f172a;
+}
+.lt-toolbar button.is-active {
+  border-color: #14b8a6;
+  background: rgba(20,184,166,.2);
+}

@@ -1,20 +1,22 @@
 /**
- * label-app.js — Page bootstrap for qr-labels.html
+ * ui/app.js — page bootstrap for qr-labels.html
  * Wires templates, studio, preview, print, picker, calibration.
+ * Presentation only — document is the single source of truth.
  */
-import { LabelEditor } from "./label-editor.js";
-import { LabelPreview } from "./label-preview.js";
-import { printLabels } from "./label-print.js";
-import { createTemplate, normalizeTemplate, PAGE_MODES } from "./label-model.js";
-import * as LabelApi from "./label-api.js";
+import { LabelStudio } from "../editor/studio.js";
+import { LabelPreview } from "./preview.js";
+import { printLabels } from "../print/labels.js";
+import { createDocument, setPageMode } from "../core/document.js";
+import * as LabelApi from "../data/api.js";
 import {
   getLastTemplateId,
   setLastTemplateId,
   loadCalibration
-} from "./label-storage.js";
-import { mountCalibrationWizard } from "./label-calibration.js";
-import { parseCodeLines, itemsToText, downloadJson } from "./label-export.js";
-import { ensureQrLibrary } from "./label-renderer.js";
+} from "../data/storage.js";
+import { mountCalibrationWizard } from "../print/calibration.js";
+import { parseCodeLines, itemsToText, downloadJson } from "../data/codes.js";
+import { parseServerTemplate } from "../data/serialize.js";
+import { ensureQrLibrary } from "../render/engine.js";
 
 function t(key, fallback) {
   if (typeof TCI18N !== "undefined" && TCI18N.t) return TCI18N.t(key) || fallback || key;
@@ -27,20 +29,20 @@ function toast(msg, kind = "ok") {
 }
 
 export async function bootLabelApp() {
-  await ensureQrLibrary().catch((e) => console.warn(e));
+  await ensureQrLibrary().catch((e) => console.warn("[QR Labels] QR lib", e));
 
   let templates = [];
   let activeId = null;
-  let template = createTemplate();
+  let documentModel = createDocument();
   let lastItems = [];
   let pickerTab = "tools";
   let pickerItems = [];
   let pickerTicks = new Set();
 
   const editorHost = document.getElementById("editorHost");
-  const editor = new LabelEditor(editorHost, {
-    onChange: (tpl) => {
-      template = normalizeTemplate(tpl);
+  const studio = new LabelStudio(editorHost, {
+    onChange: (doc) => {
+      documentModel = createDocument(doc);
       syncSizeFields();
     }
   });
@@ -57,77 +59,72 @@ export async function bootLabelApp() {
       const el = document.getElementById(id);
       if (el) el.value = v;
     };
-    set("cW", template.labelW);
-    set("cH", template.labelH);
-    set("cCols", template.cols);
-    set("cRows", template.rows);
-    set("cGap", template.gapX);
-    set("cMargin", template.marginX);
-    set("cOrient", template.orientation);
-    document.getElementById("activeMeta").textContent =
-      `${template.labelW}×${template.labelH} mm · ${template.page}`;
-    document.getElementById("activeModeChipTxt").textContent =
-      template.page === "a4" ? "A4" : template.page === "a3" ? "A3" : "Thermal";
+    set("cW", documentModel.labelW);
+    set("cH", documentModel.labelH);
+    set("cCols", documentModel.cols);
+    set("cRows", documentModel.rows);
+    set("cGap", documentModel.gapX);
+    set("cMargin", documentModel.marginX);
+    set("cOrient", documentModel.orientation);
+    const meta = document.getElementById("activeMeta");
+    if (meta) meta.textContent = `${documentModel.labelW}×${documentModel.labelH} mm · ${documentModel.page}`;
+    const chipTxt = document.getElementById("activeModeChipTxt");
+    if (chipTxt) {
+      chipTxt.textContent =
+        documentModel.page === "a4" ? "A4" : documentModel.page === "a3" ? "A3" : "Thermal";
+    }
     document.querySelectorAll("#printMode .ql-mode-card").forEach((b) => {
-      b.classList.toggle("active", b.dataset.mode === template.page);
+      b.classList.toggle("active", b.dataset.mode === documentModel.page);
     });
-    const thermal = template.page === "thermal";
-    document.getElementById("orientField").style.display = thermal ? "none" : "";
-    document.getElementById("colsField").style.display = thermal ? "none" : "";
-    document.getElementById("rowsField").style.display = thermal ? "none" : "";
+    const thermal = documentModel.page === "thermal";
+    const orient = document.getElementById("orientField");
+    const cols = document.getElementById("colsField");
+    const rows = document.getElementById("rowsField");
+    if (orient) orient.style.display = thermal ? "none" : "";
+    if (cols) cols.style.display = thermal ? "none" : "";
+    if (rows) rows.style.display = thermal ? "none" : "";
   }
 
-  function readSizeFieldsIntoTemplate() {
-    template = normalizeTemplate({
-      ...template,
-      labelW: Number(document.getElementById("cW").value) || 50,
-      labelH: Number(document.getElementById("cH").value) || 30,
-      cols: Number(document.getElementById("cCols").value) || 4,
-      rows: Number(document.getElementById("cRows").value) || 6,
-      gapX: Number(document.getElementById("cGap").value) || 0,
-      gapY: Number(document.getElementById("cGap").value) || 0,
-      marginX: Number(document.getElementById("cMargin").value) || 0,
-      marginY: Number(document.getElementById("cMargin").value) || 0,
-      orientation: document.getElementById("cOrient").value,
-      layers: template.layers,
-      style: template.style
+  function readSizeFieldsIntoDocument() {
+    documentModel = createDocument({
+      ...documentModel,
+      labelW: Number(document.getElementById("cW")?.value) || 50,
+      labelH: Number(document.getElementById("cH")?.value) || 30,
+      cols: Number(document.getElementById("cCols")?.value) || 4,
+      rows: Number(document.getElementById("cRows")?.value) || 6,
+      gapX: Number(document.getElementById("cGap")?.value) || 0,
+      gapY: Number(document.getElementById("cGap")?.value) || 0,
+      marginX: Number(document.getElementById("cMargin")?.value) || 0,
+      marginY: Number(document.getElementById("cMargin")?.value) || 0,
+      orientation: document.getElementById("cOrient")?.value || "portrait",
+      layers: documentModel.layers,
+      style: documentModel.style
     });
     syncSizeFields();
   }
 
   ["cW", "cH", "cCols", "cRows", "cGap", "cMargin", "cOrient"].forEach((id) => {
-    document.getElementById(id)?.addEventListener("change", readSizeFieldsIntoTemplate);
+    document.getElementById(id)?.addEventListener("change", readSizeFieldsIntoDocument);
   });
 
   document.querySelectorAll("#printMode .ql-mode-card").forEach((btn) => {
     btn.addEventListener("click", () => {
-      const page = btn.dataset.mode;
-      const mode = PAGE_MODES[page] || PAGE_MODES.thermal;
-      template = normalizeTemplate({
-        ...template,
-        page,
-        pageW: mode.pageW,
-        pageH: mode.pageH,
-        cols: mode.cols,
-        rows: mode.rows,
-        thermal: page === "thermal"
-      });
+      documentModel = setPageMode(documentModel, btn.dataset.mode);
       syncSizeFields();
     });
   });
 
   function renderTemplateList() {
     const host = document.getElementById("tplList");
+    if (!host) return;
     if (!templates.length) {
       host.innerHTML = `<div class="ql-empty-tpl">${t("noTemplatesYet", "No templates yet")}</div>`;
       return;
     }
     host.innerHTML = templates
       .map((tpl) => {
-        let cfg = tpl.config || {};
-        if (typeof cfg === "string") {
-          try { cfg = JSON.parse(cfg); } catch { cfg = {}; }
-        }
+        const parsed = parseServerTemplate(tpl);
+        const cfg = parsed.document;
         return `<button type="button" class="ql-tpl ${tpl.id === activeId ? "active" : ""}" data-id="${tpl.id}">
           <div>
             <div class="name">${escapeHtml(tpl.name)}</div>
@@ -141,7 +138,7 @@ export async function bootLabelApp() {
 
   async function loadTemplates() {
     const host = document.getElementById("tplList");
-    host.innerHTML = `<div class="ql-empty-tpl">${t("loading", "Loading…")}</div>`;
+    if (host) host.innerHTML = `<div class="ql-empty-tpl">${t("loading", "Loading…")}</div>`;
     try {
       templates = await LabelApi.listTemplates();
       renderTemplateList();
@@ -149,34 +146,29 @@ export async function bootLabelApp() {
       const pick = templates.find((x) => x.id === last) || templates[0];
       if (pick) applyServerTemplate(pick);
       else {
-        template = createTemplate();
+        documentModel = createDocument();
         activeId = null;
-        document.getElementById("activeNameLabel").textContent = t("unsavedTemplate", "New unsaved template");
+        const nameEl = document.getElementById("activeNameLabel");
+        if (nameEl) nameEl.textContent = t("unsavedTemplate", "New unsaved template");
         syncSizeFields();
       }
     } catch (e) {
-      host.innerHTML = `<div class="ql-empty-tpl">${escapeHtml(e.message || e)}</div>`;
+      if (host) host.innerHTML = `<div class="ql-empty-tpl">${escapeHtml(e.message || e)}</div>`;
     }
   }
 
   function applyServerTemplate(item) {
     activeId = item.id;
     setLastTemplateId(item.id);
-    let cfg = item.config;
-    if (typeof cfg === "string") {
-      try {
-        cfg = JSON.parse(cfg);
-      } catch {
-        cfg = {};
-      }
-    }
-    template = normalizeTemplate(cfg || {});
-    document.getElementById("activeNameLabel").textContent = item.name;
+    const parsed = parseServerTemplate(item);
+    documentModel = parsed.document;
+    const nameEl = document.getElementById("activeNameLabel");
+    if (nameEl) nameEl.textContent = item.name;
     syncSizeFields();
     renderTemplateList();
   }
 
-  document.getElementById("tplList").addEventListener("click", async (e) => {
+  document.getElementById("tplList")?.addEventListener("click", async (e) => {
     const del = e.target.closest("[data-del]");
     if (del) {
       e.stopPropagation();
@@ -204,28 +196,25 @@ export async function bootLabelApp() {
     if (item) applyServerTemplate(item);
   });
 
-  document.getElementById("btnNewTpl").onclick = () => {
+  document.getElementById("btnNewTpl")?.addEventListener("click", () => {
     activeId = null;
-    template = createTemplate();
-    document.getElementById("activeNameLabel").textContent = t("unsavedTemplate", "New unsaved template");
+    documentModel = createDocument();
+    const nameEl = document.getElementById("activeNameLabel");
+    if (nameEl) nameEl.textContent = t("unsavedTemplate", "New unsaved template");
     syncSizeFields();
     renderTemplateList();
-    editor.open(template);
-  };
-
-  document.getElementById("btnOpenStudio").onclick = () => {
-    readSizeFieldsIntoTemplate();
-    editor.open(template);
-  };
-  // Extra binding — some environments swallow the first onclick assignment
-  document.getElementById("btnOpenStudio").addEventListener("click", (e) => {
-    e.preventDefault();
-    readSizeFieldsIntoTemplate();
-    editor.open(template);
+    studio.open(documentModel);
   });
 
+  const openStudio = (e) => {
+    e?.preventDefault?.();
+    readSizeFieldsIntoDocument();
+    studio.open(documentModel);
+  };
+  document.getElementById("btnOpenStudio")?.addEventListener("click", openStudio);
+
   async function saveTpl(forceNew) {
-    readSizeFieldsIntoTemplate();
+    readSizeFieldsIntoDocument();
     let name = "";
     const existing = templates.find((x) => x.id === activeId);
     if (!forceNew && existing) name = existing.name;
@@ -239,7 +228,11 @@ export async function bootLabelApp() {
       return;
     }
     try {
-      const item = await LabelApi.saveTemplate(name, template, !forceNew && activeId ? activeId : null);
+      const item = await LabelApi.saveTemplate(
+        name,
+        documentModel,
+        !forceNew && activeId ? activeId : null
+      );
       const idx = templates.findIndex((x) => x.id === item.id);
       if (idx >= 0) templates[idx] = item;
       else templates.unshift(item);
@@ -250,22 +243,23 @@ export async function bootLabelApp() {
     }
   }
 
-  document.getElementById("btnSaveTpl").onclick = () => saveTpl(false);
-  document.getElementById("btnSaveAsTpl").onclick = () => saveTpl(true);
+  document.getElementById("btnSaveTpl")?.addEventListener("click", () => saveTpl(false));
+  document.getElementById("btnSaveAsTpl")?.addEventListener("click", () => saveTpl(true));
 
   function setPreviewBtn(on) {
-    document.getElementById("btnOpenPreview").disabled = !on;
+    const btn = document.getElementById("btnOpenPreview");
+    if (btn) btn.disabled = !on;
   }
 
-  document.getElementById("btnGen").onclick = async () => {
-    readSizeFieldsIntoTemplate();
-    lastItems = parseCodeLines(document.getElementById("codes").value);
+  document.getElementById("btnGen")?.addEventListener("click", async () => {
+    readSizeFieldsIntoDocument();
+    lastItems = parseCodeLines(document.getElementById("codes")?.value);
     if (!lastItems.length) {
       toast(t("enterOneCode", "Enter at least one code"), "err");
       return;
     }
     try {
-      await preview.show(template, lastItems, {
+      await preview.show(documentModel, lastItems, {
         flip: document.getElementById("previewFlip")?.checked
       });
       setPreviewBtn(true);
@@ -275,69 +269,75 @@ export async function bootLabelApp() {
       console.error(e);
       toast(e.message || e, "err");
     }
-  };
+  });
 
-  document.getElementById("btnClear").onclick = () => {
-    document.getElementById("codes").value = "";
+  document.getElementById("btnClear")?.addEventListener("click", () => {
+    const codes = document.getElementById("codes");
+    if (codes) codes.value = "";
     lastItems = [];
-    document.getElementById("labels").innerHTML =
-      `<span class="labels-empty-msg">${t("labelsPreviewEmpty", "Generate labels to preview")}</span>`;
-    document.getElementById("labels").classList.add("empty");
+    const labels = document.getElementById("labels");
+    if (labels) {
+      labels.innerHTML = `<span class="labels-empty-msg">${t("labelsPreviewEmpty", "Generate labels to preview")}</span>`;
+      labels.classList.add("empty");
+    }
     setPreviewBtn(false);
     updateSelectedBar();
-  };
+  });
 
   function openPreview() {
-    document.getElementById("previewModal").classList.add("open");
+    document.getElementById("previewModal")?.classList.add("open");
   }
   function closePreview() {
-    document.getElementById("previewModal").classList.remove("open");
+    document.getElementById("previewModal")?.classList.remove("open");
   }
-  document.getElementById("btnOpenPreview").onclick = openPreview;
-  document.getElementById("btnClosePreview").onclick = closePreview;
-  document.getElementById("btnClosePreview2").onclick = closePreview;
+  document.getElementById("btnOpenPreview")?.addEventListener("click", openPreview);
+  document.getElementById("btnClosePreview")?.addEventListener("click", closePreview);
+  document.getElementById("btnClosePreview2")?.addEventListener("click", closePreview);
 
-  document.getElementById("btnPrint").onclick = async () => {
+  document.getElementById("btnPrint")?.addEventListener("click", async () => {
     if (!lastItems.length) {
       toast(t("enterOneCode", "Enter at least one code"), "err");
       return;
     }
     try {
-      await printLabels(template, lastItems, {
+      await printLabels(documentModel, lastItems, {
         flip: !!document.getElementById("previewFlip")?.checked
       });
     } catch (e) {
       toast(e.message || e, "err");
     }
-  };
+  });
 
-  document.getElementById("btnDir").onclick = () => {
+  document.getElementById("btnDir")?.addEventListener("click", () => {
     const ta = document.getElementById("codes");
+    if (!ta) return;
     const extra = "IN | Direction IN\nOUT | Direction OUT";
     ta.value = ta.value.trim() ? ta.value.trim() + "\n" + extra : extra;
     updateSelectedBar();
-  };
+  });
 
   function updateSelectedBar() {
-    const items = parseCodeLines(document.getElementById("codes").value);
+    const items = parseCodeLines(document.getElementById("codes")?.value);
     const bar = document.getElementById("selectedBar");
-    document.getElementById("selectedCount").textContent = String(items.length);
-    bar.style.display = items.length ? "" : "none";
+    const count = document.getElementById("selectedCount");
+    if (count) count.textContent = String(items.length);
+    if (bar) bar.style.display = items.length ? "" : "none";
   }
-  document.getElementById("codes").addEventListener("input", updateSelectedBar);
+  document.getElementById("codes")?.addEventListener("input", updateSelectedBar);
 
-  // Picker
   const pickerModal = document.getElementById("pickerModal");
-  document.getElementById("btnPick").onclick = () => openPicker();
-  document.getElementById("btnClosePicker").onclick = () => pickerModal.classList.remove("open");
+  document.getElementById("btnPick")?.addEventListener("click", () => openPicker());
+  document.getElementById("btnClosePicker")?.addEventListener("click", () =>
+    pickerModal?.classList.remove("open")
+  );
 
   async function openPicker() {
-    pickerModal.classList.add("open");
+    pickerModal?.classList.add("open");
     pickerTicks = new Set();
     await loadPickerTab(pickerTab);
   }
 
-  document.getElementById("pickerTabs").onclick = async (e) => {
+  document.getElementById("pickerTabs")?.addEventListener("click", async (e) => {
     const btn = e.target.closest("button[data-tab]");
     if (!btn) return;
     pickerTab = btn.dataset.tab;
@@ -345,10 +345,11 @@ export async function bootLabelApp() {
       b.classList.toggle("active", b === btn)
     );
     await loadPickerTab(pickerTab);
-  };
+  });
 
   async function loadPickerTab(tab) {
     const list = document.getElementById("pickerList");
+    if (!list) return;
     list.innerHTML = `<div class="ql-hint">${t("loading", "Loading…")}</div>`;
     try {
       if (tab === "people") {
@@ -382,7 +383,7 @@ export async function bootLabelApp() {
   }
 
   function filteredPickerItems() {
-    const q = String(document.getElementById("pickerSearch").value || "")
+    const q = String(document.getElementById("pickerSearch")?.value || "")
       .trim()
       .toUpperCase();
     if (!q) return pickerItems;
@@ -395,71 +396,80 @@ export async function bootLabelApp() {
 
   function renderPickerList() {
     const list = document.getElementById("pickerList");
+    if (!list) return;
     const items = filteredPickerItems();
-    list.innerHTML = items
-      .map(
-        (it) => `<label class="ql-picker-row">
+    list.innerHTML =
+      items
+        .map(
+          (it) => `<label class="ql-picker-row">
         <input type="checkbox" data-code="${escapeHtml(it.code)}" ${pickerTicks.has(it.code) ? "checked" : ""}>
         <span><strong>${escapeHtml(it.code)}</strong> · ${escapeHtml(it.name || "")}</span>
       </label>`
-      )
-      .join("") || `<div class="ql-hint">${t("noResults", "No results")}</div>`;
+        )
+        .join("") || `<div class="ql-hint">${t("noResults", "No results")}</div>`;
     list.querySelectorAll("input[type=checkbox]").forEach((cb) => {
       cb.onchange = () => {
         if (cb.checked) pickerTicks.add(cb.dataset.code);
         else pickerTicks.delete(cb.dataset.code);
-        document.getElementById("pickerTickCount").textContent = String(pickerTicks.size);
+        const tick = document.getElementById("pickerTickCount");
+        if (tick) tick.textContent = String(pickerTicks.size);
       };
     });
-    document.getElementById("pickerTickCount").textContent = String(pickerTicks.size);
+    const tick = document.getElementById("pickerTickCount");
+    if (tick) tick.textContent = String(pickerTicks.size);
   }
 
-  document.getElementById("pickerSearch").oninput = () => renderPickerList();
-  document.getElementById("btnSelectFiltered").onclick = () => {
+  document.getElementById("pickerSearch")?.addEventListener("input", () => renderPickerList());
+  document.getElementById("btnSelectFiltered")?.addEventListener("click", () => {
     filteredPickerItems().forEach((it) => pickerTicks.add(it.code));
     renderPickerList();
-  };
-  document.getElementById("btnClearSelection").onclick = () => {
+  });
+  document.getElementById("btnClearSelection")?.addEventListener("click", () => {
     pickerTicks.clear();
     renderPickerList();
-  };
+  });
 
   function applyPicker(mode) {
     const chosen = pickerItems.filter((it) => pickerTicks.has(it.code));
     const ta = document.getElementById("codes");
+    if (!ta) return;
     const text = itemsToText(chosen);
     if (mode === "replace") ta.value = text;
     else ta.value = ta.value.trim() ? ta.value.trim() + "\n" + text : text;
     updateSelectedBar();
-    pickerModal.classList.remove("open");
+    pickerModal?.classList.remove("open");
   }
-  document.getElementById("btnApplyReplace").onclick = () => applyPicker("replace");
-  document.getElementById("btnApplyAdd").onclick = () => applyPicker("add");
+  document.getElementById("btnApplyReplace")?.addEventListener("click", () => applyPicker("replace"));
+  document.getElementById("btnApplyAdd")?.addEventListener("click", () => applyPicker("add"));
 
-  // Calibration wizard
-  document.getElementById("btnCalibrate").onclick = () => {
+  document.getElementById("btnCalibrate")?.addEventListener("click", () => {
     const modal = document.getElementById("calibModal");
-    modal.classList.add("open");
+    modal?.classList.add("open");
     mountCalibrationWizard(document.getElementById("calibHost"), {
-      labelW: template.labelW,
-      labelH: template.labelH,
-      onSaved: () => toast(t("calibSaved", "Printer profile saved"), "ok")
+      labelW: documentModel.labelW,
+      labelH: documentModel.labelH,
+      onSaved: (cal) => {
+        toast(t("calibSaved", "Printer profile saved"), "ok");
+        updateCalibChip(cal);
+      }
     });
-  };
-  document.getElementById("btnCloseCalib").onclick = () =>
-    document.getElementById("calibModal").classList.remove("open");
+  });
+  document.getElementById("btnCloseCalib")?.addEventListener("click", () =>
+    document.getElementById("calibModal")?.classList.remove("open")
+  );
 
   document.getElementById("btnExportJson")?.addEventListener("click", () => {
-    downloadJson(template, `label-${template.labelW}x${template.labelH}.json`);
+    downloadJson(documentModel, `label-${documentModel.labelW}x${documentModel.labelH}.json`);
   });
 
-  // Show active calibration chip
-  const cal = loadCalibration();
-  const chip = document.getElementById("calibChip");
-  if (chip) {
-    chip.textContent = `${cal.printerName} · ${cal.dpi}dpi · scale ${cal.scale}`;
+  function updateCalibChip(cal) {
+    const chip = document.getElementById("calibChip");
+    if (!chip) return;
+    const c = cal || loadCalibration();
+    chip.textContent = `${c.printerName} · ${c.dpi}dpi · scale ${c.scale}`;
   }
 
+  updateCalibChip();
   syncSizeFields();
   await loadTemplates();
 }
