@@ -619,14 +619,12 @@ export class LabelStudio {
       t.y = snapped.y;
       if (o === this._drag.origins[0]) this.guides.setSmartGuides(snapped.guides);
     }
-    this.store._doc = draft;
+    this.store.replaceQuiet(draft);
     this.schedulePaint(false);
   }
 
   _liveResize(id, handle, dx, dy) {
     const draft = cloneDocument(this.doc);
-    draft.layers = this.selection.resize(draft.layers, id, handle, dx, dy, draft, false);
-    // resize uses current geometry — apply from origin instead
     const origin = this._drag.origin;
     draft.layers = draft.layers.map((l) => {
       if (l.id !== id) return l;
@@ -649,14 +647,14 @@ export class LabelStudio {
       }
       return { ...l, x, y, w, h };
     });
-    this.store._doc = draft;
+    this.store.replaceQuiet(draft);
     this.schedulePaint(false);
   }
 
   _livePatch(id, patch) {
     const draft = cloneDocument(this.doc);
     draft.layers = draft.layers.map((l) => (l.id === id ? { ...l, ...patch } : l));
-    this.store._doc = draft;
+    this.store.replaceQuiet(draft);
     this.schedulePaint(false);
   }
 
@@ -666,8 +664,7 @@ export class LabelStudio {
     this._drag = null;
     this.guides.clearSmartGuides();
     if (kind === "pan") return;
-    // Commit live draft into history
-    this.store.commit(this.store._doc, kind);
+    this.store.commit(this.store.get(), kind);
   }
 
   destroy() {
@@ -758,7 +755,7 @@ function studioMarkup() {
         </div>
         <div class="le-head-actions">
           <button type="button" class="tc-btn" data-reset>Reset</button>
-          <button type="button" class="tc-btn tc-btn-primary" data-done>Done</button>
+          <button type="button" class="tc-btn tc-btn-primary" data-done id="leDone">Done</button>
         </div>
       </header>
       <div class="lt-toolbar">

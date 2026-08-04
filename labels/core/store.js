@@ -109,6 +109,12 @@ export class DocumentStore {
     return this._doc;
   }
 
+  /** Replace without history or emit (live drag preview). */
+  replaceQuiet(next) {
+    this._doc = createDocument(next);
+    return this._doc;
+  }
+
   withSuspended(fn) {
     this._suspend = true;
     try {

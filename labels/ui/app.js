@@ -258,16 +258,24 @@ export async function bootLabelApp() {
       toast(t("enterOneCode", "Enter at least one code"), "err");
       return;
     }
+    const labels = document.getElementById("labels");
+    if (labels) {
+      labels.classList.remove("empty");
+      labels.innerHTML = `<div class="ql-hint">${t("loading", "Rendering…")}</div>`;
+    }
+    openPreview();
+    setPreviewBtn(true);
     try {
       await preview.show(documentModel, lastItems, {
         flip: document.getElementById("previewFlip")?.checked
       });
-      setPreviewBtn(true);
-      openPreview();
       toast(t("labelsGenerated", "Labels generated"), "ok");
     } catch (e) {
-      console.error(e);
-      toast(e.message || e, "err");
+      console.error("[QR Labels] generate failed", e);
+      if (labels) {
+        labels.innerHTML = `<div class="ql-hint">Generate failed: ${escapeHtml(e.message || e)}</div>`;
+      }
+      toast(e.message || String(e), "err");
     }
   });
 

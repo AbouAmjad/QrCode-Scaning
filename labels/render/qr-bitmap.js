@@ -43,7 +43,7 @@ export async function renderQrDataUrl(ly, value, dpi = 192) {
     const qr = new QRCodeStyling({
       width: px,
       height: px,
-      type: "svg",
+      type: "canvas",
       data: String(value || "QR"),
       margin: quiet,
       qrOptions: { errorCorrectionLevel: ly.errorCorrection || "M" },
@@ -55,14 +55,27 @@ export async function renderQrDataUrl(ly, value, dpi = 192) {
       cornersDotOptions: { color: ly.cornerColor || ly.color || "#0f766e" },
       backgroundOptions: { color: ly.bg || "#ffffff" }
     });
-    const blob = await qr.getRawData("svg");
+    const blob = await Promise.race([
+      qr.getRawData("png"),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("QR render timeout")), 8000)
+      )
+    ]);
     if (!blob) return "";
-    return await new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(String(reader.result || ""));
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
-    });
+    if (typeof blob === "string") return blob;
+    if (blob instanceof Blob) {
+      return await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result || ""));
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    }
+    // Some builds return ArrayBuffer / Uint8Array
+    const bytes = blob instanceof ArrayBuffer ? new Uint8Array(blob) : blob;
+    let binary = "";
+    for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+    return `data:image/png;base64,${btoa(binary)}`;
   } catch (e) {
     console.warn("[qr-bitmap] render failed", e);
     return "";
