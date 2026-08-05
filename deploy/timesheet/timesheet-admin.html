@@ -1,24 +1,73 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>AbouAmjad Store System | Timesheet Admin</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="app.css?v=live">
-  <link rel="stylesheet" href="timesheet.css?v=4">
+  <link rel="stylesheet" href="timesheet.css?v=5">
   <script src="config.js?v=live"></script>
   <script src="i18n.js?v=live"></script>
   <script src="ui.js?v=live"></script>
   <style>
-    .ta-stack { display: grid; gap: .85rem; max-width: 720px; }
+    .ta-stack { display: grid; gap: .85rem; max-width: 960px; }
     .ta-row { display: grid; gap: .75rem; }
     @media (min-width: 640px) {
       .ta-row.two { grid-template-columns: 1fr 1fr; }
+      .ta-row.three { grid-template-columns: 1fr 1fr 1fr; }
+      .ta-row.four { grid-template-columns: 1fr 1fr 1fr 1fr; }
     }
-    .ta-actions { display: flex; flex-wrap: wrap; gap: .6rem; align-items: center; margin-top: .25rem; }
+    .ta-actions { display: flex; flex-wrap: wrap; gap: .55rem; align-items: center; margin-top: .15rem; }
     .ta-msg { font-weight: 700; color: var(--tc-accent-2); min-height: 1.2em; }
     .ta-msg.err { color: var(--tc-danger); }
+    .ta-kpis {
+      display: grid;
+      gap: .75rem;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      margin: 0 0 .25rem;
+    }
+    .ta-kpi {
+      padding: .9rem 1rem;
+      border-radius: 16px;
+      border: 1px solid var(--tc-border);
+      background: var(--tc-surface);
+      box-shadow: var(--tc-shadow-soft);
+    }
+    .ta-kpi span {
+      display: block;
+      font-size: .72rem;
+      font-weight: 700;
+      letter-spacing: .03em;
+      text-transform: uppercase;
+      color: var(--tc-muted);
+      margin-bottom: .3rem;
+    }
+    .ta-kpi strong {
+      display: block;
+      font-size: 1.45rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--tc-accent-2);
+    }
+    .ta-presets { display: flex; flex-wrap: wrap; gap: .45rem; }
+    .ta-chip {
+      border: 1px solid var(--tc-border);
+      background: var(--tc-surface);
+      color: var(--tc-text);
+      border-radius: 10px;
+      padding: .4rem .75rem;
+      font: inherit;
+      font-size: .84rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .ta-chip:hover { border-color: color-mix(in srgb, var(--tc-accent) 45%, var(--tc-border)); }
+    .ta-chip.is-on {
+      background: color-mix(in srgb, var(--tc-accent) 14%, var(--tc-surface));
+      border-color: var(--tc-accent);
+      color: var(--tc-accent-2);
+    }
     .ta-row-pick { cursor: pointer; transition: background var(--tc-ease); }
     .ta-row-pick:hover { background: color-mix(in srgb, var(--tc-accent) 8%, transparent); }
     .ta-row-pick.is-selected { background: color-mix(in srgb, var(--tc-accent) 14%, transparent); }
@@ -31,7 +80,6 @@
         radial-gradient(500px 160px at 0% 0%, rgba(15, 118, 110, 0.12), transparent 55%),
         var(--tc-surface);
       box-shadow: var(--tc-shadow-soft);
-      max-width: 720px;
     }
     .ta-worker-head {
       display: flex;
@@ -111,137 +159,251 @@
       text-decoration: underline;
       text-underline-offset: 2px;
     }
+    .ta-log {
+      margin-top: 1.25rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--tc-border);
+    }
+    .ta-log h3 {
+      margin: 0 0 .65rem;
+      font-size: .95rem;
+      font-weight: 800;
+    }
+    .ta-log-item {
+      display: grid;
+      gap: .15rem;
+      padding: .65rem 0;
+      border-bottom: 1px solid var(--tc-border);
+      font-size: .86rem;
+    }
+    .ta-log-item:last-child { border-bottom: 0; }
+    .ta-log-item strong { font-weight: 800; }
+    .ta-log-item .muted { color: var(--tc-muted); font-size: .8rem; }
+    .ta-sticky {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 40;
+      padding: .75rem 1rem calc(.75rem + env(safe-area-inset-bottom));
+      background: color-mix(in srgb, var(--tc-surface) 92%, transparent);
+      backdrop-filter: blur(10px);
+      border-top: 1px solid var(--tc-border);
+      box-shadow: 0 -10px 30px -18px rgba(0,0,0,.35);
+      display: none;
+    }
+    .ta-sticky.show { display: block; }
+    .ta-sticky-inner {
+      max-width: 960px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      gap: .55rem;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .ta-sticky-count { font-weight: 800; }
+    .ta-sticky-btns { display: flex; flex-wrap: wrap; gap: .45rem; }
+    body.has-ta-sticky { padding-bottom: 5.5rem; }
+    .ta-hours-adj { color: var(--tc-muted); font-size: .78rem; font-weight: 600; }
   </style>
-
 </head>
 <body class="tc-page ts-page" data-page="timesheetAdmin">
   <div class="tc-wrap"><div class="tc-shell">
     <div id="app-header"></div>
     <main class="tc-main p-3">
       <section class="ts-hero">
-        <h1><i class="bi bi-clock-history"></i> Timesheet Admin</h1>
-        <p>Select one or more workers, then choose an action.</p>
+        <h1><i class="bi bi-clock-history"></i> إدارة الحضور</h1>
+        <p>اختر عامل أو أكثر، ثم عدّل الساعات أو أضف خصم. المسح يضيف الحضور تلقائياً.</p>
       </section>
 
+      <div class="ta-kpis" id="kpiRow">
+        <div class="ta-kpi"><span>حاضرين</span><strong id="kpiPresent">—</strong></div>
+        <div class="ta-kpi"><span>ساعات صافية</span><strong id="kpiHours">—</strong></div>
+        <div class="ta-kpi"><span>تعديل ساعات</span><strong id="kpiAdj">—</strong></div>
+        <div class="ta-kpi"><span>خصومات</span><strong id="kpiDed">—</strong></div>
+      </div>
+
       <section class="ts-panel" id="panel-att">
-        <h2><i class="bi bi-calendar2-check"></i> Attendance list</h2>
-        <div class="ts-note">Select one or more workers (checkbox or row), then choose an action below.</div>
+        <h2><i class="bi bi-calendar2-check"></i> قائمة الحضور</h2>
+
         <div class="ta-stack">
-          <div class="ta-row two">
-            <div><label class="ts-label">From</label><input type="date" id="attFrom" class="ts-input"></div>
-            <div><label class="ts-label">To</label><input type="date" id="attTo" class="ts-input"></div>
+          <div class="ta-presets" id="datePresets">
+            <button type="button" class="ta-chip" data-range="today">اليوم</button>
+            <button type="button" class="ta-chip" data-range="week">هذا الأسبوع</button>
+            <button type="button" class="ta-chip" data-range="month">هذا الشهر</button>
           </div>
-          <div class="ta-actions"><button class="ts-btn ts-btn-primary" id="attReload">Show</button></div>
+
+          <div class="ta-row four">
+            <div><label class="ts-label">من</label><input type="date" id="attFrom" class="ts-input"></div>
+            <div><label class="ts-label">إلى</label><input type="date" id="attTo" class="ts-input"></div>
+            <div>
+              <label class="ts-label">المشروع</label>
+              <select id="attProject" class="ts-select"><option value="">كل المشاريع</option></select>
+            </div>
+            <div>
+              <label class="ts-label">بحث (كود / اسم)</label>
+              <input type="search" id="attSearch" class="ts-input" placeholder="P001 أو الاسم…" autocomplete="off">
+            </div>
+          </div>
+
+          <div class="ta-actions">
+            <button class="ts-btn ts-btn-primary" id="attReload"><i class="bi bi-arrow-repeat"></i> عرض</button>
+            <button class="ts-btn ts-btn-ghost" id="btnExport"><i class="bi bi-download"></i> تصدير CSV</button>
+            <span class="ta-msg" id="listMsg"></span>
+          </div>
+
           <div class="table-responsive"><table class="ts-table"><thead><tr>
-            <th class="ta-th-check"><input type="checkbox" class="ta-check" id="attSelectAll" title="Select all"></th>
-            <th>Date</th><th>Worker</th><th>Project</th><th>Hours (net)</th>
+            <th class="ta-th-check"><input type="checkbox" class="ta-check" id="attSelectAll" title="تحديد الكل"></th>
+            <th>التاريخ</th><th>العامل</th><th>المشروع</th><th>الساعات (صافي)</th>
           </tr></thead><tbody id="attBody"></tbody></table></div>
 
           <div id="workerSheet" class="ta-worker-sheet" hidden>
             <div class="ta-worker-head">
               <div>
-                <p class="ta-worker-kicker">Selected</p>
+                <p class="ta-worker-kicker">المحدّدون</p>
                 <h3 id="wsName">—</h3>
                 <p class="ta-worker-meta" id="wsMeta"></p>
               </div>
-              <button type="button" class="ts-btn ts-btn-ghost" id="wsClose">Clear</button>
+              <button type="button" class="ts-btn ts-btn-ghost" id="wsClose">إلغاء التحديد</button>
             </div>
 
             <div class="ta-worker-actions">
               <button type="button" class="ta-worker-action" id="wsOpenHours">
                 <i class="bi bi-plus-slash-minus"></i>
-                <strong>Add / remove hours</strong>
-                <span>Same +/− hours for all selected workers.</span>
+                <strong>إضافة / خصم ساعات</strong>
+                <span>نفس التعديل لكل المحدّدين.</span>
               </button>
               <button type="button" class="ta-worker-action" id="wsOpenDed">
                 <i class="bi bi-cash-coin"></i>
-                <strong>Add deduction</strong>
-                <span>Same deduction for each selected worker.</span>
+                <strong>إضافة خصم</strong>
+                <span>تأخير، غياب، تلف أداة، أو مبلغ ثابت.</span>
               </button>
               <button type="button" class="ta-worker-action" id="wsOpenShift">
                 <i class="bi bi-sliders"></i>
-                <strong>Shift hours</strong>
-                <span>Default hours per present day (e.g. 10).</span>
+                <strong>ساعات الوردية</strong>
+                <span>الافتراضي لكل يوم حضور (مثلاً 10).</span>
               </button>
             </div>
 
             <div id="wsHoursPanel" class="ta-inline-panel" hidden>
-              <h4><i class="bi bi-plus-slash-minus"></i> Add / remove hours</h4>
+              <h4><i class="bi bi-plus-slash-minus"></i> إضافة / خصم ساعات</h4>
               <div class="ta-row two">
-                <div><label class="ts-label">Date</label><input type="date" id="wsAdjDate" class="ts-input"></div>
-                <div><label class="ts-label">Hours (+ or −)</label><input type="number" step="0.5" id="wsAdjDelta" class="ts-input" value="1"></div>
+                <div><label class="ts-label">التاريخ</label><input type="date" id="wsAdjDate" class="ts-input"></div>
+                <div><label class="ts-label">الساعات (+ أو −)</label><input type="number" step="0.5" id="wsAdjDelta" class="ts-input" value="1"></div>
               </div>
               <div style="margin-top:.75rem">
-                <label class="ts-label">Reason</label>
-                <input id="wsAdjReason" class="ts-input" placeholder="Overtime / late">
+                <label class="ts-label">السبب</label>
+                <input id="wsAdjReason" class="ts-input" placeholder="أوفر تايم / تأخير">
               </div>
               <div class="ta-actions">
-                <button class="ts-btn ts-btn-primary" id="wsAdjSubmit">Save hours</button>
-                <button type="button" class="ts-btn ts-btn-ghost" id="wsAdjCancel">Cancel</button>
+                <button class="ts-btn ts-btn-primary" id="wsAdjSubmit">حفظ الساعات</button>
+                <button type="button" class="ts-btn ts-btn-ghost" id="wsAdjCancel">إلغاء</button>
                 <span class="ta-msg" id="wsAdjMsg"></span>
               </div>
             </div>
 
             <div id="wsDedPanel" class="ta-inline-panel" hidden>
-              <h4><i class="bi bi-cash-coin"></i> Add deduction</h4>
+              <h4><i class="bi bi-cash-coin"></i> إضافة خصم</h4>
               <div class="ta-row two">
                 <div>
-                  <label class="ts-label">Type</label>
+                  <label class="ts-label">النوع</label>
                   <select id="wsDedType" class="ts-select">
-                    <option value="delay">Delay</option>
-                    <option value="absence">Absence</option>
-                    <option value="tool_damage">Tool damage</option>
-                    <option value="fixed_amount">Fixed amount</option>
+                    <option value="delay">تأخير</option>
+                    <option value="absence">غياب</option>
+                    <option value="tool_damage">تلف أداة</option>
+                    <option value="fixed_amount">مبلغ ثابت</option>
                   </select>
                 </div>
-                <div><label class="ts-label">Amount</label><input type="number" step="0.01" id="wsDedAmount" class="ts-input" placeholder="0.00"></div>
+                <div><label class="ts-label">المبلغ</label><input type="number" step="0.01" id="wsDedAmount" class="ts-input" placeholder="0.00"></div>
               </div>
               <div class="ta-row two" style="margin-top:.75rem">
-                <div><label class="ts-label">Date</label><input type="date" id="wsDedDate" class="ts-input"></div>
-                <div><label class="ts-label">Note (optional)</label><input id="wsDedNote" class="ts-input"></div>
+                <div><label class="ts-label">التاريخ</label><input type="date" id="wsDedDate" class="ts-input"></div>
+                <div><label class="ts-label">ملاحظة (اختياري)</label><input id="wsDedNote" class="ts-input"></div>
               </div>
               <div class="ta-actions">
-                <button class="ts-btn ts-btn-primary" id="wsDedSubmit">Save deduction</button>
-                <button type="button" class="ts-btn ts-btn-ghost" id="wsDedCancel">Cancel</button>
+                <button class="ts-btn ts-btn-primary" id="wsDedSubmit">حفظ الخصم</button>
+                <button type="button" class="ts-btn ts-btn-ghost" id="wsDedCancel">إلغاء</button>
                 <span class="ta-msg" id="wsDedMsg"></span>
               </div>
             </div>
 
             <div id="wsShiftPanel" class="ta-inline-panel" hidden>
-              <h4><i class="bi bi-sliders"></i> Shift hours</h4>
-              <div class="ts-note" style="margin-bottom:.75rem">Applies to every present day (default for all workers).</div>
+              <h4><i class="bi bi-sliders"></i> ساعات الوردية</h4>
+              <div class="ts-note" style="margin-bottom:.75rem">تُطبَّق على كل يوم حضور جديد (لكل العمال).</div>
               <div style="max-width:280px">
-                <label class="ts-label">Hours for each present day</label>
+                <label class="ts-label">ساعات كل يوم حضور</label>
                 <input type="number" step="0.5" id="shiftHours" class="ts-input">
               </div>
               <div class="ta-actions">
-                <button class="ts-btn ts-btn-primary" id="shiftSave">Save</button>
-                <button type="button" class="ts-btn ts-btn-ghost" id="wsShiftCancel">Cancel</button>
+                <button class="ts-btn ts-btn-primary" id="shiftSave">حفظ</button>
+                <button type="button" class="ts-btn ts-btn-ghost" id="wsShiftCancel">إلغاء</button>
                 <span class="ta-msg" id="shiftMsg"></span>
               </div>
             </div>
 
             <div class="ta-actions" style="margin-top:1rem">
-              <button type="button" class="ta-void-link" id="wsVoid">Void selected attendance day(s)…</button>
+              <button type="button" class="ta-void-link" id="wsVoid">إلغاء يوم/أيام الحضور المحدّدة…</button>
             </div>
+          </div>
+
+          <div class="ta-log">
+            <h3><i class="bi bi-clock-history"></i> آخر التعديلات</h3>
+            <div id="activityLog"><div class="ts-empty">لا يوجد بعد</div></div>
           </div>
         </div>
       </section>
     </main>
   </div></div>
+
+  <div class="ta-sticky" id="stickyBar" hidden>
+    <div class="ta-sticky-inner">
+      <div class="ta-sticky-count" id="stickyCount">0 محدّد</div>
+      <div class="ta-sticky-btns">
+        <button type="button" class="ts-btn ts-btn-primary" id="stHours">ساعات +/−</button>
+        <button type="button" class="ts-btn ts-btn-ghost" id="stDed">خصم</button>
+        <button type="button" class="ts-btn ts-btn-ghost" id="stClear">مسح التحديد</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     (async function () {
       if (typeof requireAuth === "function") requireAuth();
       if (typeof TCUI !== "undefined") TCUI.mountHeader({ pageId: "timesheetAdmin" });
 
-      const today = new Date().toISOString().slice(0, 10);
+      const today = localYmd(new Date());
       ["attFrom", "attTo", "wsAdjDate", "wsDedDate"].forEach((id) => {
         const el = document.getElementById(id);
         if (el) el.value = today;
       });
 
-      /** @type {Array<{id:number,workDate:string,workerCode:string,workerName:string,projectName:string,baseHours:any}>} */
+      /** @type {any[]} */
+      let allRows = [];
+      /** @type {any[]} */
       let selected = [];
+      let activePreset = "today";
+
+      function localYmd(d) {
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+      }
+      function startOfWeek(d) {
+        const x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+        const day = (x.getDay() + 6) % 7; // Mon=0
+        x.setDate(x.getDate() - day);
+        return x;
+      }
+      function setMsg(el, text, isErr) {
+        el.textContent = text || "";
+        el.classList.toggle("err", !!isErr);
+      }
+      function fmtNum(n) {
+        const x = Number(n) || 0;
+        return Number.isInteger(x) ? String(x) : x.toFixed(2).replace(/\.?0+$/, "");
+      }
+      function dedTypeLabel(t) {
+        return ({ delay: "تأخير", absence: "غياب", tool_damage: "تلف أداة", fixed_amount: "مبلغ ثابت" })[t] || t;
+      }
 
       function hideActionPanels() {
         wsHoursPanel.hidden = true;
@@ -264,8 +426,23 @@
         return out;
       }
 
+      function updateSticky() {
+        const n = selected.length;
+        if (n) {
+          stickyBar.hidden = false;
+          stickyBar.classList.add("show");
+          document.body.classList.add("has-ta-sticky");
+          stickyCount.textContent = n === 1 ? "1 محدّد" : n + " محدّدين";
+        } else {
+          stickyBar.hidden = true;
+          stickyBar.classList.remove("show");
+          document.body.classList.remove("has-ta-sticky");
+        }
+      }
+
       function syncSheetFromSelection() {
         hideActionPanels();
+        updateSticky();
         if (!selected.length) {
           workerSheet.hidden = true;
           return;
@@ -277,12 +454,12 @@
           const net = r.effectiveHours != null ? r.effectiveHours : r.baseHours;
           wsName.textContent = r.workerCode + " · " + (r.workerName || "");
           wsMeta.textContent = r.workDate + " · " + (r.projectName || "—") +
-            " · net " + net + "h" +
-            (r.adjustmentHours ? ` (base ${r.baseHours}${r.adjustmentHours > 0 ? "+" : ""}${r.adjustmentHours})` : "");
+            " · صافي " + fmtNum(net) + "س" +
+            (r.adjustmentHours ? ` (أساس ${fmtNum(r.baseHours)}${r.adjustmentHours > 0 ? "+" : ""}${fmtNum(r.adjustmentHours)})` : "");
         } else {
-          wsName.textContent = workers.length + " workers selected";
-          wsMeta.textContent = workers.map((r) => r.workerCode).join(", ") +
-            (dates.length === 1 ? " · " + dates[0] : " · " + dates.length + " dates");
+          wsName.textContent = workers.length + " عمال محدّدون";
+          wsMeta.textContent = workers.map((r) => r.workerCode).join("، ") +
+            (dates.length === 1 ? " · " + dates[0] : " · " + dates.length + " تواريخ");
         }
         wsAdjDate.value = dates.length === 1 ? dates[0] : (attFrom.value || today);
         wsDedDate.value = dates.length === 1 ? dates[0] : (attFrom.value || today);
@@ -290,11 +467,8 @@
       }
 
       function readRow(tr) {
-        try {
-          return JSON.parse(decodeURIComponent(tr.getAttribute("data-row")));
-        } catch (_) {
-          return null;
-        }
+        try { return JSON.parse(decodeURIComponent(tr.getAttribute("data-row"))); }
+        catch (_) { return null; }
       }
 
       function rebuildSelectedFromDom() {
@@ -319,6 +493,7 @@
         selected = [];
         workerSheet.hidden = true;
         hideActionPanels();
+        updateSticky();
         attBody.querySelectorAll(".ta-row-pick").forEach((tr) => {
           tr.classList.remove("is-selected");
           const cb = tr.querySelector(".ta-row-check");
@@ -330,41 +505,47 @@
         }
       }
 
-      wsClose.onclick = clearSelection;
-
-      function setMsg(el, text, isErr) {
-        el.textContent = text || "";
-        el.classList.toggle("err", !!isErr);
+      function filteredRows() {
+        const q = String(attSearch.value || "").trim().toLowerCase();
+        if (!q) return allRows;
+        return allRows.filter((r) => {
+          const hay = `${r.workerCode} ${r.workerName || ""}`.toLowerCase();
+          return hay.includes(q);
+        });
       }
 
-      async function loadAtt() {
-        clearSelection();
-        const res = await apiGet({
-          action: "timesheetListAttendance",
-          from: attFrom.value,
-          to: attTo.value,
-          status: "active",
-        });
-        attBody.innerHTML = (res.rows || []).length
-          ? (res.rows || []).map((r) => {
+      function updateKpis(rows, dedTotal, adjTotal) {
+        const present = rows.length;
+        const hours = rows.reduce((s, r) => s + Number(r.effectiveHours || r.baseHours || 0), 0);
+        kpiPresent.textContent = String(present);
+        kpiHours.textContent = fmtNum(hours);
+        kpiAdj.textContent = (adjTotal > 0 ? "+" : "") + fmtNum(adjTotal);
+        kpiDed.textContent = fmtNum(dedTotal);
+      }
+
+      function renderTable() {
+        const rows = filteredRows();
+        attBody.innerHTML = rows.length
+          ? rows.map((r) => {
               const adj = Number(r.adjustmentHours) || 0;
               const net = r.effectiveHours != null
                 ? Number(r.effectiveHours)
                 : Math.max(0, Number(r.baseHours || 0) + adj);
               const hoursLabel = adj
-                ? `<strong>${net}</strong> <span class="text-muted" style="font-size:.78rem">(${r.baseHours}${adj > 0 ? "+" : ""}${adj})</span>`
-                : String(r.baseHours);
+                ? `<strong>${fmtNum(net)}</strong> <span class="ta-hours-adj">(${fmtNum(r.baseHours)}${adj > 0 ? "+" : ""}${fmtNum(adj)})</span>`
+                : fmtNum(r.baseHours);
               const payload = encodeURIComponent(JSON.stringify({
                 id: r.id,
                 workDate: r.workDate,
                 workerCode: r.workerCode,
                 workerName: r.workerName || "",
                 projectName: r.projectName || "",
+                projectId: r.projectId,
                 baseHours: r.baseHours,
                 adjustmentHours: adj,
                 effectiveHours: net,
               }));
-              return `<tr class="ta-row-pick" data-row="${payload}" title="Select workers for bulk actions">
+              return `<tr class="ta-row-pick" data-row="${payload}" title="تحديد للتعديل">
                 <td><input type="checkbox" class="ta-check ta-row-check"></td>
                 <td>${r.workDate}</td>
                 <td><strong>${r.workerCode}</strong> · ${r.workerName || ""}</td>
@@ -372,7 +553,7 @@
                 <td>${hoursLabel}</td>
               </tr>`;
             }).join("")
-          : `<tr><td colspan="5" class="ts-empty">No attendance in this range</td></tr>`;
+          : `<tr><td colspan="5" class="ts-empty">لا يوجد حضور في هذا المدى</td></tr>`;
 
         attBody.querySelectorAll(".ta-row-pick").forEach((tr) => {
           const cb = tr.querySelector(".ta-row-check");
@@ -381,30 +562,182 @@
             cb.checked = !cb.checked;
             rebuildSelectedFromDom();
           });
-          cb.addEventListener("click", (e) => {
-            e.stopPropagation();
-          });
+          cb.addEventListener("click", (e) => e.stopPropagation());
           cb.addEventListener("change", () => rebuildSelectedFromDom());
         });
+        clearSelection();
       }
-      attReload.onclick = loadAtt;
-      attSelectAll.addEventListener("change", () => {
-        attBody.querySelectorAll(".ta-row-check").forEach((cb) => {
-          cb.checked = attSelectAll.checked;
+
+      function markPreset(name) {
+        activePreset = name;
+        document.querySelectorAll("#datePresets .ta-chip").forEach((b) => {
+          b.classList.toggle("is-on", b.dataset.range === name);
         });
+      }
+
+      function applyRange(kind) {
+        const now = new Date();
+        if (kind === "today") {
+          attFrom.value = localYmd(now);
+          attTo.value = localYmd(now);
+        } else if (kind === "week") {
+          const s = startOfWeek(now);
+          attFrom.value = localYmd(s);
+          attTo.value = localYmd(now);
+        } else if (kind === "month") {
+          attFrom.value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
+          attTo.value = localYmd(now);
+        }
+        markPreset(kind);
+        loadAll();
+      }
+
+      async function loadProjects() {
+        try {
+          const projects = await apiGet({ action: "listProjects" });
+          const items = projects.items || projects.rows || projects.projects || [];
+          attProject.innerHTML = '<option value="">كل المشاريع</option>' +
+            items.map((p) => `<option value="${p.id}">${p.name || p.code}</option>`).join("");
+        } catch (_) {}
+      }
+
+      async function loadActivity() {
+        try {
+          const [adjRes, dedRes] = await Promise.all([
+            apiGet({ action: "timesheetListHourAdjustments", from: attFrom.value, to: attTo.value }),
+            apiGet({ action: "timesheetListDeductions", from: attFrom.value, to: attTo.value }),
+          ]);
+          const events = [];
+          (adjRes.rows || []).forEach((h) => {
+            (h.lines || []).forEach((l) => {
+              events.push({
+                at: h.createdAt || h.workDate,
+                sort: h.createdAt || h.workDate || "",
+                html: `<strong>ساعات ${l.deltaHours > 0 ? "+" : ""}${fmtNum(l.deltaHours)}</strong> · ${l.workerCode}` +
+                  ` <span class="muted">${h.workDate} · ${h.reason || ""} · ${h.createdBy || ""}</span>`,
+              });
+            });
+          });
+          (dedRes.rows || []).forEach((d) => {
+            events.push({
+              at: d.createdAt || d.workDate,
+              sort: d.createdAt || d.workDate || "",
+              html: `<strong>خصم ${fmtNum(d.amount)} ${d.currency || ""}</strong> · ${d.workerCode}` +
+                ` <span class="muted">${d.workDate} · ${dedTypeLabel(d.dedType)} · ${d.note || ""}</span>`,
+            });
+          });
+          events.sort((a, b) => (a.sort < b.sort ? 1 : -1));
+          const top = events.slice(0, 12);
+          activityLog.innerHTML = top.length
+            ? top.map((e) => `<div class="ta-log-item">${e.html}</div>`).join("")
+            : `<div class="ts-empty">لا توجد تعديلات في هذا المدى</div>`;
+
+          const adjTotal = (adjRes.rows || []).reduce((s, h) => {
+            return s + (h.lines || []).reduce((ss, l) => ss + Number(l.deltaHours || 0), 0);
+          }, 0);
+          const dedTotal = (dedRes.rows || []).reduce((s, d) => s + Number(d.amount || 0), 0);
+          return { adjTotal, dedTotal };
+        } catch (e) {
+          activityLog.innerHTML = `<div class="ts-empty">تعذّر تحميل السجل</div>`;
+          return { adjTotal: 0, dedTotal: 0 };
+        }
+      }
+
+      async function loadAll() {
+        clearSelection();
+        setMsg(listMsg, "جاري التحميل…");
+        try {
+          const params = {
+            action: "timesheetListAttendance",
+            from: attFrom.value,
+            to: attTo.value,
+            status: "active",
+          };
+          if (attProject.value) params.projectId = attProject.value;
+          const res = await apiGet(params);
+          allRows = res.rows || [];
+          renderTable();
+          const { adjTotal, dedTotal } = await loadActivity();
+          updateKpis(filteredRows(), dedTotal, adjTotal);
+          setMsg(listMsg, allRows.length ? `${allRows.length} سجل` : "");
+        } catch (e) {
+          allRows = [];
+          renderTable();
+          updateKpis([], 0, 0);
+          setMsg(listMsg, e.message || String(e), true);
+        }
+      }
+
+      function exportCsv() {
+        const rows = filteredRows();
+        if (!rows.length) return setMsg(listMsg, "لا بيانات للتصدير", true);
+        const header = ["date", "worker_code", "worker_name", "project", "base_hours", "adjustment_hours", "net_hours"];
+        const lines = [header.join(",")];
+        rows.forEach((r) => {
+          const adj = Number(r.adjustmentHours) || 0;
+          const net = r.effectiveHours != null ? Number(r.effectiveHours) : Math.max(0, Number(r.baseHours || 0) + adj);
+          const cols = [
+            r.workDate,
+            r.workerCode,
+            `"${String(r.workerName || "").replace(/"/g, '""')}"`,
+            `"${String(r.projectName || "").replace(/"/g, '""')}"`,
+            r.baseHours,
+            adj,
+            net,
+          ];
+          lines.push(cols.join(","));
+        });
+        const blob = new Blob(["\ufeff" + lines.join("\n")], { type: "text/csv;charset=utf-8" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = `timesheet-${attFrom.value}_to_${attTo.value}.csv`;
+        a.click();
+        URL.revokeObjectURL(a.href);
+        setMsg(listMsg, "تم التصدير ✓");
+      }
+
+      document.querySelectorAll("#datePresets .ta-chip").forEach((btn) => {
+        btn.addEventListener("click", () => applyRange(btn.dataset.range));
+      });
+      attReload.onclick = () => { markPreset(""); loadAll(); };
+      attProject.onchange = () => loadAll();
+      attSearch.addEventListener("input", () => {
+        renderTable();
+        // keep KPIs on full loaded set for deductions; recompute present/hours on filter
+        const rows = filteredRows();
+        const hours = rows.reduce((s, r) => s + Number(r.effectiveHours || r.baseHours || 0), 0);
+        kpiPresent.textContent = String(rows.length);
+        kpiHours.textContent = fmtNum(hours);
+      });
+      ["attFrom", "attTo"].forEach((id) => {
+        document.getElementById(id).addEventListener("change", () => markPreset(""));
+      });
+      btnExport.onclick = exportCsv;
+      attSelectAll.addEventListener("change", () => {
+        attBody.querySelectorAll(".ta-row-check").forEach((cb) => { cb.checked = attSelectAll.checked; });
         rebuildSelectedFromDom();
       });
-
-      wsOpenHours.onclick = () => {
+      wsClose.onclick = clearSelection;
+      stClear.onclick = clearSelection;
+      stHours.onclick = () => {
+        if (!selected.length) return;
+        workerSheet.hidden = false;
         hideActionPanels();
         wsHoursPanel.hidden = false;
+        workerSheet.scrollIntoView({ behavior: "smooth", block: "nearest" });
         wsAdjReason.focus();
       };
-      wsOpenDed.onclick = () => {
+      stDed.onclick = () => {
+        if (!selected.length) return;
+        workerSheet.hidden = false;
         hideActionPanels();
         wsDedPanel.hidden = false;
+        workerSheet.scrollIntoView({ behavior: "smooth", block: "nearest" });
         wsDedAmount.focus();
       };
+
+      wsOpenHours.onclick = () => { hideActionPanels(); wsHoursPanel.hidden = false; wsAdjReason.focus(); };
+      wsOpenDed.onclick = () => { hideActionPanels(); wsDedPanel.hidden = false; wsDedAmount.focus(); };
       wsOpenShift.onclick = async () => {
         hideActionPanels();
         wsShiftPanel.hidden = false;
@@ -418,9 +751,9 @@
       wsAdjSubmit.onclick = async () => {
         const workers = uniqueWorkers(selected);
         if (!workers.length) return;
-        if (!wsAdjReason.value.trim()) return setMsg(wsAdjMsg, "Enter reason", true);
+        if (!wsAdjReason.value.trim()) return setMsg(wsAdjMsg, "أدخل السبب", true);
         const delta = Number(wsAdjDelta.value);
-        if (!Number.isFinite(delta) || delta === 0) return setMsg(wsAdjMsg, "Enter non-zero hours", true);
+        if (!Number.isFinite(delta) || delta === 0) return setMsg(wsAdjMsg, "أدخل ساعات غير صفر", true);
         const lines = workers.map((w) => ({ workerCode: w.workerCode, deltaHours: delta }));
         const res = await apiGet({
           action: "timesheetAdjustHours",
@@ -428,20 +761,18 @@
           reason: wsAdjReason.value,
           lines: JSON.stringify(lines),
         });
-        setMsg(wsAdjMsg, res.ok ? `Saved for ${res.lineCount} worker(s) ✓` : (res.error || "Failed"), !res.ok);
+        setMsg(wsAdjMsg, res.ok ? `تم الحفظ لـ ${res.lineCount} عامل ✓` : (res.error || "فشل"), !res.ok);
         if (res.ok) {
           wsAdjReason.value = "";
           wsHoursPanel.hidden = true;
-          loadAtt();
+          loadAll();
         }
       };
 
       wsDedSubmit.onclick = async () => {
         const workers = uniqueWorkers(selected);
         if (!workers.length) return;
-        if (!wsDedAmount.value || Number(wsDedAmount.value) <= 0) {
-          return setMsg(wsDedMsg, "Enter amount", true);
-        }
+        if (!wsDedAmount.value || Number(wsDedAmount.value) <= 0) return setMsg(wsDedMsg, "أدخل المبلغ", true);
         let okCount = 0;
         let lastErr = "";
         for (const w of workers) {
@@ -454,34 +785,26 @@
             note: wsDedNote.value,
           });
           if (res.ok) okCount += 1;
-          else lastErr = res.error || "Failed";
+          else lastErr = res.error || "فشل";
         }
         const allOk = okCount === workers.length;
-        setMsg(
-          wsDedMsg,
-          allOk ? `Saved for ${okCount} worker(s) ✓` : `Saved ${okCount}/${workers.length}. ${lastErr}`,
-          !allOk
-        );
+        setMsg(wsDedMsg, allOk ? `تم الحفظ لـ ${okCount} عامل ✓` : `تم ${okCount}/${workers.length}. ${lastErr}`, !allOk);
         if (allOk) {
           wsDedAmount.value = "";
           wsDedNote.value = "";
           wsDedPanel.hidden = true;
+          loadAll();
         }
       };
 
       wsVoid.onclick = async () => {
         if (!selected.length) return;
-        const reason = prompt(
-          selected.length === 1
-            ? "Why void this day?"
-            : `Why void these ${selected.length} attendance days?`
-        );
+        const reason = prompt(selected.length === 1 ? "سبب إلغاء هذا اليوم؟" : `سبب إلغاء ${selected.length} أيام؟`);
         if (!reason) return;
         for (const row of selected) {
           await apiGet({ action: "timesheetVoidAttendance", id: row.id, reason });
         }
-        clearSelection();
-        loadAtt();
+        loadAll();
       };
 
       async function loadSettings() {
@@ -490,10 +813,11 @@
       }
       shiftSave.onclick = async () => {
         const res = await apiGet({ action: "timesheetSetSettings", defaultShiftHours: shiftHours.value });
-        setMsg(shiftMsg, res.ok ? "Saved ✓" : (res.error || "Failed"), !res.ok);
+        setMsg(shiftMsg, res.ok ? "تم الحفظ ✓" : (res.error || "فشل"), !res.ok);
       };
 
-      await loadAtt();
+      await loadProjects();
+      applyRange("today");
     })();
   </script>
 </body>
