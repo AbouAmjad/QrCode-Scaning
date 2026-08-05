@@ -28,27 +28,33 @@ function dispatchView(row) {
     projectName: row.project_name || "",
     projectSite: row.project_site || "",
     type: row.type || "out",
+    status: row.status || "issued",
     recipientName: row.recipient_name || "",
     recipientPhone: row.recipient_phone || "",
     recipientResidenceNo: row.recipient_residence_no || "",
     vehiclePlate: row.vehicle_plate || "",
-    expectedReturnDate: row.expected_return_date || "",
+    expectedReturnDate: row.expected_return_date
+      ? U.isoDateOnly(row.expected_return_date) || String(row.expected_return_date).slice(0, 10)
+      : "",
     logisticsName: row.logistics_name || "",
     storeManagerName: row.store_manager_name || "",
     notes: row.notes || "",
-    byUser: row.by_user || "",
+    byUser: row.issued_by || row.by_user || "",
     issuedAt: U.isoOrNull(row.issued_at),
     totalQty: row.total_qty != null ? U.num(row.total_qty, 0) : null,
   };
 }
 
+/** Production schema uses qty_sent / qty_returned (not qty) and issued_by (not by_user). */
 const DISPATCH_SELECT = `
   SELECT d.*, p.code AS project_code, p.name AS project_name, p.site AS project_site,
          COALESCE(l.qty, 0) AS total_qty
     FROM project_dispatches d
     JOIN projects p ON p.id = d.project_id
     LEFT JOIN (
-      SELECT dispatch_id, SUM(qty)::numeric AS qty FROM project_dispatch_lines GROUP BY dispatch_id
+      SELECT dispatch_id, SUM(qty_sent)::numeric AS qty
+        FROM project_dispatch_lines
+       GROUP BY dispatch_id
     ) l ON l.dispatch_id = d.id`;
 
 async function listProjects(ctx) {
@@ -190,7 +196,8 @@ async function deleteProject(ctx) {
   );
   const qty = U.num(onSite.rows[0].qty, 0);
   if (qty > 0) return { success: false, error: "PROJECT_HAS_STOCK", onSite: qty };
-  const del = await ctx.query(`DELETE FROM projects WHERE id = $1`, [id]);
+
+  const del = await ctx.query(`DELETE FROM projects WHERE id = $1 RETURNING id`, [id]);
   if (!del.rowCount) return { success: false, error: "NOT_FOUND" };
   await ctx.audit({ action: "PROJECT_DELETE", before: JSON.stringify({ id }) });
   return { success: true, id };
@@ -206,9 +213,23 @@ function readLines(params) {
       description: U.trimmed(l && l.description),
       qty: U.num((l && l.qty) != null ? l.qty : l && l.qtySent, 0),
       condition: U.trimmed(l && l.condition) || "Good",
-      notes: U.trimmed(l && (l.notes || l.condition)) || "Good",
+      notes: U.trimmed(l && l.notes) || U.trimmed(l && l.condition) || "Good",
     }))
     .filter((l) => l.code && l.qty > 0);
+}
+
+function lineView(l) {
+  const qty = U.num(l.qty_sent != null ? l.qty_sent : l.qty, 0);
+  return {
+    id: l.id,
+    code: U.upper(l.code),
+    description: l.description || "",
+    qty,
+    qtySent: qty,
+    qtyReturned: U.num(l.qty_returned, 0),
+    condition: l.condition || l.notes || "Good",
+    notes: l.notes || "",
+  };
 }
 
 async function loadDispatch(query, id) {
@@ -220,15 +241,7 @@ async function loadDispatch(query, id) {
   );
   return {
     ...dispatchView(r.rows[0]),
-    lines: lines.rows.map((l) => ({
-      id: l.id,
-      code: U.upper(l.code),
-      description: l.description || "",
-      qty: U.num(l.qty, 0),
-      qtySent: U.num(l.qty, 0),
-      condition: l.condition || "Good",
-      notes: l.notes || "",
-    })),
+    lines: lines.rows.map(lineView),
   };
 }
 
@@ -280,22 +293,26 @@ async function writeDispatch(ctx, type) {
     [lines.map((l) => l.code)]
   );
   const descOf = new Map(descRows.rows.map((r) => [U.upper(r.code), r.description || ""]));
+  const expectedReturn = U.trimmed(params.expectedReturnDate) || null;
 
   try {
     await query("BEGIN");
     const head = await query(
-      `INSERT INTO project_dispatches (project_id, type, recipient_name, recipient_phone,
-                                       recipient_residence_no, vehicle_plate, expected_return_date,
-                                       logistics_name, store_manager_name, notes, by_user)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING id, issued_at`,
+      `INSERT INTO project_dispatches (
+         form_no, project_id, type, status, recipient_name, recipient_phone,
+         recipient_residence_no, vehicle_plate, expected_return_date,
+         logistics_name, store_manager_name, notes, issued_by
+       ) VALUES ($1,$2,$3,'issued',$4,$5,$6,$7,$8,$9,$10,$11,$12)
+       RETURNING id, issued_at`,
       [
+        `TMP-${Date.now()}`,
         projectId,
         type,
         recipientName,
         U.trimmed(params.recipientPhone),
         U.trimmed(params.recipientResidenceNo),
         U.trimmed(params.vehiclePlate),
-        U.trimmed(params.expectedReturnDate),
+        expectedReturn,
         U.trimmed(params.logisticsName),
         U.trimmed(params.storeManagerName),
         U.trimmed(params.notes),
@@ -308,9 +325,15 @@ async function writeDispatch(ctx, type) {
 
     for (const line of lines) {
       await query(
-        `INSERT INTO project_dispatch_lines (dispatch_id, code, description, qty, condition, notes)
-         VALUES ($1,$2,$3,$4,$5,$6)`,
-        [id, line.code, line.description || descOf.get(line.code) || "", line.qty, line.condition, line.notes]
+        `INSERT INTO project_dispatch_lines (dispatch_id, code, description, qty_sent, qty_returned, notes)
+         VALUES ($1,$2,$3,$4,0,$5)`,
+        [
+          id,
+          line.code,
+          line.description || descOf.get(line.code) || "",
+          line.qty,
+          line.notes || line.condition || "Good",
+        ]
       );
       const sign = type === "out" ? 1 : -1;
       await stock.addProjectStock(query, projectId, line.code, sign * line.qty);
@@ -357,7 +380,6 @@ async function updateProjectDispatch(ctx) {
   const projectId = existing.projectId;
   const sign = existing.type === "return" ? -1 : 1;
 
-  // Net effect per code = new − old, applied in the direction of the form type.
   const oldQty = new Map(existing.lines.map((l) => [l.code, l.qty]));
   const newQty = new Map(lines.map((l) => [l.code, l.qty]));
   const codes = U.uniq([...oldQty.keys(), ...newQty.keys()]);
@@ -383,9 +405,9 @@ async function updateProjectDispatch(ctx) {
     await query(`DELETE FROM project_dispatch_lines WHERE dispatch_id = $1`, [id]);
     for (const line of lines) {
       await query(
-        `INSERT INTO project_dispatch_lines (dispatch_id, code, description, qty, condition, notes)
-         VALUES ($1,$2,$3,$4,$5,$6)`,
-        [id, line.code, line.description, line.qty, line.condition, line.notes]
+        `INSERT INTO project_dispatch_lines (dispatch_id, code, description, qty_sent, qty_returned, notes)
+         VALUES ($1,$2,$3,$4,0,$5)`,
+        [id, line.code, line.description, line.qty, line.notes || line.condition || "Good"]
       );
     }
     for (const code of codes) {
@@ -397,7 +419,7 @@ async function updateProjectDispatch(ctx) {
     await query(
       `UPDATE project_dispatches
           SET recipient_name = $1, recipient_phone = $2, recipient_residence_no = $3,
-              vehicle_plate = $4, notes = $5, updated_at = NOW()
+              vehicle_plate = $4, notes = $5
         WHERE id = $6`,
       [
         U.trimmed(params.recipientName) || existing.recipientName,
@@ -430,8 +452,6 @@ async function deleteProjectDispatch(ctx) {
   const warehouseId = await stock.mainWarehouseId(query);
   const sign = existing.type === "return" ? -1 : 1;
 
-  // Reversing an OUT form pulls stock back off the site; block it when the
-  // site no longer holds those units (they were already returned elsewhere).
   for (const line of existing.lines) {
     if (sign > 0) {
       const have = await stock.projectQty(query, existing.projectId, line.code);

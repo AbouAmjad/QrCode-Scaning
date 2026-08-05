@@ -290,32 +290,38 @@ const STATEMENTS = [
   `CREATE INDEX IF NOT EXISTS idx_project_stock_code ON project_stock (code)`,
   `CREATE TABLE IF NOT EXISTS project_dispatches (
      id BIGSERIAL PRIMARY KEY,
-     form_no TEXT NOT NULL DEFAULT '',
+     form_no TEXT NOT NULL UNIQUE,
      project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
      type TEXT NOT NULL DEFAULT 'out',
+     status TEXT NOT NULL DEFAULT 'issued',
      recipient_name TEXT NOT NULL DEFAULT '',
      recipient_phone TEXT NOT NULL DEFAULT '',
+     issued_by TEXT NOT NULL DEFAULT '',
+     issued_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+     notes TEXT NOT NULL DEFAULT '',
+     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
      recipient_residence_no TEXT NOT NULL DEFAULT '',
      vehicle_plate TEXT NOT NULL DEFAULT '',
-     expected_return_date TEXT NOT NULL DEFAULT '',
      logistics_name TEXT NOT NULL DEFAULT '',
+     logistics_signature TEXT NOT NULL DEFAULT '',
      store_manager_name TEXT NOT NULL DEFAULT '',
-     notes TEXT NOT NULL DEFAULT '',
-     by_user TEXT NOT NULL DEFAULT '',
-     issued_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+     store_manager_signature TEXT NOT NULL DEFAULT '',
+     expected_return_date DATE
    )`,
-  `CREATE INDEX IF NOT EXISTS idx_dispatch_project ON project_dispatches (project_id)`,
+  `CREATE INDEX IF NOT EXISTS idx_project_dispatches_project ON project_dispatches (project_id)`,
+  `CREATE INDEX IF NOT EXISTS idx_project_dispatches_type ON project_dispatches (type)`,
+  `CREATE INDEX IF NOT EXISTS idx_project_dispatches_issued ON project_dispatches (issued_at DESC)`,
   `CREATE TABLE IF NOT EXISTS project_dispatch_lines (
      id BIGSERIAL PRIMARY KEY,
      dispatch_id BIGINT NOT NULL REFERENCES project_dispatches(id) ON DELETE CASCADE,
      code TEXT NOT NULL,
      description TEXT NOT NULL DEFAULT '',
-     qty NUMERIC NOT NULL DEFAULT 0,
-     condition TEXT NOT NULL DEFAULT 'Good',
+     qty_sent NUMERIC NOT NULL DEFAULT 0,
+     qty_returned NUMERIC NOT NULL DEFAULT 0,
      notes TEXT NOT NULL DEFAULT ''
    )`,
-  `CREATE INDEX IF NOT EXISTS idx_dispatch_lines_dispatch ON project_dispatch_lines (dispatch_id)`,
+  `CREATE INDEX IF NOT EXISTS idx_project_dispatch_lines_dispatch ON project_dispatch_lines (dispatch_id)`,
+  `CREATE INDEX IF NOT EXISTS idx_project_dispatch_lines_code ON project_dispatch_lines (code)`,
 
   /* --------------------------------------------------------- user scoping */
   `CREATE TABLE IF NOT EXISTS user_warehouse_scope (

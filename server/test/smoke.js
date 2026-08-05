@@ -45,6 +45,8 @@ async function reset() {
   await query(`DROP TABLE IF EXISTS inventory_count_lines CASCADE`).catch(() => {});
   await query(`DROP TABLE IF EXISTS inventory_count_sheets CASCADE`).catch(() => {});
   await query(`DROP TABLE IF EXISTS inventory_counts CASCADE`).catch(() => {});
+  await query(`DROP TABLE IF EXISTS project_dispatch_lines CASCADE`).catch(() => {});
+  await query(`DROP TABLE IF EXISTS project_dispatches CASCADE`).catch(() => {});
   const tables = [
     "project_dispatch_lines", "project_dispatches", "project_stock", "projects",
     "warehouse_transfer_lines", "warehouse_transfers", "warehouse_stock",
@@ -61,7 +63,7 @@ async function reset() {
   }
   const { STATEMENTS } = require("../src/schema");
   for (const stmt of STATEMENTS) {
-    if (stmt.includes("inventory_count")) {
+    if (stmt.includes("inventory_count") || stmt.includes("project_dispatch")) {
       await query(stmt).catch(() => {});
     }
   }
@@ -74,9 +76,15 @@ async function seed() {
     ["smoke", await bcrypt.hash("Smoke123!", 10), TOKEN]
   );
   await query(
+    `INSERT INTO warehouses (name, is_main) VALUES ('Main Warehouse', TRUE)
+     ON CONFLICT (name) DO UPDATE SET is_main = TRUE`
+  );
+  await query(
     `INSERT INTO warehouses (name, is_main) VALUES ('Site Store', FALSE)
      ON CONFLICT (name) DO NOTHING`
   );
+  const mainWh = await query(`SELECT id FROM warehouses WHERE is_main = TRUE ORDER BY id ASC LIMIT 1`);
+  const mainWarehouseId = mainWh.rows[0].id;
 
   const products = [
     ["I1-A", "WELDING MASK", "tool", "PPE", "Head", 2, true],
@@ -93,23 +101,24 @@ async function seed() {
       [code, description, kind, category, subcategory, minStock, serialized]
     );
     await query(
-      `INSERT INTO warehouse_stock (warehouse_id, code, qty) VALUES (1,$1,10)`,
-      [code]
+      `INSERT INTO warehouse_stock (warehouse_id, code, qty) VALUES ($1,$2,10)`,
+      [mainWarehouseId, code]
     );
     await query(
       `INSERT INTO receiving (code, description, qty, warehouse_id, by_user)
-       VALUES ($1,$2,10,1,'smoke')`,
-      [code, description]
+       VALUES ($1,$2,10,$3,'smoke')`,
+      [code, description, mainWarehouseId]
     );
   }
   await query(
     `INSERT INTO catalog (code, description, kind, calibration_required, calibration_next_due)
      VALUES ('E30-Q','TORQUE WRENCH','tool',TRUE, CURRENT_DATE + 5)`
   );
-  await query(`INSERT INTO warehouse_stock (warehouse_id, code, qty) VALUES (1,'E30-Q',3)`);
+  await query(`INSERT INTO warehouse_stock (warehouse_id, code, qty) VALUES ($1,'E30-Q',3)`, [mainWarehouseId]);
   await query(
     `INSERT INTO receiving (code, description, qty, warehouse_id, by_user)
-     VALUES ('E30-Q','TORQUE WRENCH',3,1,'smoke')`
+     VALUES ('E30-Q','TORQUE WRENCH',3,$1,'smoke')`,
+    [mainWarehouseId]
   );
 
   await query(`INSERT INTO suppliers (name, phone) VALUES ('HALIM','0500000000')`);
@@ -408,6 +417,8 @@ async function testWarehouses() {
   console.log("\nwarehouses");
   const list = await call({ action: "listWarehouses" });
   ok("listWarehouses marks the main one", list.items[0].isMain === true, list.items[0]);
+  const mainId = list.items.find((w) => w.isMain).id;
+  const siteId = list.items.find((w) => !w.isMain).id;
 
   const made = await call({ action: "createWarehouse", name: "Yard" });
   ok("createWarehouse", made.success === true, made);
@@ -415,35 +426,35 @@ async function testWarehouses() {
     (await call({ action: "createWarehouse", name: "Yard" })).error === "NAME_TAKEN");
   ok("deleteWarehouse", (await call({ action: "deleteWarehouse", id: made.item.id })).success);
   ok("deleteWarehouse protects the main warehouse",
-    (await call({ action: "deleteWarehouse", id: 1 })).error === "CANNOT_DELETE_MAIN");
+    (await call({ action: "deleteWarehouse", id: mainId })).error === "CANNOT_DELETE_MAIN");
 
-  const stockView = await call({ action: "listWarehouseStock", warehouseId: 1 });
+  const stockView = await call({ action: "listWarehouseStock", warehouseId: mainId });
   ok("listWarehouseStock", stockView.items.length > 0 && stockView.items[0].description, stockView.items[0]);
 
   ok("createWarehouseTransfer needs stock",
     (await call({
-      action: "createWarehouseTransfer", fromWarehouseId: 1, toWarehouseId: 2,
+      action: "createWarehouseTransfer", fromWarehouseId: mainId, toWarehouseId: siteId,
       lines: JSON.stringify([{ code: "I1-A", qty: 999 }]),
     })).error === "INSUFFICIENT_STOCK");
 
   const xfer = await call({
-    action: "createWarehouseTransfer", fromWarehouseId: 1, toWarehouseId: 2, note: "restock",
+    action: "createWarehouseTransfer", fromWarehouseId: mainId, toWarehouseId: siteId, note: "restock",
     lines: JSON.stringify([{ code: "I1-A", qty: 3 }]),
   });
   ok("createWarehouseTransfer", xfer.success && /^TR-\d{4}-\d{4}$/.test(xfer.transfer.formNo), xfer.transfer);
-  ok("transfer moved the stock", (await call({ action: "listWarehouseStock", warehouseId: 2 }))
+  ok("transfer moved the stock", (await call({ action: "listWarehouseStock", warehouseId: siteId }))
     .items.find((i) => i.code === "I1-A").qty === 3);
   ok("listWarehouseTransfers", (await call({ action: "listWarehouseTransfers" })).items.length === 1);
   const detail = await call({ action: "getWarehouseTransfer", id: xfer.transfer.id });
   ok("getWarehouseTransfer lines", detail.transfer.lines[0].qty === 3, detail.transfer.lines);
 
   const sheet = await call({
-    action: "createInventoryCountSheet", locationType: "warehouse", warehouseId: 1, countType: "full",
+    action: "createInventoryCountSheet", locationType: "warehouse", warehouseId: mainId, countType: "full",
   });
   ok("createInventoryCountSheet", sheet.success && sheet.sheet.lines.length > 0, sheet.sheet && sheet.sheet.formNo);
   ok("createInventoryCountSheet frontend shape", sheet.count && sheet.count.formNo && sheet.lines.length > 0, sheet);
   ok("count sheet needs a category for category counts",
-    (await call({ action: "createInventoryCountSheet", locationType: "warehouse", warehouseId: 1, countType: "category" }))
+    (await call({ action: "createInventoryCountSheet", locationType: "warehouse", warehouseId: mainId, countType: "category" }))
       .error === "CATEGORY_REQUIRED");
 }
 
