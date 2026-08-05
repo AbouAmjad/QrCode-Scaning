@@ -16,7 +16,8 @@ const TCUI = (() => {
     { id: "reports", href: "reports.html", icon: "bi-file-earmark-bar-graph", label: "Reports" },
     { id: "notifications", href: "notifications.html", icon: "bi-bell", label: "Alerts" },
     { id: "audit", href: "audit.html", icon: "bi-journal-text", label: "Audit" },
-    { id: "consumables", href: "consumables.html", icon: "bi-box-seam", label: "Consumables" }
+    { id: "consumables", href: "consumables.html", icon: "bi-box-seam", label: "Consumables" },
+    { id: "timesheet", href: "timesheet.html", icon: "bi-clock-history", label: "Timesheet" }
   ];
 
   let pwaRegistered = false;

@@ -28,8 +28,8 @@ const AppConfig = {
   },
   /** pages each role may open (admin gets all) */
   ROLE_PAGES: {
-    employee: ["terminal", "outstanding", "receiving", "damage", "products"],
-    engineer: ["inventory", "requests", "overview", "search", "consumables", "notifications", "products"],
+    employee: ["terminal", "outstanding", "receiving", "damage", "products", "timesheet"],
+    engineer: ["inventory", "requests", "overview", "search", "consumables", "notifications", "products", "timesheet"],
     admin: ["*"]
   },
 

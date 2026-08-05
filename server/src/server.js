@@ -7,6 +7,7 @@ const fs = require("fs");
 const bcrypt = require("bcryptjs");
 const { randomUUID } = require("crypto");
 const { query } = require("./db");
+const { isTimesheetAction, handleTimesheet } = require("./timesheet/handler");
 
 const PORT = Number(process.env.PORT || 3000);
 const UPLOAD_DIR = process.env.UPLOAD_DIR || "/var/www/toolcustody/uploads";
@@ -92,6 +93,13 @@ async function handle(params) {
   const action = params.action;
 
   if (action === "options") return { ok: true };
+
+  // Timesheet module — isolated router (does not touch core handlers)
+  if (isTimesheetAction(action)) {
+    const auth = await requireAuth(params);
+    if (auth.error) return auth;
+    return handleTimesheet(action, params, auth);
+  }
 
   if (action === "login") {
     const username = String(params.user || "").trim();
