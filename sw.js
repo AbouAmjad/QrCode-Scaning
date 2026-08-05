@@ -19,6 +19,7 @@ const ASSETS = [
   "./inventory.html",
   "./outstanding.html",
   "./requests.html",
+  "./timesheet.html",
   "./notifications.html",
   "./config.js",
   "./parser.js",
