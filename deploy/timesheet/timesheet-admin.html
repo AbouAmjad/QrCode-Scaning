@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AbouAmjad Store System | Timesheet Admin</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="app.css?v=live">
+  <link rel="stylesheet" href="timesheet.css?v=4">
+  <script src="config.js?v=live"></script>
+  <script src="i18n.js?v=live"></script>
+  <script src="ui.js?v=live"></script>
+  <style>
+    .ta-home { display: grid; gap: .85rem; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin-bottom: 1rem; }
+    .ta-card {
+      text-align: left;
+      border: 1px solid var(--tc-border);
+      background: var(--tc-surface);
+      border-radius: 18px;
+      padding: 1.1rem 1.15rem;
+      cursor: pointer;
+      box-shadow: var(--tc-shadow-soft);
+      transition: transform var(--tc-ease), border-color var(--tc-ease), box-shadow var(--tc-ease);
+      font: inherit; color: inherit;
+    }
+    .ta-card:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--tc-accent) 45%, var(--tc-border)); }
+    .ta-card.active { border-color: var(--tc-accent); box-shadow: 0 0 0 3px var(--tc-accent-soft); }
+    .ta-card i { font-size: 1.35rem; color: var(--tc-accent-2); }
+    .ta-card strong { display: block; margin: .45rem 0 .25rem; font-size: 1.05rem; font-weight: 800; }
+    .ta-card span { color: var(--tc-muted); font-size: .86rem; line-height: 1.35; }
+    .ta-back { margin-bottom: .85rem; }
+    .ta-stack { display: grid; gap: .85rem; max-width: 720px; }
+    .ta-row { display: grid; gap: .75rem; }
+    @media (min-width: 640px) {
+      .ta-row.two { grid-template-columns: 1fr 1fr; }
+    }
+    .ta-actions { display: flex; flex-wrap: wrap; gap: .6rem; align-items: center; margin-top: .25rem; }
+    .ta-msg { font-weight: 700; color: var(--tc-accent-2); min-height: 1.2em; }
+    .ta-msg.err { color: var(--tc-danger); }
+    .ta-row-pick { cursor: pointer; transition: background var(--tc-ease); }
+    .ta-row-pick:hover { background: color-mix(in srgb, var(--tc-accent) 8%, transparent); }
+    .ta-row-pick.is-selected { background: color-mix(in srgb, var(--tc-accent) 14%, transparent); }
+    .ta-worker-sheet {
+      margin-top: 1rem;
+      padding: 1.1rem 1.15rem;
+      border-radius: 18px;
+      border: 1px solid color-mix(in srgb, var(--tc-accent) 35%, var(--tc-border));
+      background:
+        radial-gradient(500px 160px at 0% 0%, rgba(15, 118, 110, 0.12), transparent 55%),
+        var(--tc-surface);
+      box-shadow: var(--tc-shadow-soft);
+      max-width: 720px;
+    }
+    .ta-worker-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: .75rem;
+      flex-wrap: wrap;
+      margin-bottom: .9rem;
+    }
+    .ta-worker-head h3 {
+      margin: .15rem 0 0;
+      font-size: 1.15rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+    .ta-worker-meta { margin: .2rem 0 0; color: var(--tc-muted); font-size: .86rem; }
+    .ta-worker-kicker {
+      margin: 0;
+      font-size: .72rem;
+      font-weight: 700;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      color: var(--tc-muted);
+    }
+    .ta-worker-actions {
+      display: grid;
+      gap: .65rem;
+      grid-template-columns: 1fr;
+    }
+    @media (min-width: 560px) {
+      .ta-worker-actions { grid-template-columns: 1fr 1fr; }
+    }
+    .ta-worker-action {
+      text-align: left;
+      border: 1px solid var(--tc-border);
+      background: var(--tc-surface-2, var(--tc-surface));
+      border-radius: 14px;
+      padding: .9rem 1rem;
+      cursor: pointer;
+      font: inherit;
+      color: inherit;
+      transition: border-color var(--tc-ease), transform var(--tc-ease);
+    }
+    .ta-worker-action:hover {
+      border-color: color-mix(in srgb, var(--tc-accent) 50%, var(--tc-border));
+      transform: translateY(-1px);
+    }
+    .ta-worker-action i { color: var(--tc-accent-2); font-size: 1.1rem; }
+    .ta-worker-action strong { display: block; margin: .35rem 0 .2rem; font-weight: 800; }
+    .ta-worker-action span { display: block; color: var(--tc-muted); font-size: .82rem; line-height: 1.35; }
+    .ta-inline-panel {
+      margin-top: .9rem;
+      padding-top: .9rem;
+      border-top: 1px solid var(--tc-border);
+    }
+    .ta-inline-panel h4 {
+      margin: 0 0 .75rem;
+      font-size: .95rem;
+      font-weight: 800;
+    }
+    .ta-void-link {
+      background: none;
+      border: 0;
+      color: var(--tc-danger);
+      font: inherit;
+      font-size: .8rem;
+      font-weight: 700;
+      cursor: pointer;
+      padding: 0;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+  </style>
+</head>
+<body class="tc-page ts-page" data-page="timesheetAdmin">
+  <div class="tc-wrap"><div class="tc-shell">
+    <div id="app-header"></div>
+    <main class="tc-main p-3">
+      <section class="ts-hero">
+        <h1><i class="bi bi-clock-history"></i> Timesheet Admin</h1>
+        <p>Attendance first. Tap a worker to add hours or a deduction.</p>
+      </section>
+
+      <!-- HOME -->
+      <div id="homeView">
+        <div class="ta-home">
+          <button type="button" class="ta-card" data-go="link">
+            <i class="bi bi-link-45deg"></i>
+            <strong>1. Link worker login</strong>
+            <span>Connect a Labor user to a worker code (P001…). Needed before portal works.</span>
+          </button>
+          <button type="button" class="ta-card" data-go="att">
+            <i class="bi bi-calendar2-check"></i>
+            <strong>2. Attendance list</strong>
+            <span>See who punched. Tap a worker → hours +/− or deduction.</span>
+          </button>
+          <button type="button" class="ta-card" data-go="set">
+            <i class="bi bi-sliders"></i>
+            <strong>3. Shift hours</strong>
+            <span>Default hours per present day (example: 10).</span>
+          </button>
+        </div>
+        <div id="homeHint" class="ts-note" style="display:none"></div>
+      </div>
+
+      <!-- TASK PANELS -->
+      <div id="taskView" hidden>
+        <button type="button" class="ts-btn ts-btn-ghost ta-back" id="backHome"><i class="bi bi-arrow-left"></i> All tasks</button>
+
+        <!-- LINK -->
+        <section class="ts-panel" id="panel-link" hidden>
+          <h2><i class="bi bi-link-45deg"></i> Link worker login</h2>
+          <div class="ts-note">Create the user first in <strong>Users</strong> with role Labor / Worker, then link here.</div>
+          <div class="ta-stack">
+            <div class="ta-row two">
+              <div>
+                <label class="ts-label">User</label>
+                <select id="linkUserId" class="ts-select"><option value="">Select worker login…</option></select>
+              </div>
+              <div>
+                <label class="ts-label">Worker code</label>
+                <input id="linkWorker" class="ts-input" placeholder="P001" autocomplete="off">
+              </div>
+            </div>
+            <div class="ta-actions">
+              <button class="ts-btn ts-btn-primary" id="linkSubmit">Link</button>
+              <span class="ta-msg" id="linkMsg"></span>
+            </div>
+            <div>
+              <h2 style="margin-top:1rem">Already linked</h2>
+              <div class="table-responsive"><table class="ts-table"><thead><tr><th>Login</th><th>Worker</th><th></th></tr></thead><tbody id="accBody"></tbody></table></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ATTENDANCE (+ hours / deduction on worker tap) -->
+        <section class="ts-panel" id="panel-att" hidden>
+          <h2><i class="bi bi-calendar2-check"></i> Attendance list</h2>
+          <div class="ts-note">Tap a worker row to add/remove hours or add a deduction.</div>
+          <div class="ta-stack">
+            <div class="ta-row two">
+              <div><label class="ts-label">From</label><input type="date" id="attFrom" class="ts-input"></div>
+              <div><label class="ts-label">To</label><input type="date" id="attTo" class="ts-input"></div>
+            </div>
+            <div class="ta-actions"><button class="ts-btn ts-btn-primary" id="attReload">Show</button></div>
+            <div class="table-responsive"><table class="ts-table"><thead><tr>
+              <th>Date</th><th>Worker</th><th>Project</th><th>Hours</th>
+            </tr></thead><tbody id="attBody"></tbody></table></div>
+
+            <div id="workerSheet" class="ta-worker-sheet" hidden>
+              <div class="ta-worker-head">
+                <div>
+                  <p class="ta-worker-kicker">Selected worker</p>
+                  <h3 id="wsName">—</h3>
+                  <p class="ta-worker-meta" id="wsMeta"></p>
+                </div>
+                <button type="button" class="ts-btn ts-btn-ghost" id="wsClose">Close</button>
+              </div>
+
+              <div class="ta-worker-actions">
+                <button type="button" class="ta-worker-action" id="wsOpenHours">
+                  <i class="bi bi-plus-slash-minus"></i>
+                  <strong>Add / remove hours</strong>
+                  <span>Overtime or reduce for this worker.</span>
+                </button>
+                <button type="button" class="ta-worker-action" id="wsOpenDed">
+                  <i class="bi bi-cash-coin"></i>
+                  <strong>Add deduction</strong>
+                  <span>Delay, absence, tool damage, or fixed amount.</span>
+                </button>
+              </div>
+
+              <div id="wsHoursPanel" class="ta-inline-panel" hidden>
+                <h4><i class="bi bi-plus-slash-minus"></i> Add / remove hours</h4>
+                <div class="ta-row two">
+                  <div><label class="ts-label">Date</label><input type="date" id="wsAdjDate" class="ts-input"></div>
+                  <div><label class="ts-label">Hours (+ or −)</label><input type="number" step="0.5" id="wsAdjDelta" class="ts-input" value="1"></div>
+                </div>
+                <div style="margin-top:.75rem">
+                  <label class="ts-label">Reason</label>
+                  <input id="wsAdjReason" class="ts-input" placeholder="Overtime / late">
+                </div>
+                <div class="ta-actions">
+                  <button class="ts-btn ts-btn-primary" id="wsAdjSubmit">Save hours</button>
+                  <button type="button" class="ts-btn ts-btn-ghost" id="wsAdjCancel">Cancel</button>
+                  <span class="ta-msg" id="wsAdjMsg"></span>
+                </div>
+              </div>
+
+              <div id="wsDedPanel" class="ta-inline-panel" hidden>
+                <h4><i class="bi bi-cash-coin"></i> Add deduction</h4>
+                <div class="ta-row two">
+                  <div>
+                    <label class="ts-label">Type</label>
+                    <select id="wsDedType" class="ts-select">
+                      <option value="delay">Delay</option>
+                      <option value="absence">Absence</option>
+                      <option value="tool_damage">Tool damage</option>
+                      <option value="fixed_amount">Fixed amount</option>
+                    </select>
+                  </div>
+                  <div><label class="ts-label">Amount</label><input type="number" step="0.01" id="wsDedAmount" class="ts-input" placeholder="0.00"></div>
+                </div>
+                <div class="ta-row two" style="margin-top:.75rem">
+                  <div><label class="ts-label">Date</label><input type="date" id="wsDedDate" class="ts-input"></div>
+                  <div><label class="ts-label">Note (optional)</label><input id="wsDedNote" class="ts-input"></div>
+                </div>
+                <div class="ta-actions">
+                  <button class="ts-btn ts-btn-primary" id="wsDedSubmit">Save deduction</button>
+                  <button type="button" class="ts-btn ts-btn-ghost" id="wsDedCancel">Cancel</button>
+                  <span class="ta-msg" id="wsDedMsg"></span>
+                </div>
+              </div>
+
+              <div class="ta-actions" style="margin-top:1rem">
+                <button type="button" class="ta-void-link" id="wsVoid">Void this attendance day…</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- SETTINGS -->
+        <section class="ts-panel" id="panel-set" hidden>
+          <h2><i class="bi bi-sliders"></i> Shift hours</h2>
+          <div class="ta-stack" style="max-width:320px">
+            <div>
+              <label class="ts-label">Hours for each present day</label>
+              <input type="number" step="0.5" id="shiftHours" class="ts-input">
+            </div>
+            <div class="ta-actions">
+              <button class="ts-btn ts-btn-primary" id="shiftSave">Save</button>
+              <span class="ta-msg" id="shiftMsg"></span>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div></div>
+  <script>
+    (async function () {
+      if (typeof requireAuth === "function") requireAuth();
+      if (typeof TCUI !== "undefined") TCUI.mountHeader({ pageId: "timesheetAdmin" });
+
+      const today = new Date().toISOString().slice(0, 10);
+      ["attFrom", "attTo", "wsAdjDate", "wsDedDate"].forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) el.value = today;
+      });
+
+      const homeView = document.getElementById("homeView");
+      const taskView = document.getElementById("taskView");
+      const panels = ["link", "att", "set"];
+      let selected = null;
+
+      function showHome() {
+        homeView.hidden = false;
+        taskView.hidden = true;
+        panels.forEach((k) => { document.getElementById("panel-" + k).hidden = true; });
+        closeWorkerSheet();
+        refreshHomeHint();
+      }
+
+      function openTask(key) {
+        homeView.hidden = true;
+        taskView.hidden = false;
+        panels.forEach((k) => { document.getElementById("panel-" + k).hidden = k !== key; });
+        closeWorkerSheet();
+        if (key === "link") loadAcc();
+        if (key === "att") loadAtt();
+        if (key === "set") loadSettings();
+      }
+
+      function closeWorkerSheet() {
+        selected = null;
+        workerSheet.hidden = true;
+        wsHoursPanel.hidden = true;
+        wsDedPanel.hidden = true;
+        wsAdjMsg.textContent = "";
+        wsDedMsg.textContent = "";
+        attBody.querySelectorAll(".ta-row-pick.is-selected").forEach((tr) => tr.classList.remove("is-selected"));
+      }
+
+      function openWorkerSheet(row, tr) {
+        selected = row;
+        attBody.querySelectorAll(".ta-row-pick.is-selected").forEach((el) => el.classList.remove("is-selected"));
+        if (tr) tr.classList.add("is-selected");
+        wsName.textContent = row.workerCode + " · " + (row.workerName || "");
+        wsMeta.textContent = row.workDate + " · " + (row.projectName || "—") + " · " + row.baseHours + "h";
+        wsAdjDate.value = row.workDate;
+        wsDedDate.value = row.workDate;
+        wsHoursPanel.hidden = true;
+        wsDedPanel.hidden = true;
+        wsAdjMsg.textContent = "";
+        wsDedMsg.textContent = "";
+        workerSheet.hidden = false;
+        workerSheet.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
+
+      document.querySelectorAll("[data-go]").forEach((btn) => {
+        btn.addEventListener("click", () => openTask(btn.dataset.go));
+      });
+      backHome.onclick = showHome;
+      wsClose.onclick = closeWorkerSheet;
+
+      function setMsg(el, text, isErr) {
+        el.textContent = text || "";
+        el.classList.toggle("err", !!isErr);
+      }
+
+      async function refreshHomeHint() {
+        try {
+          const users = await apiGet({ action: "listUsers" });
+          const linkedRes = await apiGet({ action: "timesheetListWorkerAccounts" });
+          const linked = new Set((linkedRes.rows || []).map((r) => r.userId));
+          const need = (users.items || []).filter((u) => String(u.role).toLowerCase() === "worker" && !linked.has(u.id));
+          if (need.length) {
+            homeHint.style.display = "block";
+            homeHint.innerHTML = "⚠ Worker logins not linked yet: " +
+              need.map((u) => `<strong>${u.username}</strong> (ID ${u.id})`).join(", ") +
+              " — open <em>Link worker login</em>.";
+          } else {
+            homeHint.style.display = "none";
+          }
+        } catch (e) {
+          homeHint.style.display = "none";
+        }
+      }
+
+      async function loadAcc() {
+        const users = await apiGet({ action: "listUsers" });
+        const workers = (users.items || []).filter((u) => String(u.role).toLowerCase() === "worker");
+        const linkedRes = await apiGet({ action: "timesheetListWorkerAccounts" });
+        const linkedIds = new Set((linkedRes.rows || []).map((r) => r.userId));
+
+        linkUserId.innerHTML = '<option value="">Select worker login…</option>' +
+          workers.map((u) => {
+            const tag = linkedIds.has(u.id) ? " (linked)" : "";
+            return `<option value="${u.id}">${u.username} — ID ${u.id}${tag}</option>`;
+          }).join("");
+
+        accBody.innerHTML = (linkedRes.rows || []).length
+          ? (linkedRes.rows || []).map((r) => `<tr>
+              <td>${r.username} <span class="text-muted">#${r.userId}</span></td>
+              <td><strong>${r.workerCode}</strong> · ${r.workerName || ""}</td>
+              <td><button type="button" class="ts-btn-danger" data-unlink="${r.userId}">Unlink</button></td>
+            </tr>`).join("")
+          : `<tr><td colspan="3" class="ts-empty">No links yet</td></tr>`;
+
+        accBody.querySelectorAll("[data-unlink]").forEach((b) => {
+          b.onclick = async () => {
+            if (!confirm("Unlink this login?")) return;
+            await apiGet({ action: "timesheetUnlinkWorkerAccount", userId: b.dataset.unlink });
+            loadAcc();
+            refreshHomeHint();
+          };
+        });
+      }
+
+      linkSubmit.onclick = async () => {
+        const res = await apiGet({
+          action: "timesheetLinkWorkerAccount",
+          userId: linkUserId.value,
+          workerCode: String(linkWorker.value || "").trim().toUpperCase(),
+        });
+        if (res.ok) {
+          setMsg(linkMsg, "Linked ✓");
+          linkWorker.value = "";
+          loadAcc();
+          refreshHomeHint();
+        } else {
+          setMsg(linkMsg, res.error || "Failed", true);
+        }
+      };
+
+      async function loadAtt() {
+        closeWorkerSheet();
+        const res = await apiGet({
+          action: "timesheetListAttendance",
+          from: attFrom.value,
+          to: attTo.value,
+          status: "active",
+        });
+        attBody.innerHTML = (res.rows || []).length
+          ? (res.rows || []).map((r) => {
+              const payload = encodeURIComponent(JSON.stringify({
+                id: r.id,
+                workDate: r.workDate,
+                workerCode: r.workerCode,
+                workerName: r.workerName || "",
+                projectName: r.projectName || "",
+                baseHours: r.baseHours,
+              }));
+              return `<tr class="ta-row-pick" data-row="${payload}" title="Tap for hours or deduction">
+                <td>${r.workDate}</td>
+                <td><strong>${r.workerCode}</strong> · ${r.workerName || ""}</td>
+                <td>${r.projectName || ""}</td>
+                <td>${r.baseHours}</td>
+              </tr>`;
+            }).join("")
+          : `<tr><td colspan="4" class="ts-empty">No attendance in this range</td></tr>`;
+
+        attBody.querySelectorAll(".ta-row-pick").forEach((tr) => {
+          tr.onclick = () => {
+            try {
+              openWorkerSheet(JSON.parse(decodeURIComponent(tr.getAttribute("data-row"))), tr);
+            } catch (_) {}
+          };
+        });
+      }
+      attReload.onclick = loadAtt;
+
+      wsOpenHours.onclick = () => {
+        wsDedPanel.hidden = true;
+        wsHoursPanel.hidden = false;
+        wsAdjReason.focus();
+      };
+      wsOpenDed.onclick = () => {
+        wsHoursPanel.hidden = true;
+        wsDedPanel.hidden = false;
+        wsDedAmount.focus();
+      };
+      wsAdjCancel.onclick = () => { wsHoursPanel.hidden = true; wsAdjMsg.textContent = ""; };
+      wsDedCancel.onclick = () => { wsDedPanel.hidden = true; wsDedMsg.textContent = ""; };
+
+      wsAdjSubmit.onclick = async () => {
+        if (!selected) return;
+        if (!wsAdjReason.value.trim()) return setMsg(wsAdjMsg, "Enter reason", true);
+        const delta = Number(wsAdjDelta.value);
+        const lines = [{ workerCode: selected.workerCode, deltaHours: delta }];
+        const res = await apiGet({
+          action: "timesheetAdjustHours",
+          workDate: wsAdjDate.value,
+          reason: wsAdjReason.value,
+          lines: JSON.stringify(lines),
+        });
+        setMsg(wsAdjMsg, res.ok ? "Saved ✓" : (res.error || "Failed"), !res.ok);
+        if (res.ok) {
+          wsAdjReason.value = "";
+          wsHoursPanel.hidden = true;
+          loadAtt();
+        }
+      };
+
+      wsDedSubmit.onclick = async () => {
+        if (!selected) return;
+        const res = await apiGet({
+          action: "timesheetCreateDeduction",
+          workerCode: selected.workerCode,
+          workDate: wsDedDate.value,
+          dedType: wsDedType.value,
+          amount: wsDedAmount.value,
+          note: wsDedNote.value,
+        });
+        setMsg(wsDedMsg, res.ok ? "Saved ✓" : (res.error || "Failed"), !res.ok);
+        if (res.ok) {
+          wsDedAmount.value = "";
+          wsDedNote.value = "";
+          wsDedPanel.hidden = true;
+        }
+      };
+
+      wsVoid.onclick = async () => {
+        if (!selected) return;
+        const reason = prompt("Why void this day?");
+        if (!reason) return;
+        await apiGet({ action: "timesheetVoidAttendance", id: selected.id, reason });
+        closeWorkerSheet();
+        loadAtt();
+      };
+
+      async function loadSettings() {
+        const settings = await apiGet({ action: "timesheetGetSettings" });
+        shiftHours.value = settings.defaultShiftHours || 10;
+      }
+      shiftSave.onclick = async () => {
+        const res = await apiGet({ action: "timesheetSetSettings", defaultShiftHours: shiftHours.value });
+        setMsg(shiftMsg, res.ok ? "Saved ✓" : (res.error || "Failed"), !res.ok);
+      };
+
+      await refreshHomeHint();
+      showHome();
+    })();
+  </script>
+</body>
+</html>
