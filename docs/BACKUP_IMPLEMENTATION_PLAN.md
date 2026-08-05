@@ -3,7 +3,8 @@
 > **Backup System — plan only. Not implemented.**  
 > Status: **Awaiting owner approval before any scripts, cron, or VPS changes.**  
 > Created: 2026-08-05  
-> Related: [BACKUP_SYSTEM.md](./BACKUP_SYSTEM.md) · [AI_MEMORY.md](./AI_MEMORY.md) · [PHASE_C_DOCUMENTATION_SYNC_PLAN.md](./PHASE_C_DOCUMENTATION_SYNC_PLAN.md)
+> Related (official VPS knowledge): `/opt/toolcustody-docs/BACKUP_SYSTEM.md`, `AI_MEMORY.md`  
+> Related (workspace when present): `docs/BACKUP_SYSTEM.md`, `docs/AI_MEMORY.md`
 
 **Priority:** Data safety first. No production restarts or file changes until this plan is approved and a later “execute” order is given.
 
