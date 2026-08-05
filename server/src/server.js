@@ -319,6 +319,11 @@ async function start() {
   } catch (e) {
     console.warn("[permissions] seed skipped:", (e && e.message) || e);
   }
+  try {
+    await projects.ensureProjectStock(query);
+  } catch (e) {
+    console.warn("[projects] stock ensure skipped:", (e && e.message) || e);
+  }
   app.listen(PORT, () => {
     console.log(`ToolCustody API on :${PORT} · ${Object.keys(ACTIONS).length} actions`);
   });
