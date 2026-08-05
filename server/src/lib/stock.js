@@ -16,10 +16,13 @@ function qcStatusFor(nextDue, now = Date.now()) {
  * One pass over catalog + physical stock + custody to produce the numbers every
  * inventory screen shares.
  *
- *   warehouseQty  physical units sitting in warehouses
- *   out           units in personal custody (custody ledger)
- *   projectOut    units sitting on project sites
- *   available     warehouseQty − out   (custody leaves stock on the books)
+ *   warehouseQty  physical units sitting in warehouses (ops / transfers)
+ *   received      cumulative received qty
+ *   damaged       cumulative damaged qty
+ *   out           tools in personal custody
+ *   issued        consumables issued from scans
+ *   projectOut    units sitting on project sites (shown separately)
+ *   available     received − damaged − locked   (locked = out | issued)
  */
 async function snapshot(query, ledger) {
   const led = ledger || (await custody.load(query));
@@ -58,7 +61,8 @@ async function snapshot(query, ledger) {
     const damaged = U.num(dmgMap.get(code), 0);
     const received = rcvMap.get(code) ? rcvMap.get(code).qty : 0;
     const lastReceivedAt = rcvMap.get(code) ? rcvMap.get(code).lastAt : null;
-    const available = warehouseQty - out - issued;
+    const locked = isConsumable ? issued : out;
+    const available = received - damaged - locked;
     const minStock = U.num(row.min_stock, 0);
     const qc = qcStatusFor(row.calibration_next_due, now);
 

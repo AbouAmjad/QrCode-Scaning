@@ -86,12 +86,21 @@ async function seed() {
       `INSERT INTO warehouse_stock (warehouse_id, code, qty) VALUES (1,$1,10)`,
       [code]
     );
+    await query(
+      `INSERT INTO receiving (code, description, qty, warehouse_id, by_user)
+       VALUES ($1,$2,10,1,'smoke')`,
+      [code, description]
+    );
   }
   await query(
     `INSERT INTO catalog (code, description, kind, calibration_required, calibration_next_due)
      VALUES ('E30-Q','TORQUE WRENCH','tool',TRUE, CURRENT_DATE + 5)`
   );
   await query(`INSERT INTO warehouse_stock (warehouse_id, code, qty) VALUES (1,'E30-Q',3)`);
+  await query(
+    `INSERT INTO receiving (code, description, qty, warehouse_id, by_user)
+     VALUES ('E30-Q','TORQUE WRENCH',3,1,'smoke')`
+  );
 
   await query(`INSERT INTO suppliers (name, phone) VALUES ('HALIM','0500000000')`);
   for (const [code, name] of [["P101", "MD ALI AKBAR"], ["P177", "RAFIQ ISLAM"]]) {
@@ -268,8 +277,8 @@ async function testCatalog() {
   const stockList = await call({ action: "getCatalogStock" });
   const mask = stockList.items.find((i) => i.code === "I1-A");
   ok("getCatalogStock totals", stockList.totals.products === 7, stockList.totals);
-  // 10 on the shelf, 1 unit taken back out during the terminal suite.
-  ok("available = warehouse − custody", mask.available === 9 && mask.out === 1, mask);
+  // 10 received, 1 unit still out with P101 after the terminal suite.
+  ok("available = received − damaged − custody", mask.available === 9 && mask.out === 1, mask);
   ok("item carries qc + image + minStock fields",
     "qcStatus" in mask && "imageUrl" in mask && mask.minStock === 2);
   const torque = stockList.items.find((i) => i.code === "E30-Q");

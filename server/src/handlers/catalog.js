@@ -121,23 +121,38 @@ async function getLastCodes(ctx) {
   };
 }
 
-/** Re-levels the main warehouse so `available` lands exactly on `stockQty`. */
+/** Adjusts receiving so `available` (= received − damaged − locked) lands on `stockQty`. */
 async function applyStockLevel(ctx, code, stockQty) {
   const query = ctx.query;
+  const c = U.upper(code);
   const warehouseId = await stock.mainWarehouseId(query);
   if (!warehouseId) return;
 
   const ledger = await ctx.ledger();
-  const out = U.num(custody.outQtyByCode(ledger).get(U.upper(code)), 0);
-  const issued = U.num(custody.issuedQtyByCode(ledger).get(U.upper(code)), 0);
-  const totals = await query(
-    `SELECT COALESCE(SUM(qty),0)::numeric AS qty
-       FROM warehouse_stock WHERE code = $1 AND warehouse_id <> $2`,
-    [U.upper(code), warehouseId]
+  const cat = await query(`SELECT description, kind FROM catalog WHERE code = $1`, [c]);
+  const isConsumable =
+    (cat.rows[0] && cat.rows[0].kind === "consumable") || U.isConsumableCode(c);
+  const out = isConsumable ? 0 : U.num(custody.outQtyByCode(ledger).get(c), 0);
+  const issued = isConsumable ? U.num(custody.issuedQtyByCode(ledger).get(c), 0) : 0;
+  const locked = isConsumable ? issued : out;
+
+  const [dmgR, rcvR] = await Promise.all([
+    query(`SELECT COALESCE(SUM(qty),0)::numeric AS qty FROM damage WHERE tool_code = $1`, [c]),
+    query(`SELECT COALESCE(SUM(qty),0)::numeric AS qty FROM receiving WHERE code = $1`, [c]),
+  ]);
+  const damaged = U.num(dmgR.rows[0].qty, 0);
+  const received = U.num(rcvR.rows[0].qty, 0);
+  const targetReceived = stockQty + damaged + locked;
+  const delta = targetReceived - received;
+  if (!delta) return;
+
+  const description = (cat.rows[0] && cat.rows[0].description) || c;
+  await query(
+    `INSERT INTO receiving (code, description, supplier, invoice, qty, by_user, warehouse_id)
+     VALUES ($1,$2,'Stock adjustment','ADJ',$3,$4,$5)`,
+    [c, description, delta, ctx.user.username, warehouseId]
   );
-  const others = U.num(totals.rows[0].qty, 0);
-  const target = stockQty + out + issued - others;
-  await stock.setWarehouseStock(query, warehouseId, code, Math.max(0, target));
+  await stock.addWarehouseStock(query, warehouseId, c, delta);
 }
 
 async function upsertProduct(ctx) {
