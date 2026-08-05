@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AbouAmjad Store System | Roles & Permissions</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="app.css?v=live">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f766e">
+  <script src="config.js?v=live"></script>
+  <script src="i18n.js?v=live"></script>
+  <script src="ui.js?v=live"></script>
+  <style>
+    .role-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: .65rem; margin: .85rem 0 1rem; }
+    .role-card {
+      text-align: start; border: 1px solid var(--tc-border); border-radius: 14px; padding: .75rem .85rem;
+      background: var(--tc-surface); cursor: pointer; transition: border-color .15s, box-shadow .15s;
+    }
+    .role-card:hover { border-color: rgba(15,118,110,.35); }
+    .role-card.active {
+      border-color: rgba(15,118,110,.55);
+      box-shadow: 0 0 0 3px rgba(15,118,110,.12);
+      background: linear-gradient(160deg, rgba(15,118,110,.08), var(--tc-surface) 60%);
+    }
+    .role-card .dept { font-size: .68rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; color: var(--tc-accent-2); }
+    .role-card .ttl { font-size: .92rem; font-weight: 800; margin: .15rem 0; }
+    .role-card .sum { font-size: .75rem; color: var(--tc-muted); line-height: 1.35; margin: 0; }
+  </style>
+</head>
+<body class="tc-page">
+  <div class="tc-wrap">
+    <div class="tc-shell">
+      <div id="app-header"></div>
+      <div class="tc-card mb-3">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2">
+          <p class="tc-text-muted mb-0" data-i18n="rolesHint">
+            Pick a department role, then tick what that department can do. Admin always has full access.
+          </p>
+          <a class="tc-btn tc-btn-sm" href="settings.html"><i class="bi bi-arrow-left"></i> <span data-i18n="settings">Settings</span></a>
+        </div>
+        <label class="form-label fw-bold mb-1" data-i18n="rolesDeptLabel">Department / role</label>
+        <div class="role-cards" id="roleCards"></div>
+        <div class="d-flex flex-wrap gap-2 align-items-center">
+          <select id="roleSelect" class="tc-select" style="display:none"></select>
+          <button type="button" class="tc-btn tc-btn-primary" id="btnSave"><i class="bi bi-check2"></i> Save</button>
+          <button type="button" class="tc-btn" id="btnReload"><i class="bi bi-arrow-clockwise"></i></button>
+        </div>
+      </div>
+      <div class="tc-table-wrap">
+        <div class="table-responsive">
+          <table class="tc-table mb-0">
+            <thead><tr><th></th><th>Module</th><th>Permission</th><th>Code</th></tr></thead>
+            <tbody id="permBody"><tr><td colspan="4" class="tc-text-muted text-center">Loading…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    let catalog = [];
+    let roleMaps = {};
+    let roleMeta = {};
+    let editableRoles = ["employee", "logistics", "engineer", "qc"];
+
+    document.addEventListener("DOMContentLoaded", () => TCUI.bootPage(() => {
+      const t = (k) => (typeof TCI18N !== "undefined" ? TCI18N.t(k) : k);
+      TCUI.mountHeader("app-header", {
+        active: "settings",
+        titleKey: "roles",
+        subtitleKey: "rolesSub",
+        icon: "bi-shield-lock"
+      });
+      document.getElementById("btnSave").onclick = saveRole;
+      document.getElementById("btnReload").onclick = load;
+      document.getElementById("roleSelect").onchange = () => { renderCards(); render(); };
+      load();
+    }, { pageId: "roles" }));
+
+    function t(k) { return typeof TCI18N !== "undefined" ? TCI18N.t(k) : k; }
+
+    function renderCards() {
+      const host = document.getElementById("roleCards");
+      const sel = document.getElementById("roleSelect");
+      const current = sel.value || editableRoles[0];
+      sel.innerHTML = editableRoles.map((r) =>
+        `<option value="${r}" ${r === current ? "selected" : ""}>${escHtml(t("role_" + r))}</option>`
+      ).join("");
+      if (!editableRoles.includes(sel.value)) sel.value = editableRoles[0];
+      host.innerHTML = editableRoles.map((r) => {
+        const meta = roleMeta[r] || {};
+        const active = sel.value === r ? "active" : "";
+        return `<button type="button" class="role-card ${active}" data-role="${r}">
+          <div class="dept">${escHtml(meta.department || t("role_" + r))}</div>
+          <div class="ttl">${escHtml(t("role_" + r))}</div>
+          <p class="sum">${escHtml(t("role_" + r + "_desc") || meta.summary || "")}</p>
+        </button>`;
+      }).join("");
+      host.querySelectorAll(".role-card").forEach((btn) => {
+        btn.onclick = () => {
+          sel.value = btn.getAttribute("data-role");
+          renderCards();
+          render();
+        };
+      });
+    }
+
+    async function load() {
+      try {
+        const data = await apiGet({ action: "listPermissions" });
+        catalog = (data && data.items) || [];
+        roleMaps = (data && data.roles) || {};
+        roleMeta = (data && data.roleMeta) || {};
+        if (Array.isArray(data.editableRoles) && data.editableRoles.length) {
+          editableRoles = data.editableRoles.filter((r) => r !== "admin");
+        }
+        renderCards();
+        render();
+      } catch (e) {
+        document.getElementById("permBody").innerHTML =
+          `<tr><td colspan="4" class="text-danger text-center">${escHtml(e.message || "Error")}</td></tr>`;
+      }
+    }
+
+    function render() {
+      const role = document.getElementById("roleSelect").value;
+      const selected = new Set(roleMaps[role] || []);
+      const body = document.getElementById("permBody");
+      if (!catalog.length) {
+        body.innerHTML = `<tr><td colspan="4" class="tc-text-muted text-center">No permissions</td></tr>`;
+        return;
+      }
+      body.innerHTML = catalog.map((p) => {
+        const checked = selected.has(p.code) ? "checked" : "";
+        return `<tr>
+          <td class="text-center"><input type="checkbox" data-code="${escHtml(p.code)}" ${checked}></td>
+          <td>${escHtml(p.module || "")}</td>
+          <td>${escHtml(p.label || "")}</td>
+          <td><code>${escHtml(p.code)}</code></td>
+        </tr>`;
+      }).join("");
+    }
+
+    async function saveRole() {
+      const role = document.getElementById("roleSelect").value;
+      const codes = [...document.querySelectorAll("input[data-code]:checked")].map((el) => el.getAttribute("data-code"));
+      try {
+        const res = await apiPostPlain({ action: "setRolePermissions", role, permissions: codes });
+        if (!res || res.success === false) throw new Error((res && res.error) || "Failed");
+        roleMaps[role] = codes;
+        TCUI.toast("Saved · " + t("role_" + role), "ok");
+      } catch (e) {
+        TCUI.toast(e.message || "Error", "err");
+      }
+    }
+
+    function escHtml(s) {
+      return String(s == null ? "" : s)
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+  </script>
+</body>
+</html>

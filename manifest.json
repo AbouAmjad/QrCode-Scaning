@@ -1,13 +1,13 @@
 {
-  "name": "ToolCustody — Abu Amjad",
-  "short_name": "ToolCustody",
-  "description": "Tool & personnel QR custody scanning",
-  "start_url": "./index.html",
+  "name": "AbouAmjad Store System",
+  "short_name": "AbouAmjad",
+  "description": "QR tool & personnel custody for Abou Amjad store",
+  "start_url": "./login.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "background_color": "#eef2f8",
-  "theme_color": "#1e3a5f",
+  "background_color": "#0b1220",
+  "theme_color": "#0b1220",
   "icons": [
     {
       "src": "icons/icon.svg",

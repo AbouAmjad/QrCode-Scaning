@@ -51,8 +51,14 @@ const CustodyParser = (() => {
               inv[lastPersonCode].actionsToday.push(`📦 Took consumable ${code} · ${desc}`);
             }
           }
-        } else if (isToday) {
-          inv[code].actionsToday.push(`📦 Return noted · ${lastPerson} (consumable — no custody)`);
+        } else if (lastDir === "IN") {
+          if (isToday) {
+            inv[code].issuedToday = Math.max(0, (inv[code].issuedToday || 0) - 1);
+            inv[code].actionsToday.push(`📥 Returned unused · ${lastPerson} (back to stock)`);
+            if (lastPersonCode && inv[lastPersonCode]) {
+              inv[lastPersonCode].actionsToday.push(`📥 Returned consumable ${code} · ${desc}`);
+            }
+          }
         }
         continue;
       }
@@ -252,6 +258,10 @@ const CustodyParser = (() => {
           if (!workerDailyLog[rowDate]) workerDailyLog[rowDate] = [];
           workerDailyLog[rowDate].push({ type: "info", text: `📦 Took consumable ${code} · ${desc}` });
         }
+        if (active && lastDir === "IN") {
+          if (!workerDailyLog[rowDate]) workerDailyLog[rowDate] = [];
+          workerDailyLog[rowDate].push({ type: "in", text: `📥 Returned unused consumable ${code} · ${desc}` });
+        }
         continue;
       }
 
@@ -407,8 +417,9 @@ const CustodyParser = (() => {
       if (lastDir === "OUT") {
         issuedTotal++;
         toolDailyLog[rowDate].push({ type: "out", text: `📦 Issued to · ${lastPerson}`, personCode: lastPersonCode });
-      } else {
-        toolDailyLog[rowDate].push({ type: "info", text: `📦 Return noted · ${lastPerson} (no custody)`, personCode: lastPersonCode });
+      } else if (lastDir === "IN") {
+        issuedTotal = Math.max(0, issuedTotal - 1);
+        toolDailyLog[rowDate].push({ type: "in", text: `📥 Returned unused · ${lastPerson} (back to stock)`, personCode: lastPersonCode });
       }
     }
 
@@ -525,7 +536,7 @@ const CustodyParser = (() => {
       if (code === "IN" || code === "OUT") { lastDir = code; continue; }
       if (!isConsumable(code)) continue;
       if (dateSet.size && !dateSet.has(rowDate)) continue;
-      if (lastDir !== "OUT") continue;
+      if (lastDir !== "OUT" && lastDir !== "IN") continue;
 
       issues.push({
         date: rowDate,
@@ -533,7 +544,8 @@ const CustodyParser = (() => {
         person: lastPerson,
         personCode: lastPersonCode || "",
         code,
-        description: desc
+        description: desc,
+        type: lastDir === "IN" ? "return" : "issue"
       });
     }
     return issues;
@@ -643,6 +655,7 @@ const CustodyParser = (() => {
       if (!item) continue;
       if (item.kind === "consumable") {
         if (lastDir === "OUT") item.issued += 1;
+        if (lastDir === "IN") item.issued = Math.max(0, item.issued - 1);
       }
     }
 
@@ -667,8 +680,8 @@ const CustodyParser = (() => {
     const consumables = [];
     Object.values(map).forEach(item => {
       const locked = item.kind === "consumable" ? item.issued : item.out;
-      item.available = Math.max(0, item.received - item.damaged - locked);
-      item.hasCatalog = item.received > 0;
+      item.available = item.received - item.damaged - locked;
+      item.hasCatalog = item.received > 0 || item.issued > 0 || item.out > 0;
       if (item.kind === "consumable") consumables.push(item);
       else tools.push(item);
     });
