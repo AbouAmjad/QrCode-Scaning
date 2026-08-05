@@ -42,10 +42,13 @@ async function call(params) {
 }
 
 async function reset() {
+  await query(`DROP TABLE IF EXISTS inventory_count_lines CASCADE`).catch(() => {});
+  await query(`DROP TABLE IF EXISTS inventory_count_sheets CASCADE`).catch(() => {});
+  await query(`DROP TABLE IF EXISTS inventory_counts CASCADE`).catch(() => {});
   const tables = [
     "project_dispatch_lines", "project_dispatches", "project_stock", "projects",
     "warehouse_transfer_lines", "warehouse_transfers", "warehouse_stock",
-    "inventory_count_lines", "inventory_count_sheets",
+    "inventory_count_lines", "inventory_counts", "inventory_count_sheets",
     "store_request_lines", "store_requests",
     "user_warehouse_scope", "user_project_scope",
     "qc_calibrations", "label_templates", "terminal_sessions",
@@ -56,6 +59,12 @@ async function reset() {
   for (const t of tables) {
     await query(`TRUNCATE TABLE ${t} RESTART IDENTITY CASCADE`).catch(() => {});
   }
+  const { STATEMENTS } = require("../src/schema");
+  for (const stmt of STATEMENTS) {
+    if (stmt.includes("inventory_count")) {
+      await query(stmt).catch(() => {});
+    }
+  }
 }
 
 async function seed() {
@@ -65,7 +74,8 @@ async function seed() {
     ["smoke", await bcrypt.hash("Smoke123!", 10), TOKEN]
   );
   await query(
-    `INSERT INTO warehouses (name, is_main) VALUES ('Main Warehouse', TRUE), ('Site Store', FALSE)`
+    `INSERT INTO warehouses (name, is_main) VALUES ('Site Store', FALSE)
+     ON CONFLICT (name) DO NOTHING`
   );
 
   const products = [

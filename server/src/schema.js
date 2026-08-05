@@ -240,27 +240,32 @@ const STATEMENTS = [
   `CREATE INDEX IF NOT EXISTS idx_transfer_lines_transfer ON warehouse_transfer_lines (transfer_id)`,
 
   /* ------------------------------------------------------ inventory count */
-  `CREATE TABLE IF NOT EXISTS inventory_count_sheets (
+  `CREATE TABLE IF NOT EXISTS inventory_counts (
      id BIGSERIAL PRIMARY KEY,
      form_no TEXT NOT NULL DEFAULT '',
-     location_type TEXT NOT NULL DEFAULT 'warehouse',
-     warehouse_id INTEGER,
-     project_id INTEGER,
+     warehouse_id INTEGER REFERENCES warehouses(id) ON DELETE SET NULL,
+     warehouse_name TEXT NOT NULL DEFAULT '',
      count_type TEXT NOT NULL DEFAULT 'full',
      category TEXT NOT NULL DEFAULT '',
-     status TEXT NOT NULL DEFAULT 'open',
+     status TEXT NOT NULL DEFAULT 'sheet',
      by_user TEXT NOT NULL DEFAULT '',
-     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+     location_type TEXT NOT NULL DEFAULT 'warehouse',
+     project_id INTEGER
    )`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS inventory_counts_form_no_key ON inventory_counts (form_no)`,
+  `CREATE INDEX IF NOT EXISTS idx_inventory_counts_created ON inventory_counts (created_at DESC)`,
   `CREATE TABLE IF NOT EXISTS inventory_count_lines (
      id BIGSERIAL PRIMARY KEY,
-     sheet_id BIGINT NOT NULL REFERENCES inventory_count_sheets(id) ON DELETE CASCADE,
-     code TEXT NOT NULL,
+     count_id BIGINT NOT NULL REFERENCES inventory_counts(id) ON DELETE CASCADE,
+     code TEXT NOT NULL DEFAULT '',
      description TEXT NOT NULL DEFAULT '',
-     expected_qty NUMERIC NOT NULL DEFAULT 0,
-     counted_qty NUMERIC
+     system_qty NUMERIC,
+     counted_qty NUMERIC,
+     remarks TEXT NOT NULL DEFAULT '',
+     sort_order INTEGER NOT NULL DEFAULT 0
    )`,
-  `CREATE INDEX IF NOT EXISTS idx_count_lines_sheet ON inventory_count_lines (sheet_id)`,
+  `CREATE INDEX IF NOT EXISTS idx_inventory_count_lines_count ON inventory_count_lines (count_id)`,
 
   /* ------------------------------------------------------------- projects */
   `CREATE TABLE IF NOT EXISTS projects (

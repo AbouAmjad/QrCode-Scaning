@@ -263,21 +263,39 @@ async function createInventoryCountSheet(ctx) {
   if (countType === "category") rows = rows.filter((r) => r.category === category);
   if (!rows.length) return { success: false, error: "NO_PRODUCTS" };
 
+  let locationName = "";
+  if (locationType === "project") {
+    const pr = await query(`SELECT name FROM projects WHERE id = $1`, [projectId]);
+    locationName = pr.rows[0] ? pr.rows[0].name || "" : "";
+  } else {
+    const wh = await query(`SELECT name FROM warehouses WHERE id = $1`, [warehouseId]);
+    locationName = wh.rows[0] ? wh.rows[0].name || "" : "";
+  }
+
   const head = await query(
-    `INSERT INTO inventory_count_sheets (location_type, warehouse_id, project_id, count_type,
-                                         category, by_user)
-     VALUES ($1,$2,$3,$4,$5,$6) RETURNING id, created_at`,
-    [locationType, warehouseId, projectId, countType, category, ctx.user.username]
+    `INSERT INTO inventory_counts (form_no, warehouse_id, warehouse_name, count_type, category,
+                                   status, by_user, location_type, project_id)
+     VALUES ('', $1, $2, $3, $4, 'sheet', $5, $6, $7) RETURNING id, created_at`,
+    [
+      locationType === "warehouse" ? warehouseId : null,
+      locationName,
+      countType,
+      category,
+      ctx.user.username,
+      locationType,
+      locationType === "project" ? projectId : null,
+    ]
   );
   const id = head.rows[0].id;
   const no = U.formNo("IC", id, new Date(head.rows[0].created_at));
-  await query(`UPDATE inventory_count_sheets SET form_no = $1 WHERE id = $2`, [no, id]);
+  await query(`UPDATE inventory_counts SET form_no = $1 WHERE id = $2`, [no, id]);
 
-  for (const row of rows) {
+  for (let i = 0; i < rows.length; i += 1) {
+    const row = rows[i];
     await query(
-      `INSERT INTO inventory_count_lines (sheet_id, code, description, expected_qty)
-       VALUES ($1,$2,$3,$4)`,
-      [id, U.upper(row.code), row.description || "", U.num(row.qty, 0)]
+      `INSERT INTO inventory_count_lines (count_id, code, description, system_qty, sort_order)
+       VALUES ($1,$2,$3,$4,$5)`,
+      [id, U.upper(row.code), row.description || "", U.num(row.qty, 0), i + 1]
     );
   }
 
@@ -293,6 +311,9 @@ async function createInventoryCountSheet(ctx) {
       projectId,
       countType,
       category,
+      locationName,
+      warehouseName: locationName,
+      byUser: ctx.user.username,
       createdAt: U.isoOrNull(head.rows[0].created_at),
       lines: rows.map((row) => ({
         code: U.upper(row.code),
@@ -309,6 +330,9 @@ async function createInventoryCountSheet(ctx) {
     projectId: sheet.projectId,
     countType: sheet.countType,
     category: sheet.category,
+    locationName: sheet.locationName,
+    warehouseName: sheet.warehouseName,
+    byUser: sheet.byUser,
     createdAt: sheet.createdAt,
   };
   return { success: true, sheet, count, lines };
