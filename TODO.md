@@ -1,26 +1,17 @@
 # TODO — ToolCustody / Abu Amjad
 
-## Done
-- [x] `parser.js` — منطق مشترك
-- [x] `dashboard.html` — KPI + alerts + lookup + CSV
-- [x] `damage.html` — واجهة + `getDamage` API
-- [x] `config.js` — theme + settings + API
-- [x] `Code.gs` كامل مع `getDamage`
-- [x] روابط Damage من index + dashboard
-- [x] `sync_to_github.py`
-- [x] `.gitignore` للـ secrets
+> **Superseded for agents:** use root [TASKS.md](./TASKS.md) as the live task board.  
+> This file is kept only as a historical note. Do not treat GAS deploy steps below as current production setup.
 
-## Backend (أنت)
-- [ ] انسخ `Code.gs.example` → Google Apps Script (أضف `submitDamage` + sheet ID)
-- [ ] Deploy → **New version** → Anyone
-- [ ] Damage sheet ID: `17nQDnJogZapc8W5RHU8HN8hoSHg_ctym8H37tQWpw68`
-- [ ] تبويب **Damage**: A=Date B=Code C=Name D=ImageURL E=DamagedBy F=Count G=Remark
-- [ ] (اختياري) Script Property `DAMAGE_DRIVE_FOLDER_ID` لمجلد صور Drive
-- [ ] إذا شيت B مختلف: Script Property `B_SHEET_ID`
+## Current stack
+- Production = **Node.js API + PostgreSQL** on VPS (`aics.iskndr.com`)
+- See [PROJECT_CONTEXT.md](./PROJECT_CONTEXT.md)
 
-## Next features
-- [ ] End-of-day PDF report
-- [ ] PWA (install on phone/scanner)
-- [ ] Arabic UI toggle
-- [ ] QR code generator page
-- [ ] Settings panel filters on dashboard (warnings only)
+## Historical (Apps Script era — obsolete for live site)
+- [ ] ~~انسخ `Code.gs.example` → Google Apps Script~~ — not the live backend
+- Live damage / receiving / scans are Postgres tables, not Sheets
+
+## Next — track in TASKS.md
+- Negative product receiving data cleanup
+- Role matrices review
+- Timesheet only with approved IMPLEMENTATION_PLAN.md
