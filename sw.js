@@ -1,64 +1,30 @@
-const CACHE = "toolcustody-v7";
-const ASSETS = [
-  "./",
-  "./index.html",
-  "./login.html",
-  "./results.html",
-  "./dashboard.html",
-  "./worker.html",
-  "./tool.html",
-  "./damage.html",
-  "./consumables.html",
-  "./receiving.html",
-  "./repair.html",
-  "./qr-labels.html",
-  "./search.html",
-  "./audit.html",
-  "./reports.html",
-  "./products.html",
-  "./inventory.html",
-  "./outstanding.html",
-  "./requests.html",
-  "./notifications.html",
-  "./config.js",
-  "./parser.js",
-  "./ui.js",
-  "./scan.js",
-  "./app.css",
-  "./manifest.json",
-  "./icons/icon.svg"
-];
+// LIVE / no-cache service worker.
+// This app must always show the latest ledger/audit/scan data.
+// So we do NOT cache any GET responses at all.
+//
+// Note: Offline mode will not work by design.
 
 self.addEventListener("install", (event) => {
-  event.waitUntil(
-    caches.open(CACHE).then((cache) => cache.addAll(ASSETS)).then(() => self.skipWaiting())
-  );
+  // Ensure the new SW takes control ASAP.
+  self.skipWaiting();
 });
 
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)))
-    ).then(() => self.clients.claim())
+    caches.keys().then((keys) => Promise.all(keys.map((k) => caches.delete(k)))).then(() => self.clients.claim())
   );
 });
 
 self.addEventListener("fetch", (event) => {
-  const url = event.request.url;
-  if (event.request.method !== "GET") return;
+  const req = event.request;
+  if (req.method !== "GET") return;
+  const url = req.url || "";
+
+  // Let third-party CDNs behave normally.
   if (url.includes("script.google.com") || url.includes("googleapis.com") || url.includes("gstatic.com") || url.includes("jsdelivr.net")) {
     return;
   }
-  event.respondWith(
-    caches.match(event.request).then((cached) => {
-      const fetched = fetch(event.request).then((response) => {
-        if (response && response.status === 200 && url.startsWith(self.location.origin)) {
-          const clone = response.clone();
-          caches.open(CACHE).then((cache) => cache.put(event.request, clone));
-        }
-        return response;
-      }).catch(() => cached);
-      return cached || fetched;
-    })
-  );
+
+  // Always go to network; never serve cached data.
+  event.respondWith(fetch(req).catch(() => caches.match(req)));
 });
