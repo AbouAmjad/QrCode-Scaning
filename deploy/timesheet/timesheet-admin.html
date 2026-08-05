@@ -199,7 +199,7 @@
             <div class="ta-actions"><button class="ts-btn ts-btn-primary" id="attReload">Show</button></div>
             <div class="table-responsive"><table class="ts-table"><thead><tr>
               <th class="ta-th-check"><input type="checkbox" class="ta-check" id="attSelectAll" title="Select all"></th>
-              <th>Date</th><th>Worker</th><th>Project</th><th>Hours</th>
+              <th>Date</th><th>Worker</th><th>Project</th><th>Hours (net)</th>
             </tr></thead><tbody id="attBody"></tbody></table></div>
 
             <div id="workerSheet" class="ta-worker-sheet" hidden>
@@ -360,12 +360,16 @@
         const dates = [...new Set(selected.map((r) => r.workDate))];
         if (workers.length === 1) {
           const r = workers[0];
+          const net = r.effectiveHours != null ? r.effectiveHours : r.baseHours;
           wsName.textContent = r.workerCode + " · " + (r.workerName || "");
+          wsMeta.textContent = r.workDate + " · " + (r.projectName || "—") +
+            " · net " + net + "h" +
+            (r.adjustmentHours ? ` (base ${r.baseHours}${r.adjustmentHours > 0 ? "+" : ""}${r.adjustmentHours})` : "");
         } else {
           wsName.textContent = workers.length + " workers selected";
+          wsMeta.textContent = workers.map((r) => r.workerCode).join(", ") +
+            (dates.length === 1 ? " · " + dates[0] : " · " + dates.length + " dates");
         }
-        wsMeta.textContent = workers.map((r) => r.workerCode).join(", ") +
-          (dates.length === 1 ? " · " + dates[0] : " · " + dates.length + " dates");
         wsAdjDate.value = dates.length === 1 ? dates[0] : (attFrom.value || today);
         wsDedDate.value = dates.length === 1 ? dates[0] : (attFrom.value || today);
         workerSheet.hidden = false;
@@ -498,6 +502,13 @@
         });
         attBody.innerHTML = (res.rows || []).length
           ? (res.rows || []).map((r) => {
+              const adj = Number(r.adjustmentHours) || 0;
+              const net = r.effectiveHours != null
+                ? Number(r.effectiveHours)
+                : Math.max(0, Number(r.baseHours || 0) + adj);
+              const hoursLabel = adj
+                ? `<strong>${net}</strong> <span class="text-muted" style="font-size:.78rem">(${r.baseHours}${adj > 0 ? "+" : ""}${adj})</span>`
+                : String(r.baseHours);
               const payload = encodeURIComponent(JSON.stringify({
                 id: r.id,
                 workDate: r.workDate,
@@ -505,13 +516,15 @@
                 workerName: r.workerName || "",
                 projectName: r.projectName || "",
                 baseHours: r.baseHours,
+                adjustmentHours: adj,
+                effectiveHours: net,
               }));
               return `<tr class="ta-row-pick" data-row="${payload}" title="Select workers for bulk actions">
                 <td><input type="checkbox" class="ta-check ta-row-check"></td>
                 <td>${r.workDate}</td>
                 <td><strong>${r.workerCode}</strong> · ${r.workerName || ""}</td>
                 <td>${r.projectName || ""}</td>
-                <td>${r.baseHours}</td>
+                <td>${hoursLabel}</td>
               </tr>`;
             }).join("")
           : `<tr><td colspan="5" class="ts-empty">No attendance in this range</td></tr>`;
