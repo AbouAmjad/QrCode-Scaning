@@ -1,4 +1,5 @@
-const CACHE = "toolcustody-v7";
+// Increment when behavior changes to force a fresh service-worker install.
+const CACHE = "toolcustody-v8";
 const ASSETS = [
   "./",
   "./index.html",
@@ -47,6 +48,15 @@ self.addEventListener("fetch", (event) => {
   const url = event.request.url;
   if (event.request.method !== "GET") return;
   if (url.includes("script.google.com") || url.includes("googleapis.com") || url.includes("gstatic.com") || url.includes("jsdelivr.net")) {
+    return;
+  }
+  // Never cache API responses. They are dynamic and include auth tokens in the URL.
+  // Caching GET /api causes stale dashboards / people lists until the cache misses.
+  try {
+    const u = new URL(url);
+    if (u.pathname.startsWith("/api")) return;
+  } catch {
+    // If URL parsing fails, fall back to network behavior (no caching).
     return;
   }
   event.respondWith(
