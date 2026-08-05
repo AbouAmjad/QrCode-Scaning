@@ -110,6 +110,13 @@
       font-size: .95rem;
       font-weight: 800;
     }
+    .ta-check {
+      width: 1.1rem;
+      height: 1.1rem;
+      accent-color: var(--tc-accent-2, #0f766e);
+      cursor: pointer;
+    }
+    .ta-th-check { width: 2.2rem; }
     .ta-void-link {
       background: none;
       border: 0;
@@ -130,7 +137,7 @@
     <main class="tc-main p-3">
       <section class="ts-hero">
         <h1><i class="bi bi-clock-history"></i> Timesheet Admin</h1>
-        <p>Attendance first. Tap a worker for hours, deduction, or shift hours.</p>
+        <p>Attendance first. Select one or more workers, then choose an action.</p>
       </section>
 
       <!-- HOME -->
@@ -144,7 +151,7 @@
           <button type="button" class="ta-card" data-go="att">
             <i class="bi bi-calendar2-check"></i>
             <strong>2. Attendance list</strong>
-            <span>See who punched. Tap a worker → hours, deduction, or shift hours.</span>
+            <span>See who punched. Select workers → hours, deduction, or shift hours.</span>
           </button>
         </div>
         <div id="homeHint" class="ts-note" style="display:none"></div>
@@ -183,7 +190,7 @@
         <!-- ATTENDANCE (+ hours / deduction on worker tap) -->
         <section class="ts-panel" id="panel-att" hidden>
           <h2><i class="bi bi-calendar2-check"></i> Attendance list</h2>
-          <div class="ts-note">Tap a worker row → hours +/−, deduction, or shift hours.</div>
+          <div class="ts-note">Select one or more workers (checkbox or row), then choose an action below.</div>
           <div class="ta-stack">
             <div class="ta-row two">
               <div><label class="ts-label">From</label><input type="date" id="attFrom" class="ts-input"></div>
@@ -191,29 +198,30 @@
             </div>
             <div class="ta-actions"><button class="ts-btn ts-btn-primary" id="attReload">Show</button></div>
             <div class="table-responsive"><table class="ts-table"><thead><tr>
+              <th class="ta-th-check"><input type="checkbox" class="ta-check" id="attSelectAll" title="Select all"></th>
               <th>Date</th><th>Worker</th><th>Project</th><th>Hours</th>
             </tr></thead><tbody id="attBody"></tbody></table></div>
 
             <div id="workerSheet" class="ta-worker-sheet" hidden>
               <div class="ta-worker-head">
                 <div>
-                  <p class="ta-worker-kicker">Selected worker</p>
+                  <p class="ta-worker-kicker">Selected</p>
                   <h3 id="wsName">—</h3>
                   <p class="ta-worker-meta" id="wsMeta"></p>
                 </div>
-                <button type="button" class="ts-btn ts-btn-ghost" id="wsClose">Close</button>
+                <button type="button" class="ts-btn ts-btn-ghost" id="wsClose">Clear</button>
               </div>
 
               <div class="ta-worker-actions">
                 <button type="button" class="ta-worker-action" id="wsOpenHours">
                   <i class="bi bi-plus-slash-minus"></i>
                   <strong>Add / remove hours</strong>
-                  <span>Overtime or reduce for this worker.</span>
+                  <span>Same +/− hours for all selected workers.</span>
                 </button>
                 <button type="button" class="ta-worker-action" id="wsOpenDed">
                   <i class="bi bi-cash-coin"></i>
                   <strong>Add deduction</strong>
-                  <span>Delay, absence, tool damage, or fixed amount.</span>
+                  <span>Same deduction for each selected worker.</span>
                 </button>
                 <button type="button" class="ta-worker-action" id="wsOpenShift">
                   <i class="bi bi-sliders"></i>
@@ -279,7 +287,7 @@
               </div>
 
               <div class="ta-actions" style="margin-top:1rem">
-                <button type="button" class="ta-void-link" id="wsVoid">Void this attendance day…</button>
+                <button type="button" class="ta-void-link" id="wsVoid">Void selected attendance day(s)…</button>
               </div>
             </div>
           </div>
@@ -301,13 +309,14 @@
       const homeView = document.getElementById("homeView");
       const taskView = document.getElementById("taskView");
       const panels = ["link", "att"];
-      let selected = null;
+      /** @type {Array<{id:number,workDate:string,workerCode:string,workerName:string,projectName:string,baseHours:any}>} */
+      let selected = [];
 
       function showHome() {
         homeView.hidden = false;
         taskView.hidden = true;
         panels.forEach((k) => { document.getElementById("panel-" + k).hidden = true; });
-        closeWorkerSheet();
+        clearSelection();
         refreshHomeHint();
       }
 
@@ -315,7 +324,7 @@
         homeView.hidden = true;
         taskView.hidden = false;
         panels.forEach((k) => { document.getElementById("panel-" + k).hidden = k !== key; });
-        closeWorkerSheet();
+        clearSelection();
         if (key === "link") loadAcc();
         if (key === "att") loadAtt();
       }
@@ -329,31 +338,85 @@
         shiftMsg.textContent = "";
       }
 
-      function closeWorkerSheet() {
-        selected = null;
-        workerSheet.hidden = true;
-        hideActionPanels();
-        attBody.querySelectorAll(".ta-row-pick.is-selected").forEach((tr) => tr.classList.remove("is-selected"));
+      function uniqueWorkers(rows) {
+        const seen = new Set();
+        const out = [];
+        for (const r of rows) {
+          const code = String(r.workerCode || "").toUpperCase();
+          if (!code || seen.has(code)) continue;
+          seen.add(code);
+          out.push(r);
+        }
+        return out;
       }
 
-      function openWorkerSheet(row, tr) {
-        selected = row;
-        attBody.querySelectorAll(".ta-row-pick.is-selected").forEach((el) => el.classList.remove("is-selected"));
-        if (tr) tr.classList.add("is-selected");
-        wsName.textContent = row.workerCode + " · " + (row.workerName || "");
-        wsMeta.textContent = row.workDate + " · " + (row.projectName || "—") + " · " + row.baseHours + "h";
-        wsAdjDate.value = row.workDate;
-        wsDedDate.value = row.workDate;
+      function syncSheetFromSelection() {
         hideActionPanels();
+        if (!selected.length) {
+          workerSheet.hidden = true;
+          return;
+        }
+        const workers = uniqueWorkers(selected);
+        const dates = [...new Set(selected.map((r) => r.workDate))];
+        if (workers.length === 1) {
+          const r = workers[0];
+          wsName.textContent = r.workerCode + " · " + (r.workerName || "");
+        } else {
+          wsName.textContent = workers.length + " workers selected";
+        }
+        wsMeta.textContent = workers.map((r) => r.workerCode).join(", ") +
+          (dates.length === 1 ? " · " + dates[0] : " · " + dates.length + " dates");
+        wsAdjDate.value = dates.length === 1 ? dates[0] : (attFrom.value || today);
+        wsDedDate.value = dates.length === 1 ? dates[0] : (attFrom.value || today);
         workerSheet.hidden = false;
-        workerSheet.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
+
+      function readRow(tr) {
+        try {
+          return JSON.parse(decodeURIComponent(tr.getAttribute("data-row")));
+        } catch (_) {
+          return null;
+        }
+      }
+
+      function rebuildSelectedFromDom() {
+        selected = [];
+        attBody.querySelectorAll(".ta-row-pick").forEach((tr) => {
+          const cb = tr.querySelector(".ta-row-check");
+          if (cb && cb.checked) {
+            const row = readRow(tr);
+            if (row) selected.push(row);
+            tr.classList.add("is-selected");
+          } else {
+            tr.classList.remove("is-selected");
+          }
+        });
+        const boxes = [...attBody.querySelectorAll(".ta-row-check")];
+        attSelectAll.checked = boxes.length > 0 && boxes.every((b) => b.checked);
+        attSelectAll.indeterminate = boxes.some((b) => b.checked) && !attSelectAll.checked;
+        syncSheetFromSelection();
+      }
+
+      function clearSelection() {
+        selected = [];
+        workerSheet.hidden = true;
+        hideActionPanels();
+        attBody.querySelectorAll(".ta-row-pick").forEach((tr) => {
+          tr.classList.remove("is-selected");
+          const cb = tr.querySelector(".ta-row-check");
+          if (cb) cb.checked = false;
+        });
+        if (attSelectAll) {
+          attSelectAll.checked = false;
+          attSelectAll.indeterminate = false;
+        }
       }
 
       document.querySelectorAll("[data-go]").forEach((btn) => {
         btn.addEventListener("click", () => openTask(btn.dataset.go));
       });
       backHome.onclick = showHome;
-      wsClose.onclick = closeWorkerSheet;
+      wsClose.onclick = clearSelection;
 
       function setMsg(el, text, isErr) {
         el.textContent = text || "";
@@ -426,7 +489,7 @@
       };
 
       async function loadAtt() {
-        closeWorkerSheet();
+        clearSelection();
         const res = await apiGet({
           action: "timesheetListAttendance",
           from: attFrom.value,
@@ -443,24 +506,36 @@
                 projectName: r.projectName || "",
                 baseHours: r.baseHours,
               }));
-              return `<tr class="ta-row-pick" data-row="${payload}" title="Tap for hours, deduction, or shift hours">
+              return `<tr class="ta-row-pick" data-row="${payload}" title="Select workers for bulk actions">
+                <td><input type="checkbox" class="ta-check ta-row-check"></td>
                 <td>${r.workDate}</td>
                 <td><strong>${r.workerCode}</strong> · ${r.workerName || ""}</td>
                 <td>${r.projectName || ""}</td>
                 <td>${r.baseHours}</td>
               </tr>`;
             }).join("")
-          : `<tr><td colspan="4" class="ts-empty">No attendance in this range</td></tr>`;
+          : `<tr><td colspan="5" class="ts-empty">No attendance in this range</td></tr>`;
 
         attBody.querySelectorAll(".ta-row-pick").forEach((tr) => {
-          tr.onclick = () => {
-            try {
-              openWorkerSheet(JSON.parse(decodeURIComponent(tr.getAttribute("data-row"))), tr);
-            } catch (_) {}
-          };
+          const cb = tr.querySelector(".ta-row-check");
+          tr.addEventListener("click", (e) => {
+            if (e.target === cb) return;
+            cb.checked = !cb.checked;
+            rebuildSelectedFromDom();
+          });
+          cb.addEventListener("click", (e) => {
+            e.stopPropagation();
+          });
+          cb.addEventListener("change", () => rebuildSelectedFromDom());
         });
       }
       attReload.onclick = loadAtt;
+      attSelectAll.addEventListener("change", () => {
+        attBody.querySelectorAll(".ta-row-check").forEach((cb) => {
+          cb.checked = attSelectAll.checked;
+        });
+        rebuildSelectedFromDom();
+      });
 
       wsOpenHours.onclick = () => {
         hideActionPanels();
@@ -483,17 +558,19 @@
       wsShiftCancel.onclick = () => { wsShiftPanel.hidden = true; shiftMsg.textContent = ""; };
 
       wsAdjSubmit.onclick = async () => {
-        if (!selected) return;
+        const workers = uniqueWorkers(selected);
+        if (!workers.length) return;
         if (!wsAdjReason.value.trim()) return setMsg(wsAdjMsg, "Enter reason", true);
         const delta = Number(wsAdjDelta.value);
-        const lines = [{ workerCode: selected.workerCode, deltaHours: delta }];
+        if (!Number.isFinite(delta) || delta === 0) return setMsg(wsAdjMsg, "Enter non-zero hours", true);
+        const lines = workers.map((w) => ({ workerCode: w.workerCode, deltaHours: delta }));
         const res = await apiGet({
           action: "timesheetAdjustHours",
           workDate: wsAdjDate.value,
           reason: wsAdjReason.value,
           lines: JSON.stringify(lines),
         });
-        setMsg(wsAdjMsg, res.ok ? "Saved ✓" : (res.error || "Failed"), !res.ok);
+        setMsg(wsAdjMsg, res.ok ? `Saved for ${res.lineCount} worker(s) ✓` : (res.error || "Failed"), !res.ok);
         if (res.ok) {
           wsAdjReason.value = "";
           wsHoursPanel.hidden = true;
@@ -502,17 +579,32 @@
       };
 
       wsDedSubmit.onclick = async () => {
-        if (!selected) return;
-        const res = await apiGet({
-          action: "timesheetCreateDeduction",
-          workerCode: selected.workerCode,
-          workDate: wsDedDate.value,
-          dedType: wsDedType.value,
-          amount: wsDedAmount.value,
-          note: wsDedNote.value,
-        });
-        setMsg(wsDedMsg, res.ok ? "Saved ✓" : (res.error || "Failed"), !res.ok);
-        if (res.ok) {
+        const workers = uniqueWorkers(selected);
+        if (!workers.length) return;
+        if (!wsDedAmount.value || Number(wsDedAmount.value) <= 0) {
+          return setMsg(wsDedMsg, "Enter amount", true);
+        }
+        let okCount = 0;
+        let lastErr = "";
+        for (const w of workers) {
+          const res = await apiGet({
+            action: "timesheetCreateDeduction",
+            workerCode: w.workerCode,
+            workDate: wsDedDate.value,
+            dedType: wsDedType.value,
+            amount: wsDedAmount.value,
+            note: wsDedNote.value,
+          });
+          if (res.ok) okCount += 1;
+          else lastErr = res.error || "Failed";
+        }
+        const allOk = okCount === workers.length;
+        setMsg(
+          wsDedMsg,
+          allOk ? `Saved for ${okCount} worker(s) ✓` : `Saved ${okCount}/${workers.length}. ${lastErr}`,
+          !allOk
+        );
+        if (allOk) {
           wsDedAmount.value = "";
           wsDedNote.value = "";
           wsDedPanel.hidden = true;
@@ -520,11 +612,17 @@
       };
 
       wsVoid.onclick = async () => {
-        if (!selected) return;
-        const reason = prompt("Why void this day?");
+        if (!selected.length) return;
+        const reason = prompt(
+          selected.length === 1
+            ? "Why void this day?"
+            : `Why void these ${selected.length} attendance days?`
+        );
         if (!reason) return;
-        await apiGet({ action: "timesheetVoidAttendance", id: selected.id, reason });
-        closeWorkerSheet();
+        for (const row of selected) {
+          await apiGet({ action: "timesheetVoidAttendance", id: row.id, reason });
+        }
+        clearSelection();
         loadAtt();
       };
 
