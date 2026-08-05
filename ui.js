@@ -47,11 +47,6 @@ const TCUI = (() => {
 
   function pageAllowed(page) {
     if (!page || !page.id) return false;
-    // QC menu entry only for QC role (admins use other pages)
-    if (page.id === "qc") {
-      const role = typeof getRole === "function" ? getRole() : "";
-      return role === "qc" || role === "admin";
-    }
     if (typeof canAccessPage === "function") return canAccessPage(page.id);
     return false;
   }

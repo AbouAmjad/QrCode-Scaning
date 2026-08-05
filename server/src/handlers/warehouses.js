@@ -285,9 +285,7 @@ async function createInventoryCountSheet(ctx) {
     action: "INVENTORY_COUNT_CREATE",
     after: JSON.stringify({ formNo: no, lines: rows.length }),
   });
-  return {
-    success: true,
-    sheet: {
+  const sheet = {
       id,
       formNo: no,
       locationType,
@@ -301,8 +299,19 @@ async function createInventoryCountSheet(ctx) {
         description: row.description || "",
         expectedQty: U.num(row.qty, 0),
       })),
-    },
+    };
+  const lines = sheet.lines;
+  const count = {
+    id: sheet.id,
+    formNo: sheet.formNo,
+    locationType: sheet.locationType,
+    warehouseId: sheet.warehouseId,
+    projectId: sheet.projectId,
+    countType: sheet.countType,
+    category: sheet.category,
+    createdAt: sheet.createdAt,
   };
+  return { success: true, sheet, count, lines };
 }
 
 module.exports = {

@@ -26,5 +26,5 @@ self.addEventListener("fetch", (event) => {
   }
 
   // Always go to network; never serve cached data.
-  event.respondWith(fetch(req).catch(() => caches.match(req)));
+  event.respondWith(fetch(req));
 });

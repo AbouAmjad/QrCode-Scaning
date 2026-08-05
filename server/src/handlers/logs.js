@@ -10,6 +10,7 @@ function classify(code) {
 }
 
 async function getDates(ctx) {
+  ctx.require("logs.view");
   const r = await ctx.query(
     `SELECT DISTINCT row_date FROM scans WHERE row_date <> '' ORDER BY row_date`
   );
@@ -18,6 +19,7 @@ async function getDates(ctx) {
 
 /** Legacy tape feed consumed by the client-side CustodyParser pages. */
 async function getData(ctx) {
+  ctx.require("logs.view");
   const targetDate = U.str(ctx.params.date);
   const r = await ctx.query(
     `SELECT s.tool_code, s.row_date, s.scanned_at,
@@ -117,8 +119,8 @@ async function searchAll(ctx) {
 
 async function auditLog(ctx) {
   await ctx.audit({
-    username: U.trimmed(ctx.params.user) || ctx.user.username,
-    role: U.trimmed(ctx.params.role) || ctx.role,
+    username: ctx.user.username,
+    role: ctx.role,
     action: U.trimmed(ctx.params.auditAction || ctx.params.event) || "CLIENT_EVENT",
     before: U.str(ctx.params.before),
     after: U.str(ctx.params.after),

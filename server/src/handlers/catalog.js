@@ -11,6 +11,7 @@ function kindOf(code) {
 /* ------------------------------------------------------------ stock views */
 
 async function getCatalogStock(ctx) {
+  ctx.require("tool.view");
   const items = [...(await stock.snapshot(ctx.query, await ctx.ledger())).values()];
   items.sort(U.sortByCode);
   const totals = {
@@ -25,6 +26,7 @@ async function getCatalogStock(ctx) {
 }
 
 async function getDesc(ctx) {
+  ctx.requireAny(["terminal.use", "tool.view", "tool.search"]);
   const { params } = ctx;
   const code = U.upper(params.code);
   if (!code) return { description: "NO CODE", found: false, hasDescription: false };

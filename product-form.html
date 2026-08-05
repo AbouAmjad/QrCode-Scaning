@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AbouAmjad Store System | Product</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="app.css?v=live">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f766e">
+  <script src="config.js?v=live"></script>
+  <script src="i18n.js?v=live"></script>
+  <script src="ui.js?v=live"></script>
+  <style>
+    .pf-page .pf-wrap { max-width: 880px; margin: 0 auto; }
+    .pf-page .pf-card {
+      background: var(--tc-surface);
+      border: 1px solid var(--tc-border);
+      border-radius: 16px;
+      box-shadow: 0 10px 28px -22px rgba(20,32,51,.4);
+      overflow: hidden;
+    }
+    .pf-page .pf-top {
+      display: flex; align-items: center; justify-content: space-between; gap: .75rem; flex-wrap: wrap;
+      padding: .9rem 1.1rem; border-bottom: 1px solid var(--tc-border); background: var(--tc-surface-2);
+    }
+    .pf-page .pf-top h1 {
+      margin: 0; font-size: 1.05rem; font-weight: 800;
+      display: flex; align-items: center; gap: .45rem;
+    }
+    .pf-page .pf-top h1 i { color: var(--tc-accent); }
+    .pf-page .pf-badge {
+      font-size: .7rem; font-weight: 700; padding: .25rem .6rem; border-radius: 999px;
+      background: var(--tc-accent-soft); color: var(--tc-accent-2);
+    }
+    .pf-page .pf-badge.edit { background: var(--tc-warn-bg); color: #c2410c; }
+    .pf-page .pf-body { padding: 1.15rem; }
+
+    .pf-page .pf-layout {
+      display: grid; gap: 1.25rem;
+    }
+    @media (min-width: 768px) {
+      .pf-page .pf-layout { grid-template-columns: 220px minmax(0, 1fr); align-items: start; }
+    }
+
+    /* Fixed thumbnail — never expands with large images */
+    .pf-page .pf-photo {
+      border: 1px solid var(--tc-border);
+      border-radius: 14px;
+      background: var(--tc-surface-2);
+      padding: .85rem;
+      text-align: center;
+    }
+    .pf-page .pf-thumb-frame {
+      width: 180px;
+      height: 180px;
+      max-width: 100%;
+      margin: 0 auto .75rem;
+      border-radius: 12px;
+      overflow: hidden;
+      background: var(--tc-thumb-bg);
+      border: 1px solid rgba(20,32,51,.08);
+      position: relative;
+    }
+    .pf-page .pf-thumb-frame img,
+    .pf-page .pf-thumb-frame video {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: none;
+    }
+    .pf-page .pf-thumb-frame img.on,
+    .pf-page .pf-thumb-frame video.on { display: block; }
+    .pf-page .pf-thumb-empty {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      color: var(--tc-muted); font-size: .78rem; gap: .35rem; padding: .5rem;
+    }
+    .pf-page .pf-thumb-empty i { font-size: 1.75rem; color: #94a3b8; }
+    .pf-page .pf-thumb-empty.hidden { display: none; }
+    .pf-page .pf-photo-actions {
+      display: grid; gap: .4rem;
+    }
+    .pf-page .pf-photo-actions .tc-btn,
+    .pf-page .pf-photo-actions label.tc-btn {
+      width: 100%; margin: 0; cursor: pointer; justify-content: center;
+    }
+    .pf-page .pf-photo-hint {
+      font-size: .72rem; color: var(--tc-muted); margin: .55rem 0 0; line-height: 1.35;
+    }
+
+    .pf-page .pp-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: .85rem; }
+    @media (max-width: 560px) { .pf-page .pp-grid-2 { grid-template-columns: 1fr; } }
+    .pf-page .pp-hint { font-size: .75rem; color: var(--tc-muted); margin: .3rem 0 0; }
+    .pf-page .pf-actions {
+      display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1rem;
+      padding-top: 1rem; border-top: 1px solid var(--tc-border);
+    }
+    .pf-page .pf-actions .tc-btn-primary { min-width: 160px; }
+    .pf-page .pf-actions .spacer { flex: 1; }
+
+    /* Camera modal — full preview only while shooting */
+    .pf-page .cam-modal {
+      display: none; position: fixed; inset: 0; z-index: 2000;
+      background: rgba(15, 23, 42, .72); align-items: center; justify-content: center;
+      padding: 1rem;
+    }
+    .pf-page .cam-modal.open { display: flex; }
+    .pf-page .cam-modal-box {
+      width: min(520px, 100%);
+      background: var(--tc-surface); border-radius: 16px; overflow: hidden;
+      box-shadow: 0 24px 48px -20px rgba(0,0,0,.5);
+    }
+    .pf-page .cam-modal-stage {
+      position: relative;
+      width: 100%;
+      height: min(360px, 55vh);
+      background: #0f172a;
+      overflow: hidden;
+    }
+    .pf-page .cam-modal-stage video {
+      width: 100%; height: 100%; object-fit: cover;
+    }
+    .pf-page .cam-modal-bar {
+      display: flex; gap: .5rem; flex-wrap: wrap; padding: .85rem;
+      border-top: 1px solid var(--tc-border);
+    }
+    .pf-page .cam-modal-bar .tc-btn { flex: 1; min-width: 110px; }
+    .pf-page .pf-stock-bar {
+      display: flex; flex-wrap: wrap; gap: .55rem .9rem;
+      margin: .35rem 0 1rem; padding: .7rem .85rem;
+      border-radius: 12px; background: var(--tc-surface-2); border: 1px solid var(--tc-border);
+      font-size: .8rem; color: var(--tc-muted);
+    }
+    .pf-page .pf-stock-bar b { color: var(--tc-text); font-weight: 800; }
+    .pf-page .pf-stock-bar #sProjWrap.has-qty b { color: var(--tc-primary); }
+    .pf-page .pf-qc {
+      margin: .5rem 0 1rem; padding: .85rem 1rem;
+      border-radius: 12px; background: var(--tc-surface-2); border: 1px solid var(--tc-border);
+    }
+    .pf-page .pf-qc-title {
+      font-size: .82rem; font-weight: 800; color: var(--tc-text);
+      display: flex; align-items: center; gap: .4rem; margin-bottom: .65rem;
+    }
+    .pf-page .pf-qc-title i { color: var(--tc-accent); }
+    .pf-page .pf-qc-check { display: flex; align-items: center; gap: .45rem; margin-bottom: .5rem; font-size: .85rem; }
+    .pf-page .pf-qc-fields { display: none; margin-top: .35rem; }
+    .pf-page .pf-qc-fields.on { display: block; }
+    .pf-page .pf-qc-status {
+      margin-top: .55rem; font-size: .78rem; font-weight: 700; padding: .35rem .6rem;
+      border-radius: 8px; display: inline-flex; align-items: center; gap: .35rem;
+    }
+    .pf-page .pf-qc-status.ok { background: #d1fae5; color: #047857; }
+    .pf-page .pf-qc-status.due { background: #ffedd5; color: #c2410c; }
+    .pf-page .pf-qc-status.expired { background: #fee2e2; color: #b91c1c; }
+  </style>
+</head>
+<body class="tc-page pf-page">
+  <div class="tc-wrap">
+    <div class="tc-shell">
+      <div id="app-header"></div>
+
+      <div class="pf-wrap">
+        <div class="pf-card">
+          <div class="pf-top">
+            <h1><i class="bi bi-box-seam"></i> <span id="formTitle" data-i18n="addProductBtn">Add product</span></h1>
+            <div class="d-flex align-items-center gap-2">
+              <span class="pf-badge" id="formMode" data-i18n="modeNew">New</span>
+              <a class="tc-btn tc-btn-sm" href="products.html"><i class="bi bi-arrow-left"></i> <span data-i18n="backToProducts">Back</span></a>
+            </div>
+          </div>
+
+          <div class="pf-body">
+            <div class="pf-layout">
+              <aside class="pf-photo">
+                <div class="pf-thumb-frame" id="thumbFrame">
+                  <img id="camShot" alt="">
+                  <video id="camVideoLive" playsinline muted style="display:none"></video>
+                  <div class="pf-thumb-empty" id="camPlaceholder">
+                    <i class="bi bi-image"></i>
+                    <span data-i18n="noPhotoYet">No photo</span>
+                  </div>
+                </div>
+                <div class="pf-photo-actions">
+                  <button type="button" class="tc-btn tc-btn-primary" id="btnCamStart">
+                    <i class="bi bi-camera"></i> <span data-i18n="openCamera">Open camera</span>
+                  </button>
+                  <label class="tc-btn">
+                    <i class="bi bi-folder2-open"></i> <span data-i18n="uploadPhoto">Gallery</span>
+                    <input id="photoFile" type="file" accept="image/*" capture="environment" hidden>
+                  </label>
+                  <button type="button" class="tc-btn" id="btnClearPhoto" style="display:none">
+                    <i class="bi bi-x-lg"></i> <span data-i18n="removePhoto">Remove</span>
+                  </button>
+                </div>
+                <p class="pf-photo-hint" data-i18n="productPhotoHint">Product image for catalog & inventory</p>
+              </aside>
+
+              <div>
+                <div class="tc-field mb-2">
+                  <label data-i18n="code">Code</label>
+                  <input id="code" class="form-control" placeholder="I1001 / C200" autocomplete="off">
+                </div>
+                <div class="tc-field mb-2" id="lastCodeWrap" style="display:none">
+                  <label data-i18n="lastCodesLabel">Last used code per type</label>
+                  <select id="lastCodeType" class="tc-select w-100">
+                    <option value="" data-i18n="lastCodesPick">Pick a type to see the last code…</option>
+                  </select>
+                  <div id="lastCodeInfo" class="pp-hint" style="display:none;margin-top:.4rem">
+                    <div><strong data-i18n="lastCodeUsed">Last code</strong>: <b id="lcLast">—</b> <span id="lcDesc" class="text-muted"></span></div>
+                    <div style="margin-top:.25rem">
+                      <strong data-i18n="lastCodeNext">Suggested next</strong>: <b id="lcNext">—</b>
+                      <button type="button" class="tc-btn tc-btn-sm" id="btnUseNext" style="margin-inline-start:.5rem">
+                        <i class="bi bi-arrow-down-left"></i> <span data-i18n="lastCodeUse">Use it</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div class="tc-field">
+                  <label data-i18n="description">Description</label>
+                  <input id="description" class="form-control" autocomplete="off">
+                </div>
+                <div class="pp-grid-2">
+                  <div class="tc-field mb-2">
+                    <label data-i18n="category">Category</label>
+                    <select id="category" class="tc-select w-100"><option value="">—</option></select>
+                    <p class="pp-hint"><a href="categories.html" data-i18n="manageCategoriesLink">Manage categories</a></p>
+                  </div>
+                  <div class="tc-field mb-2">
+                    <label data-i18n="subcategory">Subcategory</label>
+                    <select id="subcategory" class="tc-select w-100"><option value="">—</option></select>
+                  </div>
+                </div>
+                <div class="tc-field mb-2">
+                  <label data-i18n="item">Item</label>
+                  <select id="item" class="tc-select w-100"><option value="">—</option></select>
+                  <p class="pp-hint"><a href="categories.html#itemsPanel" data-i18n="manageItemsLink">Manage items</a></p>
+                </div>
+                <div class="pp-grid-2">
+                  <div class="tc-field mb-2">
+                    <label id="stockLabel" data-i18n="stockQty">Stock qty</label>
+                    <input id="stockQty" type="number" step="1" class="form-control" value="1">
+                    <p class="pp-hint" id="stockHint" data-i18n="stockQtyHintNew">Opening quantity in store</p>
+                  </div>
+                  <div class="tc-field mb-2">
+                    <label data-i18n="minStock">Min stock</label>
+                    <input id="minStock" type="number" min="0" step="1" class="form-control" value="0">
+                  </div>
+                </div>
+                <label class="pf-qc-check" style="margin: 4px 0 14px">
+                  <input type="checkbox" id="serialized">
+                  <span data-i18n="serializedItem">Has serial number (unique unit)</span>
+                </label>
+                <p class="pp-hint" style="margin-top:-8px;margin-bottom:14px" data-i18n="serializedItemHint">Enable only when each physical unit has its own identity. Quantity items must stay off.</p>
+                <div class="pf-stock-bar" id="stockBar" style="display:none">
+                  <span><strong data-i18n="qtyAvailable">Available</strong>: <b id="sAvail">0</b></span>
+                  <span><strong data-i18n="qtyOut">Out</strong>: <b id="sOut">0</b></span>
+                  <span id="sProjWrap"><strong data-i18n="atProject">At project</strong>: <b id="sProj">0</b></span>
+                  <span><strong data-i18n="damaged">Damaged</strong>: <b id="sDmg">0</b></span>
+                  <span><strong data-i18n="received">Received</strong>: <b id="sRcv">0</b></span>
+                </div>
+
+                <section class="pf-qc" id="qcSection">
+                  <div class="pf-qc-title"><i class="bi bi-clipboard2-check"></i> <span data-i18n="qcSection">QC / Calibration</span></div>
+                  <label class="pf-qc-check">
+                    <input type="checkbox" id="calRequired">
+                    <span data-i18n="qcNeedsCalibration">Needs calibration</span>
+                  </label>
+                  <div class="pf-qc-fields" id="qcFields">
+                    <label class="pf-qc-check">
+                      <input type="checkbox" id="calibratedNow">
+                      <span data-i18n="qcCalibratedNow">Calibrated now</span>
+                    </label>
+                    <div class="tc-field mb-0">
+                      <label data-i18n="qcNextDueDate">Next due date</label>
+                      <input type="date" id="calNextDue" class="form-control">
+                    </div>
+                    <div class="pf-qc-status" id="qcStatusBox" style="display:none"></div>
+                  </div>
+                </section>
+
+                <div class="pf-actions">
+                  <button type="button" class="tc-btn tc-btn-primary" id="btnSave">
+                    <i class="bi bi-check2"></i> <span data-i18n="saveProduct">Save product</span>
+                  </button>
+                  <div class="spacer"></div>
+                  <button type="button" class="tc-btn tc-btn-danger" id="btnDelete" style="display:none">
+                    <i class="bi bi-trash"></i> <span data-i18n="deleteProduct">Delete</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cam-modal" id="camModal" aria-hidden="true">
+    <div class="cam-modal-box">
+      <div class="cam-modal-stage">
+        <video id="camVideo" playsinline muted></video>
+      </div>
+      <div class="cam-modal-bar">
+        <button type="button" class="tc-btn tc-btn-primary" id="btnCamCapture">
+          <i class="bi bi-camera"></i> <span data-i18n="capturePhoto">Capture</span>
+        </button>
+        <button type="button" class="tc-btn" id="btnCamClose">
+          <i class="bi bi-x-lg"></i> <span data-i18n="close">Close</span>
+        </button>
+      </div>
+    </div>
+  </div>
+  <canvas id="camCanvas" hidden></canvas>
+
+  <script>
+    let editing = "";
+    let camStream = null;
+    let capturedDataUrl = "";
+    let catMaster = [];
+    let subMaster = [];
+    let itemMaster = [];
+    let currentStock = null;
+
+    function escHtml(s) {
+      return String(s == null ? "" : s)
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+
+    document.addEventListener("DOMContentLoaded", () => TCUI.bootPage(async () => {
+      const codeParam = (new URLSearchParams(location.search).get("code") || "").trim().toUpperCase();
+      TCUI.mountHeader("app-header", {
+        active: "products",
+        titleKey: codeParam ? "modeEdit" : "addProductBtn",
+        subtitleKey: "productsSubFull",
+        icon: "bi-box-seam",
+        toolbar: `<a class="tc-btn" href="products.html"><i class="bi bi-arrow-left"></i> <span data-i18n="backToProducts">Back to products</span></a>`
+      });
+      document.getElementById("btnSave").onclick = saveProduct;
+      document.getElementById("btnDelete").onclick = deleteProduct;
+      document.getElementById("code").addEventListener("blur", checkProductCodeAvailable);
+      document.getElementById("btnCamStart").onclick = openCameraModal;
+      document.getElementById("btnCamCapture").onclick = capturePhoto;
+      document.getElementById("btnCamClose").onclick = closeCameraModal;
+      document.getElementById("btnClearPhoto").onclick = clearPhoto;
+      document.getElementById("photoFile").onchange = onFilePick;
+      document.getElementById("category").onchange = () => { fillSubSelect(); fillItemSelect(); };
+      document.getElementById("subcategory").onchange = fillItemSelect;
+      document.getElementById("calRequired").onchange = syncQcFields;
+      document.getElementById("calNextDue").onchange = updateQcStatusLive;
+      document.getElementById("calNextDue").oninput = updateQcStatusLive;
+      document.getElementById("camModal").addEventListener("click", (e) => {
+        if (e.target.id === "camModal") closeCameraModal();
+      });
+      window.addEventListener("beforeunload", stopCamera);
+
+      await loadCategories();
+      if (codeParam) await loadProduct(codeParam);
+      else { setMode(false); loadLastCodes(); }
+    }, { pageId: "products" }));
+
+    let lastCodesData = [];
+
+    async function loadLastCodes() {
+      try {
+        const res = await apiGet({ action: "getLastCodes" });
+        if (!res || res.error || !Array.isArray(res.items)) return;
+        lastCodesData = res.items;
+        const sel = document.getElementById("lastCodeType");
+        const typeLabels = { I: "I — Tools", E: "E — Equipment", C: "C — Consumables", B: "B — Bulk" };
+        for (const it of res.items) {
+          const o = document.createElement("option");
+          o.value = it.prefix;
+          o.textContent = it.highestCode
+            ? `${typeLabels[it.prefix] || it.prefix} · ${t("lastCodeUsed")}: ${it.highestCode}`
+            : `${typeLabels[it.prefix] || it.prefix} · ${t("lastCodeNone")}`;
+          sel.appendChild(o);
+        }
+        sel.onchange = showLastCodeInfo;
+        document.getElementById("btnUseNext").onclick = useSuggestedCode;
+        document.getElementById("lastCodeWrap").style.display = "";
+      } catch (_) {}
+    }
+
+    function showLastCodeInfo() {
+      const prefix = document.getElementById("lastCodeType").value;
+      const info = document.getElementById("lastCodeInfo");
+      const it = lastCodesData.find((x) => x.prefix === prefix);
+      if (!prefix || !it) { info.style.display = "none"; return; }
+      document.getElementById("lcLast").textContent = it.highestCode || "—";
+      document.getElementById("lcDesc").textContent = it.highestDescription
+        ? `· ${it.highestDescription}` : (it.highestCode ? "" : t("lastCodeNone"));
+      document.getElementById("lcNext").textContent = it.suggestedNext || "—";
+      document.getElementById("btnUseNext").style.display = it.suggestedNext ? "" : "none";
+      info.style.display = "";
+    }
+
+    function useSuggestedCode() {
+      const prefix = document.getElementById("lastCodeType").value;
+      const it = lastCodesData.find((x) => x.prefix === prefix);
+      if (!it || !it.suggestedNext) return;
+      const input = document.getElementById("code");
+      input.value = it.suggestedNext;
+      input.dispatchEvent(new Event("blur"));
+      input.focus();
+    }
+
+    function setMode(isEdit) {
+      const mode = document.getElementById("formMode");
+      mode.classList.toggle("edit", !!isEdit);
+      mode.textContent = isEdit ? t("modeEdit") : t("modeNew");
+      document.getElementById("formTitle").textContent = isEdit ? t("modeEdit") : t("addProductBtn");
+    }
+
+    function showShot(src, isNewCapture) {
+      const shot = document.getElementById("camShot");
+      const ph = document.getElementById("camPlaceholder");
+      const clearBtn = document.getElementById("btnClearPhoto");
+      if (src) {
+        if (isNewCapture) capturedDataUrl = src;
+        else if (String(src).startsWith("data:")) capturedDataUrl = src;
+        else capturedDataUrl = ""; // existing server URL — don't re-upload unless replaced
+        shot.src = src;
+        shot.classList.add("on");
+        ph.classList.add("hidden");
+        clearBtn.style.display = "";
+      } else {
+        capturedDataUrl = "";
+        shot.classList.remove("on");
+        shot.removeAttribute("src");
+        ph.classList.remove("hidden");
+        clearBtn.style.display = "none";
+      }
+    }
+
+    function clearPhoto() {
+      showShot("", false);
+      document.getElementById("photoFile").value = "";
+    }
+
+    async function openCameraModal() {
+      stopCamera();
+      try {
+        camStream = await navigator.mediaDevices.getUserMedia({
+          audio: false,
+          video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 960 } }
+        });
+        const video = document.getElementById("camVideo");
+        video.srcObject = camStream;
+        await video.play();
+        document.getElementById("camModal").classList.add("open");
+        document.getElementById("camModal").setAttribute("aria-hidden", "false");
+      } catch (e) {
+        TCUI.toast(t("cameraDenied"), "err");
+        document.getElementById("photoFile").click();
+      }
+    }
+
+    function closeCameraModal() {
+      stopCamera();
+      document.getElementById("camModal").classList.remove("open");
+      document.getElementById("camModal").setAttribute("aria-hidden", "true");
+    }
+
+    function stopCamera() {
+      if (camStream) {
+        camStream.getTracks().forEach((tr) => tr.stop());
+        camStream = null;
+      }
+      const video = document.getElementById("camVideo");
+      if (video) video.srcObject = null;
+    }
+
+    function capturePhoto() {
+      const video = document.getElementById("camVideo");
+      if (!video.videoWidth) return;
+      const canvas = document.getElementById("camCanvas");
+      const maxSide = 900;
+      let w = video.videoWidth, h = video.videoHeight;
+      if (Math.max(w, h) > maxSide) {
+        const scale = maxSide / Math.max(w, h);
+        w = Math.round(w * scale);
+        h = Math.round(h * scale);
+      }
+      canvas.width = w;
+      canvas.height = h;
+      canvas.getContext("2d").drawImage(video, 0, 0, w, h);
+      const dataUrl = canvas.toDataURL("image/jpeg", 0.82);
+      closeCameraModal();
+      showShot(dataUrl, true);
+    }
+
+    async function onFilePick() {
+      const file = document.getElementById("photoFile").files && document.getElementById("photoFile").files[0];
+      if (!file) return;
+      try {
+        showShot(await compressImageFile(file, 900, 0.82), true);
+      } catch (e) {
+        TCUI.toast(e.message || "Error", "err");
+      }
+    }
+
+    async function loadCategories() {
+      const data = await apiGet({ action: "listCategories" });
+      catMaster = (data && data.categories) || [];
+      subMaster = (data && data.subcategories) || [];
+      itemMaster = (data && data.items) || [];
+      const catSel = document.getElementById("category");
+      catSel.innerHTML = `<option value="">—</option>` +
+        catMaster.map((c) => `<option value="${escHtml(c.name)}">${escHtml(c.name)}</option>`).join("");
+      fillSubSelect();
+      fillItemSelect();
+    }
+
+    function fillSubSelect() {
+      const catName = document.getElementById("category").value;
+      const cat = catMaster.find((c) => c.name === catName);
+      const subSel = document.getElementById("subcategory");
+      const cur = subSel.value;
+      const list = cat ? subMaster.filter((s) => s.categoryId === cat.id) : [];
+      subSel.innerHTML = `<option value="">—</option>` +
+        list.map((s) => `<option value="${escHtml(s.name)}">${escHtml(s.name)}</option>`).join("");
+      if (cur && [...subSel.options].some((o) => o.value === cur)) subSel.value = cur;
+    }
+
+    function fillItemSelect() {
+      const catName = document.getElementById("category").value;
+      const subName = document.getElementById("subcategory").value;
+      const cat = catMaster.find((c) => c.name === catName);
+      const sub = subMaster.find((s) => s.name === subName && (!cat || s.categoryId === cat.id));
+      const itemSel = document.getElementById("item");
+      const cur = itemSel.value;
+      const list = sub ? itemMaster.filter((it) => it.subcategoryId === sub.id) : [];
+      itemSel.innerHTML = `<option value="">—</option>` +
+        list.map((it) => `<option value="${escHtml(it.name)}">${escHtml(it.name)}</option>`).join("");
+      if (cur && [...itemSel.options].some((o) => o.value === cur)) itemSel.value = cur;
+    }
+
+    function syncQcFields() {
+      const on = document.getElementById("calRequired").checked;
+      document.getElementById("qcFields").classList.toggle("on", on);
+      if (!on) {
+        document.getElementById("calibratedNow").checked = false;
+        document.getElementById("calNextDue").value = "";
+        document.getElementById("qcStatusBox").style.display = "none";
+      } else {
+        updateQcStatusLive();
+      }
+    }
+
+    function updateQcStatusLive(item) {
+      const box = document.getElementById("qcStatusBox");
+      if (!document.getElementById("calRequired").checked) {
+        box.style.display = "none";
+        return;
+      }
+      const due = document.getElementById("calNextDue").value;
+      if (!due) {
+        box.style.display = "none";
+        return;
+      }
+      let daysLeft = null;
+      let status = null;
+      if (item && item.qcDaysLeft != null && item.calibrationNextDue === due) {
+        daysLeft = item.qcDaysLeft;
+        status = item.qcStatus;
+      } else {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const dueDate = new Date(due + "T00:00:00");
+        daysLeft = Math.round((dueDate - today) / 86400000);
+        if (daysLeft < 0) status = "Expired";
+        else if (daysLeft <= 30) status = "Due soon";
+        else status = "OK";
+      }
+      box.className = "pf-qc-status " + (status === "Expired" ? "expired" : status === "Due soon" ? "due" : "ok");
+      if (status === "Expired") {
+        box.innerHTML = `<i class="bi bi-exclamation-octagon"></i> ${t("qcExpired")}: ${Math.abs(daysLeft)}d`;
+      } else if (status === "Due soon") {
+        box.innerHTML = `<i class="bi bi-exclamation-triangle"></i> ${t("qcDueSoon")}: ${daysLeft}d`;
+      } else {
+        box.innerHTML = `<i class="bi bi-check2-circle"></i> ${t("qcDueIn", { n: daysLeft })}`;
+      }
+      box.style.display = "inline-flex";
+    }
+
+    function fillCalibrationFields(item) {
+      const required = !!(item && item.calibrationRequired);
+      document.getElementById("calRequired").checked = required;
+      document.getElementById("calibratedNow").checked = false;
+      document.getElementById("calNextDue").value = (item && item.calibrationNextDue) || "";
+      syncQcFields();
+      if (required && item && item.calibrationNextDue) updateQcStatusLive(item);
+    }
+
+    async function loadProduct(code) {
+      const data = await apiGet({ action: "getCatalogStock" });
+      const item = ((data && data.items) || []).find((i) => i.code === code);
+      if (!item) return TCUI.toast(t("error"), "err");
+      editing = item.code;
+      currentStock = item;
+      document.getElementById("code").value = item.code;
+      document.getElementById("code").disabled = true;
+      document.getElementById("description").value = item.description || "";
+      document.getElementById("category").value = item.category || "";
+      fillSubSelect();
+      document.getElementById("subcategory").value = item.subcategory || "";
+      fillItemSelect();
+      document.getElementById("item").value = item.item || "";
+      document.getElementById("stockQty").value = String(item.available ?? 0);
+      document.getElementById("minStock").value = String(item.minStock || 0);
+      document.getElementById("serialized").checked = !!(item.serialized);
+      document.getElementById("stockHint").textContent = t("stockQtyHintEdit");
+      document.getElementById("stockBar").style.display = "flex";
+      document.getElementById("sAvail").textContent = item.available ?? 0;
+      document.getElementById("sAvail").style.color = (Number(item.available) || 0) < 0 ? "var(--tc-danger)" : "";
+      document.getElementById("sOut").textContent = item.out || item.issued || 0;
+      const projOut = item.projectOut ?? 0;
+      document.getElementById("sProj").textContent = projOut;
+      document.getElementById("sProjWrap").classList.toggle("has-qty", projOut > 0);
+      document.getElementById("sDmg").textContent = item.damaged ?? 0;
+      document.getElementById("sRcv").textContent = item.received ?? 0;
+      document.getElementById("btnDelete").style.display = can("tool.delete") ? "" : "none";
+      fillCalibrationFields(item);
+      setMode(true);
+      if (item.imageUrl) showShot(item.imageUrl, false);
+    }
+
+    async function checkProductCodeAvailable() {
+      if (editing) return;
+      const code = document.getElementById("code").value.trim().toUpperCase();
+      if (!code) return;
+      document.getElementById("code").value = code;
+      try {
+        const res = await apiGet({ action: "checkCatalogCode", code, intendedKind: "tool", isEdit: "0" });
+        if (res && res.available === false) {
+          const err = res.error || "CODE_EXISTS";
+          TCUI.toast(
+            err === "CODE_USED_BY_PERSON" ? t("CODE_USED_BY_PERSON")
+            : err === "CODE_USED_BY_PRODUCT" ? t("CODE_USED_BY_PRODUCT")
+            : t("CODE_EXISTS"),
+            "err"
+          );
+        }
+      } catch (_) {}
+    }
+
+    async function saveProduct() {
+      const code = document.getElementById("code").value.trim().toUpperCase();
+      const description = document.getElementById("description").value.trim();
+      if (!code || !description) return TCUI.toast(t("codeDescRequired"), "err");
+      const stockQty = Number(document.getElementById("stockQty").value);
+      if (!Number.isFinite(stockQty)) return TCUI.toast(t("error") || "Invalid stock qty", "err");
+      const calRequired = document.getElementById("calRequired").checked;
+      const calNextDue = document.getElementById("calNextDue").value;
+      if (calRequired && !calNextDue) return TCUI.toast(t("qcDueRequired"), "err");
+      const btn = document.getElementById("btnSave");
+      btn.disabled = true;
+      try {
+        const payload = {
+          action: "upsertProduct",
+          code,
+          description,
+          item: document.getElementById("item").value,
+          category: document.getElementById("category").value.trim(),
+          subcategory: document.getElementById("subcategory").value.trim(),
+          minStock: document.getElementById("minStock").value,
+          stockQty,
+          serialized: document.getElementById("serialized").checked ? "1" : "0",
+          calibrationRequired: calRequired,
+          calibratedNow: document.getElementById("calibratedNow").checked,
+          calibrationNextDue: calNextDue,
+          isEdit: editing ? "1" : "0"
+        };
+        const res = await apiGet(payload);
+        if (!res || res.success === false || res.error) {
+          const err = (res && res.error) || "Failed";
+          const msg =
+            err === "CALIBRATION_DUE_REQUIRED" ? t("qcDueRequired")
+            : err === "CODE_EXISTS" ? t("CODE_EXISTS")
+            : err === "CODE_USED_BY_PERSON" ? t("CODE_USED_BY_PERSON")
+            : err === "CODE_USED_BY_PRODUCT" ? t("CODE_USED_BY_PRODUCT")
+            : err;
+          TCUI.toast(msg, "err");
+          return;
+        }
+        if (capturedDataUrl && capturedDataUrl.startsWith("data:")) {
+          await setProductImage(code, capturedDataUrl);
+        }
+        stopCamera();
+        const delta = Number(res.stockDelta || 0);
+        if (delta !== 0) TCUI.toast(t("stockUpdated", { n: res.available ?? stockQty }), "ok");
+        else TCUI.toast(t("productSaved"), "ok");
+        location.href = "products.html";
+      } catch (e) {
+        TCUI.toast(e.message || "Error", "err");
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    async function deleteProduct() {
+      const code = editing || document.getElementById("code").value.trim().toUpperCase();
+      if (!code) return;
+      if (!confirm(t("deleteProductConfirm", { code }))) return;
+      const res = await apiGet({ action: "deleteProduct", code });
+      if (!res || res.success === false || res.error) {
+        TCUI.toast((res && res.error) || "Failed", "err");
+        return;
+      }
+      stopCamera();
+      TCUI.toast(t("productDeleted"), "ok");
+      location.href = "products.html";
+    }
+  </script>
+</body>
+</html>

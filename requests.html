@@ -3,73 +3,337 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ToolCustody | Store request</title>
+  <title>AbouAmjad Store System | Store request</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="app.css">
+  <link rel="stylesheet" href="app.css?v=live">
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#1e3a5f">
-  <script src="config.js"></script>
-  <script src="ui.js"></script>
+  <meta name="theme-color" content="#0f766e">
+  <script src="config.js?v=live"></script>
+  <script src="i18n.js?v=live"></script>
+  <script src="ui.js?v=live"></script>
+  <script src="export-utils.js?v=live"></script>
+  <style>
+    .req-layout{display:grid;grid-template-columns:1fr;gap:1rem}
+    @media(min-width:992px){.req-layout{grid-template-columns:1.05fr .95fr}}
+    .req-low-list{max-height:240px;overflow:auto}
+    .req-low-item,.req-cart-item,.req-line{
+      display:flex;align-items:center;gap:.65rem;padding:.55rem .4rem;
+      border-bottom:1px solid var(--tc-border);
+    }
+    .req-low-item:last-child,.req-cart-item:last-child,.req-line:last-child{border-bottom:none}
+    .req-low-item .meta,.req-cart-item .meta,.req-line .meta{flex:1;min-width:0}
+    .req-low-item .meta strong,.req-cart-item .meta strong,.req-line .meta strong{display:block;font-size:.85rem}
+    .req-low-item .meta small,.req-cart-item .meta small,.req-line .meta small{color:var(--tc-muted);font-size:.72rem}
+    .req-low-item .stock{font-size:.72rem;font-weight:700;color:#c2410c;white-space:nowrap}
+    .req-qty{width:72px}
+    .req-card{
+      border:1px solid var(--tc-border);border-radius:14px;padding:.85rem .95rem;margin-bottom:.75rem;
+      background:var(--tc-surface);
+    }
+    .req-card.Partial{border-color:#fdba74;background:linear-gradient(180deg,rgba(251,146,60,.08),transparent 55%)}
+    .req-card.Done{border-color:#86efac;background:linear-gradient(180deg,rgba(34,197,94,.07),transparent 55%)}
+    .req-card.Cancelled{opacity:.72}
+    .req-bar{height:8px;background:var(--tc-surface-2);border-radius:999px;overflow:hidden;margin:.45rem 0 .65rem}
+    .req-bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--tc-accent),#16a34a);border-radius:999px}
+    .req-filters{display:flex;flex-wrap:wrap;gap:.35rem;margin-bottom:.75rem}
+    .req-filters button{
+      border:1px solid var(--tc-border);background:var(--tc-surface-2);color:var(--tc-muted);
+      font-weight:700;font-size:.75rem;padding:.35rem .7rem;border-radius:999px;cursor:pointer;
+    }
+    .req-filters button.active{background:var(--tc-accent);color:#fff;border-color:transparent}
+    .badge-Open{background:#e2e8f0;color:#334155}
+    .badge-Partial{background:#ffedd5;color:#c2410c}
+    .badge-Done{background:#dcfce7;color:#14532d}
+    .badge-Cancelled{background:#fee2e2;color:#991b1b}
+    .line-pending{color:#64748b}
+    .line-partial{color:#c2410c;font-weight:700}
+    .line-done{color:#14532d;font-weight:700}
+  </style>
 </head>
 <body class="tc-page">
   <div class="tc-wrap">
     <div class="tc-shell">
       <div id="app-header"></div>
-      <div class="row g-4">
-        <div class="col-lg-5">
+      <div class="req-layout">
+        <div>
+          <div class="tc-card mb-3">
+            <span class="tc-section-badge"><i class="bi bi-cart-plus"></i> <span data-i18n="requests">Store request</span></span>
+            <div class="d-flex justify-content-between align-items-center mt-3 mb-1">
+              <strong data-i18n="requestCart">Request cart</strong>
+              <span class="tc-text-muted small" id="cartMeta">0</span>
+            </div>
+            <div id="cartList" class="mb-2">
+              <div class="tc-text-muted small text-center py-3" data-i18n="requestCartEmpty">Add items from low stock or type a code below.</div>
+            </div>
+            <div class="row g-2 mb-2">
+              <div class="col-5"><input id="manualCode" class="form-control form-control-sm" placeholder="CODE" data-i18n-placeholder="code"></div>
+              <div class="col-3"><input id="manualQty" type="number" min="1" step="1" value="1" class="form-control form-control-sm"></div>
+              <div class="col-4"><button type="button" class="tc-btn tc-btn-sm w-100" id="btnAddManual"><i class="bi bi-plus"></i> <span data-i18n="add">Add</span></button></div>
+            </div>
+            <div class="tc-field">
+              <label data-i18n="note">Note</label>
+              <input id="note" class="form-control" data-i18n-placeholder="requestNotePh" placeholder="Job / site / urgency">
+            </div>
+            <button class="tc-btn tc-btn-primary w-100" id="btnSend"><i class="bi bi-send"></i> <span data-i18n="sendRequest">Send request</span></button>
+          </div>
+
           <div class="tc-card">
-            <span class="tc-section-badge"><i class="bi bi-cart-plus"></i> طلب للمخزن</span>
-            <div class="tc-field mt-3"><label>What do you need?</label>
-              <textarea id="items" class="form-control" rows="5" placeholder="I1001 ×2&#10;C50 tape&#10;Gloves…"></textarea>
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+              <span class="tc-section-badge">
+                <i class="bi bi-exclamation-triangle"></i>
+                <span data-i18n="addLowStockToRequest">Add low stock</span>
+                <span class="badge text-bg-warning ms-1" id="lowCount">0</span>
+              </span>
+              <button type="button" class="tc-btn tc-btn-sm tc-btn-primary" id="btnAddAllLow">
+                <i class="bi bi-plus-lg"></i> <span data-i18n="addAllLowStock">Add all</span>
+              </button>
             </div>
-            <div class="tc-field"><label>Note</label>
-              <input id="note" class="form-control" placeholder="Job / site / urgency">
+            <p class="small tc-text-muted mb-2" data-i18n="addLowStockHint">Pick items below to add them to your request list.</p>
+            <div class="req-low-list" id="lowList">
+              <div class="tc-text-muted text-center py-3" data-i18n="loading">Loading…</div>
             </div>
-            <button class="tc-btn tc-btn-primary w-100" id="btnSend"><i class="bi bi-send"></i> Send request</button>
-            <a href="inventory.html" class="tc-btn w-100 mt-2 text-center">View inventory first</a>
           </div>
         </div>
-        <div class="col-lg-7">
+
+        <div>
           <div class="tc-card">
-            <span class="tc-section-badge"><i class="bi bi-clock-history"></i> My / open requests</span>
-            <div id="list" class="mt-2">Loading…</div>
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+              <span class="tc-section-badge"><i class="bi bi-radar"></i> <span data-i18n="requestTracking">Request tracking</span></span>
+            </div>
+            <div class="req-filters" id="statusFilters">
+              <button type="button" class="active" data-status="all" data-i18n="all">All</button>
+              <button type="button" data-status="Open">Open</button>
+              <button type="button" data-status="Partial">Partial</button>
+              <button type="button" data-status="Done">Done</button>
+            </div>
+            <div id="list"><div class="tc-text-muted text-center py-3" data-i18n="loading">Loading…</div></div>
           </div>
         </div>
       </div>
     </div>
   </div>
+
   <script>
-    document.addEventListener("DOMContentLoaded", () => TCUI.bootPage(() => {
+    let lowItems = [];
+    let catalogByCode = {};
+    let cart = [];
+    let requests = [];
+    let statusFilter = "all";
+
+    function escHtml(s) {
+      return String(s == null ? "" : s)
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+
+    function suggestedQty(i) {
+      const need = Math.max(0, (Number(i.minStock) || 0) - (Number(i.available) || 0));
+      return need > 0 ? need : 1;
+    }
+
+    function statusBadge(status) {
+      const s = status || "Open";
+      return `<span class="badge badge-${escHtml(s)}">${escHtml(s)}</span>`;
+    }
+
+    document.addEventListener("DOMContentLoaded", () => TCUI.bootPage(async () => {
       TCUI.mountHeader("app-header", {
         active: "requests",
-        title: "Store request",
-        subtitle: "Engineer requests materials from the store",
+        titleKey: "requests",
+        subtitleKey: "requestsSub",
         icon: "bi-cart-plus"
       });
       document.getElementById("btnSend").onclick = sendReq;
-      loadList();
+      document.getElementById("btnAddAllLow").onclick = addAllLow;
+      document.getElementById("btnAddManual").onclick = addManual;
+      document.getElementById("manualCode").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") { e.preventDefault(); addManual(); }
+      });
+      document.querySelectorAll("#statusFilters button").forEach((btn) => {
+        btn.onclick = () => {
+          statusFilter = btn.getAttribute("data-status") || "all";
+          document.querySelectorAll("#statusFilters button").forEach((b) =>
+            b.classList.toggle("active", b === btn)
+          );
+          renderList();
+        };
+      });
+      await Promise.all([loadCatalogHints(), loadList(), loadLowStock()]);
+      applyQueryParams();
     }, { pageId: "requests" }));
 
-    async function sendReq() {
-      const items = document.getElementById("items").value.trim();
-      if (!items) { TCUI.toast("Write what you need", "err"); return; }
+    async function loadCatalogHints() {
       try {
-        const res = await apiPostForm({
-          action: "createStoreRequest",
-          items,
-          note: document.getElementById("note").value.trim(),
-          user: getSessionUser(),
-          role: getRole()
+        const data = await apiGet({ action: "getCatalogStock" });
+        ((data && data.items) || []).forEach((i) => { catalogByCode[i.code] = i; });
+      } catch (_) {}
+    }
+
+    function renderCart() {
+      const host = document.getElementById("cartList");
+      document.getElementById("cartMeta").textContent = String(cart.length);
+      if (!cart.length) {
+        host.innerHTML = `<div class="tc-text-muted small text-center py-3">${t("requestCartEmpty") || "Add items from low stock or type a code below."}</div>`;
+        return;
+      }
+      host.innerHTML = cart.map((l, idx) => `
+        <div class="req-cart-item">
+          ${typeof productThumbHtml === "function" ? productThumbHtml(l.imageUrl, l.code, 36) : ""}
+          <div class="meta">
+            <strong>${escHtml(l.code || "—")}</strong>
+            <small>${escHtml(l.description || "")}</small>
+          </div>
+          <input type="number" class="form-control form-control-sm req-qty" min="1" step="1" value="${l.qty}" data-cq="${idx}">
+          <button type="button" class="tc-btn tc-btn-sm" data-crm="${idx}" title="Remove"><i class="bi bi-x-lg"></i></button>
+        </div>`).join("");
+      host.querySelectorAll("[data-cq]").forEach((inp) => {
+        inp.onchange = () => {
+          const i = Number(inp.getAttribute("data-cq"));
+          cart[i].qty = Math.max(1, Number(inp.value) || 1);
+        };
+      });
+      host.querySelectorAll("[data-crm]").forEach((btn) => {
+        btn.onclick = () => {
+          cart.splice(Number(btn.getAttribute("data-crm")), 1);
+          renderCart();
+        };
+      });
+    }
+
+    function addToCart(item, qty) {
+      const code = String(item.code || "").toUpperCase();
+      if (!code && !(item.description || "").trim()) return;
+      const q = Math.max(1, Number(qty) || 1);
+      const existing = cart.find((c) => c.code && c.code === code);
+      if (existing) {
+        existing.qty += q;
+        renderCart();
+        TCUI.toast(t("requestLinesAdded", { n: 1 }) || "Added", "ok");
+        return;
+      }
+      cart.push({
+        code,
+        description: item.description || code,
+        qty: q,
+        imageUrl: item.imageUrl || (catalogByCode[code] && catalogByCode[code].imageUrl) || "",
+      });
+      renderCart();
+      TCUI.toast(t("requestLinesAdded", { n: 1 }) || "Added", "ok");
+    }
+
+    function addOneLow(code) {
+      const item = lowItems.find((x) => x.code === code);
+      if (!item) return;
+      addToCart(item, suggestedQty(item));
+    }
+
+    function addAllLow() {
+      if (!lowItems.length) return TCUI.toast(t("lowStockEmpty"), "err");
+      let n = 0;
+      lowItems.forEach((i) => {
+        const code = i.code;
+        const existing = cart.find((c) => c.code === code);
+        if (existing) return;
+        cart.push({
+          code,
+          description: i.description || code,
+          qty: suggestedQty(i),
+          imageUrl: i.imageUrl || "",
         });
-        if (res.error) { TCUI.toast(res.error, "err"); return; }
-        TCUI.toast("Request sent", "ok");
-        document.getElementById("items").value = "";
-        document.getElementById("note").value = "";
-        loadList();
+        n += 1;
+      });
+      renderCart();
+      if (!n) TCUI.toast(t("requestAlreadyAdded") || "Already added", "info");
+      else TCUI.toast(t("requestLinesAdded", { n }) || "Added", "ok");
+    }
+
+    function addManual() {
+      const code = document.getElementById("manualCode").value.trim().toUpperCase();
+      const qty = Math.max(1, Number(document.getElementById("manualQty").value) || 1);
+      if (!code) return TCUI.toast(t("codeRequired") || "Code required", "err");
+      const cat = catalogByCode[code];
+      addToCart({
+        code,
+        description: (cat && cat.description) || code,
+        imageUrl: (cat && cat.imageUrl) || "",
+      }, qty);
+      document.getElementById("manualCode").value = "";
+      document.getElementById("manualQty").value = "1";
+    }
+
+    async function loadLowStock() {
+      const host = document.getElementById("lowList");
+      try {
+        const data = await apiGet({ action: "getCatalogStock" });
+        lowItems = ((data && data.items) || []).filter((i) => i.lowStock);
+        document.getElementById("lowCount").textContent = String(lowItems.length);
+        document.getElementById("btnAddAllLow").style.display = lowItems.length ? "" : "none";
+        if (!lowItems.length) {
+          host.innerHTML = `<div class="tc-text-muted text-center py-3">${t("lowStockEmpty")}</div>`;
+          return;
+        }
+        host.innerHTML = lowItems.map((i) => {
+          const qty = suggestedQty(i);
+          return `<div class="req-low-item">
+            ${typeof productThumbHtml === "function" ? productThumbHtml(i.imageUrl, i.code, 36) : ""}
+            <div class="meta">
+              <strong>${escHtml(i.code)}</strong>
+              <small>${escHtml(i.description || "—")} · ${escHtml(i.category || "")}</small>
+            </div>
+            <span class="stock">${t("qtyAvailable")}: ${i.available} / min ${i.minStock || 0}</span>
+            <button type="button" class="tc-btn tc-btn-sm" data-add-low="${escHtml(i.code)}" title="${t("addToRequest")}">
+              <i class="bi bi-plus-lg"></i> ×${qty}
+            </button>
+          </div>`;
+        }).join("");
+        host.querySelectorAll("[data-add-low]").forEach((btn) => {
+          btn.onclick = () => addOneLow(btn.getAttribute("data-add-low"));
+        });
       } catch (e) {
-        TCUI.toast(e.message || "Failed — redeploy Code.gs if needed", "err");
+        host.innerHTML = `<div class="text-danger text-center py-2">${escHtml(e.message || "Error")}</div>`;
+      }
+    }
+
+    function applyQueryParams() {
+      const qs = new URLSearchParams(location.search);
+      const addCode = (qs.get("add") || "").trim().toUpperCase();
+      const fromLow = qs.get("from") === "lowstock";
+      if (fromLow && lowItems.length) {
+        addAllLow();
+        if (!document.getElementById("note").value) {
+          document.getElementById("note").value = t("lowStockRequestNote");
+        }
+      } else if (addCode) {
+        const item = lowItems.find((x) => x.code === addCode) || catalogByCode[addCode] || { code: addCode, description: addCode };
+        const qty = Number(qs.get("qty") || 0) || (item.minStock != null ? suggestedQty(item) : 1);
+        addToCart(item, qty);
+      }
+      if (addCode || fromLow) history.replaceState({}, "", "requests.html");
+    }
+
+    async function sendReq() {
+      if (!cart.length) { TCUI.toast(t("requestNeedItems"), "err"); return; }
+      try {
+        const res = await apiPostPlain({
+          action: "createStoreRequest",
+          note: document.getElementById("note").value.trim(),
+          lines: cart.map((l) => ({
+            code: l.code,
+            description: l.description,
+            qty: l.qty,
+          })),
+        });
+        if (!res || res.error || res.success === false) {
+          TCUI.toast((res && res.error) || t("error"), "err");
+          return;
+        }
+        TCUI.toast(t("requestSent"), "ok");
+        cart = [];
+        renderCart();
+        document.getElementById("note").value = "";
+        await loadList();
+      } catch (e) {
+        TCUI.toast(e.message || t("error"), "err");
       }
     }
 
@@ -77,24 +341,163 @@
       const host = document.getElementById("list");
       try {
         const data = await apiGet({ action: "getStoreRequests" });
-        const items = (data && data.items) || [];
-        if (!items.length) {
-          host.innerHTML = `<div class="tc-text-muted text-center py-3">No requests yet</div>`;
-          return;
-        }
-        host.innerHTML = items.map(i => `
-          <div class="border-bottom py-2">
-            <div class="d-flex justify-content-between gap-2 flex-wrap">
-              <strong>${escHtml(i.byUser || "")}</strong>
-              <span class="badge ${i.status === "Done" ? "bg-success" : "bg-secondary"}">${escHtml(i.status || "Open")}</span>
-            </div>
-            <div class="small" style="white-space:pre-wrap">${escHtml(i.items || "")}</div>
-            <div class="small tc-text-muted">${escHtml(i.note || "")} · ${escHtml(i.timestamp || "")}</div>
-          </div>`).join("");
+        requests = (data && data.items) || [];
+        renderList();
       } catch (e) {
-        host.innerHTML = `<div class="text-danger">${escHtml(e.message || "Error — deploy updated Code.gs")}</div>`;
+        host.innerHTML = `<div class="text-danger">${escHtml(e.message || t("error"))}</div>`;
       }
     }
+
+    function renderList() {
+      const host = document.getElementById("list");
+      let items = requests;
+      if (statusFilter !== "all") {
+        items = items.filter((r) => String(r.status || "Open") === statusFilter);
+      }
+      if (!items.length) {
+        host.innerHTML = `<div class="tc-text-muted text-center py-3">${t("noRequestsYet")}</div>`;
+        return;
+      }
+      host.innerHTML = items.map((r) => {
+        const p = r.progress || {};
+        const pct = p.pct || 0;
+        const canReceive = r.status !== "Done" && r.status !== "Cancelled"
+          && (can("request.approve") || can("request.create") || can("inventory.adjust") || can("tool.receive"));
+        const linesHtml = (r.lines || []).map((l) => {
+          const rem = l.qtyRemaining != null ? l.qtyRemaining : Math.max(0, (l.qtyRequested || 0) - (l.qtyReceived || 0));
+          const st = l.lineStatus || "pending";
+          return `<div class="req-line">
+            ${typeof productThumbHtml === "function" ? productThumbHtml(l.imageUrl, l.code, 40) : ""}
+            <div class="meta">
+              <strong>${escHtml(l.code || "—")} · ${escHtml(l.description || "")}</strong>
+              <small class="line-${escHtml(st)}">
+                ${t("reqRequested") || "Req"} ${escHtml(l.qtyRequested)} ·
+                ${t("reqReceived") || "Recv"} ${escHtml(l.qtyReceived)} ·
+                ${t("reqRemaining") || "Left"} ${escHtml(rem)}
+              </small>
+            </div>
+            ${canReceive && rem > 0
+              ? `<button type="button" class="tc-btn tc-btn-sm tc-btn-primary"
+                   data-recv="${escHtml(l.id)}" data-req="${escHtml(r.id)}"
+                   data-code="${escHtml(l.code || "")}" data-desc="${escHtml(l.description || "")}"
+                   data-rem="${escHtml(rem)}">
+                   <i class="bi bi-box-seam"></i> ${t("reqReceive") || "Receive"}
+                 </button>`
+              : (st === "done" ? `<span class="badge badge-Done">${t("reqLineDone") || "Done"}</span>` : "")}
+          </div>`;
+        }).join("");
+
+        return `<div class="req-card ${escHtml(r.status || "Open")}">
+          <div class="d-flex justify-content-between gap-2 flex-wrap align-items-start">
+            <div>
+              <strong>#${escHtml(r.id)}</strong> · ${escHtml(r.byUser || "")}
+              <div class="small tc-text-muted">${escHtml(formatDisplayDateTime(r.timestamp || ""))}${r.note ? " · " + escHtml(r.note) : ""}</div>
+            </div>
+            <div class="d-flex gap-1 align-items-center flex-wrap">
+              ${statusBadge(r.status)}
+              <button type="button" class="tc-btn tc-btn-sm" data-pdf="${escHtml(r.id)}" title="PDF"><i class="bi bi-file-earmark-pdf"></i></button>
+              <button type="button" class="tc-btn tc-btn-sm" data-xls="${escHtml(r.id)}" title="Excel"><i class="bi bi-file-earmark-excel"></i></button>
+              ${r.status !== "Done" && r.status !== "Cancelled" && (can("request.approve") || can("request.create"))
+                ? `<button type="button" class="tc-btn tc-btn-sm" data-cancel="${escHtml(r.id)}" title="${t("cancel") || "Cancel"}"><i class="bi bi-x-circle"></i></button>`
+                : ""}
+              ${(can("request.approve") || can("request.create"))
+                ? `<button type="button" class="tc-btn tc-btn-sm tc-btn-danger" data-del="${escHtml(r.id)}" title="${t("reqDelete") || "Delete request"}"><i class="bi bi-trash"></i></button>`
+                : ""}
+            </div>
+          </div>
+          <div class="small fw-bold mt-1">
+            ${pct}% · ${(p.linesDone || 0)}/${(p.linesTotal || 0)} ${t("reqLines") || "lines"} ·
+            ${t("reqReceived") || "Received"} ${p.totalReceived || 0}/${p.totalRequested || 0}
+          </div>
+          <div class="req-bar"><i style="width:${pct}%"></i></div>
+          ${linesHtml || `<div class="small tc-text-muted" style="white-space:pre-wrap">${escHtml(r.items || "")}</div>`}
+        </div>`;
+      }).join("");
+
+      host.querySelectorAll("[data-recv]").forEach((btn) => {
+        btn.onclick = () => receiveLine({
+          lineId: btn.getAttribute("data-recv"),
+          requestId: btn.getAttribute("data-req"),
+          code: btn.getAttribute("data-code"),
+          description: btn.getAttribute("data-desc"),
+          rem: btn.getAttribute("data-rem"),
+        });
+      });
+      host.querySelectorAll("[data-pdf]").forEach((btn) => {
+        btn.onclick = () => exportOne(btn.getAttribute("data-pdf"), "pdf");
+      });
+      host.querySelectorAll("[data-xls]").forEach((btn) => {
+        btn.onclick = () => exportOne(btn.getAttribute("data-xls"), "xls");
+      });
+      host.querySelectorAll("[data-cancel]").forEach((btn) => {
+        btn.onclick = () => cancelReq(btn.getAttribute("data-cancel"));
+      });
+      host.querySelectorAll("[data-del]").forEach((btn) => {
+        btn.onclick = () => deleteReq(btn.getAttribute("data-del"));
+      });
+    }
+
+    function receiveLine({ lineId, requestId, code, description, rem }) {
+      const qty = Math.max(0.001, Number(rem) || 1);
+      if (!code) {
+        TCUI.toast(t("reqNeedCodeForStock") || "This line has no product code — cannot receive into stock", "err");
+        return;
+      }
+      const params = new URLSearchParams({
+        requestId: String(requestId || ""),
+        lineId: String(lineId || ""),
+        code: String(code || ""),
+        qty: String(qty),
+        desc: String(description || ""),
+      });
+      location.href = "receiving.html?" + params.toString();
+    }
+
+    async function cancelReq(id) {
+      if (!confirm(t("reqCancelConfirm") || "Cancel this request?")) return;
+      try {
+        const res = await apiPostPlain({ action: "cancelStoreRequest", id });
+        if (!res || !res.success) throw new Error((res && res.error) || t("error"));
+        TCUI.toast(t("reqCancelled") || "Cancelled", "ok");
+        await loadList();
+      } catch (e) {
+        TCUI.toast(e.message || t("error"), "err");
+      }
+    }
+
+    async function deleteReq(id) {
+      if (!confirm(
+        t("reqDeleteConfirm", { id })
+        || `Delete request #${id}? Any stock added from this request will be removed from inventory.`
+      )) return;
+      try {
+        const res = await apiPostPlain({ action: "deleteStoreRequest", id });
+        if (!res || !res.success) throw new Error((res && res.error) || t("error"));
+        const reversed = Number(res.stockReversed) || 0;
+        TCUI.toast(
+          reversed > 0
+            ? (t("reqDeletedStock", { n: reversed }) || `Request deleted · stock reversed (${reversed})`)
+            : (t("reqDeleted") || "Request deleted"),
+          "ok"
+        );
+        await loadList();
+      } catch (e) {
+        TCUI.toast(e.message || t("error"), "err");
+      }
+    }
+
+    function exportOne(id, kind) {
+      const req = requests.find((r) => String(r.id) === String(id));
+      if (!req) return TCUI.toast(t("error"), "err");
+      try {
+        if (kind === "pdf") TCExport.exportStoreRequestPdf(req);
+        else TCExport.exportStoreRequestExcel(req);
+      } catch (e) {
+        TCUI.toast(e.message || t("error"), "err");
+      }
+    }
+
+    renderCart();
   </script>
 </body>
 </html>

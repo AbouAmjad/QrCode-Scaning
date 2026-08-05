@@ -82,15 +82,36 @@ const ROLE_META = {
 };
 
 /**
- * Default matrices — EMPTY for non-admin (admin assigns in Roles UI).
- * Admin is always full access in code.
+ * Suggested defaults for a fresh install (seeded once when role_permissions is empty).
+ * After seeding, admins adjust matrices in the Roles UI without restart wiping them.
  */
+const DEFAULT_ROLE_PERMISSIONS = {
+  employee: [
+    "dashboard.view", "terminal.use", "tool.view", "tool.create", "tool.edit", "tool.delete",
+    "tool.checkout", "tool.return", "tool.receive", "tool.search",
+    "worker.view", "worker.create", "worker.edit", "worker.delete",
+    "inventory.view", "inventory.count", "inventory.adjust", "inventory.transfer",
+    "damage.create", "damage.review", "consumables.manage", "request.approve",
+    "forms.view", "reports.warehouse", "logs.view"
+  ],
+  logistics: [
+    "dashboard.view", "projects.view", "projects.manage", "projects.dispatch", "projects.return",
+    "tool.view", "tool.search", "tool.return", "worker.view", "forms.view", "reports.team"
+  ],
+  engineer: [
+    "dashboard.view", "tool.view", "tool.search", "worker.view", "request.create",
+    "consumables.manage", "projects.view", "forms.view", "damage.create", "inventory.view"
+  ],
+  qc: ["dashboard.view", "qc.view", "qc.manage", "tool.view"]
+};
+
+/** @deprecated use DEFAULT_ROLE_PERMISSIONS — kept for explicit resetRoles seeding */
 const ROLE_PERMISSIONS = {
   admin: PERMISSIONS.map((p) => p.code),
-  employee: [],
-  logistics: [],
-  engineer: [],
-  qc: []
+  employee: DEFAULT_ROLE_PERMISSIONS.employee,
+  logistics: DEFAULT_ROLE_PERMISSIONS.logistics,
+  engineer: DEFAULT_ROLE_PERMISSIONS.engineer,
+  qc: DEFAULT_ROLE_PERMISSIONS.qc
 };
 
 const EDITABLE_ROLES = ["employee", "logistics", "engineer", "qc"];
@@ -122,6 +143,21 @@ async function seedPermissions(query, opts = {}) {
            ON CONFLICT DO NOTHING`,
           [role, code]
         );
+      }
+    }
+  } else {
+    const existing = await query(`SELECT COUNT(*)::int AS n FROM role_permissions`);
+    if (existing.rows[0].n === 0) {
+      for (const role of EDITABLE_ROLES) {
+        const codes = DEFAULT_ROLE_PERMISSIONS[role] || [];
+        for (const code of codes) {
+          await query(
+            `INSERT INTO role_permissions (role, permission_code)
+             VALUES ($1, $2)
+             ON CONFLICT DO NOTHING`,
+            [role, code]
+          );
+        }
       }
     }
   }
@@ -179,6 +215,7 @@ function hasAnyPermission(permList, codes) {
 module.exports = {
   PERMISSIONS,
   ROLE_PERMISSIONS,
+  DEFAULT_ROLE_PERMISSIONS,
   ROLE_META,
   EDITABLE_ROLES,
   ALL_ROLES,

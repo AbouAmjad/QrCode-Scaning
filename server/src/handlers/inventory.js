@@ -5,6 +5,7 @@ const custody = require("../custody");
 /* ---------------------------------------------------------- outstanding */
 
 async function getOutstanding(ctx) {
+  ctx.requireAny(["tool.return", "inventory.view", "dashboard.view"]);
   const overdueDays = Math.max(1, U.int(ctx.params.overdueDays, 1));
   const now = Date.now();
   const ledger = await ctx.ledger();
@@ -74,6 +75,7 @@ async function getOutstanding(ctx) {
 }
 
 async function lookupToolHolder(ctx) {
+  ctx.requireAny(["terminal.use", "tool.search", "tool.return"]);
   const code = U.upper(ctx.params.code);
   const personCode = U.upper(ctx.params.personCode);
   if (!code) return { error: "NO_CODE" };
@@ -98,6 +100,7 @@ async function lookupToolHolder(ctx) {
 /* ----------------------------------------------------------- receiving */
 
 async function getReceiving(ctx) {
+  ctx.requireAny(["tool.receive", "inventory.view"]);
   const limit = Math.min(1000, U.posInt(ctx.params.limit, 200));
   const r = await ctx.query(`SELECT * FROM receiving ORDER BY id DESC LIMIT $1`, [limit]);
   return {
@@ -220,11 +223,13 @@ async function settleRequestLine(query, lineId, qty) {
 /* -------------------------------------------------------------- damage */
 
 async function getDamageDates(ctx) {
+  ctx.requireAny(["damage.review", "damage.create"]);
   const r = await ctx.query(`SELECT DISTINCT row_date FROM damage ORDER BY row_date DESC`);
   return r.rows.map((x) => U.stripBraces(x.row_date));
 }
 
 async function getDamage(ctx) {
+  ctx.requireAny(["damage.review", "damage.create"]);
   const filter = U.stripBraces(ctx.params.date);
   const sql = filter
     ? `SELECT * FROM damage WHERE REPLACE(REPLACE(row_date,'{',''),'}','') = $1 ORDER BY id DESC LIMIT 500`
@@ -315,6 +320,7 @@ async function setLifecycle(ctx) {
 }
 
 async function getLifecycle(ctx) {
+  ctx.requireAny(["inventory.view", "tool.view"]);
   const filter = U.upper(ctx.params.code);
   const r = await ctx.query(`SELECT * FROM tool_lifecycle ORDER BY id ASC`);
   const latest = new Map();

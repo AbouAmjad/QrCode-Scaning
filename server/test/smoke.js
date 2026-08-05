@@ -431,6 +431,7 @@ async function testWarehouses() {
     action: "createInventoryCountSheet", locationType: "warehouse", warehouseId: 1, countType: "full",
   });
   ok("createInventoryCountSheet", sheet.success && sheet.sheet.lines.length > 0, sheet.sheet && sheet.sheet.formNo);
+  ok("createInventoryCountSheet frontend shape", sheet.count && sheet.count.formNo && sheet.lines.length > 0, sheet);
   ok("count sheet needs a category for category counts",
     (await call({ action: "createInventoryCountSheet", locationType: "warehouse", warehouseId: 1, countType: "category" }))
       .error === "CATEGORY_REQUIRED");

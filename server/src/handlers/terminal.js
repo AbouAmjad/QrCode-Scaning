@@ -100,6 +100,7 @@ async function releaseTerminalSession(ctx) {
 
 /** Hard reset: drops every lease for this login so a clean one can be taken. */
 async function resetTerminalSession(ctx) {
+  ctx.require("terminal.use");
   const { query, user } = ctx;
   await query(`DELETE FROM terminal_sessions WHERE username = $1`, [user.username]);
   await ctx.audit({ action: "TERMINAL_SESSION_RESET" });
