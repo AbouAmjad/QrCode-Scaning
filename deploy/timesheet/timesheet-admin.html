@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="app.css?v=live">
   <link rel="stylesheet" href="timesheet.css?v=5">
-  <script src="config.js?v=live"></script>
+  <script src="config.js?v=tsro1"></script>
   <script src="i18n.js?v=live"></script>
   <script src="ui.js?v=live"></script>
   <style>
@@ -215,6 +215,9 @@
       <section class="ts-hero">
         <h1><i class="bi bi-clock-history"></i> Timesheet Admin</h1>
         <p>Select one or more workers, then adjust hours or add a deduction. Scanning marks present automatically.</p>
+        <div id="readOnlyBanner" class="ts-note" style="display:none;margin-top:.85rem">
+          Read-only access — you can view and export attendance, but cannot adjust hours, add deductions, void days, or change shift settings.
+        </div>
       </section>
 
       <div class="ta-kpis" id="kpiRow">
@@ -372,6 +375,26 @@
       if (typeof requireAuth === "function") requireAuth();
       if (typeof TCUI !== "undefined") TCUI.mountHeader({ pageId: "timesheetAdmin" });
 
+      const canRead = typeof can === "function"
+        ? (can("timesheet.attendance.read") || can("timesheet.hours.adjust") || can("timesheet.deductions.manage") || can("timesheet.attendance.void") || can("timesheet.settings.manage") || getRole() === "admin")
+        : true;
+      const canAdjust = typeof can === "function" ? can("timesheet.hours.adjust") : true;
+      const canDeduct = typeof can === "function" ? can("timesheet.deductions.manage") : true;
+      const canVoid = typeof can === "function" ? can("timesheet.attendance.void") : true;
+      const canSettings = typeof can === "function" ? can("timesheet.settings.manage") : true;
+      const canWrite = canAdjust || canDeduct || canVoid || canSettings;
+      const readOnly = !canWrite;
+
+      if (!canRead && typeof canAccessPage === "function" && !canAccessPage("timesheetAdmin")) {
+        document.querySelector("main").innerHTML = `<section class="ts-panel"><div class="ts-empty">No permission to view Timesheet Admin.</div></section>`;
+        return;
+      }
+      if (readOnly) {
+        const ban = document.getElementById("readOnlyBanner");
+        if (ban) ban.style.display = "block";
+        document.querySelector(".ts-hero p").textContent = "View attendance for the selected range. Export is available.";
+      }
+
       const today = localYmd(new Date());
       ["attFrom", "attTo", "wsAdjDate", "wsDedDate"].forEach((id) => {
         const el = document.getElementById(id);
@@ -383,6 +406,37 @@
       /** @type {any[]} */
       let selected = [];
       let activePreset = "today";
+
+      function applyPermissionUi() {
+        if (!readOnly) {
+          if (!canAdjust) {
+            wsOpenHours.hidden = true;
+            stHours.hidden = true;
+          }
+          if (!canDeduct) {
+            wsOpenDed.hidden = true;
+            stDed.hidden = true;
+          }
+          if (!canSettings) wsOpenShift.hidden = true;
+          if (!canVoid) wsVoid.hidden = true;
+          return;
+        }
+        // Full read-only: no selection / write chrome
+        const checkTh = document.querySelector(".ta-th-check");
+        if (checkTh) checkTh.hidden = true;
+        attSelectAll.hidden = true;
+        workerSheet.hidden = true;
+        stickyBar.hidden = true;
+        stickyBar.classList.remove("show");
+        document.body.classList.remove("has-ta-sticky");
+        wsOpenHours.hidden = true;
+        wsOpenDed.hidden = true;
+        wsOpenShift.hidden = true;
+        wsVoid.hidden = true;
+        stHours.hidden = true;
+        stDed.hidden = true;
+        stClear.hidden = true;
+      }
 
       function localYmd(d) {
         return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
@@ -427,6 +481,12 @@
       }
 
       function updateSticky() {
+        if (readOnly) {
+          stickyBar.hidden = true;
+          stickyBar.classList.remove("show");
+          document.body.classList.remove("has-ta-sticky");
+          return;
+        }
         const n = selected.length;
         if (n) {
           stickyBar.hidden = false;
@@ -525,6 +585,7 @@
 
       function renderTable() {
         const rows = filteredRows();
+        const colSpan = readOnly ? 4 : 5;
         attBody.innerHTML = rows.length
           ? rows.map((r) => {
               const adj = Number(r.adjustmentHours) || 0;
@@ -534,6 +595,14 @@
               const hoursLabel = adj
                 ? `<strong>${fmtNum(net)}</strong> <span class="ta-hours-adj">(${fmtNum(r.baseHours)}${adj > 0 ? "+" : ""}${fmtNum(adj)})</span>`
                 : fmtNum(r.baseHours);
+              if (readOnly) {
+                return `<tr>
+                  <td>${r.workDate}</td>
+                  <td><strong>${r.workerCode}</strong> · ${r.workerName || ""}</td>
+                  <td>${r.projectName || ""}</td>
+                  <td>${hoursLabel}</td>
+                </tr>`;
+              }
               const payload = encodeURIComponent(JSON.stringify({
                 id: r.id,
                 workDate: r.workDate,
@@ -553,8 +622,9 @@
                 <td>${hoursLabel}</td>
               </tr>`;
             }).join("")
-          : `<tr><td colspan="5" class="ts-empty">No attendance in this range</td></tr>`;
+          : `<tr><td colspan="${colSpan}" class="ts-empty">No attendance in this range</td></tr>`;
 
+        if (readOnly) return;
         attBody.querySelectorAll(".ta-row-pick").forEach((tr) => {
           const cb = tr.querySelector(".ta-row-check");
           tr.addEventListener("click", (e) => {
@@ -820,6 +890,7 @@
       };
 
       await loadProjects();
+      applyPermissionUi();
       applyRange("today");
     })();
   </script>

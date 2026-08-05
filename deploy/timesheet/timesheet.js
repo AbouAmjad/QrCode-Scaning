@@ -441,7 +441,7 @@ async function timesheetCreateDeduction(ctx) {
 }
 
 async function timesheetListDeductions(ctx) {
-  ctx.require("timesheet.deductions.manage");
+  ctx.requireAny(["timesheet.deductions.manage", "timesheet.attendance.read"]);
   const from = parseDate(ctx.params.from, null);
   const to = parseDate(ctx.params.to, null);
   const workerCode = U.upper(ctx.params.workerCode || "");
