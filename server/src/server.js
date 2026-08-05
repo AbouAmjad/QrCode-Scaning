@@ -229,7 +229,7 @@ function buildContext(params, user, perms) {
   return ctx;
 }
 
-async function handle(params) {
+async function route(params) {
   const action = U.trimmed(params.action);
 
   if (action === "options") return { ok: true };
@@ -255,6 +255,15 @@ async function handle(params) {
   const fn = ACTIONS[action];
   if (!fn) return { error: "NO ACTION SPECIFIED", action: action || "" };
   return fn(ctx);
+}
+
+async function handle(params) {
+  try {
+    return await route(params);
+  } catch (e) {
+    if (e instanceof ApiError) return e.toJSON();
+    throw e;
+  }
 }
 
 async function dispatch(req, res) {
