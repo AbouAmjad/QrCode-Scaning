@@ -4,6 +4,46 @@ const stock = require("../lib/stock");
 const MANAGE = ["projects.manage"];
 const VIEW = ["projects.view", "projects.manage", "projects.dispatch", "projects.return"];
 
+/**
+ * Rebuild project_stock from the dispatch ledger.
+ * Historical dispatches may exist while project_stock was wiped or never updated.
+ */
+async function rebuildProjectStockFromDispatches(query) {
+  await query(`DELETE FROM project_stock`);
+  await query(
+    `INSERT INTO project_stock (project_id, code, qty, updated_at)
+     SELECT d.project_id,
+            UPPER(l.code),
+            SUM(CASE WHEN d.type = 'out' THEN l.qty_sent ELSE -l.qty_sent END),
+            NOW()
+       FROM project_dispatch_lines l
+       JOIN project_dispatches d ON d.id = l.dispatch_id
+      GROUP BY d.project_id, UPPER(l.code)
+     HAVING SUM(CASE WHEN d.type = 'out' THEN l.qty_sent ELSE -l.qty_sent END) > 0`
+  );
+}
+
+async function ensureProjectStock(query) {
+  try {
+    const [stockRows, dispatchRows] = await Promise.all([
+      query(`SELECT COALESCE(SUM(qty),0)::numeric AS qty FROM project_stock`),
+      query(
+        `SELECT COALESCE(SUM(CASE WHEN d.type = 'out' THEN l.qty_sent ELSE -l.qty_sent END),0)::numeric AS qty
+           FROM project_dispatch_lines l
+           JOIN project_dispatches d ON d.id = l.dispatch_id`
+      ),
+    ]);
+    const have = U.num(stockRows.rows[0].qty, 0);
+    const expect = U.num(dispatchRows.rows[0].qty, 0);
+    if (expect > 0 && have !== expect) {
+      console.warn(`[projects] rebuilding project_stock (have=${have}, expect=${expect})`);
+      await rebuildProjectStockFromDispatches(query);
+    }
+  } catch (e) {
+    console.warn("[projects] ensureProjectStock:", (e && e.message) || e);
+  }
+}
+
 function projectView(row) {
   return {
     id: row.id,
@@ -496,4 +536,6 @@ module.exports = {
   returnProjectTools,
   updateProjectDispatch,
   deleteProjectDispatch,
+  rebuildProjectStockFromDispatches,
+  ensureProjectStock,
 };
