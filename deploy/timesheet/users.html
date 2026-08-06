@@ -185,8 +185,23 @@
       ]);
     }
 
-    function roleOptionsHtml(selected) {
-      return roleOptions().map((o) =>
+    /** Admin may only be held by username "boss" — never offer it for assignment. */
+    function assignableRoleOptions() {
+      return roleOptions().filter((o) => o.value !== "admin" && o.value !== "worker");
+    }
+
+    function isSoleAdminUser(username) {
+      return String(username || "").trim().toLowerCase() === "boss";
+    }
+
+    function roleOptionsHtml(selected, opts) {
+      const options = opts || assignableRoleOptions();
+      const list = [...options];
+      // Keep current admin label visible for boss only (read-only display).
+      if (selected === "admin" && !list.some((o) => o.value === "admin")) {
+        list.unshift({ value: "admin", labelKey: "role_admin" });
+      }
+      return list.map((o) =>
         `<option value="${o.value}" ${selected === o.value ? "selected" : ""}>${escHtml(t(o.labelKey) || o.value)}</option>`
       ).join("");
     }
@@ -197,7 +212,7 @@
       sel.innerHTML = roleOptionsHtml("logistics");
       sel.onchange = () => {
         syncNewScopesVisibility();
-        const opt = roleOptions().find((o) => o.value === sel.value);
+        const opt = assignableRoleOptions().find((o) => o.value === sel.value) || roleOptions().find((o) => o.value === sel.value);
         const desc = document.getElementById("newRoleDesc");
         if (desc) desc.textContent = opt && opt.descKey ? t(opt.descKey) : "";
       };
@@ -324,18 +339,21 @@
       const me = typeof getSessionUser === "function" ? getSessionUser() : "";
       body.innerHTML = items.map((u) => {
         const isMe = u.username === me;
+        const isSoleAdmin = isSoleAdminUser(u.username);
         const active = u.active !== false;
         const rejected = u.approvalStatus === "rejected";
+        const roleLocked = isMe || rejected || isSoleAdmin;
         const statusBadge = rejected
           ? '<span class="tc-dir-badge tc-dir-out">REJECTED</span>'
           : (active ? '<span class="tc-text-muted">Active</span>' : '<span class="tc-dir-badge tc-dir-out">OFF</span>');
         return `<tr>
           <td>
             <strong>${escHtml(u.username)}</strong>${isMe ? ' <span class="tc-text-muted">(you)</span>' : ""}
+            ${isSoleAdmin ? ' <span class="tc-text-muted">(sole admin)</span>' : ""}
             ${u.fullName ? `<div class="tc-text-muted small">${escHtml(u.fullName)}</div>` : ""}
           </td>
           <td>
-            <select class="tc-select" data-role-user="${escHtml(u.username)}" ${isMe || rejected ? "disabled" : ""}>
+            <select class="tc-select" data-role-user="${escHtml(u.username)}" ${roleLocked ? "disabled" : ""}>
               ${roleOptionsHtml(u.role)}
             </select>
           </td>
@@ -343,12 +361,12 @@
           <td>${statusBadge}</td>
           <td class="text-end text-nowrap">
             ${u.role === "employee" && !rejected ? `<button type="button" class="tc-btn" title="${t("usersAssignScopes")}" onclick="openScopes('${escHtml(u.username)}')"><i class="bi bi-geo-alt"></i></button>` : ""}
-            <button type="button" class="tc-btn" title="Toggle active" ${isMe || rejected ? "disabled" : ""} onclick="toggleActive('${escHtml(u.username)}', ${active ? "false" : "true"})">
+            <button type="button" class="tc-btn" title="Toggle active" ${isMe || rejected || isSoleAdmin ? "disabled" : ""} onclick="toggleActive('${escHtml(u.username)}', ${active ? "false" : "true"})">
               <i class="bi ${active ? "bi-pause-circle" : "bi-play-circle"}"></i>
             </button>
             <button type="button" class="tc-btn" ${rejected ? "disabled" : ""} onclick="resetPass('${escHtml(u.username)}')"><i class="bi bi-key"></i></button>
-            <button type="button" class="tc-btn" ${isMe || rejected ? "disabled" : ""} onclick="saveRole('${escHtml(u.username)}')"><i class="bi bi-check2"></i></button>
-            <button type="button" class="tc-btn" style="color:#b91c1c" ${isMe ? "disabled" : ""} onclick="removeUser('${escHtml(u.username)}')"><i class="bi bi-trash"></i></button>
+            <button type="button" class="tc-btn" ${roleLocked ? "disabled" : ""} onclick="saveRole('${escHtml(u.username)}')"><i class="bi bi-check2"></i></button>
+            <button type="button" class="tc-btn" style="color:#b91c1c" ${isMe || isSoleAdmin ? "disabled" : ""} onclick="removeUser('${escHtml(u.username)}')"><i class="bi bi-trash"></i></button>
           </td>
         </tr>`;
       }).join("");
@@ -393,10 +411,14 @@
     async function approveUser(username) {
       const sel = document.getElementById("pending-role-" + username);
       const role = sel ? sel.value : "employee";
+      if (role === "admin" && !isSoleAdminUser(username)) {
+        TCUI.toast(deleteUserErrorMsg("ONLY_BOSS_CAN_BE_ADMIN"), "err");
+        return;
+      }
       try {
         const data = await apiGet({ action: "approveUser", username, role });
         if (!data || data.success === false) {
-          TCUI.toast(data.error || "Failed", "err");
+          TCUI.toast(deleteUserErrorMsg((data && data.error) || "Failed"), "err");
           return;
         }
         TCUI.toast(t("usersApprove") + ": " + username, "ok");
@@ -425,6 +447,10 @@
       const username = document.getElementById("newUser").value.trim();
       const password = document.getElementById("newPass").value;
       const role = document.getElementById("newRole").value;
+      if (role === "admin") {
+        TCUI.toast(deleteUserErrorMsg("ONLY_BOSS_CAN_BE_ADMIN"), "err");
+        return;
+      }
       if (!username || !password) {
         TCUI.toast("Username + password required", "err");
         return;
@@ -456,12 +482,20 @@
     }
 
     async function saveRole(username) {
+      if (isSoleAdminUser(username)) {
+        TCUI.toast(deleteUserErrorMsg("CANNOT_DEMOTE_SOLE_ADMIN"), "err");
+        return;
+      }
       const sel = document.querySelector(`[data-role-user="${username}"]`);
       const role = sel ? sel.value : "employee";
+      if (role === "admin") {
+        TCUI.toast(deleteUserErrorMsg("ONLY_BOSS_CAN_BE_ADMIN"), "err");
+        return;
+      }
       try {
         const data = await apiGet({ action: "updateUser", username, role });
         if (!data || data.success === false) {
-          TCUI.toast(data.error || "Failed", "err");
+          TCUI.toast(deleteUserErrorMsg((data && data.error) || data.error || "Failed"), "err");
           return;
         }
         TCUI.toast("Role updated", "ok");
@@ -508,6 +542,11 @@
       const map = {
         CANNOT_DELETE_SELF: "You cannot delete your own account",
         CANNOT_DELETE_LAST_ADMIN: "Cannot delete the last active admin",
+        CANNOT_DELETE_SOLE_ADMIN: "Cannot delete the sole admin account (boss)",
+        CANNOT_DEMOTE_SOLE_ADMIN: "Cannot demote boss from admin",
+        CANNOT_DISABLE_SOLE_ADMIN: "Cannot disable the sole admin account (boss)",
+        CANNOT_MODIFY_SOLE_ADMIN: "Cannot modify the sole admin account (boss)",
+        ONLY_BOSS_CAN_BE_ADMIN: "Only user \"boss\" can have the admin role",
         USER_HAS_LINKED_RECORDS: "User still has linked records — refresh and try again",
         NOT_FOUND: "User not found",
         FORBIDDEN: "No permission to delete users",
@@ -517,6 +556,10 @@
     }
 
     async function removeUser(username) {
+      if (isSoleAdminUser(username)) {
+        TCUI.toast(deleteUserErrorMsg("CANNOT_DELETE_SOLE_ADMIN"), "err");
+        return;
+      }
       if (!confirm(`Delete user "${username}"?`)) return;
       try {
         const data = await apiGet({ action: "deleteUser", username });

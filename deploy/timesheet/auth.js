@@ -6,6 +6,35 @@ const U = require("../lib/util");
 
 const MIN_PASSWORD = 6;
 
+/** Absolute sole system admin — no other username may hold role=admin. */
+const SOLE_ADMIN_USERNAME = "boss";
+
+function isSoleAdminUsername(username) {
+  return String(username || "").trim().toLowerCase() === SOLE_ADMIN_USERNAME;
+}
+
+/** Reject assigning admin to anyone except boss. */
+function guardAdminRoleAssignment(username, role) {
+  const r = permissions.normalizeRoleLocal(role);
+  if (r !== "admin") return null;
+  if (isSoleAdminUsername(username)) return null;
+  return { success: false, error: "ONLY_BOSS_CAN_BE_ADMIN" };
+}
+
+/** Protect boss account from demotion / disable / delete. */
+function guardSoleAdminMutation(target, { nextRole, active, deleting, rejecting } = {}) {
+  if (!isSoleAdminUsername(target.username)) return null;
+  if (deleting) return { success: false, error: "CANNOT_DELETE_SOLE_ADMIN" };
+  if (rejecting) return { success: false, error: "CANNOT_MODIFY_SOLE_ADMIN" };
+  if (nextRole !== undefined && permissions.normalizeRoleLocal(nextRole) !== "admin") {
+    return { success: false, error: "CANNOT_DEMOTE_SOLE_ADMIN" };
+  }
+  if (active !== undefined && U.bool(active) === false) {
+    return { success: false, error: "CANNOT_DISABLE_SOLE_ADMIN" };
+  }
+  return null;
+}
+
 function newToken() {
   return randomUUID().replace(/-/g, "") + randomUUID().replace(/-/g, "");
 }
@@ -121,6 +150,8 @@ async function registerUser(ctx) {
   if (regRole === "worker" || String(params.role || "").trim().toLowerCase() === "worker") {
     return { success: false, error: "ROLE_WORKER_FORBIDDEN" };
   }
+  const adminLock = guardAdminRoleAssignment(username, regRole);
+  if (adminLock) return adminLock;
   const hash = await bcrypt.hash(password, 10);
   await query(
     `INSERT INTO users (username, password_hash, role, api_token, full_name, phone, email,
@@ -159,6 +190,8 @@ async function createUser(ctx) {
   if (await findUser(query, username)) return { success: false, error: "USERNAME_TAKEN" };
 
   const role = permissions.normalizeRoleLocal(params.role);
+  const adminLock = guardAdminRoleAssignment(username, role);
+  if (adminLock) return adminLock;
   const hash = await bcrypt.hash(password, 10);
   const ins = await query(
     `INSERT INTO users (username, password_hash, role, api_token, full_name, phone, email,
@@ -188,6 +221,17 @@ async function updateUser(ctx) {
   const target = await findUser(query, params.username);
   if (!target) return { success: false, error: "NOT_FOUND" };
 
+  const nextRole = params.role !== undefined ? permissions.normalizeRoleLocal(params.role) : undefined;
+  if (nextRole !== undefined) {
+    const adminLock = guardAdminRoleAssignment(target.username, nextRole);
+    if (adminLock) return adminLock;
+  }
+  const soleGuard = guardSoleAdminMutation(target, {
+    nextRole,
+    active: params.active,
+  });
+  if (soleGuard) return soleGuard;
+
   const before = { role: target.role, active: target.is_active };
   const sets = [];
   const args = [];
@@ -196,7 +240,7 @@ async function updateUser(ctx) {
     sets.push(`${frag} = $${args.length}`);
   };
 
-  if (params.role !== undefined) push("role", permissions.normalizeRoleLocal(params.role));
+  if (nextRole !== undefined) push("role", nextRole);
   if (params.fullName !== undefined) push("full_name", U.trimmed(params.fullName));
   if (params.phone !== undefined) push("phone", U.trimmed(params.phone));
   if (params.email !== undefined) push("email", U.trimmed(params.email));
@@ -235,8 +279,12 @@ async function deleteUser(ctx) {
     return { success: false, error: "CANNOT_DELETE_SELF" };
   }
 
+  const soleGuard = guardSoleAdminMutation(target, { deleting: true });
+  if (soleGuard) return soleGuard;
+
   const targetRole = permissions.normalizeRoleLocal(target.role);
   if (targetRole === "admin") {
+    // Extra safety: never remove the last admin even if username drifts.
     const admins = await ctx.query(
       `SELECT COUNT(*)::int AS n FROM users
         WHERE lower(role) = 'admin'
@@ -267,6 +315,8 @@ async function approveUser(ctx) {
   const target = await findUser(query, params.username);
   if (!target) return { success: false, error: "NOT_FOUND" };
   const role = params.role ? permissions.normalizeRoleLocal(params.role) : permissions.normalizeRoleLocal(target.role);
+  const adminLock = guardAdminRoleAssignment(target.username, role);
+  if (adminLock) return adminLock;
   await query(
     `UPDATE users SET approval_status = 'approved', is_active = TRUE, role = $1 WHERE id = $2`,
     [role, target.id]
@@ -279,6 +329,8 @@ async function rejectUser(ctx) {
   ctx.require("users.manage");
   const target = await findUser(ctx.query, ctx.params.username);
   if (!target) return { success: false, error: "NOT_FOUND" };
+  const soleGuard = guardSoleAdminMutation(target, { rejecting: true });
+  if (soleGuard) return soleGuard;
   await ctx.query(
     `UPDATE users SET approval_status = 'rejected', is_active = FALSE WHERE id = $1`,
     [target.id]
