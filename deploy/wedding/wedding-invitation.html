@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#f7f3ea">
+  <meta name="description" content="دعوة زفاف فاخرة — نسخة تجريبية (Demo)">
+  <title>دعوة زفاف · Demo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Great+Vibes&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ivory: #f7f3ea;
+      --ivory-2: #efe8da;
+      --paper: #faf6ee;
+      --gold: #c4a35a;
+      --gold-2: #e2c988;
+      --gold-deep: #8c6d32;
+      --emerald: #0f3d34;
+      --emerald-2: #165649;
+      --burgundy: #5c1f2a;
+      --ink: #2a241c;
+      --muted: #7a6f60;
+      --soft: rgba(15, 61, 52, 0.06);
+      --ease: cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      font-family: "Outfit", "Amiri", sans-serif;
+      color: var(--ink);
+      background: var(--ivory);
+      overflow: hidden;
+    }
+    body.is-invite {
+      overflow: auto;
+      overflow-x: hidden;
+      background: var(--paper);
+    }
+    .arabic { font-family: "Amiri", "Cormorant Garamond", serif; }
+    .script { font-family: "Great Vibes", cursive; }
+    .serif { font-family: "Cormorant Garamond", "Amiri", serif; }
+
+    .demo-ribbon {
+      position: fixed; z-index: 100;
+      top: 12px; inset-inline-start: 12px;
+      background: rgba(92, 31, 42, 0.9);
+      color: #f7f3ea;
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      padding: 0.4rem 0.7rem;
+      border: 1px solid rgba(226, 201, 136, 0.35);
+      pointer-events: none;
+    }
+
+    /* ══════════ SCENE 1 — PEN ══════════ */
+    #scene-pen {
+      position: fixed; inset: 0; z-index: 40;
+      background: #ffffff;
+      display: grid; place-items: center;
+      transition: opacity 1.4s var(--ease), visibility 1.4s;
+    }
+    #scene-pen.is-done {
+      opacity: 0; visibility: hidden; pointer-events: none;
+    }
+    .pen-stage {
+      position: relative;
+      width: min(720px, calc(100vw - 2.5rem));
+      min-height: 280px;
+      text-align: center;
+    }
+    .written {
+      font-family: "Amiri", serif;
+      color: #1d1812;
+      line-height: 1.7;
+      min-height: 1.4em;
+      letter-spacing: 0.02em;
+    }
+    #lineBasmala {
+      font-size: clamp(1.45rem, 4.6vw, 2.35rem);
+      font-weight: 700;
+      margin-bottom: 1.4rem;
+      opacity: 0.15;
+    }
+    #lineNames {
+      font-size: clamp(1.8rem, 6vw, 3rem);
+      font-weight: 700;
+      color: var(--emerald);
+      opacity: 0;
+    }
+    #lineNames .amp {
+      font-family: "Great Vibes", cursive;
+      color: var(--gold-deep);
+      font-weight: 400;
+      padding: 0 0.25em;
+      font-size: 0.85em;
+    }
+    .pen {
+      position: absolute;
+      width: 54px; height: 54px;
+      margin-top: -42px;
+      pointer-events: none;
+      opacity: 0;
+      filter: drop-shadow(0 8px 14px rgba(140, 109, 50, 0.28));
+      transition: opacity 0.4s;
+      z-index: 2;
+    }
+    .pen.is-on { opacity: 1; }
+    .pen svg { width: 100%; height: 100%; display: block; }
+    .light-bloom {
+      position: absolute; inset: 20% 10%;
+      background: radial-gradient(circle, rgba(226,201,136,0.22), transparent 70%);
+      filter: blur(18px);
+      opacity: 0;
+      animation: bloom 4.5s ease-in-out infinite;
+      pointer-events: none;
+    }
+    @keyframes bloom {
+      0%, 100% { opacity: 0.15; transform: scale(0.95); }
+      50% { opacity: 0.55; transform: scale(1.05); }
+    }
+    .music-chip {
+      position: fixed; z-index: 60;
+      inset-inline-end: max(1rem, env(safe-area-inset-right));
+      bottom: max(1rem, env(safe-area-inset-bottom));
+      appearance: none;
+      border: 1px solid rgba(196, 163, 90, 0.55);
+      background: rgba(255, 255, 255, 0.88);
+      color: var(--gold-deep);
+      backdrop-filter: blur(8px);
+      padding: 0.7rem 1rem;
+      font-family: "Amiri", serif;
+      font-size: 0.95rem;
+      cursor: pointer;
+      box-shadow: 0 10px 28px -18px rgba(42, 36, 28, 0.4);
+      transition: transform 0.2s, background 0.2s, color 0.2s;
+    }
+    .music-chip:hover { transform: translateY(-2px); }
+    .music-chip.is-on {
+      background: linear-gradient(135deg, #d8b86a, #9a7535);
+      color: #1a140a;
+      border-color: transparent;
+    }
+
+    /* ══════════ SCENE 2 — BOOK ══════════ */
+    #scene-book {
+      position: fixed; inset: 0; z-index: 30;
+      display: grid; place-items: center;
+      background:
+        radial-gradient(700px 420px at 50% 35%, rgba(196,163,90,0.14), transparent 60%),
+        linear-gradient(165deg, #f4efe4 0%, #ebe3d3 50%, #e7dfd0 100%);
+      opacity: 0; visibility: hidden;
+      transition: opacity 1.2s var(--ease), visibility 1.2s;
+    }
+    #scene-book.is-show { opacity: 1; visibility: visible; }
+    #scene-book.is-zoom .book-stage { transform: scale(1.28); }
+    #scene-book.is-away {
+      opacity: 0; visibility: hidden; pointer-events: none;
+      transition: opacity 1s var(--ease) 0.35s, visibility 1s 0.35s;
+    }
+
+    .book-stage {
+      perspective: 1800px;
+      transition: transform 1.1s var(--ease);
+    }
+    .book {
+      position: relative;
+      width: min(320px, 72vw);
+      height: min(440px, 68vh);
+      transform-style: preserve-3d;
+      cursor: pointer;
+      animation: floatBook 5.5s ease-in-out infinite;
+      filter: drop-shadow(0 28px 40px rgba(15, 61, 52, 0.28));
+    }
+    @keyframes floatBook {
+      0%, 100% { transform: translateY(0) rotateX(2deg) rotateY(-8deg); }
+      50% { transform: translateY(-10px) rotateX(3deg) rotateY(-6deg); }
+    }
+    .book.is-opening { animation: none; }
+
+    .book-cover, .book-back, .book-page {
+      position: absolute; inset: 0;
+      border-radius: 4px 10px 10px 4px;
+      transform-origin: left center;
+      backface-visibility: hidden;
+    }
+    .book-back {
+      background:
+        linear-gradient(135deg, rgba(226,201,136,0.18), transparent 40%),
+        radial-gradient(circle at 30% 20%, rgba(255,255,255,0.08), transparent 50%),
+        linear-gradient(160deg, var(--emerald-2), var(--emerald));
+      box-shadow: inset 0 0 0 1px rgba(226,201,136,0.25);
+      transform: translateZ(-2px);
+    }
+    .book-cover {
+      background:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cpath fill='none' stroke='%23e2c988' stroke-opacity='.28' stroke-width='1' d='M80 12c18 22 38 22 56 0M80 148c-18-22-38-22-56 0M12 80c22-18 22-38 0-56M148 80c-22 18-22 38 0 56'/%3E%3C/svg%3E"),
+        linear-gradient(145deg, rgba(226,201,136,0.22), transparent 42%),
+        linear-gradient(165deg, #1a5c4d 0%, #0f3d34 55%, #0b2f28 100%);
+      background-size: 120px 120px, auto, auto;
+      border: 1px solid rgba(226,201,136,0.45);
+      box-shadow:
+        inset 0 0 0 8px rgba(15, 61, 52, 0.35),
+        inset 0 0 0 9px rgba(226,201,136,0.35),
+        inset -14px 0 24px rgba(0,0,0,0.22);
+      display: grid;
+      place-items: center;
+      padding: 1.6rem 1.2rem;
+      text-align: center;
+      color: var(--gold-2);
+      transition: transform 1.35s var(--ease);
+      z-index: 3;
+    }
+    .book.is-open .book-cover {
+      transform: rotateY(-156deg);
+    }
+    .book-cover::before {
+      content: "";
+      position: absolute; inset: 18px;
+      border: 1px solid rgba(226,201,136,0.35);
+      border-radius: 2px;
+      pointer-events: none;
+    }
+    .book-cover::after {
+      content: "";
+      position: absolute;
+      inset-inline-start: 0; top: 8%; bottom: 8%;
+      width: 10px;
+      background: linear-gradient(90deg, rgba(226,201,136,0.55), rgba(140,109,50,0.15));
+      opacity: 0.8;
+    }
+    .cover-kicker {
+      font-size: 0.78rem;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      opacity: 0.85;
+      margin-bottom: 1.1rem;
+    }
+    .cover-title {
+      font-family: "Amiri", serif;
+      font-size: clamp(1.5rem, 5vw, 1.9rem);
+      font-weight: 700;
+      margin-bottom: 1.2rem;
+      color: #f3e7c4;
+    }
+    .cover-names {
+      font-family: "Amiri", serif;
+      font-size: clamp(1.35rem, 4.5vw, 1.75rem);
+      line-height: 1.35;
+      color: #f7f3ea;
+    }
+    .cover-names .amp {
+      display: block;
+      font-family: "Great Vibes", cursive;
+      color: var(--gold-2);
+      font-size: 1.5rem;
+      margin: 0.15rem 0;
+    }
+    .cover-hint {
+      margin-top: 1.6rem;
+      font-size: 0.82rem;
+      color: rgba(242, 231, 196, 0.75);
+    }
+    .book-page {
+      background:
+        linear-gradient(90deg, rgba(140,109,50,0.08), transparent 12%),
+        repeating-linear-gradient(0deg, transparent, transparent 27px, rgba(42,36,28,0.03) 28px),
+        linear-gradient(180deg, #fbf7ef, #f3ebdc);
+      border: 1px solid rgba(196,163,90,0.25);
+      z-index: 1;
+      display: grid; place-items: center;
+      color: var(--muted);
+      font-family: "Amiri", serif;
+      font-size: 1.1rem;
+    }
+    .sparkle-layer {
+      position: absolute; inset: -40px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.6s;
+    }
+    .sparkle-layer.is-on { opacity: 1; }
+    .spark {
+      position: absolute;
+      width: 4px; height: 4px;
+      border-radius: 50%;
+      background: var(--gold-2);
+      box-shadow: 0 0 10px rgba(226,201,136,0.8);
+      animation: spark 1.8s ease-out forwards;
+    }
+    @keyframes spark {
+      0% { opacity: 0; transform: translate(0,0) scale(0.4); }
+      20% { opacity: 1; }
+      100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(1); }
+    }
+
+    /* ══════════ SCENE 3 — INVITE ══════════ */
+    #scene-invite {
+      position: relative; z-index: 10;
+      display: none;
+      min-height: 100vh;
+      background:
+        radial-gradient(900px 500px at 100% 0%, rgba(196,163,90,0.08), transparent 55%),
+        radial-gradient(800px 480px at 0% 100%, rgba(15,61,52,0.05), transparent 50%),
+        linear-gradient(180deg, #faf6ee 0%, #f3ebdc 48%, #efe6d6 100%);
+    }
+    #scene-invite.is-show { display: block; }
+    #petalCanvas {
+      position: fixed; inset: 0; z-index: 5; pointer-events: none;
+    }
+
+    .sheet {
+      width: min(820px, calc(100% - 1.5rem));
+      margin: 1.2rem auto 2.5rem;
+      background:
+        linear-gradient(90deg, rgba(140,109,50,0.05), transparent 8%),
+        linear-gradient(180deg, #fcf9f2, #f6efE3);
+      border: 1px solid rgba(196,163,90,0.28);
+      box-shadow:
+        0 1px 0 rgba(255,255,255,0.65) inset,
+        0 24px 60px -36px rgba(42,36,28,0.35);
+      padding: clamp(1.8rem, 5vw, 3.4rem) clamp(1.2rem, 4vw, 3rem);
+      position: relative;
+    }
+    .sheet::before {
+      content: "";
+      position: absolute; inset: 14px;
+      border: 1px solid rgba(196,163,90,0.22);
+      pointer-events: none;
+    }
+    .ornament {
+      text-align: center;
+      color: var(--gold-deep);
+      letter-spacing: 0.4em;
+      font-size: 0.78rem;
+      margin-bottom: 1rem;
+      opacity: 0.8;
+    }
+
+    .block {
+      padding: clamp(1.6rem, 4vw, 2.6rem) 0;
+      border-bottom: 1px solid rgba(196,163,90,0.18);
+      text-align: center;
+    }
+    .block:last-child { border-bottom: 0; }
+    .block-label {
+      color: var(--emerald);
+      font-size: 0.75rem;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      margin-bottom: 0.7rem;
+    }
+    .block h2 {
+      font-family: "Amiri", serif;
+      font-size: clamp(1.45rem, 4vw, 2rem);
+      color: var(--ink);
+      margin-bottom: 0.7rem;
+      font-weight: 700;
+    }
+    .block p {
+      font-family: "Amiri", serif;
+      color: var(--muted);
+      line-height: 1.9;
+      font-size: clamp(1.02rem, 2.6vw, 1.15rem);
+      max-width: 36rem;
+      margin-inline: auto;
+    }
+
+    .names-hero {
+      font-family: "Amiri", serif;
+      font-size: clamp(2.2rem, 8vw, 3.6rem);
+      color: var(--emerald);
+      line-height: 1.25;
+      font-weight: 700;
+    }
+    .names-hero .amp {
+      display: block;
+      font-family: "Great Vibes", cursive;
+      color: var(--gold-deep);
+      font-size: 0.55em;
+      font-weight: 400;
+      margin: 0.1em 0;
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.8rem;
+      margin-top: 1.2rem;
+    }
+    .meta {
+      border: 1px solid rgba(196,163,90,0.28);
+      background: rgba(255,255,255,0.45);
+      padding: 1rem 0.7rem;
+    }
+    .meta b {
+      display: block;
+      font-family: "Amiri", serif;
+      font-size: 1.2rem;
+      color: var(--ink);
+      margin-bottom: 0.25rem;
+    }
+    .meta span {
+      color: var(--muted);
+      font-size: 0.9rem;
+      font-family: "Amiri", serif;
+    }
+
+    .countdown {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 0.65rem;
+      margin-top: 1.1rem;
+    }
+    .count {
+      border: 1px solid rgba(196,163,90,0.3);
+      background: linear-gradient(180deg, rgba(15,61,52,0.05), transparent);
+      padding: 0.95rem 0.4rem;
+    }
+    .count strong {
+      display: block;
+      font-family: "Cormorant Garamond", serif;
+      font-size: clamp(1.5rem, 5vw, 2.1rem);
+      color: var(--emerald);
+      font-weight: 600;
+    }
+    .count span {
+      color: var(--muted);
+      font-size: 0.78rem;
+      letter-spacing: 0.06em;
+    }
+
+    .map-btn {
+      display: inline-block;
+      margin-top: 1.1rem;
+      text-decoration: none;
+      border: 1px solid var(--gold);
+      color: var(--gold-deep);
+      background: rgba(255,255,255,0.5);
+      padding: 0.8rem 1.25rem;
+      font-family: "Amiri", serif;
+      font-size: 1rem;
+      transition: background 0.2s, transform 0.2s;
+    }
+    .map-btn:hover {
+      background: linear-gradient(135deg, #d8b86a, #9a7535);
+      color: #1a140a;
+      transform: translateY(-2px);
+    }
+
+    .program {
+      list-style: none;
+      max-width: 28rem;
+      margin: 1rem auto 0;
+      text-align: start;
+    }
+    .program li {
+      display: grid;
+      grid-template-columns: 7.5rem 1fr;
+      gap: 0.8rem;
+      padding: 0.75rem 0;
+      border-bottom: 1px dashed rgba(196,163,90,0.28);
+      font-family: "Amiri", serif;
+    }
+    .program li:last-child { border-bottom: 0; }
+    .program time {
+      color: var(--emerald);
+      font-weight: 700;
+    }
+    .program span { color: var(--ink); }
+
+    .gallery {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr 1fr;
+      grid-auto-rows: 180px;
+      gap: 0.65rem;
+      margin-top: 1.1rem;
+    }
+    .gallery figure {
+      margin: 0;
+      overflow: hidden;
+      border: 1px solid rgba(196,163,90,0.3);
+      background: #efe6d6;
+    }
+    .gallery figure:first-child { grid-row: span 2; grid-auto-rows: unset; min-height: 100%; }
+    .gallery img {
+      width: 100%; height: 100%; object-fit: cover; display: block;
+      transition: transform 1.1s var(--ease);
+      filter: saturate(0.95) contrast(1.02);
+    }
+    .gallery figure:hover img { transform: scale(1.05); }
+
+    .thanks {
+      font-family: "Amiri", serif;
+      font-size: clamp(1.1rem, 3vw, 1.3rem);
+      line-height: 2;
+      color: var(--ink);
+      max-width: 34rem;
+      margin-inline: auto;
+    }
+
+    footer {
+      text-align: center;
+      padding: 0 1rem 2.2rem;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(22px);
+      transition: opacity 0.9s var(--ease), transform 0.9s var(--ease);
+    }
+    .reveal.in {
+      opacity: 1;
+      transform: none;
+    }
+
+    @media (max-width: 720px) {
+      .meta-grid { grid-template-columns: 1fr; }
+      .gallery {
+        grid-template-columns: 1fr 1fr;
+        grid-auto-rows: 150px;
+      }
+      .gallery figure:first-child {
+        grid-column: 1 / -1;
+        grid-row: auto;
+        min-height: 210px;
+      }
+      .program li { grid-template-columns: 5.5rem 1fr; }
+    }
+    @media (max-width: 480px) {
+      .countdown { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .book { width: min(280px, 78vw); height: min(400px, 64vh); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation: none !important;
+        transition: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="demo-ribbon">DEMO</div>
+
+  <button type="button" class="music-chip arabic" id="musicBtn" aria-label="تشغيل الموسيقى">تشغيل الموسيقى</button>
+
+  <!-- Scene 1 -->
+  <section id="scene-pen" aria-label="الافتتاحية">
+    <div class="pen-stage">
+      <div class="light-bloom" aria-hidden="true"></div>
+      <div class="written" id="lineBasmala" aria-live="polite"></div>
+      <div class="written" id="lineNames" aria-live="polite"></div>
+      <div class="pen" id="pen" aria-hidden="true">
+        <svg viewBox="0 0 64 64" fill="none">
+          <path d="M14 50 L38 12 L46 18 L22 56 Z" fill="#c4a35a"/>
+          <path d="M38 12 L44 8 L52 16 L46 18 Z" fill="#e2c988"/>
+          <path d="M14 50 L10 58 L22 56" fill="#8c6d32"/>
+          <circle cx="47" cy="11" r="2.2" fill="#f7f3ea"/>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- Scene 2 -->
+  <section id="scene-book" aria-label="الكتاب">
+    <div class="book-stage">
+      <div class="book" id="book" role="button" tabindex="0" aria-label="افتح الدعوة">
+        <div class="sparkle-layer" id="sparkles"></div>
+        <div class="book-back" aria-hidden="true"></div>
+        <div class="book-page arabic" aria-hidden="true">بسم الله نبدأ</div>
+        <div class="book-cover">
+          <div>
+            <div class="cover-kicker">Invitation</div>
+            <div class="cover-title arabic">دعوة زفاف</div>
+            <div class="cover-names arabic">
+              كريم
+              <span class="amp">&amp;</span>
+              لمى
+            </div>
+            <div class="cover-hint arabic">اضغط لفتح الدعوة</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Scene 3 -->
+  <main id="scene-invite" aria-label="صفحة الدعوة">
+    <canvas id="petalCanvas" aria-hidden="true"></canvas>
+    <article class="sheet">
+      <div class="ornament">✦ ··· ✦</div>
+
+      <section class="block reveal" id="welcome">
+        <div class="block-label">Welcome</div>
+        <h2 class="arabic">أهلاً بكم</h2>
+        <p class="arabic">
+          بقلوبٍ مفعمة بالامتنان، ندعوكم لمشاركتنا فرحة اقتراننا.
+          حضوركم يضفي على يومنا بهاءً لا يكتمل بدونه.
+        </p>
+      </section>
+
+      <section class="block reveal" id="names">
+        <div class="block-label">The couple</div>
+        <div class="names-hero arabic">
+          كريم
+          <span class="amp">&amp;</span>
+          لمى
+        </div>
+      </section>
+
+      <section class="block reveal" id="when">
+        <div class="block-label">When</div>
+        <h2 class="arabic">موعد الزفاف</h2>
+        <div class="meta-grid">
+          <div class="meta">
+            <b class="arabic">التاريخ</b>
+            <span class="arabic">١٥ أكتوبر ٢٠٢٦</span>
+          </div>
+          <div class="meta">
+            <b class="arabic">اليوم</b>
+            <span class="arabic">الخميس</span>
+          </div>
+          <div class="meta">
+            <b class="arabic">الوقت</b>
+            <span class="arabic">٧:٠٠ مساءً</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="block reveal" id="countdown">
+        <div class="block-label">Countdown</div>
+        <h2 class="arabic">العدّ التنازلي</h2>
+        <div class="countdown" aria-live="polite">
+          <div class="count"><strong id="cd-d">0</strong><span>يوم</span></div>
+          <div class="count"><strong id="cd-h">00</strong><span>ساعة</span></div>
+          <div class="count"><strong id="cd-m">00</strong><span>دقيقة</span></div>
+          <div class="count"><strong id="cd-s">00</strong><span>ثانية</span></div>
+        </div>
+      </section>
+
+      <section class="block reveal" id="venue">
+        <div class="block-label">Venue</div>
+        <h2 class="arabic">مكان الحفل</h2>
+        <p class="arabic" style="margin-bottom:0.35rem"><strong style="color:var(--ink)">قاعة الياسمين الكبرى</strong></p>
+        <p class="arabic">عمّان · شارع الملكة رانيا · مقابل الحديقة المركزية</p>
+        <a class="map-btn arabic" href="https://maps.google.com/?q=Amman+Jordan" target="_blank" rel="noopener">فتح الموقع على الخريطة</a>
+      </section>
+
+      <section class="block reveal" id="program">
+        <div class="block-label">Program</div>
+        <h2 class="arabic">برنامج الحفل</h2>
+        <ul class="program">
+          <li><time>٦:٣٠ م</time><span>استقبال الضيوف</span></li>
+          <li><time>٧:٣٠ م</time><span>دخول العروسين</span></li>
+          <li><time>٨:١٥ م</time><span>العشاء</span></li>
+          <li><time>٩:٣٠ م</time><span>الاحتفال</span></li>
+        </ul>
+      </section>
+
+      <section class="block reveal" id="gallery">
+        <div class="block-label">Gallery</div>
+        <h2 class="arabic">من ذكرياتنا</h2>
+        <div class="gallery">
+          <figure><img src="assets/wedding/demo-gallery-1.jpg" alt="صورة تجريبية ١" loading="lazy"></figure>
+          <figure><img src="assets/wedding/demo-gallery-2.jpg" alt="صورة تجريبية ٢" loading="lazy"></figure>
+          <figure><img src="assets/wedding/demo-gallery-3.jpg" alt="صورة تجريبية ٣" loading="lazy"></figure>
+          <figure><img src="assets/wedding/demo-gallery-1.jpg" alt="صورة تجريبية ٤" loading="lazy" style="object-position:30% center"></figure>
+          <figure><img src="assets/wedding/demo-gallery-3.jpg" alt="صورة تجريبية ٥" loading="lazy" style="object-position:70% center"></figure>
+        </div>
+      </section>
+
+      <section class="block reveal" id="thanks">
+        <div class="block-label">With love</div>
+        <h2 class="arabic">شكرًا لكم</h2>
+        <p class="thanks arabic">
+          وجودكم هو أجمل هدية، وحضوركم يزيد فرحتنا اكتمالًا.
+          ننتظر مشاركتكم هذه اللحظات التي ستبقى في قلوبنا دائمًا.
+        </p>
+      </section>
+    </article>
+    <footer class="arabic">نسخة تجريبية Demo · دعوة زفاف سينمائية</footer>
+  </main>
+
+  <audio id="bgMusic" loop preload="auto" playsinline>
+    <source src="assets/wedding/wedding-music.mp3" type="audio/mpeg">
+  </audio>
+
+  <script>
+    (function () {
+      "use strict";
+
+      const BASMALA = "بسم الله الرحمن الرحيم";
+      const GROOM = "كريم";
+      const BRIDE = "لمى";
+      const WEDDING_AT = new Date("2026-10-15T19:00:00+03:00").getTime();
+
+      const scenePen = document.getElementById("scene-pen");
+      const sceneBook = document.getElementById("scene-book");
+      const sceneInvite = document.getElementById("scene-invite");
+      const lineBasmala = document.getElementById("lineBasmala");
+      const lineNames = document.getElementById("lineNames");
+      const pen = document.getElementById("pen");
+      const book = document.getElementById("book");
+      const sparkles = document.getElementById("sparkles");
+      const musicBtn = document.getElementById("musicBtn");
+      const music = document.getElementById("bgMusic");
+
+      let musicOn = false;
+      music.volume = 0.5;
+
+      /* ── Music (manual only) ── */
+      function setMusic(on) {
+        musicOn = !!on;
+        musicBtn.classList.toggle("is-on", musicOn);
+        musicBtn.textContent = musicOn ? "إيقاف الموسيقى" : "تشغيل الموسيقى";
+        if (musicOn) {
+          const p = music.play();
+          if (p && p.catch) {
+            p.catch(function () {
+              musicOn = false;
+              musicBtn.classList.remove("is-on");
+              musicBtn.textContent = "تشغيل الموسيقى";
+            });
+          }
+        } else {
+          music.pause();
+        }
+      }
+      musicBtn.addEventListener("click", function () { setMusic(!musicOn); });
+
+      /* ── Soft page-turn sound (Web Audio) ── */
+      function playPageTurn() {
+        try {
+          const ctx = new (window.AudioContext || window.webkitAudioContext)();
+          const now = ctx.currentTime;
+          const buffer = ctx.createBuffer(1, ctx.sampleRate * 0.35, ctx.sampleRate);
+          const data = buffer.getChannelData(0);
+          for (let i = 0; i < data.length; i++) {
+            const t = i / data.length;
+            data[i] = (Math.random() * 2 - 1) * Math.pow(1 - t, 2.4) * 0.22;
+          }
+          const src = ctx.createBufferSource();
+          src.buffer = buffer;
+          const filter = ctx.createBiquadFilter();
+          filter.type = "bandpass";
+          filter.frequency.value = 1200;
+          filter.Q.value = 0.7;
+          const gain = ctx.createGain();
+          gain.gain.setValueAtTime(0.0001, now);
+          gain.gain.exponentialRampToValueAtTime(0.35, now + 0.02);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.32);
+          src.connect(filter); filter.connect(gain); gain.connect(ctx.destination);
+          src.start(now);
+        } catch (_) { /* ignore */ }
+      }
+
+      /* ── Pen writing ── */
+      function placePenNear(el, progress) {
+        const stage = el.parentElement.getBoundingClientRect();
+        const rect = el.getBoundingClientRect();
+        const x = (rect.left - stage.left) + rect.width * (1 - Math.min(Math.max(progress, 0), 1));
+        const y = (rect.top - stage.top) + rect.height * 0.55;
+        pen.style.left = x + "px";
+        pen.style.top = y + "px";
+        pen.style.transform = "rotate(-28deg)";
+      }
+
+      function typeArabic(el, text, msPerChar) {
+        return new Promise(function (resolve) {
+          el.style.opacity = "1";
+          el.textContent = "";
+          pen.classList.add("is-on");
+          let i = 0;
+          function step() {
+            if (i > text.length) {
+              pen.classList.remove("is-on");
+              resolve();
+              return;
+            }
+            el.textContent = text.slice(0, i);
+            placePenNear(el, text.length ? i / text.length : 1);
+            i += 1;
+            setTimeout(step, msPerChar);
+          }
+          step();
+        });
+      }
+
+      async function runOpening() {
+        lineBasmala.style.opacity = "1";
+        await wait(500);
+        await typeArabic(lineBasmala, BASMALA, 110);
+        await wait(700);
+        lineNames.style.opacity = "1";
+        await typeArabic(lineNames, "", 40);
+        /* names with styled amp */
+        await typeNames();
+        await wait(1200);
+        scenePen.classList.add("is-done");
+        await wait(900);
+        sceneBook.classList.add("is-show");
+      }
+
+      function typeNames() {
+        return new Promise(function (resolve) {
+          pen.classList.add("is-on");
+          const full = GROOM + " & " + BRIDE;
+          let i = 0;
+          function step() {
+            if (i > full.length) {
+              lineNames.innerHTML = GROOM + ' <span class="amp">&amp;</span> ' + BRIDE;
+              pen.classList.remove("is-on");
+              resolve();
+              return;
+            }
+            const slice = full.slice(0, i);
+            lineNames.textContent = slice;
+            placePenNear(lineNames, full.length ? i / full.length : 1);
+            i += 1;
+            setTimeout(step, 120);
+          }
+          step();
+        });
+      }
+
+      function wait(ms) {
+        return new Promise(function (r) { setTimeout(r, ms); });
+      }
+
+      /* ── Book open ── */
+      let opening = false;
+      async function openBook() {
+        if (opening) return;
+        opening = true;
+        book.classList.add("is-opening", "is-open");
+        sceneBook.classList.add("is-zoom");
+        burstSparkles();
+        playPageTurn();
+        await wait(1450);
+        sceneBook.classList.add("is-away");
+        sceneInvite.classList.add("is-show");
+        document.body.classList.add("is-invite");
+        startPetals();
+        await wait(200);
+        revealBlocks();
+      }
+
+      book.addEventListener("click", openBook);
+      book.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          openBook();
+        }
+      });
+
+      function burstSparkles() {
+        sparkles.classList.add("is-on");
+        sparkles.innerHTML = "";
+        for (let i = 0; i < 18; i++) {
+          const s = document.createElement("span");
+          s.className = "spark";
+          s.style.left = 20 + Math.random() * 60 + "%";
+          s.style.top = 20 + Math.random() * 60 + "%";
+          s.style.setProperty("--tx", (-40 + Math.random() * 80) + "px");
+          s.style.setProperty("--ty", (-60 + Math.random() * 40) + "px");
+          s.style.animationDelay = (Math.random() * 0.35) + "s";
+          sparkles.appendChild(s);
+        }
+        setTimeout(function () { sparkles.classList.remove("is-on"); }, 2000);
+      }
+
+      function revealBlocks() {
+        const io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (en) {
+            if (en.isIntersecting) en.target.classList.add("in");
+          });
+        }, { threshold: 0.18 });
+        document.querySelectorAll(".reveal").forEach(function (el, idx) {
+          io.observe(el);
+          setTimeout(function () { el.classList.add("in"); }, 120 + idx * 80);
+        });
+      }
+
+      /* ── Countdown ── */
+      function tick() {
+        let diff = Math.max(0, WEDDING_AT - Date.now());
+        const d = Math.floor(diff / 86400000); diff -= d * 86400000;
+        const h = Math.floor(diff / 3600000); diff -= h * 3600000;
+        const m = Math.floor(diff / 60000); diff -= m * 60000;
+        const s = Math.floor(diff / 1000);
+        document.getElementById("cd-d").textContent = String(d);
+        document.getElementById("cd-h").textContent = String(h).padStart(2, "0");
+        document.getElementById("cd-m").textContent = String(m).padStart(2, "0");
+        document.getElementById("cd-s").textContent = String(s).padStart(2, "0");
+      }
+      tick();
+      setInterval(tick, 1000);
+
+      /* ── Soft gold petals ── */
+      const canvas = document.getElementById("petalCanvas");
+      const ctx = canvas.getContext("2d");
+      let petals = [];
+      let running = false;
+      let W = 0, H = 0;
+
+      function resize() {
+        W = canvas.width = window.innerWidth;
+        H = canvas.height = window.innerHeight;
+      }
+      window.addEventListener("resize", resize);
+      resize();
+
+      function spawn(n) {
+        for (let i = 0; i < n; i++) {
+          petals.push({
+            x: Math.random() * W,
+            y: -20 - Math.random() * H * 0.3,
+            r: 2.5 + Math.random() * 4.5,
+            vy: 0.25 + Math.random() * 0.55,
+            vx: -0.25 + Math.random() * 0.5,
+            rot: Math.random() * Math.PI,
+            vr: -0.015 + Math.random() * 0.03,
+            a: 0.2 + Math.random() * 0.35
+          });
+        }
+      }
+
+      function frame() {
+        if (!running) return;
+        ctx.clearRect(0, 0, W, H);
+        for (let i = petals.length - 1; i >= 0; i--) {
+          const p = petals[i];
+          p.x += p.vx + Math.sin(p.rot) * 0.12;
+          p.y += p.vy;
+          p.rot += p.vr;
+          if (p.y > H + 20) { petals.splice(i, 1); continue; }
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate(p.rot);
+          ctx.fillStyle = "rgba(196,163,90," + p.a + ")";
+          ctx.beginPath();
+          ctx.ellipse(0, 0, p.r, p.r * 0.55, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+        if (petals.length < 22) spawn(1);
+        requestAnimationFrame(frame);
+      }
+
+      function startPetals() {
+        if (running) return;
+        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+        running = true;
+        spawn(16);
+        requestAnimationFrame(frame);
+      }
+
+      /* Boot */
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        lineBasmala.style.opacity = "1";
+        lineBasmala.textContent = BASMALA;
+        lineNames.style.opacity = "1";
+        lineNames.innerHTML = GROOM + ' <span class="amp">&amp;</span> ' + BRIDE;
+        setTimeout(function () {
+          scenePen.classList.add("is-done");
+          sceneBook.classList.add("is-show");
+        }, 600);
+      } else {
+        runOpening();
+      }
+    })();
+  </script>
+</body>
+</html>
