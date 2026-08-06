@@ -45,7 +45,7 @@
     }
     button, a { -webkit-tap-highlight-color: transparent; }
 
-    .grain, .vignette, #fxCanvas {
+    .grain, .vignette, #fxCanvas, .letterbox span {
       position: fixed; inset: 0; pointer-events: none;
     }
     .grain {
@@ -113,9 +113,9 @@
     }
     body.invite-mode .skip { display: none; }
 
-    /* letterbox */
+    .letterbox { position: fixed; inset: 0; z-index: 95; pointer-events: none; }
     .letterbox span {
-      position: fixed; z-index: 95; left: 0; right: 0; height: 0;
+      left: 0; right: 0; height: 0;
       background: #050807; transition: height 1s var(--ease);
     }
     .letterbox .top { top: 0; }
@@ -216,6 +216,7 @@
       font-size: .9rem; white-space: nowrap;
       letter-spacing: .04em;
       animation: hintPulse 2.4s ease-in-out infinite;
+      pointer-events: none;
     }
     @keyframes hintPulse {
       0%,100%{opacity:.45} 50%{opacity:1}
@@ -646,7 +647,7 @@
   <div class="hud">
     <button type="button" class="skip" id="skipBtn">تخطّي المقدمة ←</button>
     <button type="button" class="chip" id="musicBtn">
-      تشغيل الموسيقى
+      <span id="musicLabel">تشغيل الموسيقى</span>
       <span class="eq" aria-hidden="true"><i></i><i></i><i></i></span>
     </button>
   </div>
@@ -883,12 +884,12 @@
       function setMusic(on) {
         musicOn = !!on;
         musicBtn.classList.toggle("on", musicOn);
-        musicBtn.childNodes[0].textContent = musicOn ? "إيقاف الموسيقى " : "تشغيل الموسيقى ";
+        document.getElementById("musicLabel").textContent = musicOn ? "إيقاف الموسيقى" : "تشغيل الموسيقى";
         if (musicOn) {
           const p = music.play();
           if (p && p.catch) p.catch(function () {
             musicOn = false; musicBtn.classList.remove("on");
-            musicBtn.childNodes[0].textContent = "تشغيل الموسيقى ";
+            document.getElementById("musicLabel").textContent = "تشغيل الموسيقى";
           });
         } else music.pause();
       }
@@ -1015,6 +1016,9 @@
       book.addEventListener("keydown", function (e) {
         if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openBook(); }
       });
+      document.querySelector(".book-room").addEventListener("click", function (e) {
+        if (!opened) openBook();
+      });
 
       /* mouse parallax on book */
       sceneBook.addEventListener("pointermove", function (e) {
@@ -1022,6 +1026,9 @@
         const cx = (e.clientX / window.innerWidth - 0.5) * 10;
         const cy = (e.clientY / window.innerHeight - 0.5) * 6;
         book.style.transform = "rotateY(" + (-14 - cx) + "deg) rotateX(" + (8 + cy) + "deg)";
+      });
+      sceneBook.addEventListener("click", function () {
+        if (sceneBook.classList.contains("show") && !opened) openBook();
       });
 
       document.getElementById("skipBtn").addEventListener("click", async function () {
