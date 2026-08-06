@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="robots" content="noindex, nofollow">
   <meta name="theme-color" content="#121212">
-  <meta name="description" content="دعوة زفاف عصرية — Demo">
-  <title>دعوة زفاف · Demo</title>
+  <meta name="description" content="دعوة زفاف خاصة — Demo">
+  <title>كريم & لمى · دعوة زفاف</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Instrument+Serif:ital@0;1&family=Noto+Naskh+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -572,75 +572,85 @@
       100% { opacity: 0; transform: translate(var(--x), var(--y)) scale(1); }
     }
 
-    /* ═════ INVITE ═════ */
-    #scene-invite { display: none; position: relative; z-index: 10; }
+    /* ═════ INVITE — editorial professional ═════ */
+    #scene-invite { display: none; position: relative; z-index: 10; background: #f7f6f3; }
     #scene-invite.show { display: block; }
 
     .hero-invite {
       position: relative;
-      min-height: 88svh;
+      min-height: 92svh;
       display: grid; align-items: end;
       overflow: hidden;
       color: #f7f6f3;
-      background: #121212;
+      background: #0e0e0e;
     }
     .hero-invite .bg {
       position: absolute; inset: 0;
       background:
-        linear-gradient(180deg, rgba(18,18,18,.2) 0%, rgba(18,18,18,.45) 45%, rgba(18,18,18,.92) 78%, #121212 100%),
+        linear-gradient(180deg, rgba(14,14,14,.15) 0%, rgba(14,14,14,.4) 42%, rgba(14,14,14,.94) 78%, #0e0e0e 100%),
         url("assets/wedding/book-page.jpg") center/cover;
       transform: scale(1.06);
-      animation: ken 22s ease-in-out infinite alternate;
-      filter: grayscale(.15) contrast(1.05);
+      animation: ken 24s ease-in-out infinite alternate;
+      filter: grayscale(.2) contrast(1.06) brightness(.92);
     }
     @keyframes ken {
       from{transform:scale(1.08) translate(0,0)}
-      to{transform:scale(1.16) translate(-2%,-1%)}
+      to{transform:scale(1.14) translate(-1.5%,-1%)}
     }
     .hero-invite .content {
       position: relative; z-index: 2;
-      width: min(920px, calc(100% - 2rem));
+      width: min(760px, calc(100% - 2rem));
       margin: 0 auto;
-      padding: 0 0 max(2.2rem, env(safe-area-inset-bottom));
+      padding: 0 0 max(2.6rem, env(safe-area-inset-bottom));
       text-align: center;
     }
     .guest-hello {
       display: inline-block;
-      border: 1px solid rgba(255,255,255,.18);
-      padding: .4rem .85rem;
-      margin-bottom: 1rem;
-      color: rgba(247,246,243,.8);
-      font-size: .88rem;
-      background: rgba(255,255,255,.04);
-      border-radius: 999px;
+      margin-bottom: 1.15rem;
+      color: rgba(247,246,243,.62);
+      font-size: .78rem;
+      letter-spacing: .22em;
+      text-transform: uppercase;
+      font-weight: 500;
     }
     .hero-invite h1 {
       font-family: var(--font-ar);
-      font-size: clamp(2.5rem, 8.5vw, 4.4rem);
-      line-height: 1.2;
+      font-size: clamp(2.8rem, 9vw, 4.8rem);
+      line-height: 1.12;
       font-weight: 700;
-      letter-spacing: -0.01em;
+      letter-spacing: -0.02em;
     }
     .hero-invite h1 .amp {
       display: inline-block;
       font-family: var(--font-en); font-style: italic;
-      color: #b09a7d; font-weight: 400; font-size: .58em; padding: 0 .12em;
+      color: #b09a7d; font-weight: 400; font-size: .52em; padding: 0 .1em;
+      vertical-align: middle;
+    }
+    .hero-meta {
+      margin-top: 1.15rem;
+      color: rgba(247,246,243,.55);
+      font-size: .86rem;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      font-weight: 500;
     }
     .hero-sub {
-      margin-top: .9rem; color: rgba(247,246,243,.68);
-      font-size: clamp(.98rem, 2.6vw, 1.15rem); line-height: 1.8;
+      margin-top: .85rem; color: rgba(247,246,243,.68);
+      font-size: clamp(.98rem, 2.4vw, 1.12rem); line-height: 1.85;
+      max-width: 28em; margin-inline: auto;
     }
     .hero-actions {
-      display: flex; flex-wrap: wrap; gap: .65rem; justify-content: center;
-      margin-top: 1.5rem;
+      display: flex; flex-wrap: wrap; gap: .7rem; justify-content: center;
+      margin-top: 1.7rem;
     }
     .btn {
       appearance: none; text-decoration: none; cursor: pointer;
-      border: 1px solid rgba(255,255,255,.22);
+      border: 1px solid rgba(255,255,255,.2);
       color: #f7f6f3; background: rgba(255,255,255,.04);
-      padding: .85rem 1.2rem; font-family: var(--font-body); font-size: .92rem;
+      padding: .88rem 1.3rem; font-family: var(--font-body); font-size: .9rem;
       transition: transform .25s var(--ease), background .25s, color .25s, border-color .25s;
       border-radius: 999px;
+      font-weight: 500;
     }
     .btn:hover { transform: translateY(-2px); background: rgba(255,255,255,.1); }
     .btn.solid {
@@ -648,6 +658,79 @@
       color: #121212; border-color: transparent; font-weight: 600;
     }
     .btn.solid:hover { background: #fff; }
+    .btn.ghost {
+      border-color: transparent;
+      background: transparent;
+      color: rgba(247,246,243,.7);
+      padding-inline: .7rem;
+    }
+    .btn.ghost:hover { color: #fff; background: transparent; transform: none; }
+
+    .utility-bar {
+      width: min(980px, calc(100% - 1.25rem));
+      margin: -1.6rem auto 0;
+      position: relative; z-index: 4;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: rgba(18,18,18,.08);
+      border: 1px solid rgba(18,18,18,.08);
+      overflow: hidden;
+      box-shadow: 0 18px 40px -28px rgba(0,0,0,.35);
+    }
+    .utility-bar article {
+      background: #fff;
+      padding: 1.15rem 1rem;
+      text-align: center;
+    }
+    .utility-bar span {
+      display: block;
+      font-size: .68rem;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: .4rem;
+      font-weight: 500;
+    }
+    .utility-bar b {
+      font-family: var(--font-ar);
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    .wrap {
+      width: min(860px, calc(100% - 1.25rem));
+      margin: 1.5rem auto 3rem;
+      position: relative; z-index: 3;
+    }
+    .panel {
+      background: transparent;
+      border: 0;
+      box-shadow: none;
+      padding: clamp(2rem, 5vw, 3.2rem) 0;
+      margin-bottom: 0;
+      position: relative;
+      overflow: visible;
+      border-radius: 0;
+      border-bottom: 1px solid var(--line);
+    }
+    .panel:last-of-type { border-bottom: 0; }
+    .panel::before { display: none; }
+    .eyebrow {
+      color: var(--muted); letter-spacing: .24em; text-transform: uppercase;
+      font-size: .68rem; margin-bottom: .7rem; font-weight: 500;
+    }
+    .panel h2 {
+      font-family: var(--font-ar); font-size: clamp(1.55rem, 4vw, 2.15rem);
+      margin-bottom: .85rem; color: var(--ink); font-weight: 700;
+      letter-spacing: -0.015em;
+    }
+    .panel p {
+      color: var(--muted); line-height: 1.95;
+      font-size: clamp(1rem, 2.4vw, 1.1rem);
+      max-width: 38em;
+    }
     .panel .btn {
       color: var(--ink);
       border-color: var(--line);
@@ -661,94 +744,117 @@
     }
     .panel .btn.solid:hover { background: #2a2a2a; color: #fff; }
 
-    .wrap {
-      width: min(980px, calc(100% - 1.25rem));
-      margin: -2.5rem auto 2.5rem;
-      position: relative; z-index: 3;
-    }
-    .panel {
-      background: #fff;
-      border: 1px solid var(--line);
-      box-shadow: 0 18px 50px -42px rgba(0,0,0,.35);
-      padding: clamp(1.5rem, 4vw, 2.5rem);
-      margin-bottom: .85rem;
-      position: relative;
-      overflow: hidden;
-      border-radius: 18px;
-    }
-    .panel::before { display: none; }
-    .eyebrow {
-      color: var(--muted); letter-spacing: .22em; text-transform: uppercase;
-      font-size: .7rem; margin-bottom: .55rem; font-weight: 500;
-    }
-    .panel h2 {
-      font-family: var(--font-ar); font-size: clamp(1.45rem, 3.8vw, 2rem);
-      margin-bottom: .65rem; color: var(--ink); font-weight: 700;
-    }
-    .panel p {
-      color: var(--muted); line-height: 1.95;
-      font-size: clamp(1rem, 2.5vw, 1.12rem);
-    }
-
     .split {
-      display: grid; grid-template-columns: 1.05fr .95fr; gap: 1rem;
+      display: grid; grid-template-columns: 1.15fr .85fr; gap: 2rem;
+      align-items: center;
     }
     .mono-card {
-      min-height: 280px;
-      border-radius: 14px;
+      min-height: 260px;
+      border-radius: 2px;
       overflow: hidden;
       background:
-        linear-gradient(180deg, rgba(18,18,18,.15), rgba(18,18,18,.62)),
+        linear-gradient(180deg, rgba(18,18,18,.12), rgba(18,18,18,.7)),
         center/cover url("assets/wedding/demo-monogram.jpg");
       display: grid; place-items: end stretch;
-      padding: 1.2rem; color: #f7f6f3;
+      padding: 1.35rem; color: #f7f6f3;
     }
     .mono-card strong {
-      font-family: var(--font-ar); font-size: 1.5rem; display: block;
+      font-family: var(--font-ar); font-size: 1.45rem; display: block;
+      margin-bottom: .25rem;
+    }
+    .mono-card em {
+      font-style: normal;
+      opacity: .72;
+      font-size: .86rem;
+      letter-spacing: .08em;
     }
 
     .facts {
-      display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: .75rem;
-      margin-top: 1.1rem;
+      display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 0;
+      margin-top: 1.4rem;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
     }
     .fact {
-      border: 1px solid var(--line);
-      background: #faf9f7;
-      padding: 1.05rem .8rem; text-align: center;
-      border-radius: 14px;
-      transition: transform .3s var(--ease), border-color .3s, background .3s;
+      border: 0;
+      border-inline-start: 1px solid var(--line);
+      background: transparent;
+      padding: 1.25rem .9rem; text-align: center;
+      border-radius: 0;
+      transition: background .3s;
     }
-    .fact:hover { transform: translateY(-3px); border-color: rgba(18,18,18,.16); background: #fff; }
+    .fact:first-child { border-inline-start: 0; }
+    .fact:hover { transform: none; background: rgba(18,18,18,.02); border-color: var(--line); }
     .fact b {
-      display: block; font-family: var(--font-ar); font-size: 1.25rem;
+      display: block; font-family: var(--font-ar); font-size: 1.2rem;
       color: var(--ink); margin: .35rem 0 .2rem;
     }
-    .fact span { color: var(--muted); font-size: .9rem; }
+    .fact span { color: var(--muted); font-size: .88rem; }
 
     .countdown {
-      display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: .65rem;
-      margin-top: 1rem;
+      display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: .55rem;
+      margin-top: 1.35rem;
     }
     .count {
-      text-align: center; padding: 1.05rem .4rem;
-      background: #faf9f7;
+      text-align: center; padding: 1.1rem .4rem;
+      background: #fff;
       border: 1px solid var(--line);
-      border-radius: 14px;
+      border-radius: 2px;
       position: relative; overflow: hidden;
     }
     .count strong {
       display: block; font-family: var(--font-en);
-      font-size: clamp(1.6rem, 5vw, 2.3rem); color: var(--ink);
+      font-size: clamp(1.7rem, 5vw, 2.4rem); color: var(--ink);
       font-weight: 500;
+      font-variant-numeric: tabular-nums;
     }
-    .count span { font-size: .78rem; color: var(--muted); letter-spacing: .06em; }
+    .count span { font-size: .72rem; color: var(--muted); letter-spacing: .12em; text-transform: uppercase; }
 
     .map-row {
-      display: flex; flex-wrap: wrap; gap: .65rem; margin-top: 1rem;
+      display: flex; flex-wrap: wrap; gap: .65rem; margin-top: 1.25rem;
     }
 
+    .venue-stage {
+      position: relative;
+      margin-top: 1.25rem;
+      min-height: 320px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      background: #e8e6e1;
+    }
+    .venue-stage iframe {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      border: 0;
+      filter: grayscale(.35) contrast(1.05) brightness(.96);
+      pointer-events: none;
+    }
+    .venue-card {
+      position: relative;
+      z-index: 2;
+      margin: 1.4rem;
+      max-width: 340px;
+      background: rgba(255,255,255,.94);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(18,18,18,.08);
+      padding: 1.35rem 1.25rem;
+      box-shadow: 0 20px 50px -30px rgba(0,0,0,.35);
+    }
+    .venue-card h3 {
+      font-family: var(--font-ar);
+      font-size: 1.3rem;
+      margin-bottom: .4rem;
+      color: var(--ink);
+    }
+    .venue-card p {
+      font-size: .95rem;
+      margin: 0;
+      max-width: none;
+    }
+    .venue-card .map-row { margin-top: 1rem; }
+
     .timeline {
-      position: relative; margin-top: 1.1rem; padding-inline-start: 1.2rem;
+      position: relative; margin-top: 1.4rem; padding-inline-start: 1.15rem;
     }
     .timeline::before {
       content: ""; position: absolute; inset-inline-start: 0; top: .3rem; bottom: .3rem;
@@ -759,82 +865,150 @@
     .timeline.in::before { transform: scaleY(1); }
     .timeline li {
       list-style: none; position: relative;
-      padding: .85rem 0 .85rem 1rem;
+      padding: 1rem 0 1rem 1rem;
       border-bottom: 1px solid var(--line);
-      display: grid; grid-template-columns: 6.5rem 1fr; gap: .7rem;
+      display: grid; grid-template-columns: 5.5rem 1fr; gap: .85rem;
       opacity: 0; transform: translateY(12px);
       transition: opacity .5s var(--ease), transform .5s var(--ease);
     }
+    .timeline li:last-child { border-bottom: 0; }
     .timeline.in li { opacity: 1; transform: none; }
     .timeline.in li:nth-child(1){transition-delay:.05s}
     .timeline.in li:nth-child(2){transition-delay:.15s}
     .timeline.in li:nth-child(3){transition-delay:.25s}
     .timeline.in li:nth-child(4){transition-delay:.35s}
     .timeline li::before {
-      content: ""; position: absolute; inset-inline-start: -1.32rem; top: 1.2rem;
+      content: ""; position: absolute; inset-inline-start: -1.28rem; top: 1.35rem;
       width: 7px; height: 7px; border-radius: 50%;
-      background: #8b7355; box-shadow: 0 0 0 3px rgba(139,115,85,.15);
+      background: #8b7355; box-shadow: 0 0 0 3px rgba(139,115,85,.12);
     }
-    .timeline time { color: var(--muted); font-weight: 600; font-size: .92rem; }
+    .timeline time { color: var(--muted); font-weight: 600; font-size: .9rem; }
     .timeline span { color: var(--ink); }
 
-    .extras {
-      display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; margin-top: 1rem;
+    .note-line {
+      margin-top: 1.5rem;
+      padding-top: 1.2rem;
+      border-top: 1px solid var(--line);
+      display: grid;
+      gap: .85rem;
     }
-    .extra {
-      border: 1px solid var(--line);
-      background: #faf9f7;
-      padding: 1rem;
-      border-radius: 14px;
+    .note-line p {
+      margin: 0;
+      font-size: .95rem;
     }
-    .extra h3 {
-      font-family: var(--font-ar); font-size: 1.15rem; margin-bottom: .35rem;
+    .note-line strong {
       color: var(--ink);
+      font-weight: 600;
+      margin-inline-end: .35rem;
     }
 
     .gallery {
       display: grid;
-      grid-template-columns: 1.35fr 1fr 1fr;
-      grid-auto-rows: 170px;
-      gap: .65rem; margin-top: 1rem;
+      grid-template-columns: 1.4fr 1fr 1fr;
+      grid-auto-rows: 180px;
+      gap: .55rem; margin-top: 1.25rem;
     }
     .gallery button {
-      border: 1px solid var(--line);
+      border: 0;
       padding: 0; overflow: hidden; cursor: pointer; background: #eceae6;
-      position: relative; border-radius: 12px;
+      position: relative; border-radius: 2px;
     }
     .gallery button:first-child { grid-row: span 2; min-height: 100%; }
     .gallery img {
       width: 100%; height: 100%; object-fit: cover; display: block;
-      transition: transform 1s var(--ease); filter: saturate(.92) contrast(1.02);
+      transition: transform 1.1s var(--ease), filter .5s;
+      filter: saturate(.9) contrast(1.03);
     }
-    .gallery button:hover img { transform: scale(1.05); }
+    .gallery button:hover img { transform: scale(1.04); filter: saturate(1) contrast(1.05); }
     .gallery button::after {
       content: ""; position: absolute; inset: 0;
-      background: linear-gradient(180deg, transparent 60%, rgba(18,18,18,.25));
+      background: linear-gradient(180deg, transparent 55%, rgba(18,18,18,.28));
       opacity: 0; transition: opacity .3s;
     }
     .gallery button:hover::after { opacity: 1; }
 
     .rsvp {
-      display: grid; grid-template-columns: 1.1fr .9fr; gap: 1rem; align-items: start;
+      display: grid; grid-template-columns: 1.05fr .95fr; gap: 2rem; align-items: start;
     }
     .rsvp-form {
-      display: grid; gap: .7rem; margin-top: .8rem;
+      display: grid; gap: .85rem; margin-top: 1.1rem;
+    }
+    .rsvp-form label {
+      display: grid; gap: .4rem;
+      font-size: .78rem;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 500;
     }
     .rsvp-form input, .rsvp-form select {
       width: 100%; border: 1px solid var(--line);
-      background: #faf9f7; padding: .85rem .9rem;
+      background: #fff; padding: .9rem 1rem;
       font-family: var(--font-body); font-size: 1rem; color: var(--ink);
-      border-radius: 12px;
+      border-radius: 2px;
       outline: none;
       transition: border-color .2s, background .2s;
+      text-transform: none;
+      letter-spacing: 0;
     }
     .rsvp-form input:focus, .rsvp-form select:focus {
       border-color: rgba(18,18,18,.28);
-      background: #fff;
     }
-    .rsvp-actions { display: flex; flex-wrap: wrap; gap: .55rem; }
+    .status-pills {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: .45rem;
+    }
+    .status-pills button {
+      appearance: none;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--ink);
+      padding: .85rem .5rem;
+      font-family: var(--font-body);
+      font-size: .88rem;
+      cursor: pointer;
+      border-radius: 2px;
+      transition: .2s ease;
+    }
+    .status-pills button.on {
+      background: #121212;
+      color: #f7f6f3;
+      border-color: #121212;
+    }
+    .rsvp-actions { display: flex; flex-wrap: wrap; gap: .55rem; margin-top: .2rem; }
+    .rsvp-aside {
+      padding: 1.5rem 0 0;
+      border-top: 1px solid var(--line);
+    }
+    @media (min-width: 861px) {
+      .rsvp-aside {
+        border-top: 0;
+        border-inline-start: 1px solid var(--line);
+        padding: 0 0 0 1.75rem;
+        min-height: 100%;
+        display: grid;
+        align-content: center;
+      }
+    }
+    .rsvp-aside h3 {
+      font-family: var(--font-ar);
+      font-size: 1.25rem;
+      margin-bottom: .55rem;
+      color: var(--ink);
+    }
+    .rsvp-success {
+      display: none;
+      padding: 1.5rem 0;
+    }
+    .rsvp-success.on { display: block; }
+    .rsvp-success h3 {
+      font-family: var(--font-ar);
+      font-size: 1.6rem;
+      margin-bottom: .5rem;
+    }
+    .rsvp-form.is-done { display: none; }
+
     .toast {
       position: fixed; z-index: 130; left: 50%; bottom: 90px;
       transform: translateX(-50%) translateY(20px);
@@ -849,15 +1023,14 @@
 
     .lightbox {
       position: fixed; inset: 0; z-index: 140;
-      background: rgba(10,10,10,.9);
+      background: rgba(10,10,10,.92);
       display: none; place-items: center; padding: 1rem;
     }
     .lightbox.on { display: grid; }
     .lightbox img {
       max-width: min(920px, 100%); max-height: 82vh; object-fit: contain;
-      border: 1px solid rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.1);
       box-shadow: 0 30px 80px rgba(0,0,0,.45);
-      border-radius: 8px;
     }
     .lightbox button {
       position: absolute; top: 16px; inset-inline-end: 16px;
@@ -874,33 +1047,41 @@
     }
     body.invite-mode .dots { display: flex; }
     .dots a {
-      width: 7px; height: 7px; border-radius: 50%;
-      background: rgba(18,18,18,.18); border: 1px solid rgba(18,18,18,.2);
+      width: 6px; height: 6px; border-radius: 50%;
+      background: rgba(18,18,18,.16); border: 1px solid rgba(18,18,18,.18);
+      transition: transform .2s, background .2s;
     }
-    .dots a.active { background: #8b7355; border-color: #8b7355; }
+    .dots a.active { background: #8b7355; border-color: #8b7355; transform: scale(1.25); }
 
     footer {
-      text-align: center; padding: 1rem 1rem 2.5rem;
-      color: var(--muted); font-size: .82rem;
+      text-align: center; padding: 1.5rem 1rem 3rem;
+      color: var(--muted); font-size: .78rem;
+      letter-spacing: .08em;
     }
 
     .reveal {
-      opacity: 0; transform: translateY(28px);
+      opacity: 0; transform: translateY(24px);
       transition: opacity .9s var(--ease), transform .9s var(--ease);
     }
     .reveal.in { opacity: 1; transform: none; }
 
     @media (max-width: 860px) {
-      .split, .rsvp, .extras { grid-template-columns: 1fr; }
+      .split, .rsvp { grid-template-columns: 1fr; }
+      .utility-bar { grid-template-columns: 1fr; }
       .facts { grid-template-columns: 1fr; }
+      .fact { border-inline-start: 0; border-top: 1px solid var(--line); }
+      .fact:first-child { border-top: 0; }
       .gallery { grid-template-columns: 1fr 1fr; grid-auto-rows: 150px; }
       .gallery button:first-child { grid-column: 1/-1; grid-row: auto; min-height: 220px; }
       .dots { display: none !important; }
+      .venue-card { max-width: none; }
+      .status-pills { grid-template-columns: 1fr; }
     }
     @media (max-width: 520px) {
       .countdown { grid-template-columns: 1fr 1fr; }
-      .timeline li { grid-template-columns: 5rem 1fr; }
+      .timeline li { grid-template-columns: 4.5rem 1fr; }
       .hero-actions .btn { width: 100%; text-align: center; }
+      .hero-actions .btn.ghost { width: auto; }
     }
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation: none !important; transition: none !important; }
@@ -1003,19 +1184,26 @@
       <div class="content">
         <div class="guest-hello" id="guestHello">ضيفنا العزيز</div>
         <h1>كريم <span class="amp">&</span> لمى</h1>
+        <div class="hero-meta">١٥ أكتوبر ٢٠٢٦ · عمّان</div>
         <p class="hero-sub">ندعوكم لمشاركة لحظة تُكتب مرّة واحدة في العمر</p>
         <div class="hero-actions">
           <a class="btn solid" href="#rsvp">تأكيد الحضور</a>
-          <a class="btn" href="#when">التفاصيل</a>
-          <button type="button" class="btn" id="shareBtn">مشاركة الدعوة</button>
+          <button type="button" class="btn" id="calBtnHero">إضافة للتقويم</button>
+          <button type="button" class="btn ghost" id="shareBtn">مشاركة</button>
         </div>
       </div>
     </header>
 
+    <div class="utility-bar reveal" id="utilityBar" aria-label="ملخص الموعد">
+      <article><span>التاريخ</span><b>١٥ أكتوبر ٢٠٢٦</b></article>
+      <article><span>الاستقبال</span><b>٦:٣٠ مساءً</b></article>
+      <article><span>المكان</span><b>قاعة الياسمين</b></article>
+    </div>
+
     <div class="wrap">
       <section class="panel reveal split" id="welcome">
         <div>
-          <div class="eyebrow">Welcome</div>
+          <div class="eyebrow">Invitation</div>
           <h2>كلمة من العروسين</h2>
           <p>
             في حضرة أهلكم وأحبّتكم، نفتح بابًا جديدًا من حياتنا.
@@ -1025,7 +1213,7 @@
         <div class="mono-card">
           <div>
             <strong>كريم &amp; لمى</strong>
-            <span style="opacity:.8;font-size:.9rem">١٥ أكتوبر ٢٠٢٦</span>
+            <em>١٥ · ١٠ · ٢٠٢٦</em>
           </div>
         </div>
       </section>
@@ -1035,8 +1223,8 @@
         <h2>موعد الزفاف</h2>
         <div class="facts">
           <article class="fact"><div class="eyebrow" style="margin:0">Date</div><b>١٥ أكتوبر ٢٠٢٦</b><span>الخميس</span></article>
-          <article class="fact"><div class="eyebrow" style="margin:0">Ceremony</div><b>٧:٠٠ مساءً</b><span>بداية الحفل</span></article>
           <article class="fact"><div class="eyebrow" style="margin:0">Reception</div><b>٦:٣٠ مساءً</b><span>الاستقبال</span></article>
+          <article class="fact"><div class="eyebrow" style="margin:0">Ceremony</div><b>٧:٠٠ مساءً</b><span>بداية الحفل</span></article>
         </div>
         <div class="countdown" aria-label="العد التنازلي">
           <div class="count"><strong id="d">0</strong><span>يوم</span></div>
@@ -1052,11 +1240,21 @@
       <section class="panel reveal" id="venue">
         <div class="eyebrow">Venue</div>
         <h2>مكان الحفل</h2>
-        <p><strong style="color:var(--ink);font-family:var(--font-ar);font-size:1.25rem">قاعة الياسمين الكبرى</strong></p>
-        <p>عمّان · شارع الملكة رانيا العبدالله · مقابل الحديقة المركزية</p>
-        <div class="map-row">
-          <a class="btn solid" href="https://maps.google.com/?q=Amman+Jordan" target="_blank" rel="noopener">فتح على خرائط Google</a>
-          <a class="btn" href="https://maps.google.com/?q=Amman+Jordan&dirflg=d" target="_blank" rel="noopener">الاتجاهات</a>
+        <div class="venue-stage">
+          <iframe
+            title="خريطة موقع الحفل"
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"
+            src="https://www.openstreetmap.org/export/embed.html?bbox=35.86%2C31.94%2C35.96%2C31.99&amp;layer=mapnik&amp;marker=31.9539%2C35.9106"
+          ></iframe>
+          <div class="venue-card">
+            <h3>قاعة الياسمين الكبرى</h3>
+            <p>عمّان · شارع الملكة رانيا العبدالله · مقابل الحديقة المركزية</p>
+            <div class="map-row">
+              <a class="btn solid" href="https://maps.google.com/?q=Amman+Jordan" target="_blank" rel="noopener">فتح الخريطة</a>
+              <a class="btn" href="https://maps.google.com/?q=Amman+Jordan&dirflg=d" target="_blank" rel="noopener">الاتجاهات</a>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -1069,15 +1267,9 @@
           <li><time>٨:١٥ م</time><span>العشاء</span></li>
           <li><time>٩:٣٠ م</time><span>الاحتفال واللحظات الخاصة</span></li>
         </ul>
-        <div class="extras">
-          <div class="extra">
-            <h3>قواعد اللباس</h3>
-            <p>رسمي أنيق · ألوان هادئة مفضّلة · تجنّب الأبيض الصريح</p>
-          </div>
-          <div class="extra">
-            <h3>ملاحظة لطيفة</h3>
-            <p>حضوركم هو الهدية الأثمن. لا حاجة لإحضار شيء آخر.</p>
-          </div>
+        <div class="note-line">
+          <p><strong>اللباس:</strong> رسمي أنيق · ألوان هادئة مفضّلة · تجنّب الأبيض الصريح</p>
+          <p><strong>ملاحظة:</strong> حضوركم هو الهدية الأثمن</p>
         </div>
       </section>
 
@@ -1089,7 +1281,6 @@
           <button type="button" data-src="assets/wedding/demo-gallery-2.jpg"><img src="assets/wedding/demo-gallery-2.jpg" alt="ذكرى ٢" loading="lazy"></button>
           <button type="button" data-src="assets/wedding/demo-gallery-3.jpg"><img src="assets/wedding/demo-gallery-3.jpg" alt="ذكرى ٣" loading="lazy"></button>
           <button type="button" data-src="assets/wedding/demo-paper.jpg"><img src="assets/wedding/demo-paper.jpg" alt="ذكرى ٤" loading="lazy"></button>
-          <button type="button" data-src="assets/wedding/demo-monogram.jpg"><img src="assets/wedding/demo-monogram.jpg" alt="شعار" loading="lazy"></button>
         </div>
       </section>
 
@@ -1097,32 +1288,43 @@
         <div>
           <div class="eyebrow">RSVP</div>
           <h2>تأكيد الحضور</h2>
-          <p>أخبرونا إن كنتم ستشاركوننا الفرحة لنجهّز لكم أطيب استقبال.</p>
+          <p>خطوة واحدة لنجهّز لكم أطيب استقبال.</p>
           <form class="rsvp-form" id="rsvpForm">
-            <input type="text" id="rsvpName" name="name" placeholder="الاسم الكامل" required autocomplete="name">
-            <select id="rsvpStatus" required>
-              <option value="yes">سأحضر بكل سرور</option>
-              <option value="maybe">ربما أتمكن</option>
-              <option value="no">أعتذر عن الحضور</option>
-            </select>
-            <input type="number" id="rsvpGuests" name="guests" min="1" max="8" value="1" placeholder="عدد الأشخاص">
+            <label>الاسم
+              <input type="text" id="rsvpName" name="name" placeholder="الاسم الكامل" required autocomplete="name">
+            </label>
+            <label>الحضور
+              <input type="hidden" id="rsvpStatus" value="yes">
+              <div class="status-pills" id="statusPills" role="group" aria-label="حالة الحضور">
+                <button type="button" data-value="yes" class="on">سأحضر</button>
+                <button type="button" data-value="maybe">ربما</button>
+                <button type="button" data-value="no">أعتذر</button>
+              </div>
+            </label>
+            <label>عدد الأشخاص
+              <input type="number" id="rsvpGuests" name="guests" min="1" max="8" value="1">
+            </label>
             <div class="rsvp-actions">
               <button type="submit" class="btn solid">إرسال التأكيد</button>
               <button type="button" class="btn" id="waBtn">واتساب</button>
             </div>
           </form>
+          <div class="rsvp-success" id="rsvpSuccess">
+            <h3>شكرًا لتأكيدكم</h3>
+            <p id="rsvpSuccessMsg">استلمنا ردّكم بسعادة. نراكم قريبًا.</p>
+          </div>
         </div>
-        <div class="extra" style="align-self:stretch;display:grid;align-content:center">
-          <h3>شكرًا مقدمًا</h3>
-          <p style="margin-top:.5rem">
-            وجودكم هو أجمل هدية، وحضوركم يزيد فرحتنا اكتمالًا.
-            ننتظر مشاركتكم هذه اللحظات التي ستبقى في قلوبنا دائمًا.
+        <aside class="rsvp-aside">
+          <h3>بانتظار حضوركم</h3>
+          <p>
+            وجودكم أجمل ما في هذا اليوم.
+            شاركونا اللحظة، ودعوا الباقي علينا.
           </p>
-        </div>
+        </aside>
       </section>
     </div>
 
-    <footer>نسخة تجريبية Demo · دعوة زفاف عصرية</footer>
+    <footer>Demo · دعوة زفاف خاصة</footer>
   </main>
 
   <div class="lightbox" id="lightbox" role="dialog" aria-modal="true">
@@ -1709,7 +1911,7 @@
       tick(); setInterval(tick, 1000);
 
       /* calendar */
-      document.getElementById("calBtn").addEventListener("click", function () {
+      function downloadCalendar() {
         const start = "20261015T160000Z";
         const end = "20261015T210000Z";
         const ics = [
@@ -1726,7 +1928,9 @@
         a.download = "wedding-kareem-lama.ics";
         a.click();
         toast("تم تجهيز ملف التقويم");
-      });
+      }
+      document.getElementById("calBtn").addEventListener("click", downloadCalendar);
+      document.getElementById("calBtnHero").addEventListener("click", downloadCalendar);
 
       /* share */
       document.getElementById("shareBtn").addEventListener("click", async function () {
@@ -1741,18 +1945,35 @@
       });
 
       /* RSVP */
+      const statusLabels = { yes: "سأحضر", maybe: "ربما", no: "أعتذر" };
+      document.getElementById("statusPills").addEventListener("click", function (e) {
+        const btn = e.target.closest("button[data-value]");
+        if (!btn) return;
+        document.querySelectorAll("#statusPills button").forEach(function (b) {
+          b.classList.toggle("on", b === btn);
+        });
+        document.getElementById("rsvpStatus").value = btn.getAttribute("data-value");
+      });
       document.getElementById("rsvpForm").addEventListener("submit", function (e) {
         e.preventDefault();
         const name = document.getElementById("rsvpName").value.trim();
         const status = document.getElementById("rsvpStatus").value;
-        const msg = status === "yes" ? "تم تأكيد حضوركم بكل حب" : status === "maybe" ? "شكرًا، سنبقى بانتظاركم" : "تم استلام اعتذاركم بكل ود";
-        toast(msg + (name ? "، " + name : ""));
+        const msg = status === "yes"
+          ? "استلمنا تأكيد حضوركم بسعادة" + (name ? "، " + name : "") + ". نراكم في ١٥ أكتوبر."
+          : status === "maybe"
+            ? "شكرًا لردّكم" + (name ? "، " + name : "") + ". سنبقى بانتظاركم."
+            : "تم استلام اعتذاركم بكل ود" + (name ? "، " + name : "") + ".";
+        document.getElementById("rsvpForm").classList.add("is-done");
+        document.getElementById("rsvpSuccessMsg").textContent = msg;
+        document.getElementById("rsvpSuccess").classList.add("on");
+        toast(status === "yes" ? "تم تأكيد الحضور" : "تم استلام الرد");
         burst(22);
       });
       document.getElementById("waBtn").addEventListener("click", function () {
         const name = document.getElementById("rsvpName").value.trim() || "ضيف";
-        const status = document.getElementById("rsvpStatus").selectedOptions[0].text;
-        const text = encodeURIComponent("تأكيد دعوة زفاف كريم و لمى%0Aالاسم: " + name + "%0Aالحالة: " + status);
+        const status = statusLabels[document.getElementById("rsvpStatus").value] || "سأحضر";
+        const guests = document.getElementById("rsvpGuests").value || "1";
+        const text = encodeURIComponent("تأكيد دعوة زفاف كريم و لمى%0Aالاسم: " + name + "%0Aالحالة: " + status + "%0Aالعدد: " + guests);
         window.open("https://wa.me/?text=" + text, "_blank");
       });
 
