@@ -128,371 +128,171 @@
     body.invite-mode .skip { display: none; }
 
 
-    /* ═════ SCENE 1: LUXURY ENVELOPE ═════ */
-    #scene-envelope {
+
+    /* ═════ SCENE INTRO — cinematic overture ═════ */
+    #scene-intro {
       position: fixed; inset: 0; z-index: 50;
       display: grid; place-items: center;
-      background:
-        radial-gradient(ellipse 70% 50% at 50% 40%, rgba(212,175,138,.16), transparent 60%),
-        radial-gradient(ellipse at 50% 100%, #121c29, transparent 55%),
-        #05080d;
-      transition: opacity 1.1s var(--ease), visibility 1.1s, filter 1.1s;
       overflow: hidden;
-    }
-    #scene-envelope.done {
-      opacity: 0; visibility: hidden; pointer-events: none; filter: blur(12px) brightness(1.2);
-    }
-    .env-glow {
-      position: absolute; width: min(520px, 90vw); height: min(520px, 90vw);
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(212,175,138,.22), transparent 68%);
-      filter: blur(20px);
-      animation: envGlow 4.5s ease-in-out infinite;
-      pointer-events: none;
-    }
-    @keyframes envGlow {
-      0%,100%{ transform: scale(.92); opacity:.55 }
-      50%{ transform: scale(1.08); opacity:1 }
-    }
-    .env-hint {
-      position: absolute; bottom: max(5.2rem, env(safe-area-inset-bottom));
-      left: 50%; transform: translateX(-50%);
-      color: rgba(243,239,231,.5);
-      font-size: .84rem; letter-spacing: .16em;
-      animation: pulseHint 2.4s ease-in-out infinite;
-      white-space: nowrap; z-index: 2;
-    }
-    @keyframes pulseHint { 0%,100%{opacity:.35} 50%{opacity:1} }
-    #scene-envelope.opening .env-hint { opacity: 0; transition: .4s; }
-
-    .envelope {
-      width: min(380px, 82vw);
-      position: relative;
-      cursor: pointer;
-      z-index: 2;
-      filter: drop-shadow(0 35px 60px rgba(0,0,0,.55));
-      transition: transform 1s var(--ease), filter 1s;
-      animation: envFloat 5.5s ease-in-out infinite;
-    }
-    @keyframes envFloat {
-      0%,100%{ transform: translateY(0) rotate(-1.5deg); }
-      50%{ transform: translateY(-14px) rotate(1deg); }
-    }
-    .envelope:hover { filter: drop-shadow(0 40px 70px rgba(0,0,0,.65)); }
-    .envelope img.env-photo {
-      width: 100%; height: auto; display: block;
-      border-radius: 6px;
-    }
-    .env-shine {
-      position: absolute; inset: 0; border-radius: 6px; pointer-events: none;
-      background: linear-gradient(120deg, transparent 30%, rgba(255,255,255,.12) 48%, transparent 62%);
-      mix-blend-mode: screen;
-      animation: shineSweep 5s ease-in-out infinite;
-    }
-    @keyframes shineSweep {
-      0%,100%{ opacity:0; transform: translateX(-30%); }
-      40%,60%{ opacity:1; transform: translateX(30%); }
-    }
-    .env-ring {
-      position: absolute; left: 50%; top: 52%;
-      width: 86px; height: 86px; margin: -43px 0 0 -43px;
-      border-radius: 50%;
-      border: 1px solid rgba(212,175,138,.45);
-      box-shadow: 0 0 0 8px rgba(212,175,138,.06), 0 0 28px rgba(212,175,138,.25);
-      pointer-events: none;
-      transition: transform .8s var(--ease), opacity .6s;
-    }
-    #scene-envelope.opening .envelope {
-      animation: none;
-      transform: scale(1.08) translateY(-10px);
-    }
-    #scene-envelope.opening .env-ring {
-      transform: scale(1.8); opacity: 0;
-    }
-    .env-letter-rise {
-      position: absolute; left: 8%; right: 8%; top: 18%;
-      aspect-ratio: 1.35;
-      background:
-        linear-gradient(180deg, rgba(255,255,255,.5), transparent 40%),
-        url("assets/wedding/letter-sheet.jpg") center/cover;
-      border: 1px solid rgba(212,175,138,.25);
-      box-shadow: 0 18px 40px rgba(0,0,0,.35);
-      opacity: 0;
-      transform: translateY(40%) scale(.92);
-      transition: transform 1.15s var(--ease), opacity .7s ease;
-      display: grid; place-items: center;
-      text-align: center; color: #2a2218; z-index: 3;
-      pointer-events: none;
-    }
-    #scene-envelope.opening .env-letter-rise {
-      opacity: 1;
-      transform: translateY(-58%) scale(1);
-    }
-    .env-letter-rise span {
-      font-family: var(--font-display);
-      font-size: 1.35rem;
-    }
-    .env-letter-rise small {
-      display: block; margin-top: .4rem;
-      letter-spacing: .22em; text-transform: uppercase;
-      font-size: .72rem; color: #7a6d5c;
-    }
-
-    /* ═════ SCENE 2: DESK CALLIGRAPHY ═════ */
-    #scene-write {
-      position: fixed; inset: 0; z-index: 40;
-      display: grid; place-items: center;
-      opacity: 0; visibility: hidden;
-      transition: opacity 1s var(--ease), visibility 1s;
-      overflow: hidden;
-    }
-    #scene-write.show { opacity: 1; visibility: visible; }
-    #scene-write.done {
-      opacity: 0; visibility: hidden; pointer-events: none; filter: blur(10px);
+      background: #05080d;
       transition: opacity 1.15s var(--ease), visibility 1.15s, filter 1.15s;
     }
-    .write-bg {
+    #scene-intro.done {
+      opacity: 0; visibility: hidden; pointer-events: none; filter: blur(14px);
+    }
+    .intro-bg {
       position: absolute; inset: 0;
       background:
-        linear-gradient(180deg, rgba(5,8,13,.35), rgba(5,8,13,.55) 40%, rgba(5,8,13,.82)),
-        url("assets/wedding/write-desk.jpg") center/cover;
-      transform: scale(1.06);
-      filter: saturate(.9) contrast(1.05);
-      animation: deskKen 20s ease-in-out infinite alternate;
+        linear-gradient(180deg, rgba(5,8,13,.25), rgba(5,8,13,.55) 55%, rgba(5,8,13,.88)),
+        url("assets/wedding/intro-stage.jpg") center/cover;
+      transform: scale(1.08);
+      animation: introKen 22s ease-in-out infinite alternate;
+      filter: saturate(.85) contrast(1.05);
     }
-    @keyframes deskKen {
-      from{ transform: scale(1.06) translate(0,0); }
-      to{ transform: scale(1.12) translate(-1%,1%); }
+    @keyframes introKen {
+      from { transform: scale(1.08) translate(0,0); }
+      to { transform: scale(1.16) translate(-1.2%, 1%); }
     }
-    .write-stage {
-      width: min(680px, calc(100vw - 1.5rem));
-      min-height: min(46vh, 340px);
-      position: relative;
-      z-index: 2;
-      padding: clamp(2.4rem, 5.5vw, 3.4rem) clamp(1.3rem, 4vw, 2.6rem);
-      background:
-        linear-gradient(180deg, rgba(255,252,245,.92), rgba(245,238,226,.88)),
-        url("assets/wedding/letter-sheet.jpg") center/cover;
-      border: 1px solid rgba(212,175,138,.35);
-      box-shadow:
-        0 40px 90px -30px rgba(0,0,0,.7),
-        0 0 0 1px rgba(255,255,255,.25) inset;
-      text-align: center;
-      overflow: hidden;
-    }
-    .write-stage::before {
-      content: "";
-      position: absolute; inset: 14px;
-      border: 1px solid rgba(42,34,24,.08);
-      pointer-events: none;
-    }
-    .write-stage::after {
-      content: "";
+    .intro-veil {
       position: absolute; inset: 0;
-      background: radial-gradient(ellipse at 30% 0%, rgba(255,230,180,.18), transparent 45%);
+      background:
+        radial-gradient(ellipse 55% 45% at 50% 45%, rgba(212,175,138,.14), transparent 60%),
+        radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,.55) 100%);
       pointer-events: none;
     }
-    .engrave-line {
+    .intro-stage {
       position: relative; z-index: 2;
-      margin: 0 auto 1.45rem; max-width: 94%; min-height: 1.5em;
-    }
-    .engrave-line:last-of-type { margin-bottom: 0; }
-    .engrave-ghost {
-      visibility: hidden; display: block;
-      font-family: var(--font-display); line-height: 1.7;
-    }
-    .engrave-ink {
-      position: absolute; inset: 0; display: block;
-      font-family: var(--font-display); line-height: 1.7;
-      color: #1a140f; opacity: 0;
-      clip-path: inset(0 0 0 100%);
-      -webkit-clip-path: inset(0 0 0 100%);
-      text-shadow: 0 1px 0 rgba(255,255,255,.2);
-    }
-    .engrave-ink.on { opacity: 1; }
-    .engrave-ink.done {
-      clip-path: inset(0 0 0 0) !important;
-      -webkit-clip-path: inset(0 0 0 0) !important;
-    }
-    #lineBasmala .engrave-ghost,
-    #lineBasmala .engrave-ink {
-      font-size: clamp(1.5rem, 5vw, 2.55rem); font-weight: 700;
-    }
-    #lineNames .engrave-ghost,
-    #lineNames .engrave-ink {
-      font-size: clamp(2rem, 6.5vw, 3.4rem); font-weight: 700;
-    }
-    #lineNames .amp {
-      font-family: var(--font-en); font-style: italic;
-      color: #8a6a48; font-weight: 500; font-size: .62em; padding: 0 .12em;
-    }
-    #beamCanvas {
-      position: absolute; inset: 0; width: 100%; height: 100%;
-      pointer-events: none; z-index: 3;
-    }
-    .pen {
-      position: absolute; z-index: 6;
-      width: clamp(120px, 24vw, 180px);
-      height: auto;
-      opacity: 0; pointer-events: none;
-      transform-origin: 18% 88%;
-      filter: drop-shadow(12px 18px 16px rgba(20,12,6,.4));
-      transition: opacity .35s;
-      will-change: left, top, transform;
-    }
-    .pen.on { opacity: 1; }
-    .pen img { width: 100%; height: auto; display: block; }
-
-    /* ═════ SCENE 3: LUXURY FOLIO ═════ */
-    #scene-folio {
-      position: fixed; inset: 0; z-index: 30;
-      display: grid; place-items: center;
-      background:
-        radial-gradient(640px 420px at 50% 42%, rgba(212,175,138,.14), transparent 55%),
-        linear-gradient(165deg, #0a1018, #05080d 55%, #03050a);
-      opacity: 0; visibility: hidden;
-      transition: opacity 1.1s var(--ease), visibility 1.1s;
-      overflow: hidden;
-    }
-    #scene-folio.show { opacity: 1; visibility: visible; }
-    #scene-folio.away {
-      opacity: 0; visibility: hidden; pointer-events: none; transition-delay: .3s;
-    }
-    .folio-hint {
-      position: absolute;
-      bottom: max(2.2rem, env(safe-area-inset-bottom));
-      left: 50%; transform: translateX(-50%);
-      color: rgba(243,239,231,.5);
-      font-size: .84rem; letter-spacing: .12em;
-      animation: pulseHint 2.4s ease-in-out infinite; z-index: 2;
-    }
-    #scene-folio.opened .folio-hint { opacity: 0; }
-
-    .folio-room {
-      perspective: 2400px;
-      width: min(380px, 88vw);
-      height: min(560px, 78vh);
-      position: relative;
-      display: grid; place-items: center;
-    }
-    .folio-plinth {
-      position: absolute; left: 12%; right: 12%; bottom: 2%;
-      height: 28px;
-      background: radial-gradient(ellipse at center, rgba(0,0,0,.55), transparent 70%);
-      filter: blur(10px); pointer-events: none;
-    }
-    .folio {
-      width: min(300px, 72vw);
-      height: min(460px, 66vh);
-      position: relative;
-      transform-style: preserve-3d;
-      cursor: pointer;
-      transform: rotateY(-10deg) rotateX(10deg);
-      transition: transform 1.25s var(--ease);
-      animation: floatFolio 6s ease-in-out infinite;
-      filter: drop-shadow(0 30px 50px rgba(0,0,0,.5));
-    }
-    @keyframes floatFolio {
-      0%,100%{ transform: rotateY(-10deg) rotateX(10deg) translateY(0); }
-      50%{ transform: rotateY(-6deg) rotateX(7deg) translateY(-14px); }
-    }
-    .folio.opening { animation: none !important; }
-    #scene-folio.zoom .folio {
-      transform: rotateY(0) rotateX(3deg) scale(1.1);
-    }
-
-    .folio-closed-photo {
-      position: absolute; inset: 0; z-index: 8;
-      border-radius: 8px; overflow: hidden;
-      transition: opacity .55s ease, transform .9s var(--ease);
-      box-shadow: 0 0 0 1px rgba(212,175,138,.25);
-    }
-    .folio-closed-photo img {
-      width: 100%; height: 100%; object-fit: cover; display: block;
-    }
-    .folio.open .folio-closed-photo {
-      opacity: 0; pointer-events: none; transform: scale(1.04);
-    }
-
-    .folio-spine {
-      position: absolute; left: 50%; top: 3%; bottom: 3%;
-      width: 2px; transform: translateX(-50%);
-      background: linear-gradient(180deg, transparent, rgba(212,175,138,.55), transparent);
-      z-index: 4; pointer-events: none;
-    }
-    .panel-leaf {
-      position: absolute; inset: 0; width: 50%;
-      transform-style: preserve-3d;
-      transition: transform 1.6s cubic-bezier(0.22, 0.61, 0.24, 1);
-    }
-    .panel-leaf.left { left: 0; right: auto; transform-origin: right center; }
-    .panel-leaf.right { left: auto; right: 0; transform-origin: left center; }
-    .folio.open .panel-leaf.left { transform: rotateY(162deg); }
-    .folio.open .panel-leaf.right { transform: rotateY(-162deg); }
-    .folio.open-deep .panel-leaf.left { transform: rotateY(175deg); }
-    .folio.open-deep .panel-leaf.right { transform: rotateY(-175deg); }
-
-    .leaf-face {
-      position: absolute; inset: 0;
-      backface-visibility: hidden; overflow: hidden;
-    }
-    .leaf-face.outer {
-      background:
-        linear-gradient(180deg, rgba(255,255,255,.06), transparent 35%),
-        url("assets/wedding/folio-hero.jpg") center/cover;
-      border: 1px solid rgba(212,175,138,.28);
-      box-shadow: inset 0 0 0 1px rgba(0,0,0,.25);
-    }
-    .leaf-face.outer::after {
-      content: ""; position: absolute; inset: 16px;
-      border: 1px solid rgba(212,175,138,.22); pointer-events: none;
-    }
-    .panel-leaf.left .leaf-face.outer { border-radius: 10px 2px 2px 10px; border-right: 0; }
-    .panel-leaf.right .leaf-face.outer { border-radius: 2px 10px 10px 2px; border-left: 0; }
-    .leaf-face.inner {
-      background:
-        linear-gradient(90deg, rgba(0,0,0,.08), transparent 22%),
-        url("assets/wedding/letter-sheet.jpg") center/cover;
-      transform: rotateY(180deg);
-      display: grid; place-items: center;
-      color: #5a4a38; text-align: center; padding: .8rem;
-    }
-    .panel-leaf.left .leaf-face.inner { border-radius: 2px 10px 10px 2px; }
-    .panel-leaf.right .leaf-face.inner { border-radius: 10px 2px 2px 10px; }
-    .inner-mark {
-      font-family: var(--font-en); font-style: italic;
-      font-size: .92rem; color: #7a6b58;
-    }
-    .folio-cover-copy {
-      position: absolute; inset: 0; z-index: 9;
-      display: grid; place-items: center;
-      text-align: center; pointer-events: none; padding: 1.4rem;
+      width: min(720px, calc(100% - 2rem));
+      text-align: center;
       color: var(--pearl);
-      transition: opacity .4s;
-      text-shadow: 0 8px 24px rgba(0,0,0,.45);
+      padding: 2rem 0;
     }
-    .folio.open .folio-cover-copy { opacity: 0; }
-    .folio-kicker {
-      font-family: var(--font-en); font-style: italic;
-      letter-spacing: .28em; font-size: .72rem;
-      color: var(--champagne-soft); opacity: .9; margin-bottom: .7rem;
+    .intro-line {
+      width: 0;
+      height: 1px;
+      margin: 0 auto 1.6rem;
+      background: linear-gradient(90deg, transparent, var(--champagne), transparent);
+      opacity: 0;
+      transition: width 1.4s var(--ease), opacity .6s;
     }
-    .folio-title {
+    #scene-intro.act-line .intro-line {
+      width: min(220px, 50vw);
+      opacity: 1;
+    }
+    .intro-mono {
+      width: 78px; height: 78px;
+      margin: 0 auto 1.35rem;
+      border-radius: 50%;
+      border: 1px solid rgba(212,175,138,.4);
+      display: grid; place-items: center;
+      font-family: var(--font-en);
+      font-style: italic;
+      font-size: 1.15rem;
+      color: var(--champagne);
+      letter-spacing: .06em;
+      background: rgba(212,175,138,.06);
+      box-shadow: 0 0 0 10px rgba(212,175,138,.04), 0 20px 50px rgba(0,0,0,.35);
+      opacity: 0;
+      transform: scale(.7);
+      transition: opacity 1s var(--ease), transform 1.2s var(--ease);
+    }
+    #scene-intro.act-mono .intro-mono {
+      opacity: 1; transform: scale(1);
+    }
+    .intro-kicker {
+      font-size: .72rem;
+      letter-spacing: .32em;
+      text-transform: uppercase;
+      color: rgba(212,175,138,.75);
+      margin-bottom: 1rem;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity .9s var(--ease), transform .9s var(--ease);
+    }
+    #scene-intro.act-copy .intro-kicker {
+      opacity: 1; transform: none;
+    }
+    .intro-names {
       font-family: var(--font-display);
-      font-size: clamp(1.5rem, 4.5vw, 1.95rem); margin-bottom: .75rem;
+      font-size: clamp(2.8rem, 10vw, 5rem);
+      line-height: 1.12;
+      font-weight: 700;
+      opacity: 0;
+      transform: translateY(18px);
+      transition: opacity 1.1s var(--ease), transform 1.1s var(--ease);
     }
-    .folio-names {
-      font-family: var(--font-display);
-      font-size: clamp(1.25rem, 4vw, 1.65rem); line-height: 1.35;
+    #scene-intro.act-copy .intro-names {
+      opacity: 1; transform: none;
+      transition-delay: .15s;
     }
-    .folio-names .amp {
-      display: block; font-family: var(--font-en); font-style: italic;
-      color: var(--champagne); font-size: 1rem; margin: .2rem 0;
+    .intro-names .amp {
+      display: inline-block;
+      font-family: var(--font-en);
+      font-style: italic;
+      color: var(--champagne);
+      font-size: .48em;
+      vertical-align: middle;
+      padding: 0 .1em;
+      font-weight: 500;
     }
-    .folio-cta {
-      margin-top: 1.3rem; padding-top: .9rem;
-      border-top: 1px solid rgba(212,175,138,.28);
-      font-size: .82rem; color: rgba(243,239,231,.7); letter-spacing: .06em;
+    .intro-date {
+      margin-top: 1.15rem;
+      font-size: .84rem;
+      letter-spacing: .22em;
+      text-transform: uppercase;
+      color: rgba(243,239,231,.55);
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity .9s var(--ease) .25s, transform .9s var(--ease) .25s;
+    }
+    #scene-intro.act-copy .intro-date {
+      opacity: 1; transform: none;
+    }
+    .intro-cta {
+      margin-top: 2rem;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity .8s var(--ease) .35s, transform .8s var(--ease) .35s;
+    }
+    #scene-intro.act-cta .intro-cta {
+      opacity: 1; transform: none;
+    }
+    .intro-enter {
+      appearance: none;
+      cursor: pointer;
+      border: 1px solid rgba(212,175,138,.4);
+      background: rgba(212,175,138,.1);
+      color: var(--pearl);
+      padding: .95rem 1.6rem;
+      font-family: var(--font-ui);
+      font-size: .92rem;
+      border-radius: 999px;
+      letter-spacing: .06em;
+      transition: .25s var(--ease);
+    }
+    .intro-enter:hover {
+      background: var(--champagne);
+      color: var(--void);
+      border-color: transparent;
+    }
+    .intro-doors {
+      position: absolute; inset: 0; z-index: 5;
+      pointer-events: none;
+      display: flex;
+    }
+    .intro-doors span {
+      flex: 1;
+      background: #05080d;
+      transition: transform 1.25s cubic-bezier(0.22, 0.61, 0.24, 1);
+    }
+    .intro-doors .left { transform-origin: left center; }
+    .intro-doors .right { transform-origin: right center; }
+    #scene-intro.parting .intro-doors .left { transform: translateX(-105%); }
+    #scene-intro.parting .intro-doors .right { transform: translateX(105%); }
+    #scene-intro.parting .intro-stage {
+      opacity: 0;
+      transform: scale(1.04);
+      transition: opacity .7s ease, transform 1s var(--ease);
     }
 
     /* ═════ INVITE — unified midnight stage ═════ */
@@ -1258,74 +1058,22 @@
   </nav>
 
 
-  <!-- 1. ENVELOPE -->
-  <section id="scene-envelope">
-    <div class="env-glow" aria-hidden="true"></div>
-    <div class="envelope" id="envelope" role="button" tabindex="0" aria-label="افتح الظرف">
-      <img class="env-photo" src="assets/wedding/env-hero.jpg" alt="ظرف الدعوة">
-      <div class="env-shine" aria-hidden="true"></div>
-      <div class="env-ring" aria-hidden="true"></div>
-      <div class="env-letter-rise">
-        <div>
-          <span>دعوة خاصة</span>
-          <small>Private Invitation</small>
-        </div>
-      </div>
-    </div>
-    <div class="env-hint">اضغط لفتح الظرف الفاخر</div>
-  </section>
 
-  <!-- 2. DESK WRITING -->
-  <section id="scene-write">
-    <div class="write-bg" aria-hidden="true"></div>
-    <div class="write-stage" id="writeStage">
-      <canvas id="beamCanvas" aria-hidden="true"></canvas>
-      <div class="engrave-line" id="lineBasmala">
-        <span class="engrave-ghost">بسم الله الرحمن الرحيم</span>
-        <span class="engrave-ink">بسم الله الرحمن الرحيم</span>
-      </div>
-      <div class="engrave-line" id="lineNames">
-        <span class="engrave-ghost">كريم <span class="amp">&amp;</span> لمى</span>
-        <span class="engrave-ink">كريم <span class="amp">&amp;</span> لمى</span>
-      </div>
-      <div class="pen" id="stylus" aria-hidden="true">
-        <img src="assets/wedding/luxe-pen.png" alt="" draggable="false">
+  <!-- INTRO -->
+  <section id="scene-intro">
+    <div class="intro-bg" aria-hidden="true"></div>
+    <div class="intro-veil" aria-hidden="true"></div>
+    <div class="intro-doors" aria-hidden="true"><span class="left"></span><span class="right"></span></div>
+    <div class="intro-stage">
+      <div class="intro-line" aria-hidden="true"></div>
+      <div class="intro-mono">K&amp;L</div>
+      <div class="intro-kicker">Private Invitation</div>
+      <div class="intro-names">كريم <span class="amp">&amp;</span> لمى</div>
+      <div class="intro-date">١٥ أكتوبر ٢٠٢٦ · عمّان</div>
+      <div class="intro-cta">
+        <button type="button" class="intro-enter" id="enterBtn">ادخل إلى الدعوة</button>
       </div>
     </div>
-  </section>
-
-  <!-- 3. FOLIO -->
-  <section id="scene-folio">
-    <div class="folio-room">
-      <div class="folio-plinth" aria-hidden="true"></div>
-      <div class="folio" id="folio" role="button" tabindex="0" aria-label="افتح الدعوة">
-        <div class="folio-closed-photo">
-          <img src="assets/wedding/folio-hero.jpg" alt="غلاف الدعوة">
-        </div>
-        <div class="folio-spine"></div>
-        <div class="panel-leaf left">
-          <div class="leaf-face outer"></div>
-          <div class="leaf-face inner"><span class="inner-mark">Together</span></div>
-        </div>
-        <div class="panel-leaf right">
-          <div class="leaf-face outer"></div>
-          <div class="leaf-face inner"><span class="inner-mark">Forever</span></div>
-        </div>
-        <div class="folio-cover-copy">
-          <div>
-            <div class="folio-kicker">Private Folio</div>
-            <div class="folio-title">دعوة زفاف</div>
-            <div class="folio-names">
-              كريم
-              <span class="amp">&amp;</span>
-              لمى
-            </div>
-            <div class="folio-cta">اضغط لفتح الورقة</div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="folio-hint">اضغط لفتح الدعوة الفاخرة</div>
   </section>
 
   <!-- 4. INVITE -->
@@ -1523,38 +1271,18 @@
         document.getElementById("rsvpName").value = guest;
       }
 
-      const sceneEnv = document.getElementById("scene-envelope");
-      const sceneWrite = document.getElementById("scene-write");
-      const sceneFolio = document.getElementById("scene-folio");
+      const sceneIntro = document.getElementById("scene-intro");
       const sceneInvite = document.getElementById("scene-invite");
-      const envelope = document.getElementById("envelope");
-      const folio = document.getElementById("folio");
-      const stylus = document.getElementById("stylus");
-      const writeStage = document.getElementById("writeStage");
-      const beamCanvas = document.getElementById("beamCanvas");
-      const beamCtx = beamCanvas.getContext("2d");
+      const enterBtn = document.getElementById("enterBtn");
       const music = document.getElementById("bgMusic");
       const musicBtn = document.getElementById("musicBtn");
       let musicOn = false;
-      let musicArmed = true; /* autoplay until user pauses */
+      let musicArmed = true;
       let skipped = false;
-      let envOpened = false;
-      let folioOpened = false;
+      let entered = false;
       music.volume = 0.46;
 
       function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
-      function easeInOut(t) { return t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t+2, 3)/2; }
-      function lerp(a, b, t) { return a + (b - a) * t; }
-
-      function sizeBeam() {
-        const r = writeStage.getBoundingClientRect();
-        const dpr = Math.min(window.devicePixelRatio || 1, 2);
-        beamCanvas.width = Math.floor(r.width * dpr);
-        beamCanvas.height = Math.floor(r.height * dpr);
-        beamCanvas.style.width = r.width + "px";
-        beamCanvas.style.height = r.height + "px";
-        beamCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      }
 
       function setMusic(on, fromUser) {
         if (fromUser) musicArmed = !!on;
@@ -1585,7 +1313,6 @@
         e.stopPropagation();
         setMusic(!(musicOn && !music.paused), true);
       });
-      /* start immediately; browsers may require a gesture — retry until it plays */
       setMusic(true, false);
       ["pointerdown", "touchstart", "keydown"].forEach(function (evt) {
         window.addEventListener(evt, ensureMusic, { capture: true });
@@ -1604,185 +1331,63 @@
           const ctx = new (window.AudioContext || window.webkitAudioContext)();
           const o = ctx.createOscillator();
           const g = ctx.createGain();
-          o.type = "triangle";
-          o.frequency.value = 880;
+          o.type = "sine";
+          o.frequency.value = 660;
           g.gain.value = 0.0001;
           o.connect(g); g.connect(ctx.destination);
           const now = ctx.currentTime;
-          g.gain.exponentialRampToValueAtTime(0.03, now + 0.01);
-          g.gain.exponentialRampToValueAtTime(0.0001, now + 0.12);
-          o.start(now); o.stop(now + 0.14);
+          g.gain.exponentialRampToValueAtTime(0.025, now + 0.02);
+          g.gain.exponentialRampToValueAtTime(0.0001, now + 0.28);
+          o.start(now); o.stop(now + 0.3);
         } catch (_) {}
       }
 
-      function revealClip(el, p) {
-        const left = Math.max(0, Math.min(100, (1 - p) * 100));
-        el.style.clipPath = "inset(0 0 0 " + left + "%)";
-        el.style.webkitClipPath = "inset(0 0 0 " + left + "%)";
-      }
-
-      function placeStylus(x, y, angle) {
-        const w = stylus.offsetWidth || 150;
-        const h = stylus.offsetHeight || 150;
-        /* nib sits near bottom-left of the pen art */
-        const tipX = w * 0.14;
-        const tipY = h * 0.88;
-        stylus.style.left = (x - tipX) + "px";
-        stylus.style.top = (y - tipY) + "px";
-        stylus.style.transform = "rotate(" + (angle || -12) + "deg)";
-      }
-
-      function drawBeam(from, to, alpha) {
-        beamCtx.save();
-        beamCtx.strokeStyle = "rgba(42, 28, 16, " + (alpha || 0.22) + ")";
-        beamCtx.lineWidth = 1.4 + Math.random() * 0.8;
-        beamCtx.shadowColor = "rgba(212,175,138,.35)";
-        beamCtx.shadowBlur = 6;
-        beamCtx.lineCap = "round";
-        beamCtx.beginPath();
-        beamCtx.moveTo(from.x, from.y);
-        const mx = (from.x + to.x) / 2 + (Math.random() - 0.5) * 1.5;
-        const my = (from.y + to.y) / 2 + (Math.random() - 0.5) * 1.2;
-        beamCtx.quadraticCurveTo(mx, my, to.x, to.y);
-        beamCtx.stroke();
-        if (Math.random() > 0.7) {
-          beamCtx.fillStyle = "rgba(26,20,12," + (0.08 + Math.random() * 0.1) + ")";
-          beamCtx.beginPath();
-          beamCtx.ellipse(to.x, to.y + 0.4, 0.8 + Math.random(), 0.4 + Math.random() * 0.4, 0, 0, Math.PI * 2);
-          beamCtx.fill();
-        }
-        beamCtx.restore();
-      }
-
-      function engraveLine(lineEl, duration) {
-        return new Promise(function (resolve) {
-          const ink = lineEl.querySelector(".engrave-ink");
-          const stage = writeStage.getBoundingClientRect();
-          const rect = lineEl.getBoundingClientRect();
-          ink.classList.add("on");
-          stylus.classList.add("on");
-          const start = performance.now();
-          let prev = null;
-
-          function frame(now) {
-            if (skipped) {
-              revealClip(ink, 1);
-              ink.classList.add("done");
-              resolve();
-              return;
-            }
-            const t = Math.min(1, (now - start) / duration);
-            const p = easeInOut(t);
-            revealClip(ink, p);
-            /* RTL: tip travels right → left */
-            const x = (rect.left - stage.left) + rect.width * (1 - p);
-            const y = (rect.top - stage.top) + rect.height * 0.62 + Math.sin(p * Math.PI * 4) * 2.2;
-            const tip = { x: x, y: y };
-            placeStylus(tip.x, tip.y, -10 + Math.sin(p * 8) * 4);
-            if (prev) drawBeam(prev, tip, 0.2 + (1 - p) * 0.18);
-            prev = tip;
-            if (t < 1) requestAnimationFrame(frame);
-            else {
-              revealClip(ink, 1);
-              ink.classList.add("done");
-              resolve();
-            }
-          }
-          requestAnimationFrame(frame);
-        });
-      }
-
-      async function runWrite() {
-        sizeBeam();
-        sceneWrite.classList.add("show");
-        if (reduced) {
-          ["lineBasmala", "lineNames"].forEach(function (id) {
-            const ink = document.getElementById(id).querySelector(".engrave-ink");
-            ink.classList.add("on", "done");
-            revealClip(ink, 1);
-          });
-          await wait(500);
-        } else {
-          await wait(350);
-          await engraveLine(document.getElementById("lineBasmala"), 3400);
-          if (skipped) return;
-          await wait(380);
-          await engraveLine(document.getElementById("lineNames"), 2800);
-          await wait(600);
-          stylus.classList.remove("on");
-        }
-        if (skipped) return;
-        sceneWrite.classList.add("done");
-        await wait(700);
-        sceneFolio.classList.add("show");
-      }
-
-      async function openEnvelope() {
-        if (envOpened || skipped) return;
-        envOpened = true;
+      async function enterInvite() {
+        if (entered) return;
+        entered = true;
         ensureMusic();
         softClick();
-        sceneEnv.classList.add("opening");
-        await wait(1400);
-        sceneEnv.classList.add("done");
-        await wait(600);
-        if (!skipped) runWrite();
-      }
-
-      envelope.addEventListener("click", openEnvelope);
-      envelope.addEventListener("keydown", function (e) {
-        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openEnvelope(); }
-      });
-
-      async function openFolio() {
-        if (folioOpened || skipped) return;
-        folioOpened = true;
-        folio.classList.add("opening");
-        sceneFolio.classList.add("zoom");
-        softClick();
-        await wait(280);
-        folio.classList.add("open");
-        burst(36);
-        await wait(750);
-        folio.classList.add("open-deep");
-        softClick();
-        await wait(850);
-        sceneFolio.classList.add("away");
+        sceneIntro.classList.add("parting");
+        burst(28);
+        await wait(1100);
+        sceneIntro.classList.add("done");
         sceneInvite.classList.add("show");
         document.body.classList.add("invite-mode");
         document.getElementById("skipBtn").style.display = "none";
         startAmbient();
         wireReveal();
-        await wait(120);
+        await wait(80);
         document.querySelectorAll(".reveal").forEach(function (el, i) {
-          setTimeout(function () { el.classList.add("in"); }, 60 + i * 70);
+          setTimeout(function () { el.classList.add("in"); }, 50 + i * 70);
         });
       }
 
-      folio.addEventListener("click", openFolio);
-      folio.addEventListener("keydown", function (e) {
-        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openFolio(); }
-      });
+      async function playOverture() {
+        if (reduced) {
+          sceneIntro.classList.add("act-line", "act-mono", "act-copy", "act-cta");
+          return;
+        }
+        await wait(280);
+        if (skipped) return;
+        sceneIntro.classList.add("act-line");
+        await wait(700);
+        if (skipped) return;
+        sceneIntro.classList.add("act-mono");
+        softClick();
+        await wait(750);
+        if (skipped) return;
+        sceneIntro.classList.add("act-copy");
+        await wait(900);
+        if (skipped) return;
+        sceneIntro.classList.add("act-cta");
+      }
 
+      enterBtn.addEventListener("click", function () { enterInvite(); });
       document.getElementById("skipBtn").addEventListener("click", async function () {
         skipped = true;
-        envOpened = true;
-        folioOpened = true;
         ensureMusic();
-        sceneEnv.classList.add("opening", "done");
-        sceneWrite.classList.add("show", "done");
-        ["lineBasmala", "lineNames"].forEach(function (id) {
-          const ink = document.getElementById(id).querySelector(".engrave-ink");
-          ink.classList.add("on", "done");
-          revealClip(ink, 1);
-        });
-        sceneFolio.classList.add("show", "away");
-        sceneInvite.classList.add("show");
-        document.body.classList.add("invite-mode");
-        document.getElementById("skipBtn").style.display = "none";
-        startAmbient();
-        wireReveal();
-        document.querySelectorAll(".reveal").forEach(function (el) { el.classList.add("in"); });
+        sceneIntro.classList.add("act-line", "act-mono", "act-copy", "act-cta");
+        await enterInvite();
       });
 
       /* countdown */
@@ -1979,7 +1584,6 @@
       let W = 0, H = 0;
       function resize() { W = canvas.width = innerWidth; H = canvas.height = innerHeight; }
       addEventListener("resize", resize); resize();
-      addEventListener("resize", sizeBeam);
 
       function burst(n) {
         for (let i = 0; i < n; i++) {
@@ -2027,10 +1631,7 @@
         })();
       }
 
-      /* auto-open envelope after brief pause if user doesn't click */
-      setTimeout(function () {
-        if (!envOpened && !skipped && !reduced) openEnvelope();
-      }, 2800);
+      playOverture();
     })();
   </script>
 </body>
