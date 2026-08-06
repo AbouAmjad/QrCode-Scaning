@@ -90,6 +90,11 @@ const ROLE_META = {
     title: "Viewer",
     summary: "Read-only timesheet · reports"
   },
+  safety: {
+    department: "Safety",
+    title: "Safety",
+    summary: "Damage reports · forms · read-only timesheet"
+  },
   logistics: {
     department: "Logistics",
     title: "Transport / Dispatch",
@@ -141,6 +146,11 @@ const DEFAULT_ROLE_PERMISSIONS = {
     "dashboard.view",
     "timesheet.attendance.read", "timesheet.reports.read", "timesheet.notifications.read"
   ],
+  safety: [
+    "dashboard.view", "tool.view", "worker.view",
+    "damage.create", "damage.review", "forms.view",
+    "timesheet.attendance.read", "timesheet.reports.read", "timesheet.notifications.read"
+  ],
   worker: [
     "timesheet.portal.self"
   ],
@@ -162,14 +172,15 @@ const ROLE_PERMISSIONS = {
   storekeeper: DEFAULT_ROLE_PERMISSIONS.storekeeper,
   supervisor: DEFAULT_ROLE_PERMISSIONS.supervisor,
   viewer: DEFAULT_ROLE_PERMISSIONS.viewer,
+  safety: DEFAULT_ROLE_PERMISSIONS.safety,
   logistics: DEFAULT_ROLE_PERMISSIONS.logistics,
   engineer: DEFAULT_ROLE_PERMISSIONS.engineer,
   qc: DEFAULT_ROLE_PERMISSIONS.qc,
   worker: DEFAULT_ROLE_PERMISSIONS.worker || ["timesheet.portal.self"]
 };
 
-const EDITABLE_ROLES = ["employee", "storekeeper", "supervisor", "viewer", "logistics", "engineer", "qc", "worker"];
-const ALL_ROLES = ["admin", "employee", "storekeeper", "supervisor", "viewer", "logistics", "engineer", "qc", "worker"];
+const EDITABLE_ROLES = ["employee", "storekeeper", "supervisor", "viewer", "safety", "logistics", "engineer", "qc", "worker"];
+const ALL_ROLES = ["admin", "employee", "storekeeper", "supervisor", "viewer", "safety", "logistics", "engineer", "qc", "worker"];
 
 /**
  * Upsert permission catalog.
@@ -215,7 +226,7 @@ async function seedPermissions(query, opts = {}) {
       }
     } else {
       // Additive: seed brand-new roles only when they have zero rows (never wipe existing matrices)
-      for (const role of ["storekeeper", "supervisor", "viewer"]) {
+      for (const role of ["storekeeper", "supervisor", "viewer", "safety"]) {
         const n = await query(`SELECT COUNT(*)::int AS n FROM role_permissions WHERE role = $1`, [role]);
         if (n.rows[0].n > 0) continue;
         const codes = DEFAULT_ROLE_PERMISSIONS[role] || [];
@@ -259,6 +270,8 @@ function normalizeRoleLocal(role) {
     engineer: "engineer",
     supervisor: "supervisor",
     viewer: "viewer",
+    safety: "safety",
+    saftey: "safety",
     admin: "admin",
     administrator: "admin",
     qc: "qc",
