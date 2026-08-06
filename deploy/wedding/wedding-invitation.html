@@ -721,7 +721,7 @@
       margin: -1rem auto 0;
       position: relative; z-index: 4;
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(4, 1fr);
       background: rgba(18,28,41,.72);
       border: 1px solid rgba(212,175,138,.18);
       backdrop-filter: blur(16px);
@@ -1068,6 +1068,43 @@
       margin-bottom: .5rem;
       color: var(--pearl);
     }
+    .attend-meter {
+      margin: 1rem 0 1.2rem;
+      padding: 1.15rem 1rem;
+      border: 1px solid rgba(212,175,138,.22);
+      background: rgba(212,175,138,.06);
+      text-align: center;
+    }
+    .attend-meter strong {
+      display: block;
+      font-family: var(--font-en);
+      font-size: clamp(2.2rem, 6vw, 3rem);
+      color: var(--champagne-soft);
+      font-weight: 500;
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+      margin-bottom: .45rem;
+    }
+    .attend-meter span {
+      display: block;
+      color: rgba(243,239,231,.65);
+      font-size: .92rem;
+    }
+    .attend-meter small {
+      display: block;
+      margin-top: .55rem;
+      color: rgba(212,175,138,.7);
+      font-size: .78rem;
+      letter-spacing: .04em;
+    }
+    .attend-meter.pulse strong {
+      animation: countPulse .55s var(--ease);
+    }
+    @keyframes countPulse {
+      0%{ transform: scale(1); }
+      40%{ transform: scale(1.08); }
+      100%{ transform: scale(1); }
+    }
     .rsvp-success { display: none; padding: 1.3rem 0; }
     .rsvp-success.on { display: block; }
     .rsvp-success h3 {
@@ -1322,6 +1359,7 @@
       <article><span>التاريخ</span><b>١٥ أكتوبر ٢٠٢٦</b></article>
       <article><span>الاستقبال</span><b>٦:٣٠ مساءً</b></article>
       <article><span>المكان</span><b>قاعة الياسمين</b></article>
+      <article><span>الحضور</span><b id="stripAccepted">0</b></article>
     </div>
 
     <div class="wrap">
@@ -1445,7 +1483,12 @@
           </div>
         </div>
         <aside class="rsvp-aside">
-          <h3>بانتظاركم</h3>
+          <h3>تأكيدات الحضور</h3>
+          <div class="attend-meter" id="attendMeter">
+            <strong id="acceptedCount">0</strong>
+            <span>شخص أكّدوا الحضور</span>
+            <small id="attendMeta">٠ تأكيد حتى الآن</small>
+          </div>
           <p>وجودكم أجمل ما في هذا اليوم. شاركونا اللحظة، ودعوا الباقي علينا.</p>
         </aside>
       </section>
@@ -1789,7 +1832,49 @@
         } catch (_) {}
       });
 
+      /* RSVP + attendance counter */
+      const API_URL = "/api";
       const statusLabels = { yes: "سأحضر", maybe: "ربما", no: "أعتذر" };
+
+      async function apiWedding(action, payload) {
+        const body = Object.assign({ action: action }, payload || {});
+        const res = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+          cache: "no-store",
+        });
+        return res.json();
+      }
+
+      function renderAttendance(stats) {
+        const people = Number(stats && stats.acceptedPeople) || 0;
+        const parties = Number(stats && stats.acceptedParties) || 0;
+        const elCount = document.getElementById("acceptedCount");
+        const elStrip = document.getElementById("stripAccepted");
+        const elMeta = document.getElementById("attendMeta");
+        const meter = document.getElementById("attendMeter");
+        if (elCount) elCount.textContent = String(people);
+        if (elStrip) elStrip.textContent = String(people);
+        if (elMeta) {
+          elMeta.textContent = parties
+            ? parties + " تأكيد · يشمل عدد المرافقين"
+            : "كن أول من يؤكّد الحضور";
+        }
+        if (meter) {
+          meter.classList.remove("pulse");
+          void meter.offsetWidth;
+          meter.classList.add("pulse");
+        }
+      }
+
+      async function refreshAttendance() {
+        try {
+          const data = await apiWedding("weddingRsvpStats");
+          if (data && data.ok) renderAttendance(data);
+        } catch (_) {}
+      }
+
       document.getElementById("statusPills").addEventListener("click", function (e) {
         const btn = e.target.closest("button[data-value]");
         if (!btn) return;
@@ -1798,10 +1883,31 @@
         });
         document.getElementById("rsvpStatus").value = btn.getAttribute("data-value");
       });
-      document.getElementById("rsvpForm").addEventListener("submit", function (e) {
+      document.getElementById("rsvpForm").addEventListener("submit", async function (e) {
         e.preventDefault();
         const name = document.getElementById("rsvpName").value.trim();
         const status = document.getElementById("rsvpStatus").value;
+        const guests = document.getElementById("rsvpGuests").value || "1";
+        if (!name) {
+          toast("يرجى كتابة الاسم");
+          return;
+        }
+        let data = null;
+        try {
+          data = await apiWedding("weddingRsvpSubmit", {
+            name: name,
+            status: status,
+            guests: guests,
+          });
+        } catch (_) {
+          toast("تعذّر إرسال التأكيد، حاول مجددًا");
+          return;
+        }
+        if (!data || data.error || !data.ok) {
+          toast("تعذّر حفظ التأكيد");
+          return;
+        }
+        renderAttendance(data);
         const msg = status === "yes"
           ? "استلمنا تأكيد حضوركم بسعادة" + (name ? "، " + name : "") + ". نراكم في ١٥ أكتوبر."
           : status === "maybe"
@@ -1820,6 +1926,9 @@
         const text = encodeURIComponent("تأكيد دعوة زفاف كريم و لمى%0Aالاسم: " + name + "%0Aالحالة: " + status + "%0Aالعدد: " + guests);
         window.open("https://wa.me/?text=" + text, "_blank");
       });
+
+      refreshAttendance();
+      setInterval(refreshAttendance, 20000);
 
       function toast(msg) {
         const t = document.getElementById("toast");
