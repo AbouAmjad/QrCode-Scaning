@@ -105,6 +105,11 @@ const ROLE_META = {
     title: "COO",
     summary: "Cross-operation oversight · projects · warehouse · timesheet"
   },
+  ceo: {
+    department: "Executive",
+    title: "CEO",
+    summary: "Executive visibility · reports · operations overview"
+  },
   project_manager: {
     department: "Projects",
     title: "Project Manager",
@@ -191,6 +196,14 @@ const DEFAULT_ROLE_PERMISSIONS = {
     "timesheet.deductions.manage", "timesheet.settings.manage", "timesheet.workers.manage",
     "timesheet.worker_accounts.manage", "timesheet.reports.read", "timesheet.notifications.read"
   ],
+  ceo: [
+    "dashboard.view", "dashboard.full",
+    "tool.view", "worker.view", "inventory.view",
+    "damage.review", "damage.approve",
+    "forms.view", "reports.warehouse", "reports.team", "reports.all", "logs.view",
+    "projects.view", "qc.view",
+    "timesheet.attendance.read", "timesheet.reports.read", "timesheet.notifications.read"
+  ],
   project_manager: [
     "dashboard.view", "projects.view", "projects.manage", "projects.dispatch", "projects.return",
     "tool.view", "tool.search", "worker.view", "forms.view", "reports.team",
@@ -225,6 +238,7 @@ const ROLE_PERMISSIONS = {
   safety: DEFAULT_ROLE_PERMISSIONS.safety,
   store_manager: DEFAULT_ROLE_PERMISSIONS.store_manager,
   coo: DEFAULT_ROLE_PERMISSIONS.coo,
+  ceo: DEFAULT_ROLE_PERMISSIONS.ceo,
   project_manager: DEFAULT_ROLE_PERMISSIONS.project_manager,
   project_engineer: DEFAULT_ROLE_PERMISSIONS.project_engineer,
   logistics: DEFAULT_ROLE_PERMISSIONS.logistics,
@@ -233,8 +247,8 @@ const ROLE_PERMISSIONS = {
   worker: DEFAULT_ROLE_PERMISSIONS.worker || ["timesheet.portal.self"]
 };
 
-const EDITABLE_ROLES = ["employee", "storekeeper", "supervisor", "viewer", "safety", "store_manager", "coo", "project_manager", "project_engineer", "logistics", "engineer", "qc", "worker"];
-const ALL_ROLES = ["admin", "employee", "storekeeper", "supervisor", "viewer", "safety", "store_manager", "coo", "project_manager", "project_engineer", "logistics", "engineer", "qc", "worker"];
+const EDITABLE_ROLES = ["employee", "storekeeper", "supervisor", "viewer", "safety", "store_manager", "coo", "ceo", "project_manager", "project_engineer", "logistics", "engineer", "qc", "worker"];
+const ALL_ROLES = ["admin", "employee", "storekeeper", "supervisor", "viewer", "safety", "store_manager", "coo", "ceo", "project_manager", "project_engineer", "logistics", "engineer", "qc", "worker"];
 
 /**
  * Upsert permission catalog.
@@ -280,7 +294,7 @@ async function seedPermissions(query, opts = {}) {
       }
     } else {
       // Additive: seed brand-new roles only when they have zero rows (never wipe existing matrices)
-      for (const role of ["storekeeper", "supervisor", "viewer", "safety", "store_manager", "coo", "project_manager", "project_engineer"]) {
+      for (const role of ["storekeeper", "supervisor", "viewer", "safety", "store_manager", "coo", "ceo", "project_manager", "project_engineer"]) {
         const n = await query(`SELECT COUNT(*)::int AS n FROM role_permissions WHERE role = $1`, [role]);
         if (n.rows[0].n > 0) continue;
         const codes = DEFAULT_ROLE_PERMISSIONS[role] || [];
@@ -321,6 +335,8 @@ function normalizeRoleLocal(role) {
     storemanager: "store_manager",
     coo: "coo",
     "chief operating officer": "coo",
+    ceo: "ceo",
+    "chief executive officer": "ceo",
     warehouse: "employee",
     staff: "employee",
     logistics: "logistics",
