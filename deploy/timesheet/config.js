@@ -33,11 +33,10 @@ const AppConfig = {
   ],
   DASHBOARD_REFRESH_MS: 30000,
   /** employee = Warehouse · logistics · engineer · qc · admin */
-  ROLES: ["employee", "storekeeper", "supervisor", "viewer", "safety", "store_manager", "coo", "ceo", "accountant", "hr", "project_manager", "project_engineer", "logistics", "engineer", "qc", "admin", "worker"],
-  ROLE_RANK: { worker: 0, viewer: 1, storekeeper: 1, employee: 1, safety: 2, store_manager: 2, coo: 2, project_manager: 2, project_engineer: 2, logistics: 2, engineer: 2, supervisor: 2, qc: 2, accountant: 2, hr: 2, ceo: 3, admin: 3 },
+  ROLES: ["employee", "supervisor", "viewer", "safety", "store_manager", "coo", "ceo", "accountant", "hr", "project_manager", "project_engineer", "logistics", "engineer", "qc", "admin", "worker"],
+  ROLE_RANK: { worker: 0, viewer: 1, employee: 1, safety: 2, store_manager: 2, coo: 2, project_manager: 2, project_engineer: 2, logistics: 2, engineer: 2, supervisor: 2, qc: 2, accountant: 2, hr: 2, ceo: 3, admin: 3 },
   ROLE_HOME: {
     employee: "index.html",
-    storekeeper: "timesheet-scan.html",
     supervisor: "timesheet-admin.html",
     viewer: "timesheet-admin.html",
     safety: "damage.html",
@@ -56,7 +55,6 @@ const AppConfig = {
   },
   ROLE_LABELS: {
     employee: "Warehouse · Store Keeper",
-    storekeeper: "Storekeeper",
     supervisor: "Supervisor",
     viewer: "Viewer",
     safety: "Safety",
@@ -109,7 +107,6 @@ const AppConfig = {
   /** Home page only — NOT used to unlock menu items */
   ROLE_PAGES: {
     employee: ["terminal"],
-    storekeeper: ["timesheetScan", "timesheetAdmin", "terminal", "profile"],
     supervisor: ["timesheetAdmin", "timesheetScan", "projects", "profile"],
     viewer: ["timesheetAdmin", "profile"],
     safety: ["damage", "forms", "dashboard", "timesheetAdmin", "profile"],
@@ -129,7 +126,6 @@ const AppConfig = {
   ROLE_OPTIONS: [
     { value: "admin", labelKey: "role_admin", descKey: "role_admin_desc" },
     { value: "supervisor", labelKey: "role_supervisor", descKey: "role_supervisor_desc" },
-    { value: "storekeeper", labelKey: "role_storekeeper", descKey: "role_storekeeper_desc" },
     { value: "employee", labelKey: "role_employee", descKey: "role_employee_desc" },
     { value: "viewer", labelKey: "role_viewer", descKey: "role_viewer_desc" },
     { value: "safety", labelKey: "role_safety", descKey: "role_safety_desc" },
@@ -225,8 +221,8 @@ function normalizeRole(role) {
     employee: "employee",
     "موظف": "employee",
     "أمين مخزن": "employee",
-    store_keeper: "storekeeper",
-    storekeeper: "storekeeper",
+    store_keeper: "employee",
+    storekeeper: "employee",
     store_manager: "store_manager",
     "store-manager": "store_manager",
     "store manager": "store_manager",

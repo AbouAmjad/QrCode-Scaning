@@ -72,13 +72,8 @@ const ROLE_META = {
   },
   employee: {
     department: "Warehouse",
-    title: "Store Keeper",
+    title: "Warehouse · Store Keeper",
     summary: "Stock · receiving · checkout · people · inventory · labels"
-  },
-  storekeeper: {
-    department: "Warehouse",
-    title: "Storekeeper",
-    summary: "Attendance scan · view timesheet · terminal basics"
   },
   supervisor: {
     department: "Operations",
@@ -166,10 +161,6 @@ const DEFAULT_ROLE_PERMISSIONS = {
     "forms.view", "reports.warehouse", "logs.view",
     "timesheet.scan", "timesheet.attendance.read"
   ],
-  storekeeper: [
-    "dashboard.view", "terminal.use", "tool.view", "tool.search",
-    "timesheet.scan", "timesheet.attendance.read", "timesheet.reports.read", "timesheet.notifications.read"
-  ],
   supervisor: [
     "dashboard.view", "projects.view", "worker.view",
     "timesheet.attendance.read", "timesheet.attendance.void", "timesheet.hours.adjust",
@@ -255,7 +246,6 @@ const DEFAULT_ROLE_PERMISSIONS = {
 const ROLE_PERMISSIONS = {
   admin: PERMISSIONS.map((p) => p.code),
   employee: DEFAULT_ROLE_PERMISSIONS.employee,
-  storekeeper: DEFAULT_ROLE_PERMISSIONS.storekeeper,
   supervisor: DEFAULT_ROLE_PERMISSIONS.supervisor,
   viewer: DEFAULT_ROLE_PERMISSIONS.viewer,
   safety: DEFAULT_ROLE_PERMISSIONS.safety,
@@ -272,8 +262,8 @@ const ROLE_PERMISSIONS = {
   worker: DEFAULT_ROLE_PERMISSIONS.worker || ["timesheet.portal.self"]
 };
 
-const EDITABLE_ROLES = ["employee", "storekeeper", "supervisor", "viewer", "safety", "store_manager", "coo", "ceo", "accountant", "hr", "project_manager", "project_engineer", "logistics", "engineer", "qc", "worker"];
-const ALL_ROLES = ["admin", "employee", "storekeeper", "supervisor", "viewer", "safety", "store_manager", "coo", "ceo", "accountant", "hr", "project_manager", "project_engineer", "logistics", "engineer", "qc", "worker"];
+const EDITABLE_ROLES = ["employee", "supervisor", "viewer", "safety", "store_manager", "coo", "ceo", "accountant", "hr", "project_manager", "project_engineer", "logistics", "engineer", "qc", "worker"];
+const ALL_ROLES = ["admin", "employee", "supervisor", "viewer", "safety", "store_manager", "coo", "ceo", "accountant", "hr", "project_manager", "project_engineer", "logistics", "engineer", "qc", "worker"];
 
 /**
  * Upsert permission catalog.
@@ -319,7 +309,7 @@ async function seedPermissions(query, opts = {}) {
       }
     } else {
       // Additive: seed brand-new roles only when they have zero rows (never wipe existing matrices)
-      for (const role of ["storekeeper", "supervisor", "viewer", "safety", "store_manager", "coo", "ceo", "accountant", "hr", "project_manager", "project_engineer"]) {
+      for (const role of ["supervisor", "viewer", "safety", "store_manager", "coo", "ceo", "accountant", "hr", "project_manager", "project_engineer"]) {
         const n = await query(`SELECT COUNT(*)::int AS n FROM role_permissions WHERE role = $1`, [role]);
         if (n.rows[0].n > 0) continue;
         const codes = DEFAULT_ROLE_PERMISSIONS[role] || [];
@@ -352,8 +342,8 @@ function normalizeRoleLocal(role) {
   const raw = String(role || "").trim().toLowerCase();
   const map = {
     employee: "employee",
-    store_keeper: "storekeeper",
-    storekeeper: "storekeeper",
+    store_keeper: "employee",
+    storekeeper: "employee",
     store_manager: "store_manager",
     "store-manager": "store_manager",
     "store manager": "store_manager",
