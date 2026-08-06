@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AbouAmjad Store System | Roles & Permissions</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="app.css?v=live">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f766e">
+  <script src="config.js?v=tsro2"></script>
+  <script src="i18n.js?v=tsro2"></script>
+  <script src="ui.js?v=live"></script>
+  <style>
+    .rp-layout {
+      display: grid;
+      grid-template-columns: minmax(280px, 340px) minmax(0, 1fr);
+      gap: 1rem;
+      align-items: start;
+    }
+    .rp-sticky { position: sticky; top: 88px; }
+    .rp-side-card, .rp-main-card {
+      border: 1px solid var(--tc-border);
+      border-radius: 20px;
+      background: var(--tc-surface);
+      box-shadow: var(--tc-shadow-sm);
+    }
+    .rp-side-card { padding: 1rem; }
+    .rp-main-card { padding: 1rem; }
+    .rp-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: .8rem;
+      margin-bottom: .85rem;
+    }
+    .rp-head h1, .rp-head h2 { margin: 0; font-size: 1.08rem; font-weight: 800; }
+    .rp-sub { color: var(--tc-muted); font-size: .9rem; margin: .2rem 0 0; }
+    .rp-role-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: .7rem;
+      margin-top: .85rem;
+    }
+    .rp-role-card {
+      text-align: start;
+      border: 1px solid var(--tc-border);
+      border-radius: 16px;
+      padding: .85rem .95rem;
+      background: var(--tc-surface);
+      cursor: pointer;
+      transition: transform .12s ease, border-color .12s ease, box-shadow .12s ease;
+    }
+    .rp-role-card:hover { transform: translateY(-1px); border-color: rgba(15,118,110,.38); }
+    .rp-role-card.active {
+      border-color: rgba(15,118,110,.58);
+      box-shadow: 0 0 0 3px rgba(15,118,110,.12);
+      background: linear-gradient(160deg, rgba(15,118,110,.09), var(--tc-surface) 62%);
+    }
+    .rp-role-dept {
+      font-size: .68rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      color: var(--tc-accent-2);
+      margin-bottom: .2rem;
+    }
+    .rp-role-title { font-size: .96rem; font-weight: 800; margin-bottom: .2rem; }
+    .rp-role-desc { font-size: .8rem; color: var(--tc-muted); line-height: 1.35; margin: 0; }
+    .rp-role-count {
+      display: inline-flex;
+      align-items: center;
+      gap: .35rem;
+      margin-top: .55rem;
+      font-size: .76rem;
+      color: var(--tc-muted);
+      background: var(--tc-surface-2, rgba(15,23,42,.04));
+      border: 1px solid var(--tc-border);
+      border-radius: 999px;
+      padding: .22rem .55rem;
+    }
+    .rp-kpis {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap: .7rem;
+      margin-top: .9rem;
+    }
+    .rp-kpi {
+      border: 1px solid var(--tc-border);
+      border-radius: 16px;
+      padding: .8rem;
+      background: var(--tc-surface);
+    }
+    .rp-kpi span { display: block; color: var(--tc-muted); font-size: .76rem; margin-bottom: .25rem; }
+    .rp-kpi strong { font-size: 1.1rem; }
+    .rp-toolbar {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto auto auto;
+      gap: .7rem;
+      align-items: center;
+      margin: 1rem 0 .85rem;
+    }
+    .rp-search {
+      min-width: 0;
+      border: 1px solid var(--tc-border);
+      border-radius: 12px;
+      padding: .72rem .9rem;
+      background: var(--tc-bg);
+      color: inherit;
+    }
+    .rp-help {
+      border: 1px dashed var(--tc-border);
+      border-radius: 16px;
+      padding: .85rem .95rem;
+      background: linear-gradient(180deg, rgba(15,118,110,.05), transparent);
+      color: var(--tc-muted);
+      font-size: .84rem;
+      line-height: 1.45;
+    }
+    .rp-modules {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+      gap: .9rem;
+    }
+    .rp-module {
+      border: 1px solid var(--tc-border);
+      border-radius: 18px;
+      background: var(--tc-surface);
+      overflow: hidden;
+    }
+    .rp-module-head {
+      display: flex;
+      justify-content: space-between;
+      gap: .75rem;
+      align-items: center;
+      padding: .85rem .95rem;
+      border-bottom: 1px solid var(--tc-border);
+      background: linear-gradient(180deg, rgba(15,118,110,.05), transparent);
+    }
+    .rp-module-title { font-weight: 800; }
+    .rp-module-meta { font-size: .78rem; color: var(--tc-muted); }
+    .rp-module-body { padding: .7rem; display: grid; gap: .55rem; }
+    .rp-perm {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: .7rem;
+      align-items: start;
+      border: 1px solid var(--tc-border);
+      border-radius: 14px;
+      padding: .7rem .75rem;
+      background: var(--tc-bg);
+    }
+    .rp-perm:hover { border-color: rgba(15,118,110,.28); }
+    .rp-perm input { margin-top: .25rem; accent-color: var(--tc-primary); transform: scale(1.12); }
+    .rp-perm-title { font-size: .9rem; font-weight: 700; margin: 0 0 .1rem; }
+    .rp-perm-code {
+      display: inline-block;
+      margin-top: .3rem;
+      font-size: .72rem;
+      color: var(--tc-muted);
+      background: rgba(148,163,184,.12);
+      border: 1px solid var(--tc-border);
+      border-radius: 999px;
+      padding: .18rem .48rem;
+    }
+    .rp-empty {
+      border: 1px dashed var(--tc-border);
+      border-radius: 16px;
+      padding: 1.1rem;
+      text-align: center;
+      color: var(--tc-muted);
+      background: var(--tc-bg);
+    }
+    @media (max-width: 960px) {
+      .rp-layout { grid-template-columns: 1fr; }
+      .rp-sticky { position: static; }
+      .rp-kpis { grid-template-columns: 1fr 1fr 1fr; }
+      .rp-toolbar { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 640px) {
+      .rp-kpis { grid-template-columns: 1fr; }
+      .rp-toolbar { grid-template-columns: 1fr; }
+      .rp-modules { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body class="tc-page">
+  <div class="tc-wrap">
+    <div class="tc-shell">
+      <div id="app-header"></div>
+      <div class="rp-layout">
+        <aside class="rp-sticky">
+          <section class="rp-side-card">
+            <div class="rp-head">
+              <div>
+                <h1 data-i18n="roles">Roles</h1>
+                <p class="rp-sub" data-i18n="rolesSub">Access by department</p>
+              </div>
+              <a class="tc-btn tc-btn-sm" href="settings.html"><i class="bi bi-arrow-left"></i> <span data-i18n="settings">Settings</span></a>
+            </div>
+            <div class="rp-help" data-i18n="rolesHint">
+              Pick a department role, then tick what that department can do. Admin always has full access.
+            </div>
+            <select id="roleSelect" class="tc-select" style="display:none"></select>
+            <div class="rp-role-grid" id="roleCards"></div>
+          </section>
+        </aside>
+
+        <main class="rp-main-card">
+          <div class="rp-head">
+            <div>
+              <h2 id="roleTitle">Permissions</h2>
+              <p class="rp-sub" id="roleDesc">Loading…</p>
+            </div>
+            <div class="d-flex gap-2 flex-wrap">
+              <button type="button" class="tc-btn" id="btnSelectVisible"><i class="bi bi-check2-square"></i> Select shown</button>
+              <button type="button" class="tc-btn" id="btnClearVisible"><i class="bi bi-square"></i> Clear shown</button>
+              <button type="button" class="tc-btn" id="btnReload"><i class="bi bi-arrow-clockwise"></i></button>
+              <button type="button" class="tc-btn tc-btn-primary" id="btnSave"><i class="bi bi-check2"></i> Save</button>
+            </div>
+          </div>
+
+          <div class="rp-kpis">
+            <div class="rp-kpi"><span>Modules</span><strong id="kpiModules">0</strong></div>
+            <div class="rp-kpi"><span>Selected permissions</span><strong id="kpiSelected">0</strong></div>
+            <div class="rp-kpi"><span>Total permissions</span><strong id="kpiTotal">0</strong></div>
+          </div>
+
+          <div class="rp-toolbar">
+            <input id="permSearch" class="rp-search" type="search" placeholder="Search module, permission, or code…">
+            <span class="rp-sub" id="filterMeta">Loading…</span>
+            <button type="button" class="tc-btn" id="btnExpandAll"><i class="bi bi-arrows-expand"></i> Expand all</button>
+            <button type="button" class="tc-btn" id="btnCollapseAll"><i class="bi bi-arrows-collapse"></i> Collapse all</button>
+          </div>
+
+          <div id="permModules" class="rp-modules">
+            <div class="rp-empty">Loading…</div>
+          </div>
+        </main>
+      </div>
+    </div>
+  </div>
+  <script>
+    let catalog = [];
+    let roleMaps = {};
+    let roleMeta = {};
+    let editableRoles = ["employee", "logistics", "engineer", "qc"];
+    let expandedModules = new Set();
+
+    document.addEventListener("DOMContentLoaded", () => TCUI.bootPage(() => {
+      TCUI.mountHeader("app-header", {
+        active: "settings",
+        titleKey: "roles",
+        subtitleKey: "rolesSub",
+        icon: "bi-shield-lock"
+      });
+      document.getElementById("btnSave").onclick = saveRole;
+      document.getElementById("btnReload").onclick = load;
+      document.getElementById("btnSelectVisible").onclick = () => toggleVisible(true);
+      document.getElementById("btnClearVisible").onclick = () => toggleVisible(false);
+      document.getElementById("btnExpandAll").onclick = () => { expandedModules = new Set(groupedModules().map((g) => g.module)); render(); };
+      document.getElementById("btnCollapseAll").onclick = () => { expandedModules = new Set(); render(); };
+      document.getElementById("roleSelect").onchange = () => { renderCards(); render(); };
+      document.getElementById("permSearch").addEventListener("input", render);
+      load();
+    }, { pageId: "roles" }));
+
+    function t(k) { return typeof TCI18N !== "undefined" ? TCI18N.t(k) : k; }
+
+    function currentRole() {
+      const sel = document.getElementById("roleSelect");
+      return sel.value || editableRoles[0] || "";
+    }
+
+    function selectedSet() {
+      return new Set(roleMaps[currentRole()] || []);
+    }
+
+    function groupedModules() {
+      const term = String(document.getElementById("permSearch")?.value || "").trim().toLowerCase();
+      const map = new Map();
+      for (const p of catalog) {
+        const module = p.module || "Other";
+        const blob = `${module} ${p.label || ""} ${p.code || ""}`.toLowerCase();
+        if (term && !blob.includes(term)) continue;
+        if (!map.has(module)) map.set(module, []);
+        map.get(module).push(p);
+      }
+      return [...map.entries()]
+        .map(([module, items]) => ({
+          module,
+          items: items.sort((a, b) => String(a.label || a.code).localeCompare(String(b.label || b.code)))
+        }))
+        .sort((a, b) => a.module.localeCompare(b.module));
+    }
+
+    function renderCards() {
+      const host = document.getElementById("roleCards");
+      const sel = document.getElementById("roleSelect");
+      const preferred = sel.value || editableRoles[0];
+      const optionOrder = Array.isArray(AppConfig?.ROLE_OPTIONS) ? AppConfig.ROLE_OPTIONS.map((x) => x.value) : [];
+      const orderedRoles = [...editableRoles].sort((a, b) => {
+        const ia = optionOrder.indexOf(a);
+        const ib = optionOrder.indexOf(b);
+        if (ia >= 0 && ib >= 0) return ia - ib;
+        if (ia >= 0) return -1;
+        if (ib >= 0) return 1;
+        return a.localeCompare(b);
+      });
+      sel.innerHTML = orderedRoles.map((r) =>
+        `<option value="${r}" ${r === preferred ? "selected" : ""}>${escHtml(t("role_" + r))}</option>`
+      ).join("");
+      if (!orderedRoles.includes(sel.value)) sel.value = orderedRoles[0] || "";
+      host.innerHTML = orderedRoles.map((r) => {
+        const meta = roleMeta[r] || {};
+        const count = (roleMaps[r] || []).length;
+        const active = sel.value === r ? "active" : "";
+        return `<button type="button" class="rp-role-card ${active}" data-role="${r}">
+          <div class="rp-role-dept">${escHtml(meta.department || t("role_" + r))}</div>
+          <div class="rp-role-title">${escHtml(t("role_" + r))}</div>
+          <p class="rp-role-desc">${escHtml(t("role_" + r + "_desc") || meta.summary || "")}</p>
+          <span class="rp-role-count"><i class="bi bi-key"></i> ${count} permission${count === 1 ? "" : "s"}</span>
+        </button>`;
+      }).join("");
+      host.querySelectorAll(".rp-role-card").forEach((btn) => {
+        btn.onclick = () => {
+          sel.value = btn.getAttribute("data-role");
+          renderCards();
+          render();
+        };
+      });
+    }
+
+    async function load() {
+      try {
+        const data = await apiGet({ action: "listPermissions" });
+        catalog = (data && data.items) || [];
+        roleMaps = (data && data.roles) || {};
+        roleMeta = (data && data.roleMeta) || {};
+        if (Array.isArray(data.editableRoles) && data.editableRoles.length) {
+          editableRoles = data.editableRoles.filter((r) => r !== "admin");
+        }
+        expandedModules = new Set(groupedModules().slice(0, 4).map((g) => g.module));
+        renderCards();
+        render();
+      } catch (e) {
+        document.getElementById("permModules").innerHTML =
+          `<div class="rp-empty text-danger">${escHtml(e.message || "Error")}</div>`;
+      }
+    }
+
+    function render() {
+      const role = currentRole();
+      const selected = selectedSet();
+      const meta = roleMeta[role] || {};
+      const groups = groupedModules();
+      document.getElementById("roleTitle").textContent = t("role_" + role) || role || "Permissions";
+      document.getElementById("roleDesc").textContent = t("role_" + role + "_desc") || meta.summary || "";
+      document.getElementById("kpiModules").textContent = String(groups.length);
+      document.getElementById("kpiSelected").textContent = String(selected.size);
+      document.getElementById("kpiTotal").textContent = String(catalog.length);
+      document.getElementById("filterMeta").textContent = groups.length
+        ? `${groups.reduce((n, g) => n + g.items.length, 0)} visible permission${groups.reduce((n, g) => n + g.items.length, 0) === 1 ? "" : "s"}`
+        : "No matching permissions";
+
+      const host = document.getElementById("permModules");
+      if (!catalog.length) {
+        host.innerHTML = `<div class="rp-empty">No permissions</div>`;
+        return;
+      }
+      if (!groups.length) {
+        host.innerHTML = `<div class="rp-empty">No matching permissions</div>`;
+        return;
+      }
+
+      host.innerHTML = groups.map((group) => {
+        const total = group.items.length;
+        const checked = group.items.filter((p) => selected.has(p.code)).length;
+        const open = expandedModules.has(group.module);
+        return `<section class="rp-module" data-module="${escHtml(group.module)}">
+          <div class="rp-module-head">
+            <div>
+              <div class="rp-module-title">${escHtml(group.module)}</div>
+              <div class="rp-module-meta">${checked}/${total} selected</div>
+            </div>
+            <div class="d-flex gap-2 flex-wrap">
+              <button type="button" class="tc-btn tc-btn-sm" data-module-toggle="${escHtml(group.module)}">
+                <i class="bi ${open ? "bi-chevron-up" : "bi-chevron-down"}"></i>
+              </button>
+              <button type="button" class="tc-btn tc-btn-sm" data-module-all="${escHtml(group.module)}">All</button>
+              <button type="button" class="tc-btn tc-btn-sm" data-module-none="${escHtml(group.module)}">None</button>
+            </div>
+          </div>
+          <div class="rp-module-body" style="${open ? "" : "display:none"}">
+            ${group.items.map((p) => {
+              const id = `perm_${slug(group.module)}_${slug(p.code)}`;
+              return `<label class="rp-perm" for="${id}">
+                <input id="${id}" type="checkbox" data-code="${escHtml(p.code)}" ${selected.has(p.code) ? "checked" : ""}>
+                <div>
+                  <div class="rp-perm-title">${escHtml(p.label || p.code)}</div>
+                  <div class="rp-sub">${escHtml(group.module)}</div>
+                  <span class="rp-perm-code">${escHtml(p.code)}</span>
+                </div>
+              </label>`;
+            }).join("")}
+          </div>
+        </section>`;
+      }).join("");
+
+      bindPermissionUi();
+    }
+
+    function bindPermissionUi() {
+      document.querySelectorAll("input[data-code]").forEach((el) => {
+        el.onchange = syncSelectionsFromUi;
+      });
+      document.querySelectorAll("[data-module-toggle]").forEach((btn) => {
+        btn.onclick = () => {
+          const m = btn.getAttribute("data-module-toggle");
+          if (expandedModules.has(m)) expandedModules.delete(m);
+          else expandedModules.add(m);
+          render();
+        };
+      });
+      document.querySelectorAll("[data-module-all]").forEach((btn) => {
+        btn.onclick = () => setModuleState(btn.getAttribute("data-module-all"), true);
+      });
+      document.querySelectorAll("[data-module-none]").forEach((btn) => {
+        btn.onclick = () => setModuleState(btn.getAttribute("data-module-none"), false);
+      });
+    }
+
+    function syncSelectionsFromUi() {
+      const role = currentRole();
+      roleMaps[role] = [...document.querySelectorAll("input[data-code]:checked")].map((el) => el.getAttribute("data-code"));
+      document.getElementById("kpiSelected").textContent = String(roleMaps[role].length);
+      renderCards();
+      for (const el of document.querySelectorAll(".rp-module")) {
+        const mod = el.getAttribute("data-module");
+        const codes = [...el.querySelectorAll("input[data-code]")].map((i) => i.getAttribute("data-code"));
+        const checked = codes.filter((c) => roleMaps[role].includes(c)).length;
+        const meta = el.querySelector(".rp-module-meta");
+        if (meta) meta.textContent = `${checked}/${codes.length} selected`;
+      }
+    }
+
+    function setModuleState(moduleName, on) {
+      const section = [...document.querySelectorAll(".rp-module")].find((el) => el.getAttribute("data-module") === moduleName);
+      if (!section) return;
+      section.querySelectorAll("input[data-code]").forEach((el) => { el.checked = on; });
+      syncSelectionsFromUi();
+    }
+
+    function toggleVisible(on) {
+      document.querySelectorAll("#permModules input[data-code]").forEach((el) => { el.checked = on; });
+      syncSelectionsFromUi();
+    }
+
+    async function saveRole() {
+      const role = currentRole();
+      const codes = [...document.querySelectorAll("input[data-code]:checked")].map((el) => el.getAttribute("data-code"));
+      try {
+        const res = await apiPostPlain({ action: "setRolePermissions", role, permissions: codes });
+        if (!res || res.success === false) throw new Error((res && res.error) || "Failed");
+        roleMaps[role] = codes;
+        renderCards();
+        TCUI.toast((t("permissionsSaved") || "Saved") + " · " + t("role_" + role), "ok");
+      } catch (e) {
+        TCUI.toast(e.message || "Error", "err");
+      }
+    }
+
+    function slug(s) {
+      return String(s || "").toLowerCase().replace(/[^a-z0-9]+/g, "_");
+    }
+
+    function escHtml(s) {
+      return String(s == null ? "" : s)
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+  </script>
+</body>
+</html>
