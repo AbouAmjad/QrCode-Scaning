@@ -127,41 +127,55 @@
     body.cinematic .letterbox .top,
     body.cinematic .letterbox .bot { height: min(8vh, 64px); }
 
-    /* ═════ SCENE PEN — realistic calligraphy ═════ */
+    /* ═════ SCENE PEN — hand calligraphy ═════ */
     #scene-pen {
       position: fixed; inset: 0; z-index: 40;
-      background: #f7f6f3;
+      background:
+        radial-gradient(ellipse 80% 60% at 50% 42%, #ffffff 0%, #f3f1ec 48%, #e4e0d8 100%);
       display: grid; place-items: center;
       transition: opacity 1.5s var(--ease), visibility 1.5s, filter 1.5s;
     }
     #scene-pen.done { opacity: 0; visibility: hidden; pointer-events: none; filter: blur(8px); }
 
     .pen-wrap {
-      width: min(760px, calc(100vw - 1.5rem));
+      width: min(780px, calc(100vw - 1.25rem));
       position: relative;
-      min-height: min(52vh, 380px);
-      padding: clamp(2rem, 5vw, 3rem) clamp(1.2rem, 4vw, 2.4rem);
-      background: #fff;
-      border: 1px solid var(--line);
-      box-shadow: 0 24px 60px -40px rgba(0,0,0,.28);
+      min-height: min(54vh, 400px);
+      padding: clamp(2.4rem, 6vw, 3.4rem) clamp(1.3rem, 4.5vw, 2.8rem);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.88), rgba(250,249,246,.78)),
+        url("assets/wedding/demo-paper.jpg") center/cover;
+      border: 1px solid rgba(18,18,18,.08);
+      box-shadow:
+        0 30px 70px -36px rgba(0,0,0,.38),
+        0 1px 0 rgba(255,255,255,.7) inset;
       text-align: center;
       overflow: hidden;
+      border-radius: 4px;
     }
     .pen-wrap::before {
       content: "";
-      position: absolute; inset: 12px;
+      position: absolute; inset: 14px;
       border: 1px solid rgba(18,18,18,.05);
       pointer-events: none;
     }
+    .pen-wrap::after {
+      content: "";
+      position: absolute;
+      left: 8%; right: 8%; bottom: 10px; height: 28px;
+      background: radial-gradient(ellipse at center, rgba(40,28,12,.1), transparent 70%);
+      filter: blur(8px);
+      pointer-events: none;
+    }
     .pen-glow {
-      position: absolute; inset: 20% 12%;
-      background: radial-gradient(circle, rgba(139,115,85,.12), transparent 70%);
+      position: absolute; inset: 18% 10%;
+      background: radial-gradient(circle, rgba(139,115,85,.14), transparent 70%);
       filter: blur(28px); opacity: 0; pointer-events: none;
       animation: glowPulse 4s ease-in-out infinite;
     }
     @keyframes glowPulse {
-      0%,100%{opacity:.18; transform:scale(.96)}
-      50%{opacity:.55; transform:scale(1.04)}
+      0%,100%{opacity:.16; transform:scale(.96)}
+      50%{opacity:.5; transform:scale(1.04)}
     }
 
     #inkCanvas {
@@ -172,8 +186,8 @@
 
     .write-line {
       position: relative;
-      z-index: 1;
-      margin: 0 auto 1.5rem;
+      z-index: 3;
+      margin: 0 auto 1.55rem;
       max-width: 94%;
       min-height: 1.5em;
     }
@@ -181,7 +195,7 @@
     .write-ghost, .write-ink {
       display: block;
       font-family: var(--font-ar);
-      line-height: 1.7;
+      line-height: 1.75;
     }
     .write-ghost {
       visibility: hidden;
@@ -192,13 +206,19 @@
       inset: 0;
       opacity: 0;
       color: #1a140c;
+      letter-spacing: 0.01em;
       will-change: clip-path;
       clip-path: inset(0 0 0 100%);
-      text-shadow: 0 0.4px 0 rgba(255,255,255,.2);
+      -webkit-clip-path: inset(0 0 0 100%);
     }
     .write-ink.is-ready { opacity: 1; }
     .write-ink.is-dry {
       clip-path: inset(0 0 0 0) !important;
+      -webkit-clip-path: inset(0 0 0 0) !important;
+      filter: none;
+    }
+    .write-ink.is-wet {
+      filter: blur(0.2px);
     }
     #basmala .write-ghost,
     #basmala .write-ink {
@@ -224,48 +244,59 @@
 
     .pen {
       position: absolute;
-      width: clamp(110px, 22vw, 168px);
+      width: clamp(118px, 24vw, 176px);
       height: auto;
-      z-index: 5;
+      z-index: 6;
       opacity: 0;
       pointer-events: none;
       transform-origin: 18% 88%;
-      filter: drop-shadow(10px 14px 16px rgba(40,28,12,.28));
-      transition: opacity .45s ease;
-      will-change: transform, left, top;
+      filter: drop-shadow(12px 18px 16px rgba(40,28,12,.32));
+      transition: opacity .4s ease;
+      will-change: transform, left, top, filter;
     }
     .pen.on { opacity: 1; }
+    .pen.pressing {
+      filter: drop-shadow(8px 10px 10px rgba(40,28,12,.38));
+    }
     .pen img {
       width: 100%; height: auto; display: block;
       transform: rotate(0deg);
     }
     .pen-tip-glow {
       position: absolute;
-      width: 14px; height: 14px;
+      width: 18px; height: 18px;
       border-radius: 50%;
-      left: 14%; top: 86%;
+      left: 15%; top: 87%;
       transform: translate(-50%, -50%);
-      background: radial-gradient(circle, rgba(30,20,10,.35), transparent 70%);
+      background: radial-gradient(circle, rgba(40,24,10,.4), transparent 70%);
       filter: blur(2px);
       opacity: 0;
       pointer-events: none;
     }
-    .pen.on .pen-tip-glow { opacity: 1; }
+    .pen.on .pen-tip-glow { opacity: .85; }
+    .pen.pressing .pen-tip-glow {
+      opacity: 1;
+      width: 22px; height: 22px;
+      background: radial-gradient(circle, rgba(20,12,6,.5), transparent 72%);
+    }
 
     .pen-shadow {
       position: absolute;
       z-index: 1;
-      width: clamp(70px, 14vw, 110px);
-      height: 18px;
+      width: clamp(78px, 15vw, 120px);
+      height: 20px;
       border-radius: 50%;
-      background: rgba(40, 28, 12, 0.16);
-      filter: blur(8px);
+      background: rgba(40, 28, 12, 0.18);
+      filter: blur(9px);
       opacity: 0;
       pointer-events: none;
-      transition: opacity .4s;
+      transition: opacity .35s;
     }
-    .pen.on + .pen-shadow,
     .pen-shadow.on { opacity: 1; }
+    .pen-shadow.pressing {
+      opacity: .85;
+      transform: scaleX(1.08) scaleY(0.85);
+    }
 
     /* ═════ SCENE BOOK — luxury 3D ═════ */
     #scene-book {
@@ -1190,180 +1221,389 @@
 
       /* Soft nib scratch while writing */
       let scratchCtx = null;
-      function playNibScratch(duration) {
+      let scratchAlive = null;
+      function startNibScratch() {
         try {
           scratchCtx = scratchCtx || new (window.AudioContext || window.webkitAudioContext)();
+          if (scratchAlive) return;
           const ctx = scratchCtx;
           const now = ctx.currentTime;
-          const len = Math.max(0.08, duration || 0.12);
-          const buf = ctx.createBuffer(1, ctx.sampleRate * len, ctx.sampleRate);
+          const buf = ctx.createBuffer(1, ctx.sampleRate * 1.2, ctx.sampleRate);
           const data = buf.getChannelData(0);
           for (let i = 0; i < data.length; i++) {
-            const t = i / data.length;
-            data[i] = (Math.random() * 2 - 1) * Math.pow(1 - t, 1.8) * 0.045;
+            data[i] = (Math.random() * 2 - 1) * 0.035;
           }
           const src = ctx.createBufferSource();
           src.buffer = buf;
+          src.loop = true;
           const bp = ctx.createBiquadFilter();
-          bp.type = "highpass"; bp.frequency.value = 1800;
+          bp.type = "bandpass"; bp.frequency.value = 2200; bp.Q.value = 0.7;
           const g = ctx.createGain();
-          g.gain.value = 0.55;
+          g.gain.setValueAtTime(0.001, now);
+          g.gain.exponentialRampToValueAtTime(0.085, now + 0.05);
           src.connect(bp); bp.connect(g); g.connect(ctx.destination);
           src.start();
+          scratchAlive = { src: src, gain: g, ctx: ctx };
         } catch (_) {}
       }
+      function stopNibScratch() {
+        if (!scratchAlive) return;
+        try {
+          const now = scratchAlive.ctx.currentTime;
+          scratchAlive.gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+          const alive = scratchAlive;
+          scratchAlive = null;
+          setTimeout(function () {
+            try { alive.src.stop(); } catch (_) {}
+          }, 120);
+        } catch (_) { scratchAlive = null; }
+      }
 
-      function tipPoint(progress, lineEl) {
-        const wrap = penWrap.getBoundingClientRect();
-        const rect = lineEl.getBoundingClientRect();
-        /* RTL: start at right (p=0), move left (p=1) */
-        const x = (rect.left - wrap.left) + rect.width * (1 - progress);
-        const y = (rect.top - wrap.top) + rect.height * 0.62;
-        const tremorX = (Math.sin(progress * 40) * 0.6) + (Math.random() - 0.5) * 0.9;
-        const tremorY = (Math.cos(progress * 33) * 0.5) + (Math.random() - 0.5) * 0.7;
-        return { x: x + tremorX, y: y + tremorY };
+      function easeInOutCubic(t) {
+        return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+      }
+      function easeOutQuad(t) { return 1 - (1 - t) * (1 - t); }
+      function lerp(a, b, t) { return a + (b - a) * t; }
+
+      function wrapRect() {
+        return penWrap.getBoundingClientRect();
+      }
+
+      function revealClip(inkEl, progress) {
+        const left = Math.max(0, Math.min(100, (1 - progress) * 100));
+        inkEl.style.clipPath = "inset(0 0 0 " + left + "%)";
+        inkEl.style.webkitClipPath = "inset(0 0 0 " + left + "%)";
+      }
+
+      function revealToWorldX(inkEl, worldX) {
+        const wrap = wrapRect();
+        const inkRect = inkEl.getBoundingClientRect();
+        const inkLeft = inkRect.left - wrap.left;
+        const inkWidth = Math.max(1, inkRect.width);
+        const leftPx = Math.max(0, Math.min(inkWidth, worldX - inkLeft - 2));
+        const leftPct = (leftPx / inkWidth) * 100;
+        inkEl.style.clipPath = "inset(0 0 0 " + leftPct + "%)";
+        inkEl.style.webkitClipPath = "inset(0 0 0 " + leftPct + "%)";
+      }
+
+      function charBoxes(inkEl) {
+        const wrap = wrapRect();
+        const boxes = [];
+        function walk(node) {
+          if (node.nodeType === 3) {
+            const text = node.textContent || "";
+            for (let i = 0; i < text.length; i++) {
+              const ch = text[i];
+              const range = document.createRange();
+              range.setStart(node, i);
+              range.setEnd(node, i + 1);
+              const r = range.getBoundingClientRect();
+              if (!r.width && !r.height) continue;
+              boxes.push({
+                ch: ch,
+                isSpace: !ch.trim(),
+                x: r.left - wrap.left,
+                y: r.top - wrap.top,
+                w: Math.max(r.width, 4),
+                h: Math.max(r.height, 10),
+                cx: r.left - wrap.left + r.width * 0.5,
+                cy: r.top - wrap.top + r.height * 0.58
+              });
+            }
+          } else if (node.nodeType === 1) {
+            Array.from(node.childNodes).forEach(walk);
+          }
+        }
+        walk(inkEl);
+        return boxes;
+      }
+
+      function showAllInk(lineEl) {
+        const ink = lineEl.querySelector(".write-ink");
+        ink.classList.add("is-ready", "is-dry");
+        ink.classList.remove("is-wet");
+        revealClip(ink, 1);
       }
 
       let lastInk = null;
-      function movePenTo(pt, writing) {
+      let penAngle = -6;
+
+      function placePen(pt, opts) {
+        opts = opts || {};
+        const writing = !!opts.writing;
+        const pressure = opts.pressure == null ? (writing ? 0.7 : 0) : opts.pressure;
         const penW = pen.offsetWidth || 140;
         const penH = pen.offsetHeight || 140;
-        /* tip sits near bottom-left of the pen image */
-        const tipOffsetX = penW * 0.16;
-        const tipOffsetY = penH * 0.86;
-        const angle = writing ? (-38 + Math.sin(pt.x * 0.04) * 3) : -32;
+        const tipOffsetX = penW * 0.155;
+        const tipOffsetY = penH * 0.875;
+        const wrist = writing
+          ? (-7 + Math.sin((pt.x + pt.y) * 0.035) * 5 + (1 - pressure) * 4)
+          : -4;
+        penAngle = lerp(penAngle, wrist, 0.35);
         pen.style.left = (pt.x - tipOffsetX) + "px";
         pen.style.top = (pt.y - tipOffsetY) + "px";
-        pen.style.transform = "rotate(" + angle + "deg)";
-        penShadow.style.left = (pt.x - tipOffsetX * 0.35) + "px";
-        penShadow.style.top = (pt.y + 8) + "px";
+        pen.style.transform = "rotate(" + penAngle + "deg) translateY(" + (writing ? pressure * 1.5 : -8) + "px)";
+        pen.classList.toggle("pressing", writing && pressure > 0.35);
+        penShadow.style.left = (pt.x - tipOffsetX * 0.4) + "px";
+        penShadow.style.top = (pt.y + 10) + "px";
         penShadow.classList.add("on");
+        penShadow.classList.toggle("pressing", writing && pressure > 0.35);
 
         if (writing && lastInk) {
-          inkCtx.strokeStyle = "rgba(26, 20, 12, 0.14)";
-          inkCtx.lineWidth = 1.15 + Math.random() * 0.8;
-          inkCtx.lineCap = "round";
-          inkCtx.lineJoin = "round";
-          inkCtx.beginPath();
-          inkCtx.moveTo(lastInk.x, lastInk.y);
-          const mx = (lastInk.x + pt.x) / 2 + (Math.random() - 0.5) * 1.2;
-          const my = (lastInk.y + pt.y) / 2 + (Math.random() - 0.5) * 1.1;
-          inkCtx.quadraticCurveTo(mx, my, pt.x, pt.y);
-          inkCtx.stroke();
-
-          /* tiny wet blot */
-          if (Math.random() > 0.82) {
-            inkCtx.fillStyle = "rgba(26,20,12," + (0.08 + Math.random() * 0.1) + ")";
+          const dist = Math.hypot(pt.x - lastInk.x, pt.y - lastInk.y);
+          if (dist > 0.2) {
+            inkCtx.save();
+            inkCtx.strokeStyle = "rgba(22, 16, 10, " + (0.10 + pressure * 0.16) + ")";
+            inkCtx.lineWidth = 0.9 + pressure * 1.6 + Math.random() * 0.5;
+            inkCtx.lineCap = "round";
+            inkCtx.lineJoin = "round";
             inkCtx.beginPath();
-            inkCtx.ellipse(pt.x, pt.y + 0.5, 0.7 + Math.random(), 0.45 + Math.random() * 0.4, 0, 0, Math.PI * 2);
-            inkCtx.fill();
+            inkCtx.moveTo(lastInk.x, lastInk.y);
+            const mx = (lastInk.x + pt.x) / 2 + (Math.random() - 0.5) * 1.8;
+            const my = (lastInk.y + pt.y) / 2 + (Math.random() - 0.5) * 1.6;
+            inkCtx.quadraticCurveTo(mx, my, pt.x, pt.y);
+            inkCtx.stroke();
+
+            if (pressure > 0.55 && Math.random() > 0.78) {
+              inkCtx.fillStyle = "rgba(22,16,10," + (0.06 + Math.random() * 0.1) + ")";
+              inkCtx.beginPath();
+              inkCtx.ellipse(
+                pt.x + (Math.random() - 0.5),
+                pt.y + 0.6,
+                0.6 + Math.random() * 0.9,
+                0.35 + Math.random() * 0.45,
+                Math.random() * Math.PI,
+                0, Math.PI * 2
+              );
+              inkCtx.fill();
+            }
+            inkCtx.restore();
           }
         }
         lastInk = { x: pt.x, y: pt.y };
       }
 
-      function liftPen() {
-        lastInk = null;
-        pen.style.transform = "rotate(-28deg) translateY(-10px)";
-      }
-
-      function revealClip(inkEl, progress) {
-        /* RTL reveal: clip left side, show from right */
-        const left = Math.max(0, (1 - progress) * 100);
-        inkEl.style.clipPath = "inset(0 0 0 " + left + "%)";
-        inkEl.style.webkitClipPath = "inset(0 0 0 " + left + "%)";
-      }
-
-      function writeLine(lineEl, durationMs) {
+      function animateTip(from, to, duration, writingFn) {
         return new Promise(function (resolve) {
-          const inkEl = lineEl.querySelector(".write-ink");
-          inkEl.classList.add("is-ready");
-          pen.classList.add("on");
-          penShadow.classList.add("on");
-          lastInk = null;
-
           const start = performance.now();
-          let lastSound = 0;
+          function frame(now) {
+            if (skipped) { resolve(); return; }
+            const t = Math.min(1, (now - start) / duration);
+            const p = easeInOutCubic(t);
+            const pt = {
+              x: lerp(from.x, to.x, p),
+              y: lerp(from.y, to.y, p)
+            };
+            const info = writingFn ? writingFn(p, pt) : { writing: false, pressure: 0 };
+            placePen(pt, info);
+            if (t < 1) requestAnimationFrame(frame);
+            else resolve();
+          }
+          requestAnimationFrame(frame);
+        });
+      }
+
+      function samplePath(points, t) {
+        if (points.length === 1) return points[0];
+        const lens = [0];
+        let total = 0;
+        for (let i = 1; i < points.length; i++) {
+          total += Math.hypot(points[i].x - points[i - 1].x, points[i].y - points[i - 1].y);
+          lens.push(total);
+        }
+        if (total < 0.001) return points[points.length - 1];
+        const target = t * total;
+        for (let i = 1; i < lens.length; i++) {
+          if (target <= lens[i]) {
+            const segT = (target - lens[i - 1]) / Math.max(0.001, lens[i] - lens[i - 1]);
+            return {
+              x: lerp(points[i - 1].x, points[i].x, segT),
+              y: lerp(points[i - 1].y, points[i].y, segT)
+            };
+          }
+        }
+        return points[points.length - 1];
+      }
+
+      function boxStrokePath(box) {
+        const jitter = function (n) { return (Math.random() - 0.5) * n; };
+        const x0 = box.x, y0 = box.y, w = box.w, h = box.h;
+        return [
+          { x: x0 + w * 0.78 + jitter(1.2), y: y0 + h * 0.20 + jitter(1) },
+          { x: x0 + w * 0.58 + jitter(1.4), y: y0 + h * 0.38 + jitter(1.2) },
+          { x: x0 + w * 0.36 + jitter(1.2), y: y0 + h * 0.60 + jitter(1.1) },
+          { x: x0 + w * 0.24 + jitter(1), y: y0 + h * 0.78 + jitter(1) },
+          { x: x0 + w * 0.42 + jitter(1.2), y: y0 + h * 0.64 + jitter(1) }
+        ];
+      }
+
+      function writeChar(box, inkEl, revealState) {
+        return new Promise(function (resolve) {
+          if (skipped) { resolve(null); return; }
+          const path = boxStrokePath(box);
+          const duration = 150 + Math.min(240, box.w * 4.5) + Math.random() * 80;
+          const start = performance.now();
+          let endPt = path[0];
+          lastInk = null;
+          startNibScratch();
+          inkEl.classList.add("is-wet");
 
           function frame(now) {
             if (skipped) {
-              revealClip(inkEl, 1);
-              inkEl.classList.add("is-dry");
-              pen.classList.remove("on");
-              penShadow.classList.remove("on");
-              resolve();
+              stopNibScratch();
+              resolve(endPt);
               return;
             }
-            const t = Math.min(1, (now - start) / durationMs);
-            /* ease: slow start, steady middle, soft end */
-            const p = t < 0.5
-              ? 2 * t * t
-              : 1 - Math.pow(-2 * t + 2, 2) / 2;
+            const t = Math.min(1, (now - start) / duration);
+            const hand = easeOutQuad(t);
+            const wobble = Math.sin(t * Math.PI * 3.2) * 0.04;
+            const p = Math.min(1, Math.max(0, hand + wobble * (1 - t)));
+            const pt = samplePath(path, p);
+            pt.x += Math.sin(now / 28) * 0.55 + (Math.random() - 0.5) * 0.45;
+            pt.y += Math.cos(now / 33) * 0.45 + (Math.random() - 0.5) * 0.35;
+            endPt = pt;
 
-            /* pause slightly on spaces (word lifts) */
-            const text = inkEl.textContent || "";
-            const idx = Math.min(text.length - 1, Math.floor(p * text.length));
-            const ch = text[idx] || "";
-            const isSpace = ch === " " || ch === "\u00A0";
+            const pressure = 0.35 + Math.sin(Math.min(1, t * Math.PI)) * 0.55;
+            placePen(pt, { writing: true, pressure: pressure });
 
-            revealClip(inkEl, p);
-            const pt = tipPoint(p, lineEl);
-            if (isSpace) {
-              liftPen();
+            /* peel the letter open from its right edge as the nib travels */
+            const localReveal = box.x + box.w * (1 - easeOutQuad(t));
+            revealState.x = Math.min(revealState.x, localReveal);
+            revealToWorldX(inkEl, revealState.x);
+
+            if (t < 1) requestAnimationFrame(frame);
+            else {
+              stopNibScratch();
+              revealState.x = Math.min(revealState.x, box.x);
+              revealToWorldX(inkEl, revealState.x);
               lastInk = null;
-            } else {
-              movePenTo(pt, true);
-              if (now - lastSound > 70) {
-                playNibScratch(0.07);
-                lastSound = now;
-              }
-            }
-
-            if (t < 1) {
-              requestAnimationFrame(frame);
-            } else {
-              revealClip(inkEl, 1);
-              inkEl.classList.add("is-dry");
-              liftPen();
-              setTimeout(function () {
-                pen.classList.remove("on");
-                penShadow.classList.remove("on");
-                resolve();
-              }, 280);
+              resolve(endPt);
             }
           }
-          /* enter from above the right side */
-          const enter = tipPoint(0, lineEl);
-          pen.classList.add("on");
-          movePenTo({ x: enter.x + 24, y: enter.y - 36 }, false);
-          requestAnimationFrame(function () {
-            requestAnimationFrame(frame);
-          });
+          requestAnimationFrame(frame);
         });
+      }
+
+      async function travelPen(from, to, duration, lift) {
+        const mid = {
+          x: (from.x + to.x) / 2 + (Math.random() - 0.5) * 8,
+          y: Math.min(from.y, to.y) - (lift || 28) - Math.random() * 10
+        };
+        lastInk = null;
+        await animateTip(from, mid, duration * 0.45, function () {
+          return { writing: false, pressure: 0 };
+        });
+        if (skipped) return;
+        await animateTip(mid, to, duration * 0.55, function () {
+          return { writing: false, pressure: 0 };
+        });
+      }
+
+      async function writeLine(lineEl) {
+        const ink = lineEl.querySelector(".write-ink");
+        ink.classList.add("is-ready");
+        ink.classList.remove("is-dry");
+        revealClip(ink, 0);
+        pen.classList.add("on");
+        penShadow.classList.add("on");
+
+        /* force layout before measuring glyphs */
+        void ink.offsetWidth;
+        const boxes = charBoxes(ink);
+        if (!boxes.length) {
+          revealClip(ink, 1);
+          return;
+        }
+
+        const inkRect = ink.getBoundingClientRect();
+        const wrap = wrapRect();
+        const revealState = { x: inkRect.right - wrap.left + 4 };
+        let prevPt = null;
+
+        for (let i = 0; i < boxes.length; i++) {
+          if (skipped) break;
+          const box = boxes[i];
+
+          if (box.isSpace) {
+            if (prevPt) {
+              let next = null;
+              for (let j = i + 1; j < boxes.length; j++) {
+                if (!boxes[j].isSpace) { next = boxes[j]; break; }
+              }
+              if (next) {
+                const target = boxStrokePath(next)[0];
+                await travelPen(prevPt, target, 300 + Math.random() * 100, 36);
+                prevPt = target;
+              }
+            }
+            continue;
+          }
+
+          const startPt = boxStrokePath(box)[0];
+
+          if (prevPt) {
+            const dist = Math.hypot(startPt.x - prevPt.x, startPt.y - prevPt.y);
+            if (dist > 18) {
+              await travelPen(prevPt, startPt, 110 + Math.min(170, dist * 1.15), 14);
+            } else {
+              await animateTip(prevPt, startPt, 65, function () {
+                return { writing: false, pressure: 0 };
+              });
+            }
+          } else {
+            const enter = { x: startPt.x + 38, y: startPt.y - 50 };
+            placePen(enter, { writing: false });
+            await wait(110);
+            await animateTip(enter, startPt, 340, function () {
+              return { writing: false, pressure: 0 };
+            });
+          }
+          if (skipped) break;
+
+          await animateTip(startPt, { x: startPt.x, y: startPt.y + 1.5 }, 60, function (p) {
+            return { writing: p > 0.45, pressure: p * 0.35 };
+          });
+          const endPt = await writeChar(box, ink, revealState);
+          prevPt = endPt || startPt;
+          if (Math.random() > 0.7) await wait(35 + Math.random() * 60);
+        }
+
+        stopNibScratch();
+        revealClip(ink, 1);
+        ink.classList.remove("is-wet");
+        ink.classList.add("is-dry");
+        if (prevPt) {
+          await animateTip(prevPt, { x: prevPt.x - 12, y: prevPt.y - 28 }, 280, function () {
+            return { writing: false, pressure: 0 };
+          });
+        }
+        pen.classList.remove("on", "pressing");
+        penShadow.classList.remove("on", "pressing");
+        lastInk = null;
       }
 
       async function runPen() {
         sizeInkCanvas();
         if (reduced) {
-          [basmala, namesWrite].forEach(function (line) {
-            const ink = line.querySelector(".write-ink");
-            ink.classList.add("is-ready", "is-dry");
-            revealClip(ink, 1);
-          });
+          showAllInk(basmala);
+          showAllInk(namesWrite);
           await wait(400);
         } else {
-          await wait(500);
-          /* dip motion */
+          await wait(420);
           pen.classList.add("on");
           penShadow.classList.add("on");
-          const prep = tipPoint(0, basmala);
-          movePenTo({ x: prep.x + 30, y: prep.y - 40 }, false);
-          await wait(350);
-          await writeLine(basmala, 4200);
+          basmala.querySelector(".write-ink").classList.add("is-ready");
+          void basmala.offsetWidth;
+          const boxes = charBoxes(basmala.querySelector(".write-ink"));
+          const firstBox = boxes.find(function (b) { return !b.isSpace; }) || boxes[0];
+          const first = firstBox ? boxStrokePath(firstBox)[0] : { x: 200, y: 120 };
+          placePen({ x: first.x + 42, y: first.y - 58 }, { writing: false });
+          await wait(280);
+          await writeLine(basmala);
           if (skipped) return;
-          await wait(480);
-          await writeLine(namesWrite, 3200);
-          await wait(700);
+          await wait(420);
+          await writeLine(namesWrite);
+          await wait(650);
         }
         if (skipped) return;
         scenePen.classList.add("done");
@@ -1439,13 +1679,11 @@
 
       document.getElementById("skipBtn").addEventListener("click", async function () {
         skipped = true;
-        [basmala, namesWrite].forEach(function (line) {
-          const ink = line.querySelector(".write-ink");
-          ink.classList.add("is-ready", "is-dry");
-          revealClip(ink, 1);
-        });
-        pen.classList.remove("on");
-        penShadow.classList.remove("on");
+        stopNibScratch();
+        showAllInk(basmala);
+        showAllInk(namesWrite);
+        pen.classList.remove("on", "pressing");
+        penShadow.classList.remove("on", "pressing");
         scenePen.classList.add("done");
         document.body.classList.remove("cinematic");
         await wait(500);
