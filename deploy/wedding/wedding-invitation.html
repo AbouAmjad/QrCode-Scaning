@@ -1327,7 +1327,7 @@
   </div>
   <div class="toast" id="toast"></div>
 
-  <audio id="bgMusic" loop preload="auto" playsinline>
+  <audio id="bgMusic" loop preload="auto" playsinline autoplay>
     <source src="assets/wedding/wedding-music.mp3" type="audio/mpeg">
   </audio>
 
@@ -1357,6 +1357,7 @@
       const music = document.getElementById("bgMusic");
       const musicBtn = document.getElementById("musicBtn");
       let musicOn = false;
+      let musicArmed = true; /* autoplay until user pauses */
       let skipped = false;
       let envOpened = false;
       let folioOpened = false;
@@ -1376,19 +1377,48 @@
         beamCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
       }
 
-      function setMusic(on) {
-        musicOn = !!on;
-        musicBtn.classList.toggle("on", musicOn);
-        document.getElementById("musicLabel").textContent = musicOn ? "إيقاف الموسيقى" : "تشغيل الموسيقى";
-        if (musicOn) {
-          const p = music.play();
-          if (p && p.catch) p.catch(function () {
-            musicOn = false; musicBtn.classList.remove("on");
-            document.getElementById("musicLabel").textContent = "تشغيل الموسيقى";
-          });
-        } else music.pause();
+      function setMusic(on, fromUser) {
+        if (fromUser) musicArmed = !!on;
+        if (!on && fromUser) {
+          musicOn = false;
+          music.pause();
+          musicBtn.classList.remove("on");
+          document.getElementById("musicLabel").textContent = "تشغيل الموسيقى";
+          return;
+        }
+        if (!musicArmed && !fromUser) return;
+        musicOn = true;
+        musicBtn.classList.add("on");
+        document.getElementById("musicLabel").textContent = "إيقاف الموسيقى";
+        const p = music.play();
+        if (p && p.catch) p.catch(function () {
+          musicOn = false;
+          musicBtn.classList.remove("on");
+          document.getElementById("musicLabel").textContent = "تشغيل الموسيقى";
+        });
       }
-      musicBtn.addEventListener("click", function () { setMusic(!musicOn); });
+      function ensureMusic(e) {
+        if (!musicArmed) return;
+        if (e && e.target && (e.target === musicBtn || musicBtn.contains(e.target))) return;
+        if (music.paused || music.ended) setMusic(true, false);
+      }
+      musicBtn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        setMusic(!(musicOn && !music.paused), true);
+      });
+      /* start immediately; browsers may require a gesture — retry until it plays */
+      setMusic(true, false);
+      ["pointerdown", "touchstart", "keydown"].forEach(function (evt) {
+        window.addEventListener(evt, ensureMusic, { capture: true });
+      });
+      document.addEventListener("visibilitychange", function () {
+        if (!document.hidden) ensureMusic();
+      });
+      music.addEventListener("playing", function () {
+        musicOn = true;
+        musicBtn.classList.add("on");
+        document.getElementById("musicLabel").textContent = "إيقاف الموسيقى";
+      });
 
       function softClick() {
         try {
@@ -1499,6 +1529,7 @@
       async function openEnvelope() {
         if (envOpened || skipped) return;
         envOpened = true;
+        ensureMusic();
         softClick();
         sceneEnv.classList.add("opening");
         await wait(1400);
@@ -1546,6 +1577,7 @@
         skipped = true;
         envOpened = true;
         folioOpened = true;
+        ensureMusic();
         sceneEnv.classList.add("opening", "done");
         sceneWrite.classList.add("show", "done");
         ["lineBasmala", "lineNames"].forEach(function (id) {
