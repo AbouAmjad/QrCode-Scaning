@@ -4,39 +4,36 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="robots" content="noindex, nofollow">
-  <meta name="theme-color" content="#121212">
+  <meta name="theme-color" content="#070b12">
   <meta name="description" content="دعوة زفاف خاصة — Demo">
-  <title>كريم & لمى · دعوة زفاف</title>
+  <title>كريم & لمى · دعوة خاصة</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Instrument+Serif:ital@0;1&family=Noto+Naskh+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@400;700&family=Cairo:wght@300;400;500;600;700&family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&display=swap" rel="stylesheet">
   <style>
     :root {
-      /* Modern editorial luxury — stone, ink, soft bronze */
-      --ivory: #f7f6f3;
-      --paper: #f2f1ee;
-      --gold: #8b7355;
-      --gold-bright: #b09a7d;
-      --gold-deep: #6a5740;
-      --emerald: #121212;
-      --emerald-2: #1c1c1c;
-      --emerald-3: #2e2e2e;
-      --burgundy: #3a3a3a;
-      --ink: #121212;
-      --muted: #6e6a64;
-      --line: rgba(18, 18, 18, 0.10);
-      --surface: #ffffff;
+      --void: #070b12;
+      --navy: #0d1520;
+      --panel: #121c29;
+      --pearl: #f3efe7;
+      --paper: #ebe4d8;
+      --champagne: #d4af8a;
+      --champagne-soft: #e4c9a8;
+      --mist: #8b98a8;
+      --ink: #10151d;
+      --line: rgba(212, 175, 138, 0.22);
+      --line-dark: rgba(255, 255, 255, 0.08);
       --ease: cubic-bezier(0.16, 1, 0.3, 1);
-      --font-ar: "Noto Naskh Arabic", "IBM Plex Sans Arabic", serif;
-      --font-body: "IBM Plex Sans Arabic", system-ui, sans-serif;
-      --font-en: "Instrument Serif", Georgia, serif;
+      --font-ui: "Cairo", system-ui, sans-serif;
+      --font-display: "Aref Ruqaa", "Cairo", serif;
+      --font-en: "Fraunces", Georgia, serif;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
     body {
-      font-family: var(--font-body);
-      color: var(--ink);
-      background: #f7f6f3;
+      font-family: var(--font-ui);
+      color: var(--pearl);
+      background: var(--void);
       overflow: hidden;
       min-height: 100%;
       -webkit-font-smoothing: antialiased;
@@ -44,32 +41,41 @@
     body.invite-mode {
       overflow: auto;
       overflow-x: hidden;
-      background: #f7f6f3;
+      background: var(--pearl);
+      color: var(--ink);
     }
     button, a { -webkit-tap-highlight-color: transparent; }
 
-    .grain, .vignette, #fxCanvas, .letterbox span {
+    .grain, .vignette, #fxCanvas {
       position: fixed; inset: 0; pointer-events: none;
     }
     .grain {
-      z-index: 90; opacity: .02; mix-blend-mode: multiply;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      z-index: 90; opacity: .04; mix-blend-mode: soft-light;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
       background-size: 180px;
     }
     .vignette {
       z-index: 89;
-      background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,.12) 100%);
-      opacity: .4;
+      background: radial-gradient(ellipse at center, transparent 45%, rgba(0,0,0,.55) 100%);
+      opacity: .7;
+      transition: opacity 1s;
     }
+    body.invite-mode .vignette { opacity: .18; }
     #fxCanvas { z-index: 88; }
 
     .demo-tag {
       position: fixed; z-index: 120; top: 14px; inset-inline-start: 14px;
-      padding: .4rem .7rem;
+      padding: .42rem .75rem;
       border: 1px solid var(--line);
-      background: #121212;
-      color: #f7f6f3;
-      font-size: .68rem; letter-spacing: .2em; text-transform: uppercase;
+      background: rgba(7,11,18,.85);
+      color: var(--champagne-soft);
+      font-size: .66rem; letter-spacing: .22em; text-transform: uppercase;
+      backdrop-filter: blur(8px);
+    }
+    body.invite-mode .demo-tag {
+      background: #10151d;
+      color: var(--pearl);
+      border-color: transparent;
     }
 
     .hud {
@@ -81,29 +87,34 @@
     .chip {
       appearance: none; cursor: pointer;
       border: 1px solid var(--line);
-      background: rgba(255,255,255,.92);
-      color: var(--ink);
+      background: rgba(13,21,32,.88);
+      color: var(--pearl);
       padding: .72rem 1rem;
-      font-family: var(--font-body);
+      font-family: var(--font-ui);
       font-size: .88rem;
-      backdrop-filter: blur(10px);
-      box-shadow: 0 10px 28px -22px rgba(0,0,0,.35);
-      transition: transform .25s var(--ease), background .25s, color .25s;
+      backdrop-filter: blur(12px);
       display: inline-flex; align-items: center; gap: .5rem;
       border-radius: 999px;
+      transition: .25s var(--ease);
     }
-    .chip:hover { transform: translateY(-2px); }
+    body.invite-mode .chip {
+      background: rgba(255,255,255,.92);
+      color: var(--ink);
+      border-color: rgba(16,21,29,.1);
+      box-shadow: 0 12px 30px -20px rgba(0,0,0,.35);
+    }
     .chip.on {
-      background: #121212;
-      color: #f7f6f3; border-color: transparent;
+      background: var(--champagne);
+      color: var(--void);
+      border-color: transparent;
     }
     .chip .eq { display: none; gap: 2px; height: 12px; align-items: flex-end; }
     .chip.on .eq { display: inline-flex; }
     .chip .eq i {
       width: 2px; background: currentColor; display: block;
-      animation: eq 0.9s ease-in-out infinite;
+      animation: eq .9s ease-in-out infinite;
     }
-    .chip .eq i:nth-child(1){height:4px; animation-delay:0s}
+    .chip .eq i:nth-child(1){height:4px}
     .chip .eq i:nth-child(2){height:10px; animation-delay:.15s}
     .chip .eq i:nth-child(3){height:6px; animation-delay:.3s}
     @keyframes eq {
@@ -111,975 +122,962 @@
     }
     .skip {
       appearance: none; background: transparent; border: 0;
-      color: rgba(18,18,18,.45); font-size: .8rem; cursor: pointer;
-      letter-spacing: .08em; padding: .4rem .2rem;
+      color: rgba(243,239,231,.45); font-size: .8rem; cursor: pointer;
+      letter-spacing: .08em; padding: .35rem .2rem; font-family: var(--font-ui);
     }
-    body.cinematic .skip { color: rgba(247,246,243,.55); }
     body.invite-mode .skip { display: none; }
 
-    .letterbox { position: fixed; inset: 0; z-index: 95; pointer-events: none; }
-    .letterbox span {
-      left: 0; right: 0; height: 0;
-      background: #050807; transition: height 1s var(--ease);
-    }
-    .letterbox .top { top: 0; }
-    .letterbox .bot { bottom: 0; }
-    body.cinematic .letterbox .top,
-    body.cinematic .letterbox .bot { height: min(8vh, 64px); }
-
-    /* ═════ SCENE PEN — hand calligraphy ═════ */
-    #scene-pen {
-      position: fixed; inset: 0; z-index: 40;
-      background:
-        radial-gradient(ellipse 80% 60% at 50% 42%, #ffffff 0%, #f3f1ec 48%, #e4e0d8 100%);
+    /* ═════ SCENE 1: ENVELOPE ═════ */
+    #scene-envelope {
+      position: fixed; inset: 0; z-index: 50;
       display: grid; place-items: center;
-      transition: opacity 1.5s var(--ease), visibility 1.5s, filter 1.5s;
-    }
-    #scene-pen.done { opacity: 0; visibility: hidden; pointer-events: none; filter: blur(8px); }
-
-    .pen-wrap {
-      width: min(780px, calc(100vw - 1.25rem));
-      position: relative;
-      min-height: min(54vh, 400px);
-      padding: clamp(2.4rem, 6vw, 3.4rem) clamp(1.3rem, 4.5vw, 2.8rem);
       background:
-        linear-gradient(180deg, rgba(255,255,255,.88), rgba(250,249,246,.78)),
-        url("assets/wedding/demo-paper.jpg") center/cover;
-      border: 1px solid rgba(18,18,18,.08);
-      box-shadow:
-        0 30px 70px -36px rgba(0,0,0,.38),
-        0 1px 0 rgba(255,255,255,.7) inset;
-      text-align: center;
-      overflow: hidden;
+        radial-gradient(600px 380px at 50% 42%, rgba(212,175,138,.12), transparent 60%),
+        radial-gradient(ellipse at 50% 100%, rgba(18,28,41,.9), transparent 50%),
+        var(--void);
+      transition: opacity 1.2s var(--ease), visibility 1.2s, filter 1.2s;
+    }
+    #scene-envelope.done {
+      opacity: 0; visibility: hidden; pointer-events: none; filter: blur(10px);
+    }
+    .env-hint {
+      position: absolute; bottom: max(5.5rem, env(safe-area-inset-bottom));
+      left: 50%; transform: translateX(-50%);
+      color: rgba(243,239,231,.45);
+      font-size: .84rem; letter-spacing: .14em;
+      animation: pulseHint 2.4s ease-in-out infinite;
+      white-space: nowrap;
+    }
+    @keyframes pulseHint {
+      0%,100%{opacity:.35} 50%{opacity:1}
+    }
+    #scene-envelope.opening .env-hint { opacity: 0; }
+
+    .envelope {
+      width: min(420px, 88vw);
+      height: min(270px, 42vw);
+      position: relative;
+      cursor: pointer;
+      transform-style: preserve-3d;
+      perspective: 1400px;
+      transition: transform 1.1s var(--ease);
+      filter: drop-shadow(0 28px 50px rgba(0,0,0,.45));
+    }
+    .envelope:hover { transform: translateY(-6px) scale(1.01); }
+    .env-back, .env-front, .env-flap, .env-letter {
+      position: absolute; inset: 0;
       border-radius: 4px;
     }
-    .pen-wrap::before {
-      content: "";
-      position: absolute; inset: 14px;
-      border: 1px solid rgba(18,18,18,.05);
-      pointer-events: none;
+    .env-back {
+      background:
+        linear-gradient(160deg, #1a2433, #101820 55%, #0c131c);
+      border: 1px solid rgba(212,175,138,.18);
     }
-    .pen-wrap::after {
-      content: "";
-      position: absolute;
-      left: 8%; right: 8%; bottom: 10px; height: 28px;
-      background: radial-gradient(ellipse at center, rgba(40,28,12,.1), transparent 70%);
-      filter: blur(8px);
-      pointer-events: none;
-    }
-    .pen-glow {
-      position: absolute; inset: 18% 10%;
-      background: radial-gradient(circle, rgba(139,115,85,.14), transparent 70%);
-      filter: blur(28px); opacity: 0; pointer-events: none;
-      animation: glowPulse 4s ease-in-out infinite;
-    }
-    @keyframes glowPulse {
-      0%,100%{opacity:.16; transform:scale(.96)}
-      50%{opacity:.5; transform:scale(1.04)}
-    }
-
-    #inkCanvas {
-      position: absolute; inset: 0;
-      width: 100%; height: 100%;
-      pointer-events: none; z-index: 2;
-    }
-
-    .write-line {
-      position: relative;
+    .env-front {
+      background:
+        linear-gradient(180deg, transparent 48%, rgba(7,11,18,.35) 48%),
+        linear-gradient(160deg, #182232, #0f1722);
+      clip-path: polygon(0 42%, 50% 72%, 100% 42%, 100% 100%, 0 100%);
       z-index: 3;
-      margin: 0 auto 1.55rem;
+      border: 1px solid rgba(212,175,138,.12);
+      border-top: 0;
+    }
+    .env-flap {
+      background: linear-gradient(180deg, #243246, #151e2b);
+      clip-path: polygon(0 0, 100% 0, 50% 58%);
+      transform-origin: top center;
+      z-index: 5;
+      border: 1px solid rgba(212,175,138,.16);
+      transition: transform 1.15s cubic-bezier(0.22, 0.61, 0.24, 1);
+      box-shadow: 0 8px 20px rgba(0,0,0,.25);
+    }
+    #scene-envelope.opening .env-flap {
+      transform: rotateX(188deg);
+      z-index: 1;
+    }
+    .env-seal {
+      position: absolute;
+      left: 50%; top: 38%;
+      width: 72px; height: 72px;
+      transform: translate(-50%, -50%);
+      z-index: 6;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 35% 30%, #e4c9a8, #d4af8a 45%, #9a7354 100%);
+      box-shadow: 0 8px 22px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.35);
+      display: grid; place-items: center;
+      transition: opacity .6s, transform .8s var(--ease);
+    }
+    .env-seal b {
+      font-family: var(--font-en);
+      font-style: italic;
+      color: #3a2818;
+      font-size: 1.05rem;
+      letter-spacing: .04em;
+    }
+    #scene-envelope.opening .env-seal {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(1.4);
+    }
+    .env-letter {
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.55), transparent 30%),
+        url("assets/wedding/desk-paper.jpg") center/cover;
+      z-index: 2;
+      transform: translateY(18%) scale(.94);
+      opacity: .0;
+      transition: transform 1.2s var(--ease) .35s, opacity .8s ease .25s;
+      display: grid; place-items: center;
+      color: var(--ink);
+      text-align: center;
+      padding: 1rem;
+    }
+    #scene-envelope.opening .env-letter {
+      opacity: 1;
+      transform: translateY(-42%) scale(1);
+    }
+    .env-letter span {
+      font-family: var(--font-display);
+      font-size: 1.35rem;
+      color: #2a2218;
+    }
+    .env-letter small {
+      display: block;
+      margin-top: .45rem;
+      font-size: .75rem;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: #7a6d5c;
+    }
+
+    /* ═════ SCENE 2: ENGRAVE WRITING ═════ */
+    #scene-write {
+      position: fixed; inset: 0; z-index: 40;
+      display: grid; place-items: center;
+      background:
+        radial-gradient(700px 420px at 50% 40%, rgba(212,175,138,.08), transparent 55%),
+        var(--void);
+      opacity: 0; visibility: hidden;
+      transition: opacity 1s var(--ease), visibility 1s;
+    }
+    #scene-write.show { opacity: 1; visibility: visible; }
+    #scene-write.done {
+      opacity: 0; visibility: hidden; pointer-events: none; filter: blur(8px);
+      transition: opacity 1.2s var(--ease), visibility 1.2s, filter 1.2s;
+    }
+
+    .write-stage {
+      width: min(720px, calc(100vw - 1.5rem));
+      min-height: min(48vh, 360px);
+      position: relative;
+      padding: clamp(2.2rem, 5vw, 3.2rem) clamp(1.2rem, 4vw, 2.4rem);
+      background:
+        linear-gradient(180deg, rgba(243,239,231,.97), rgba(235,228,216,.94)),
+        url("assets/wedding/desk-paper.jpg") center/cover;
+      border: 1px solid rgba(212,175,138,.28);
+      box-shadow: 0 30px 80px -40px rgba(0,0,0,.65);
+      text-align: center;
+      overflow: hidden;
+    }
+    .write-stage::before {
+      content: "";
+      position: absolute; inset: 16px;
+      border: 1px solid rgba(16,21,29,.06);
+      pointer-events: none;
+    }
+    .engrave-line {
+      position: relative;
+      z-index: 2;
+      margin: 0 auto 1.4rem;
       max-width: 94%;
       min-height: 1.5em;
     }
-    .write-line:last-of-type { margin-bottom: 0; }
-    .write-ghost, .write-ink {
-      display: block;
-      font-family: var(--font-ar);
-      line-height: 1.75;
-    }
-    .write-ghost {
+    .engrave-line:last-of-type { margin-bottom: 0; }
+    .engrave-ghost {
       visibility: hidden;
-      pointer-events: none;
+      display: block;
+      font-family: var(--font-display);
+      line-height: 1.7;
     }
-    .write-ink {
-      position: absolute;
-      inset: 0;
+    .engrave-ink {
+      position: absolute; inset: 0;
+      display: block;
+      font-family: var(--font-display);
+      line-height: 1.7;
+      color: #1a140f;
       opacity: 0;
-      color: #1a140c;
-      letter-spacing: 0.01em;
-      will-change: clip-path;
       clip-path: inset(0 0 0 100%);
       -webkit-clip-path: inset(0 0 0 100%);
+      text-shadow: 0 1px 0 rgba(255,255,255,.25);
+      filter: brightness(1.05);
     }
-    .write-ink.is-ready { opacity: 1; }
-    .write-ink.is-dry {
+    .engrave-ink.on { opacity: 1; }
+    .engrave-ink.done {
       clip-path: inset(0 0 0 0) !important;
       -webkit-clip-path: inset(0 0 0 0) !important;
-      filter: none;
     }
-    .write-ink.is-wet {
-      filter: blur(0.2px);
-    }
-    #basmala .write-ghost,
-    #basmala .write-ink {
-      font-size: clamp(1.45rem, 4.8vw, 2.55rem);
+    #lineBasmala .engrave-ghost,
+    #lineBasmala .engrave-ink {
+      font-size: clamp(1.5rem, 5vw, 2.5rem);
       font-weight: 700;
-      color: #1a140c;
     }
-    #namesWrite .write-ghost,
-    #namesWrite .write-ink {
-      font-size: clamp(1.9rem, 6.5vw, 3.3rem);
+    #lineNames .engrave-ghost,
+    #lineNames .engrave-ink {
+      font-size: clamp(2rem, 6.5vw, 3.4rem);
       font-weight: 700;
-      color: #121212;
     }
-    #namesWrite .write-ink .amp,
-    #namesWrite .write-ghost .amp {
+    #lineNames .amp {
       font-family: var(--font-en);
       font-style: italic;
-      color: var(--gold-deep);
-      font-weight: 400;
-      padding: 0 .18em;
-      font-size: .7em;
+      color: #8a6a48;
+      font-weight: 500;
+      font-size: .62em;
+      padding: 0 .12em;
     }
 
-    .pen {
+    .stylus {
       position: absolute;
-      width: clamp(118px, 24vw, 176px);
-      height: auto;
-      z-index: 6;
+      z-index: 5;
+      width: 3px;
+      height: clamp(90px, 18vw, 140px);
       opacity: 0;
       pointer-events: none;
-      transform-origin: 18% 88%;
-      filter: drop-shadow(12px 18px 16px rgba(40,28,12,.32));
-      transition: opacity .4s ease;
-      will-change: transform, left, top, filter;
-    }
-    .pen.on { opacity: 1; }
-    .pen.pressing {
-      filter: drop-shadow(8px 10px 10px rgba(40,28,12,.38));
-    }
-    .pen img {
-      width: 100%; height: auto; display: block;
-      transform: rotate(0deg);
-    }
-    .pen-tip-glow {
-      position: absolute;
-      width: 18px; height: 18px;
-      border-radius: 50%;
-      left: 15%; top: 87%;
-      transform: translate(-50%, -50%);
-      background: radial-gradient(circle, rgba(40,24,10,.4), transparent 70%);
-      filter: blur(2px);
-      opacity: 0;
-      pointer-events: none;
-    }
-    .pen.on .pen-tip-glow { opacity: .85; }
-    .pen.pressing .pen-tip-glow {
-      opacity: 1;
-      width: 22px; height: 22px;
-      background: radial-gradient(circle, rgba(20,12,6,.5), transparent 72%);
-    }
-
-    .pen-shadow {
-      position: absolute;
-      z-index: 1;
-      width: clamp(78px, 15vw, 120px);
-      height: 20px;
-      border-radius: 50%;
-      background: rgba(40, 28, 12, 0.18);
-      filter: blur(9px);
-      opacity: 0;
-      pointer-events: none;
+      transform-origin: 50% 100%;
+      will-change: left, top, transform;
+      filter: drop-shadow(0 8px 10px rgba(0,0,0,.28));
       transition: opacity .35s;
     }
-    .pen-shadow.on { opacity: 1; }
-    .pen-shadow.pressing {
-      opacity: .85;
-      transform: scaleX(1.08) scaleY(0.85);
+    .stylus.on { opacity: 1; }
+    .stylus::before {
+      content: "";
+      position: absolute; inset: 0;
+      background: linear-gradient(180deg, #e8e4dc, #b8b0a4 40%, #8a8378 78%, #d4af8a 100%);
+      border-radius: 2px;
+    }
+    .stylus::after {
+      content: "";
+      position: absolute;
+      left: 50%; bottom: -2px;
+      width: 10px; height: 10px;
+      transform: translateX(-50%);
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(212,175,138,.95), rgba(212,175,138,.15) 70%, transparent);
+      box-shadow: 0 0 14px rgba(212,175,138,.65);
+    }
+    #beamCanvas {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      pointer-events: none; z-index: 3;
     }
 
-    /* ═════ SCENE BOOK — luxury 3D ═════ */
-    #scene-book {
+    /* ═════ SCENE 3: GATEFOLD FOLIO ═════ */
+    #scene-folio {
       position: fixed; inset: 0; z-index: 30;
       display: grid; place-items: center;
       background:
-        radial-gradient(700px 420px at 50% 40%, rgba(255,255,255,.08), transparent 55%),
-        linear-gradient(165deg, #1a1a1a 0%, #121212 50%, #0d0d0d 100%);
+        radial-gradient(640px 400px at 50% 45%, rgba(212,175,138,.1), transparent 55%),
+        linear-gradient(165deg, #0a1018, #070b12 50%, #05080d);
       opacity: 0; visibility: hidden;
-      transition: opacity 1.2s var(--ease), visibility 1.2s;
+      transition: opacity 1.1s var(--ease), visibility 1.1s;
       overflow: hidden;
     }
-    #scene-book.show { opacity: 1; visibility: visible; }
-    #scene-book.away {
+    #scene-folio.show { opacity: 1; visibility: visible; }
+    #scene-folio.away {
       opacity: 0; visibility: hidden; pointer-events: none;
-      transition-delay: .45s;
+      transition-delay: .35s;
     }
-    #scene-book::before {
-      content: "";
-      position: absolute; inset: 0;
-      background: radial-gradient(ellipse 55% 30% at 50% 78%, rgba(255,255,255,.05), transparent 70%);
-      pointer-events: none;
+    .folio-hint {
+      position: absolute;
+      bottom: max(2.2rem, env(safe-area-inset-bottom));
+      left: 50%; transform: translateX(-50%);
+      color: rgba(243,239,231,.5);
+      font-size: .84rem; letter-spacing: .12em;
+      animation: pulseHint 2.4s ease-in-out infinite;
     }
+    #scene-folio.opened .folio-hint { opacity: 0; }
 
-    .book-room {
-      perspective: 2600px;
-      perspective-origin: 50% 45%;
+    .folio-room {
+      perspective: 2200px;
+      width: min(360px, 86vw);
+      height: min(520px, 74vh);
       position: relative;
-      width: min(420px, 88vw);
-      height: min(560px, 78vh);
       display: grid; place-items: center;
     }
-    .book-plinth {
-      position: absolute;
-      left: 50%; bottom: 4%;
-      width: 78%; height: 28px;
-      transform: translateX(-50%);
-      background: radial-gradient(ellipse at center, rgba(0,0,0,.55), transparent 70%);
-      filter: blur(10px);
-      pointer-events: none;
-      transition: width 1.2s var(--ease), opacity 1.2s;
-    }
-    #scene-book.zoom .book-plinth { width: 95%; opacity: .35; }
-
-    .book-hint {
-      position: absolute; left: 50%; bottom: -2.2rem;
-      transform: translateX(-50%);
-      color: rgba(247,246,243,.55);
-      font-size: .86rem; white-space: nowrap;
-      letter-spacing: .08em;
-      animation: hintPulse 2.4s ease-in-out infinite;
-      pointer-events: none;
-    }
-    @keyframes hintPulse {
-      0%,100%{opacity:.4} 50%{opacity:1}
-    }
-    #scene-book.zoom .book-hint { opacity: 0; }
-
-    .book {
-      width: min(320px, 76vw);
-      height: min(450px, 66vh);
+    .folio {
+      width: min(300px, 74vw);
+      height: min(440px, 64vh);
       position: relative;
       transform-style: preserve-3d;
       cursor: pointer;
-      transform: rotateY(-18deg) rotateX(12deg) rotateZ(-2deg);
-      transition: transform 1.35s var(--ease);
-      animation: floatBook 5.8s ease-in-out infinite;
-      transform-origin: center center;
+      transform: rotateY(-8deg) rotateX(8deg);
+      transition: transform 1.2s var(--ease);
+      animation: floatFolio 6s ease-in-out infinite;
     }
-    @keyframes floatBook {
-      0%,100%{ transform: rotateY(-18deg) rotateX(12deg) rotateZ(-2deg) translateY(0); }
-      50%{ transform: rotateY(-16deg) rotateX(11deg) rotateZ(-1.5deg) translateY(-14px); }
+    @keyframes floatFolio {
+      0%,100%{ transform: rotateY(-8deg) rotateX(8deg) translateY(0); }
+      50%{ transform: rotateY(-5deg) rotateX(6deg) translateY(-12px); }
     }
-    .book.opening { animation: none !important; }
-    #scene-book.zoom .book {
-      transform: rotateY(-4deg) rotateX(4deg) rotateZ(0deg) scale(1.22);
-    }
-    #scene-book.opened .book {
-      transform: rotateY(0deg) rotateX(2deg) scale(1.05);
+    .folio.opening { animation: none !important; }
+    #scene-folio.zoom .folio {
+      transform: rotateY(0) rotateX(2deg) scale(1.08);
     }
 
-    .book-shadow {
+    .folio-shadow {
       position: absolute;
-      inset: 8% -6% -8% -4%;
-      background: radial-gradient(ellipse at 40% 60%, rgba(0,0,0,.5), transparent 68%);
-      filter: blur(18px);
-      transform: translateZ(-40px);
+      left: 8%; right: 8%; bottom: -6%;
+      height: 28px;
+      background: radial-gradient(ellipse at center, rgba(0,0,0,.5), transparent 70%);
+      filter: blur(10px);
       pointer-events: none;
     }
-
-    /* gilt page block on the open edge */
-    .page-block {
+    .folio-spine {
       position: absolute;
-      top: 3%; bottom: 3%;
-      inset-inline-end: -6px;
-      width: 7px;
-      border-radius: 0 2px 2px 0;
-      background:
-        repeating-linear-gradient(180deg,
-          #d6d0c6 0 1px,
-          #f2efe8 1px 2px,
-          #b7aea0 2px 3px);
-      box-shadow: 2px 0 8px rgba(0,0,0,.2);
-      transform: translateZ(-2px);
-      opacity: .85;
+      left: 50%; top: 3%; bottom: 3%;
+      width: 2px;
+      transform: translateX(-50%);
+      background: linear-gradient(180deg, transparent, rgba(212,175,138,.45), transparent);
+      z-index: 4;
+      pointer-events: none;
     }
-
-    .leaf {
+    .panel-leaf {
       position: absolute; inset: 0;
-      border-radius: 4px 16px 16px 4px;
-      transform-origin: left center;
+      width: 50%;
       transform-style: preserve-3d;
+      transition: transform 1.55s cubic-bezier(0.22, 0.61, 0.24, 1);
+    }
+    .panel-leaf.left {
+      left: 0; right: auto;
+      transform-origin: right center;
+    }
+    .panel-leaf.right {
+      left: auto; right: 0;
+      transform-origin: left center;
+    }
+    .folio.open .panel-leaf.left { transform: rotateY(158deg); }
+    .folio.open .panel-leaf.right { transform: rotateY(-158deg); }
+    .folio.open-deep .panel-leaf.left { transform: rotateY(172deg); }
+    .folio.open-deep .panel-leaf.right { transform: rotateY(-172deg); }
+
+    .leaf-face {
+      position: absolute; inset: 0;
       backface-visibility: hidden;
-    }
-
-    .leaf.back {
-      background:
-        linear-gradient(135deg, rgba(255,255,255,.08), transparent 45%),
-        url("assets/wedding/book-cover.jpg") center/cover;
-      filter: brightness(.78) saturate(.9);
-      transform: translateZ(-8px);
-      box-shadow:
-        inset 0 0 0 1px rgba(255,255,255,.14),
-        4px 0 20px rgba(0,0,0,.35);
-    }
-
-    .leaf.stack {
-      background:
-        linear-gradient(90deg, #ebe8e2, #f7f6f3 18%, #f2f0ea);
-      transform: translateZ(-5px);
-      box-shadow: inset 6px 0 12px rgba(18,18,18,.04);
-      border: 1px solid rgba(18,18,18,.06);
-    }
-    .leaf.stack-2 { transform: translateZ(-3px) translateX(1px); opacity: .95; }
-    .leaf.stack-3 { transform: translateZ(-1.5px) translateX(2px); opacity: .9; }
-
-    .leaf.page {
-      background:
-        linear-gradient(90deg, rgba(18,18,18,.06), transparent 12%),
-        url("assets/wedding/book-page.jpg") center/cover;
-      border: 1px solid rgba(18,18,18,.08);
-      display: grid; place-items: center;
       overflow: hidden;
-      transform: translateZ(0px);
-      transition: transform 1.1s var(--ease) .15s;
-      z-index: 2;
     }
-    .leaf.page .page-inner {
+    .leaf-face.outer {
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.06), transparent 32%),
+        linear-gradient(90deg, rgba(212,175,138,.08), transparent 40%),
+        url("assets/wedding/folio-cover.jpg") center/cover;
+      border: 1px solid rgba(212,175,138,.28);
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,.25);
+    }
+    .leaf-face.outer::after {
+      content: "";
+      position: absolute; inset: 18px;
+      border: 1px solid rgba(212,175,138,.18);
+      pointer-events: none;
+    }
+    .panel-leaf.left .leaf-face.outer {
+      border-radius: 10px 2px 2px 10px;
+      border-right: 0;
+    }
+    .panel-leaf.right .leaf-face.outer {
+      border-radius: 2px 10px 10px 2px;
+      border-left: 0;
+    }
+    .leaf-face.inner {
+      background:
+        linear-gradient(90deg, rgba(0,0,0,.06), transparent 20%),
+        url("assets/wedding/folio-page.jpg") center/cover;
+      transform: rotateY(180deg);
+      display: grid; place-items: center;
+      color: #4a4034;
       text-align: center;
+      padding: .8rem;
+    }
+    .panel-leaf.left .leaf-face.inner { border-radius: 2px 10px 10px 2px; }
+    .panel-leaf.right .leaf-face.inner { border-radius: 10px 2px 2px 10px; }
+
+    .folio-cover-copy {
+      position: absolute;
+      inset: 0;
+      z-index: 3;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      pointer-events: none;
       padding: 1.4rem;
-      color: #5a4a38;
+      color: var(--pearl);
     }
-    .leaf.page .page-inner img {
-      width: min(120px, 42%);
-      border-radius: 50%;
-      box-shadow: 0 10px 28px rgba(0,0,0,.18);
-      margin-bottom: .8rem;
+    .folio.open .folio-cover-copy { opacity: 0; transition: opacity .4s; }
+    .folio-kicker {
+      font-family: var(--font-en);
+      font-style: italic;
+      letter-spacing: .28em;
+      font-size: .72rem;
+      color: var(--champagne-soft);
+      opacity: .8;
+      margin-bottom: .7rem;
     }
-    .leaf.page .page-inner b {
+    .folio-title {
+      font-family: var(--font-display);
+      font-size: clamp(1.5rem, 4.5vw, 1.9rem);
+      margin-bottom: .75rem;
+    }
+    .folio-names {
+      font-family: var(--font-display);
+      font-size: clamp(1.25rem, 4vw, 1.6rem);
+      line-height: 1.35;
+    }
+    .folio-names .amp {
       display: block;
-      font-family: var(--font-ar);
-      font-size: 1.25rem;
-      color: #1c1712;
-      margin-bottom: .35rem;
+      font-family: var(--font-en);
+      font-style: italic;
+      color: var(--champagne);
+      font-size: 1rem;
+      margin: .2rem 0;
     }
-    .leaf.page .page-inner span {
-      font-size: .86rem;
+    .folio-cta {
+      margin-top: 1.3rem;
+      padding-top: .9rem;
+      border-top: 1px solid rgba(212,175,138,.25);
+      font-size: .82rem;
+      color: rgba(243,239,231,.62);
+      letter-spacing: .06em;
+    }
+    .inner-mark {
+      font-family: var(--font-en);
+      font-style: italic;
+      font-size: .85rem;
       color: #7a6b58;
     }
-    .book.open .leaf.page {
-      transform: rotateY(-18deg);
-    }
 
-    /* Cover with front + inside faces */
-    .leaf.cover {
-      z-index: 5;
-      transform: translateZ(1px);
-      transition: transform 1.65s cubic-bezier(0.22, 0.61, 0.24, 1);
-    }
-    .cover-face {
-      position: absolute; inset: 0;
-      border-radius: 4px 16px 16px 4px;
-      backface-visibility: hidden;
-      overflow: hidden;
-    }
-    .cover-face.front {
-      background:
-        linear-gradient(180deg, rgba(255,255,255,.12), rgba(0,0,0,.04)),
-        url("assets/wedding/book-cover.jpg") center/cover;
-      border: 1px solid rgba(255,255,255,.2);
-      box-shadow:
-        inset 0 0 0 1px rgba(0,0,0,.04),
-        inset -16px 0 24px rgba(0,0,0,.08),
-        0 22px 48px rgba(0,0,0,.28);
-      color: #1a1a1a;
-      display: grid; place-items: center;
-      text-align: center; padding: 1.5rem 1.2rem;
-    }
-    .cover-face.front::before {
-      content: ""; position: absolute; inset: 18px;
-      border: 1px solid rgba(18,18,18,.12);
-      pointer-events: none;
-    }
-    .cover-face.front::after {
-      content: "";
-      position: absolute;
-      inset-inline-start: 0; top: 6%; bottom: 6%;
-      width: 7px;
-      background: linear-gradient(90deg, rgba(0,0,0,.07), transparent);
-    }
-    .cover-face.inside {
-      background:
-        linear-gradient(90deg, rgba(0,0,0,.12), transparent 18%),
-        url("assets/wedding/book-cover.jpg") center/cover;
-      filter: brightness(.92);
-      transform: rotateY(180deg);
-      box-shadow: inset 10px 0 20px rgba(0,0,0,.12);
-    }
-    .foil { display: none !important; }
-
-    .book.open .leaf.cover {
-      transform: translateZ(1px) rotateY(-162deg);
-    }
-    .book.open-deep .leaf.cover {
-      transform: translateZ(1px) rotateY(-175deg);
-    }
-
-    .cover-inner { position: relative; z-index: 2; }
-    .cover-mono {
-      width: 88px; height: 88px; margin: 0 auto 1rem;
-      border-radius: 50%;
-      background: center/cover url("assets/wedding/demo-monogram.jpg");
-      box-shadow: 0 0 0 1px rgba(18,18,18,.12), 0 10px 24px rgba(0,0,0,.12);
-    }
-    .cover-kicker {
-      font-family: var(--font-en); font-style: italic;
-      letter-spacing: .28em; font-size: .74rem; opacity: .7; margin-bottom: .55rem;
-      color: #4a4a4a;
-    }
-    .cover-title {
-      font-family: var(--font-ar); font-size: clamp(1.55rem, 5vw, 2rem);
-      margin-bottom: .9rem; color: #121212;
-      font-weight: 700;
-    }
-    .cover-names {
-      font-family: var(--font-ar); font-size: clamp(1.4rem, 4.8vw, 1.85rem);
-      color: #121212; line-height: 1.35;
-      font-weight: 700;
-    }
-    .cover-names .amp {
-      display: block; font-family: var(--font-en); font-style: italic;
-      color: #8b7355; font-size: 1.2rem; margin: .15rem 0;
-    }
-    .cover-cta {
-      margin-top: 1.35rem; font-size: .86rem; color: #6e6a64;
-      border-top: 1px solid rgba(18,18,18,.1); padding-top: .9rem;
-      letter-spacing: .04em;
-    }
-
-    .book-spark {
-      position: absolute; inset: -40px; pointer-events: none; opacity: 0; z-index: 8;
-    }
-    .book-spark.on { opacity: 1; }
-    .book-spark i {
-      position: absolute; width: 4px; height: 4px; border-radius: 50%;
-      background: #b09a7d;
-      box-shadow: 0 0 10px rgba(176,154,125,.55);
-      animation: bookSpark 1.5s ease-out forwards;
-    }
-    @keyframes bookSpark {
-      0% { opacity: 0; transform: translate(0,0) scale(.3); }
-      25% { opacity: 1; }
-      100% { opacity: 0; transform: translate(var(--x), var(--y)) scale(1); }
-    }
-
-    /* ═════ INVITE — editorial professional ═════ */
-    #scene-invite { display: none; position: relative; z-index: 10; background: #f7f6f3; }
+    /* ═════ INVITE ═════ */
+    #scene-invite { display: none; position: relative; z-index: 10; background: var(--pearl); }
     #scene-invite.show { display: block; }
 
-    .hero-invite {
+    .hero {
       position: relative;
-      min-height: 92svh;
-      display: grid; align-items: end;
+      min-height: 94svh;
+      display: grid;
+      align-items: center;
       overflow: hidden;
-      color: #f7f6f3;
-      background: #0e0e0e;
+      color: var(--pearl);
+      background: var(--void);
     }
-    .hero-invite .bg {
+    .hero-bg {
       position: absolute; inset: 0;
       background:
-        linear-gradient(180deg, rgba(14,14,14,.15) 0%, rgba(14,14,14,.4) 42%, rgba(14,14,14,.94) 78%, #0e0e0e 100%),
-        url("assets/wedding/book-page.jpg") center/cover;
-      transform: scale(1.06);
-      animation: ken 24s ease-in-out infinite alternate;
-      filter: grayscale(.2) contrast(1.06) brightness(.92);
+        linear-gradient(180deg, rgba(7,11,18,.35), rgba(7,11,18,.55) 40%, rgba(7,11,18,.96) 85%, var(--void)),
+        radial-gradient(ellipse at 70% 20%, rgba(212,175,138,.18), transparent 45%),
+        url("assets/wedding/folio-cover.jpg") center/cover;
+      filter: saturate(.7) contrast(1.05);
+      transform: scale(1.05);
+      animation: heroDrift 26s ease-in-out infinite alternate;
     }
-    @keyframes ken {
-      from{transform:scale(1.08) translate(0,0)}
-      to{transform:scale(1.14) translate(-1.5%,-1%)}
+    @keyframes heroDrift {
+      from { transform: scale(1.05) translate(0,0); }
+      to { transform: scale(1.12) translate(-1.5%, 1%); }
     }
-    .hero-invite .content {
+    .hero-content {
       position: relative; z-index: 2;
-      width: min(760px, calc(100% - 2rem));
+      width: min(720px, calc(100% - 2rem));
       margin: 0 auto;
-      padding: 0 0 max(2.6rem, env(safe-area-inset-bottom));
       text-align: center;
+      padding: 4rem 0 max(2.5rem, env(safe-area-inset-bottom));
     }
-    .guest-hello {
-      display: inline-block;
-      margin-bottom: 1.15rem;
-      color: rgba(247,246,243,.62);
-      font-size: .78rem;
-      letter-spacing: .22em;
+    .guest {
+      font-size: .74rem;
+      letter-spacing: .28em;
       text-transform: uppercase;
+      color: rgba(243,239,231,.55);
+      margin-bottom: 1.2rem;
       font-weight: 500;
     }
-    .hero-invite h1 {
-      font-family: var(--font-ar);
-      font-size: clamp(2.8rem, 9vw, 4.8rem);
-      line-height: 1.12;
+    .hero h1 {
+      font-family: var(--font-display);
+      font-size: clamp(3rem, 10vw, 5.2rem);
+      line-height: 1.1;
       font-weight: 700;
-      letter-spacing: -0.02em;
     }
-    .hero-invite h1 .amp {
+    .hero h1 .amp {
       display: inline-block;
-      font-family: var(--font-en); font-style: italic;
-      color: #b09a7d; font-weight: 400; font-size: .52em; padding: 0 .1em;
+      font-family: var(--font-en);
+      font-style: italic;
+      color: var(--champagne);
+      font-size: .48em;
       vertical-align: middle;
+      padding: 0 .08em;
+      font-weight: 500;
     }
-    .hero-meta {
-      margin-top: 1.15rem;
-      color: rgba(247,246,243,.55);
-      font-size: .86rem;
-      letter-spacing: .14em;
+    .hero-date {
+      margin-top: 1.2rem;
+      font-size: .82rem;
+      letter-spacing: .22em;
       text-transform: uppercase;
+      color: rgba(243,239,231,.55);
       font-weight: 500;
     }
     .hero-sub {
-      margin-top: .85rem; color: rgba(247,246,243,.68);
-      font-size: clamp(.98rem, 2.4vw, 1.12rem); line-height: 1.85;
-      max-width: 28em; margin-inline: auto;
+      margin: 1rem auto 0;
+      max-width: 26em;
+      color: rgba(243,239,231,.7);
+      line-height: 1.9;
+      font-size: clamp(.98rem, 2.4vw, 1.1rem);
+      font-weight: 300;
     }
     .hero-actions {
-      display: flex; flex-wrap: wrap; gap: .7rem; justify-content: center;
-      margin-top: 1.7rem;
+      margin-top: 1.8rem;
+      display: flex; flex-wrap: wrap; gap: .65rem; justify-content: center;
     }
     .btn {
       appearance: none; text-decoration: none; cursor: pointer;
-      border: 1px solid rgba(255,255,255,.2);
-      color: #f7f6f3; background: rgba(255,255,255,.04);
-      padding: .88rem 1.3rem; font-family: var(--font-body); font-size: .9rem;
-      transition: transform .25s var(--ease), background .25s, color .25s, border-color .25s;
-      border-radius: 999px;
+      border: 1px solid rgba(212,175,138,.35);
+      color: var(--pearl);
+      background: rgba(212,175,138,.08);
+      padding: .88rem 1.3rem;
+      font-family: var(--font-ui);
+      font-size: .9rem;
       font-weight: 500;
+      border-radius: 999px;
+      transition: .25s var(--ease);
     }
-    .btn:hover { transform: translateY(-2px); background: rgba(255,255,255,.1); }
+    .btn:hover { background: rgba(212,175,138,.16); transform: translateY(-2px); }
     .btn.solid {
-      background: #f7f6f3;
-      color: #121212; border-color: transparent; font-weight: 600;
+      background: var(--champagne);
+      color: var(--void);
+      border-color: transparent;
+      font-weight: 700;
     }
-    .btn.solid:hover { background: #fff; }
+    .btn.solid:hover { background: var(--champagne-soft); }
     .btn.ghost {
       border-color: transparent;
       background: transparent;
-      color: rgba(247,246,243,.7);
-      padding-inline: .7rem;
+      color: rgba(243,239,231,.65);
     }
-    .btn.ghost:hover { color: #fff; background: transparent; transform: none; }
+    .btn.ghost:hover { color: #fff; transform: none; background: transparent; }
 
-    .utility-bar {
-      width: min(980px, calc(100% - 1.25rem));
-      margin: -1.6rem auto 0;
+    .strip {
+      width: min(920px, calc(100% - 1.25rem));
+      margin: -1.4rem auto 0;
       position: relative; z-index: 4;
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 1px;
-      background: rgba(18,18,18,.08);
-      border: 1px solid rgba(18,18,18,.08);
-      overflow: hidden;
-      box-shadow: 0 18px 40px -28px rgba(0,0,0,.35);
-    }
-    .utility-bar article {
       background: #fff;
-      padding: 1.15rem 1rem;
+      border: 1px solid rgba(16,21,29,.08);
+      box-shadow: 0 20px 50px -32px rgba(0,0,0,.4);
+    }
+    .strip article {
+      padding: 1.2rem 1rem;
       text-align: center;
+      border-inline-start: 1px solid rgba(16,21,29,.06);
     }
-    .utility-bar span {
+    .strip article:first-child { border-inline-start: 0; }
+    .strip span {
       display: block;
-      font-size: .68rem;
-      letter-spacing: .18em;
+      font-size: .66rem;
+      letter-spacing: .2em;
       text-transform: uppercase;
-      color: var(--muted);
+      color: var(--mist);
       margin-bottom: .4rem;
-      font-weight: 500;
+      font-weight: 600;
     }
-    .utility-bar b {
-      font-family: var(--font-ar);
-      font-size: 1.05rem;
-      font-weight: 700;
+    .strip b {
+      font-family: var(--font-display);
+      font-size: 1.15rem;
       color: var(--ink);
+      font-weight: 700;
     }
 
     .wrap {
-      width: min(860px, calc(100% - 1.25rem));
-      margin: 1.5rem auto 3rem;
-      position: relative; z-index: 3;
+      width: min(820px, calc(100% - 1.25rem));
+      margin: 1.2rem auto 3rem;
     }
-    .panel {
-      background: transparent;
-      border: 0;
-      box-shadow: none;
-      padding: clamp(2rem, 5vw, 3.2rem) 0;
-      margin-bottom: 0;
-      position: relative;
-      overflow: visible;
-      border-radius: 0;
-      border-bottom: 1px solid var(--line);
+    .block {
+      padding: clamp(2.2rem, 5vw, 3.4rem) 0;
+      border-bottom: 1px solid rgba(16,21,29,.08);
     }
-    .panel:last-of-type { border-bottom: 0; }
-    .panel::before { display: none; }
+    .block:last-of-type { border-bottom: 0; }
     .eyebrow {
-      color: var(--muted); letter-spacing: .24em; text-transform: uppercase;
-      font-size: .68rem; margin-bottom: .7rem; font-weight: 500;
+      color: #9a7354;
+      letter-spacing: .24em;
+      text-transform: uppercase;
+      font-size: .68rem;
+      font-weight: 600;
+      margin-bottom: .7rem;
     }
-    .panel h2 {
-      font-family: var(--font-ar); font-size: clamp(1.55rem, 4vw, 2.15rem);
-      margin-bottom: .85rem; color: var(--ink); font-weight: 700;
-      letter-spacing: -0.015em;
-    }
-    .panel p {
-      color: var(--muted); line-height: 1.95;
-      font-size: clamp(1rem, 2.4vw, 1.1rem);
-      max-width: 38em;
-    }
-    .panel .btn {
+    .block h2 {
+      font-family: var(--font-display);
+      font-size: clamp(1.7rem, 4.2vw, 2.35rem);
       color: var(--ink);
-      border-color: var(--line);
+      margin-bottom: .85rem;
+      font-weight: 700;
+    }
+    .block p {
+      color: #5c6570;
+      line-height: 1.95;
+      font-size: clamp(1rem, 2.3vw, 1.1rem);
+      max-width: 36em;
+    }
+    .block .btn {
+      color: var(--ink);
+      border-color: rgba(16,21,29,.14);
       background: transparent;
     }
-    .panel .btn:hover { background: rgba(18,18,18,.04); }
-    .panel .btn.solid {
-      background: #121212;
-      color: #f7f6f3;
+    .block .btn:hover { background: rgba(16,21,29,.04); }
+    .block .btn.solid {
+      background: var(--ink);
+      color: var(--pearl);
       border-color: transparent;
     }
-    .panel .btn.solid:hover { background: #2a2a2a; color: #fff; }
+    .block .btn.solid:hover { background: #1c2430; color: #fff; }
 
-    .split {
-      display: grid; grid-template-columns: 1.15fr .85fr; gap: 2rem;
+    .letter-grid {
+      display: grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 2rem;
       align-items: center;
     }
-    .mono-card {
-      min-height: 260px;
-      border-radius: 2px;
-      overflow: hidden;
+    .portrait {
+      min-height: 280px;
       background:
-        linear-gradient(180deg, rgba(18,18,18,.12), rgba(18,18,18,.7)),
-        center/cover url("assets/wedding/demo-monogram.jpg");
-      display: grid; place-items: end stretch;
-      padding: 1.35rem; color: #f7f6f3;
+        linear-gradient(180deg, rgba(7,11,18,.1), rgba(7,11,18,.72)),
+        center/cover url("assets/wedding/demo-gallery-1.jpg");
+      display: grid;
+      place-items: end;
+      padding: 1.25rem;
+      color: var(--pearl);
     }
-    .mono-card strong {
-      font-family: var(--font-ar); font-size: 1.45rem; display: block;
-      margin-bottom: .25rem;
+    .portrait strong {
+      font-family: var(--font-display);
+      font-size: 1.45rem;
+      display: block;
     }
-    .mono-card em {
+    .portrait em {
       font-style: normal;
-      opacity: .72;
-      font-size: .86rem;
-      letter-spacing: .08em;
+      opacity: .7;
+      font-size: .84rem;
+      letter-spacing: .12em;
     }
 
     .facts {
-      display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 0;
-      margin-top: 1.4rem;
-      border-top: 1px solid var(--line);
-      border-bottom: 1px solid var(--line);
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      margin-top: 1.5rem;
+      border-top: 1px solid rgba(16,21,29,.1);
+      border-bottom: 1px solid rgba(16,21,29,.1);
     }
     .fact {
-      border: 0;
-      border-inline-start: 1px solid var(--line);
-      background: transparent;
-      padding: 1.25rem .9rem; text-align: center;
-      border-radius: 0;
-      transition: background .3s;
+      padding: 1.25rem .8rem;
+      text-align: center;
+      border-inline-start: 1px solid rgba(16,21,29,.08);
     }
     .fact:first-child { border-inline-start: 0; }
-    .fact:hover { transform: none; background: rgba(18,18,18,.02); border-color: var(--line); }
     .fact b {
-      display: block; font-family: var(--font-ar); font-size: 1.2rem;
-      color: var(--ink); margin: .35rem 0 .2rem;
+      display: block;
+      font-family: var(--font-display);
+      font-size: 1.2rem;
+      color: var(--ink);
+      margin: .35rem 0 .2rem;
     }
-    .fact span { color: var(--muted); font-size: .88rem; }
+    .fact span { color: #7a8490; font-size: .88rem; }
 
     .countdown {
-      display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: .55rem;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: .55rem;
       margin-top: 1.35rem;
     }
     .count {
-      text-align: center; padding: 1.1rem .4rem;
+      text-align: center;
+      padding: 1.1rem .35rem;
       background: #fff;
-      border: 1px solid var(--line);
-      border-radius: 2px;
-      position: relative; overflow: hidden;
+      border: 1px solid rgba(16,21,29,.08);
     }
     .count strong {
-      display: block; font-family: var(--font-en);
-      font-size: clamp(1.7rem, 5vw, 2.4rem); color: var(--ink);
+      display: block;
+      font-family: var(--font-en);
+      font-size: clamp(1.7rem, 5vw, 2.4rem);
+      color: var(--ink);
       font-weight: 500;
       font-variant-numeric: tabular-nums;
     }
-    .count span { font-size: .72rem; color: var(--muted); letter-spacing: .12em; text-transform: uppercase; }
-
-    .map-row {
-      display: flex; flex-wrap: wrap; gap: .65rem; margin-top: 1.25rem;
+    .count span {
+      font-size: .7rem;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: #7a8490;
     }
+    .actions { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: 1.25rem; }
 
     .venue-stage {
       position: relative;
-      margin-top: 1.25rem;
+      margin-top: 1.3rem;
       min-height: 320px;
       overflow: hidden;
-      border: 1px solid var(--line);
-      background: #e8e6e1;
+      border: 1px solid rgba(16,21,29,.08);
+      background: #d9dee4;
     }
     .venue-stage iframe {
       position: absolute; inset: 0;
-      width: 100%; height: 100%;
-      border: 0;
-      filter: grayscale(.35) contrast(1.05) brightness(.96);
+      width: 100%; height: 100%; border: 0;
+      filter: grayscale(.45) contrast(1.05);
       pointer-events: none;
     }
     .venue-card {
-      position: relative;
-      z-index: 2;
-      margin: 1.4rem;
+      position: relative; z-index: 2;
+      margin: 1.35rem;
       max-width: 340px;
-      background: rgba(255,255,255,.94);
+      background: rgba(255,255,255,.95);
       backdrop-filter: blur(10px);
-      border: 1px solid rgba(18,18,18,.08);
+      border: 1px solid rgba(16,21,29,.08);
       padding: 1.35rem 1.25rem;
-      box-shadow: 0 20px 50px -30px rgba(0,0,0,.35);
+      box-shadow: 0 22px 50px -30px rgba(0,0,0,.35);
     }
     .venue-card h3 {
-      font-family: var(--font-ar);
-      font-size: 1.3rem;
+      font-family: var(--font-display);
+      font-size: 1.35rem;
       margin-bottom: .4rem;
       color: var(--ink);
     }
-    .venue-card p {
-      font-size: .95rem;
-      margin: 0;
-      max-width: none;
-    }
-    .venue-card .map-row { margin-top: 1rem; }
+    .venue-card p { margin: 0; font-size: .95rem; max-width: none; }
 
     .timeline {
-      position: relative; margin-top: 1.4rem; padding-inline-start: 1.15rem;
+      position: relative;
+      margin-top: 1.4rem;
+      padding-inline-start: 1.1rem;
     }
     .timeline::before {
-      content: ""; position: absolute; inset-inline-start: 0; top: .3rem; bottom: .3rem;
-      width: 1px; background: linear-gradient(180deg, #8b7355, rgba(18,18,18,.08));
-      transform-origin: top; transform: scaleY(0);
+      content: "";
+      position: absolute;
+      inset-inline-start: 0; top: .3rem; bottom: .3rem;
+      width: 1px;
+      background: linear-gradient(180deg, var(--champagne), rgba(16,21,29,.08));
+      transform: scaleY(0);
+      transform-origin: top;
       transition: transform 1.2s var(--ease);
     }
     .timeline.in::before { transform: scaleY(1); }
     .timeline li {
-      list-style: none; position: relative;
+      list-style: none;
+      position: relative;
       padding: 1rem 0 1rem 1rem;
-      border-bottom: 1px solid var(--line);
-      display: grid; grid-template-columns: 5.5rem 1fr; gap: .85rem;
-      opacity: 0; transform: translateY(12px);
-      transition: opacity .5s var(--ease), transform .5s var(--ease);
+      border-bottom: 1px solid rgba(16,21,29,.08);
+      display: grid;
+      grid-template-columns: 5.2rem 1fr;
+      gap: .8rem;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: .5s var(--ease);
     }
     .timeline li:last-child { border-bottom: 0; }
     .timeline.in li { opacity: 1; transform: none; }
     .timeline.in li:nth-child(1){transition-delay:.05s}
-    .timeline.in li:nth-child(2){transition-delay:.15s}
-    .timeline.in li:nth-child(3){transition-delay:.25s}
-    .timeline.in li:nth-child(4){transition-delay:.35s}
+    .timeline.in li:nth-child(2){transition-delay:.12s}
+    .timeline.in li:nth-child(3){transition-delay:.2s}
+    .timeline.in li:nth-child(4){transition-delay:.28s}
     .timeline li::before {
-      content: ""; position: absolute; inset-inline-start: -1.28rem; top: 1.35rem;
+      content: "";
+      position: absolute;
+      inset-inline-start: -1.25rem; top: 1.35rem;
       width: 7px; height: 7px; border-radius: 50%;
-      background: #8b7355; box-shadow: 0 0 0 3px rgba(139,115,85,.12);
+      background: var(--champagne);
+      box-shadow: 0 0 0 3px rgba(212,175,138,.18);
     }
-    .timeline time { color: var(--muted); font-weight: 600; font-size: .9rem; }
+    .timeline time { color: #7a8490; font-weight: 600; font-size: .9rem; }
     .timeline span { color: var(--ink); }
-
-    .note-line {
-      margin-top: 1.5rem;
-      padding-top: 1.2rem;
-      border-top: 1px solid var(--line);
-      display: grid;
-      gap: .85rem;
+    .notes {
+      margin-top: 1.4rem;
+      padding-top: 1.15rem;
+      border-top: 1px solid rgba(16,21,29,.08);
+      display: grid; gap: .7rem;
     }
-    .note-line p {
-      margin: 0;
-      font-size: .95rem;
-    }
-    .note-line strong {
-      color: var(--ink);
-      font-weight: 600;
-      margin-inline-end: .35rem;
-    }
+    .notes p { margin: 0; font-size: .95rem; }
+    .notes strong { color: var(--ink); margin-inline-end: .3rem; }
 
     .gallery {
       display: grid;
       grid-template-columns: 1.4fr 1fr 1fr;
-      grid-auto-rows: 180px;
-      gap: .55rem; margin-top: 1.25rem;
+      grid-auto-rows: 175px;
+      gap: .5rem;
+      margin-top: 1.25rem;
     }
     .gallery button {
-      border: 0;
-      padding: 0; overflow: hidden; cursor: pointer; background: #eceae6;
-      position: relative; border-radius: 2px;
+      border: 0; padding: 0; overflow: hidden; cursor: pointer; background: #d9d3c8;
+      position: relative;
     }
-    .gallery button:first-child { grid-row: span 2; min-height: 100%; }
+    .gallery button:first-child { grid-row: span 2; }
     .gallery img {
       width: 100%; height: 100%; object-fit: cover; display: block;
-      transition: transform 1.1s var(--ease), filter .5s;
-      filter: saturate(.9) contrast(1.03);
+      transition: transform 1.1s var(--ease);
+      filter: saturate(.88) contrast(1.03);
     }
-    .gallery button:hover img { transform: scale(1.04); filter: saturate(1) contrast(1.05); }
-    .gallery button::after {
-      content: ""; position: absolute; inset: 0;
-      background: linear-gradient(180deg, transparent 55%, rgba(18,18,18,.28));
-      opacity: 0; transition: opacity .3s;
-    }
-    .gallery button:hover::after { opacity: 1; }
+    .gallery button:hover img { transform: scale(1.05); }
 
     .rsvp {
-      display: grid; grid-template-columns: 1.05fr .95fr; gap: 2rem; align-items: start;
+      display: grid;
+      grid-template-columns: 1.05fr .95fr;
+      gap: 2rem;
     }
-    .rsvp-form {
-      display: grid; gap: .85rem; margin-top: 1.1rem;
-    }
+    .rsvp-form { display: grid; gap: .85rem; margin-top: 1.1rem; }
     .rsvp-form label {
       display: grid; gap: .4rem;
-      font-size: .78rem;
-      letter-spacing: .12em;
+      font-size: .72rem;
+      letter-spacing: .14em;
       text-transform: uppercase;
-      color: var(--muted);
-      font-weight: 500;
+      color: #7a8490;
+      font-weight: 600;
     }
-    .rsvp-form input, .rsvp-form select {
-      width: 100%; border: 1px solid var(--line);
-      background: #fff; padding: .9rem 1rem;
-      font-family: var(--font-body); font-size: 1rem; color: var(--ink);
-      border-radius: 2px;
+    .rsvp-form input {
+      width: 100%;
+      border: 1px solid rgba(16,21,29,.12);
+      background: #fff;
+      padding: .9rem 1rem;
+      font-family: var(--font-ui);
+      font-size: 1rem;
+      color: var(--ink);
       outline: none;
-      transition: border-color .2s, background .2s;
       text-transform: none;
       letter-spacing: 0;
+      font-weight: 400;
     }
-    .rsvp-form input:focus, .rsvp-form select:focus {
-      border-color: rgba(18,18,18,.28);
-    }
-    .status-pills {
+    .rsvp-form input:focus { border-color: rgba(154,115,84,.55); }
+    .pills {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: .45rem;
     }
-    .status-pills button {
+    .pills button {
       appearance: none;
-      border: 1px solid var(--line);
+      border: 1px solid rgba(16,21,29,.12);
       background: #fff;
       color: var(--ink);
-      padding: .85rem .5rem;
-      font-family: var(--font-body);
+      padding: .85rem .4rem;
+      font-family: var(--font-ui);
       font-size: .88rem;
       cursor: pointer;
-      border-radius: 2px;
-      transition: .2s ease;
+      transition: .2s;
     }
-    .status-pills button.on {
-      background: #121212;
-      color: #f7f6f3;
-      border-color: #121212;
+    .pills button.on {
+      background: var(--ink);
+      color: var(--pearl);
+      border-color: var(--ink);
     }
-    .rsvp-actions { display: flex; flex-wrap: wrap; gap: .55rem; margin-top: .2rem; }
     .rsvp-aside {
-      padding: 1.5rem 0 0;
-      border-top: 1px solid var(--line);
+      padding-top: 1.4rem;
+      border-top: 1px solid rgba(16,21,29,.08);
     }
     @media (min-width: 861px) {
       .rsvp-aside {
         border-top: 0;
-        border-inline-start: 1px solid var(--line);
-        padding: 0 0 0 1.75rem;
-        min-height: 100%;
+        border-inline-start: 1px solid rgba(16,21,29,.08);
+        padding: 0 0 0 1.7rem;
         display: grid;
         align-content: center;
       }
     }
     .rsvp-aside h3 {
-      font-family: var(--font-ar);
-      font-size: 1.25rem;
-      margin-bottom: .55rem;
+      font-family: var(--font-display);
+      font-size: 1.3rem;
+      margin-bottom: .5rem;
       color: var(--ink);
     }
-    .rsvp-success {
-      display: none;
-      padding: 1.5rem 0;
-    }
+    .rsvp-success { display: none; padding: 1.3rem 0; }
     .rsvp-success.on { display: block; }
     .rsvp-success h3 {
-      font-family: var(--font-ar);
-      font-size: 1.6rem;
-      margin-bottom: .5rem;
+      font-family: var(--font-display);
+      font-size: 1.7rem;
+      margin-bottom: .45rem;
+      color: var(--ink);
     }
     .rsvp-form.is-done { display: none; }
 
     .toast {
       position: fixed; z-index: 130; left: 50%; bottom: 90px;
-      transform: translateX(-50%) translateY(20px);
-      background: #121212; color: #f7f6f3;
-      padding: .85rem 1.2rem; border: 1px solid transparent;
+      transform: translateX(-50%) translateY(18px);
+      background: var(--ink); color: var(--pearl);
+      padding: .85rem 1.2rem;
       border-radius: 999px;
-      opacity: 0; pointer-events: none; transition: .35s var(--ease);
-      font-size: .92rem;
-      box-shadow: 0 16px 40px -20px rgba(0,0,0,.45);
+      opacity: 0; pointer-events: none;
+      transition: .35s var(--ease);
+      font-size: .9rem;
+      box-shadow: 0 16px 40px -18px rgba(0,0,0,.45);
     }
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
     .lightbox {
       position: fixed; inset: 0; z-index: 140;
-      background: rgba(10,10,10,.92);
+      background: rgba(7,11,18,.92);
       display: none; place-items: center; padding: 1rem;
     }
     .lightbox.on { display: grid; }
     .lightbox img {
-      max-width: min(920px, 100%); max-height: 82vh; object-fit: contain;
-      border: 1px solid rgba(255,255,255,.1);
-      box-shadow: 0 30px 80px rgba(0,0,0,.45);
+      max-width: min(920px, 100%);
+      max-height: 82vh;
+      object-fit: contain;
+      border: 1px solid rgba(212,175,138,.2);
     }
     .lightbox button {
       position: absolute; top: 16px; inset-inline-end: 16px;
-      appearance: none; border: 1px solid rgba(255,255,255,.2);
-      background: rgba(255,255,255,.08); color: #f7f6f3;
-      width: 42px; height: 42px; cursor: pointer; font-size: 1.2rem;
+      appearance: none;
+      border: 1px solid rgba(255,255,255,.2);
+      background: rgba(255,255,255,.08);
+      color: #fff;
+      width: 42px; height: 42px;
       border-radius: 50%;
+      cursor: pointer; font-size: 1.2rem;
     }
 
     .dots {
       position: fixed; z-index: 100;
-      inset-inline-start: 14px; top: 50%; transform: translateY(-50%);
+      inset-inline-start: 14px; top: 50%;
+      transform: translateY(-50%);
       display: none; flex-direction: column; gap: 8px;
     }
     body.invite-mode .dots { display: flex; }
     .dots a {
       width: 6px; height: 6px; border-radius: 50%;
-      background: rgba(18,18,18,.16); border: 1px solid rgba(18,18,18,.18);
-      transition: transform .2s, background .2s;
+      background: rgba(16,21,29,.18);
+      border: 1px solid rgba(16,21,29,.18);
+      transition: .2s;
     }
-    .dots a.active { background: #8b7355; border-color: #8b7355; transform: scale(1.25); }
+    .dots a.active {
+      background: var(--champagne);
+      border-color: var(--champagne);
+      transform: scale(1.25);
+    }
 
     footer {
-      text-align: center; padding: 1.5rem 1rem 3rem;
-      color: var(--muted); font-size: .78rem;
-      letter-spacing: .08em;
+      text-align: center;
+      padding: 1.4rem 1rem 3rem;
+      color: #8a93a0;
+      font-size: .76rem;
+      letter-spacing: .1em;
     }
 
     .reveal {
-      opacity: 0; transform: translateY(24px);
+      opacity: 0; transform: translateY(22px);
       transition: opacity .9s var(--ease), transform .9s var(--ease);
     }
     .reveal.in { opacity: 1; transform: none; }
 
     @media (max-width: 860px) {
-      .split, .rsvp { grid-template-columns: 1fr; }
-      .utility-bar { grid-template-columns: 1fr; }
+      .letter-grid, .rsvp { grid-template-columns: 1fr; }
+      .strip { grid-template-columns: 1fr; }
+      .strip article { border-inline-start: 0; border-top: 1px solid rgba(16,21,29,.06); }
+      .strip article:first-child { border-top: 0; }
       .facts { grid-template-columns: 1fr; }
-      .fact { border-inline-start: 0; border-top: 1px solid var(--line); }
+      .fact { border-inline-start: 0; border-top: 1px solid rgba(16,21,29,.08); }
       .fact:first-child { border-top: 0; }
-      .gallery { grid-template-columns: 1fr 1fr; grid-auto-rows: 150px; }
-      .gallery button:first-child { grid-column: 1/-1; grid-row: auto; min-height: 220px; }
+      .gallery { grid-template-columns: 1fr 1fr; grid-auto-rows: 148px; }
+      .gallery button:first-child { grid-column: 1 / -1; grid-row: auto; min-height: 210px; }
       .dots { display: none !important; }
       .venue-card { max-width: none; }
-      .status-pills { grid-template-columns: 1fr; }
+      .pills { grid-template-columns: 1fr; }
     }
     @media (max-width: 520px) {
       .countdown { grid-template-columns: 1fr 1fr; }
-      .timeline li { grid-template-columns: 4.5rem 1fr; }
+      .timeline li { grid-template-columns: 4.4rem 1fr; }
       .hero-actions .btn { width: 100%; text-align: center; }
       .hero-actions .btn.ghost { width: auto; }
     }
@@ -1088,11 +1086,10 @@
     }
   </style>
 </head>
-<body class="cinematic">
+<body>
   <div class="demo-tag">Demo</div>
   <div class="grain"></div>
   <div class="vignette"></div>
-  <div class="letterbox" aria-hidden="true"><span class="top"></span><span class="bot"></span></div>
   <canvas id="fxCanvas"></canvas>
 
   <div class="hud">
@@ -1105,7 +1102,7 @@
 
   <nav class="dots" aria-label="أقسام">
     <a href="#hero" class="active" title="الرئيسية"></a>
-    <a href="#welcome" title="ترحيب"></a>
+    <a href="#welcome" title="الدعوة"></a>
     <a href="#when" title="الموعد"></a>
     <a href="#venue" title="المكان"></a>
     <a href="#program" title="البرنامج"></a>
@@ -1113,79 +1110,79 @@
     <a href="#rsvp" title="تأكيد"></a>
   </nav>
 
-  <!-- SCENE 1 -->
-  <section id="scene-pen">
-    <div class="pen-wrap" id="penWrap">
-      <div class="pen-glow"></div>
-      <canvas id="inkCanvas" aria-hidden="true"></canvas>
+  <!-- 1. ENVELOPE -->
+  <section id="scene-envelope">
+    <div class="envelope" id="envelope" role="button" tabindex="0" aria-label="افتح الظرف">
+      <div class="env-back"></div>
+      <div class="env-letter">
+        <div>
+          <span>دعوة خاصة</span>
+          <small>Private Invitation</small>
+        </div>
+      </div>
+      <div class="env-flap"></div>
+      <div class="env-front"></div>
+      <div class="env-seal"><b>K&amp;L</b></div>
+    </div>
+    <div class="env-hint">اضغط لفتح الظرف</div>
+  </section>
 
-      <div class="write-line" id="basmala">
-        <span class="write-ghost">بسم الله الرحمن الرحيم</span>
-        <span class="write-ink" data-text="بسم الله الرحمن الرحيم">بسم الله الرحمن الرحيم</span>
+  <!-- 2. ENGRAVE -->
+  <section id="scene-write">
+    <div class="write-stage" id="writeStage">
+      <canvas id="beamCanvas" aria-hidden="true"></canvas>
+      <div class="engrave-line" id="lineBasmala">
+        <span class="engrave-ghost">بسم الله الرحمن الرحيم</span>
+        <span class="engrave-ink">بسم الله الرحمن الرحيم</span>
       </div>
-      <div class="write-line" id="namesWrite">
-        <span class="write-ghost">كريم <span class="amp">&amp;</span> لمى</span>
-        <span class="write-ink">كريم <span class="amp">&amp;</span> لمى</span>
+      <div class="engrave-line" id="lineNames">
+        <span class="engrave-ghost">كريم <span class="amp">&amp;</span> لمى</span>
+        <span class="engrave-ink">كريم <span class="amp">&amp;</span> لمى</span>
       </div>
-
-      <div class="pen" id="pen" aria-hidden="true">
-        <span class="pen-tip-glow"></span>
-        <img src="assets/wedding/gold-fountain-pen.png" alt="" draggable="false">
-      </div>
-      <div class="pen-shadow" id="penShadow" aria-hidden="true"></div>
+      <div class="stylus" id="stylus" aria-hidden="true"></div>
     </div>
   </section>
 
-  <!-- SCENE 2 -->
-  <section id="scene-book">
-    <div class="book-room">
-      <div class="book-plinth" aria-hidden="true"></div>
-      <div class="book" id="book" role="button" tabindex="0" aria-label="افتح الدعوة">
-        <div class="book-shadow" aria-hidden="true"></div>
-        <div class="page-block" aria-hidden="true"></div>
-        <div class="leaf back" aria-hidden="true"></div>
-        <div class="leaf stack" aria-hidden="true"></div>
-        <div class="leaf stack stack-2" aria-hidden="true"></div>
-        <div class="leaf stack stack-3" aria-hidden="true"></div>
-        <div class="leaf page">
-          <div class="page-inner">
-            <img src="assets/wedding/demo-monogram.jpg" alt="">
-            <b>بسم الله نبدأ</b>
-            <span>صفحة الدعوة بالداخل</span>
-          </div>
+  <!-- 3. FOLIO -->
+  <section id="scene-folio">
+    <div class="folio-room">
+      <div class="folio" id="folio" role="button" tabindex="0" aria-label="افتح الدعوة">
+        <div class="folio-shadow"></div>
+        <div class="folio-spine"></div>
+        <div class="panel-leaf left">
+          <div class="leaf-face outer"></div>
+          <div class="leaf-face inner"><span class="inner-mark">Together</span></div>
         </div>
-        <div class="leaf cover" id="bookCover">
-          <div class="cover-face front">
-            <div class="foil"></div>
-            <div class="cover-inner">
-              <div class="cover-mono" role="img" aria-label="شعار العروسين"></div>
-              <div class="cover-kicker">Private Invitation</div>
-              <div class="cover-title">دعوة زفاف</div>
-              <div class="cover-names">
-                كريم
-                <span class="amp">&amp;</span>
-                لمى
-              </div>
-              <div class="cover-cta">اضغط لفتح الدعوة</div>
+        <div class="panel-leaf right">
+          <div class="leaf-face outer"></div>
+          <div class="leaf-face inner"><span class="inner-mark">Forever</span></div>
+        </div>
+        <div class="folio-cover-copy">
+          <div>
+            <div class="folio-kicker">Private Folio</div>
+            <div class="folio-title">دعوة زفاف</div>
+            <div class="folio-names">
+              كريم
+              <span class="amp">&amp;</span>
+              لمى
             </div>
+            <div class="folio-cta">اضغط لفتح الورقة</div>
           </div>
-          <div class="cover-face inside" aria-hidden="true"></div>
         </div>
-        <div class="book-spark" id="bookSpark" aria-hidden="true"></div>
       </div>
-      <div class="book-hint">كتاب فاخر · اضغط للفتح برفق</div>
     </div>
+    <div class="folio-hint">ورقة دعوة حديثة · اضغط للفتح</div>
   </section>
 
-  <!-- SCENE 3 -->
+  <!-- 4. INVITE -->
   <main id="scene-invite">
-    <header class="hero-invite" id="hero">
-      <div class="bg"></div>
-      <div class="content">
-        <div class="guest-hello" id="guestHello">ضيفنا العزيز</div>
+    <header class="hero" id="hero">
+      <div class="hero-bg"></div>
+      <div class="hero-content">
+        <div class="guest" id="guestHello">ضيفنا العزيز</div>
         <h1>كريم <span class="amp">&</span> لمى</h1>
-        <div class="hero-meta">١٥ أكتوبر ٢٠٢٦ · عمّان</div>
-        <p class="hero-sub">ندعوكم لمشاركة لحظة تُكتب مرّة واحدة في العمر</p>
+        <div class="hero-date">١٥ أكتوبر ٢٠٢٦ · عمّان</div>
+        <p class="hero-sub">لحظة واحدة… نكتبها معًا بحضوركم</p>
         <div class="hero-actions">
           <a class="btn solid" href="#rsvp">تأكيد الحضور</a>
           <button type="button" class="btn" id="calBtnHero">إضافة للتقويم</button>
@@ -1194,23 +1191,23 @@
       </div>
     </header>
 
-    <div class="utility-bar reveal" id="utilityBar" aria-label="ملخص الموعد">
+    <div class="strip reveal" id="utilityBar">
       <article><span>التاريخ</span><b>١٥ أكتوبر ٢٠٢٦</b></article>
       <article><span>الاستقبال</span><b>٦:٣٠ مساءً</b></article>
       <article><span>المكان</span><b>قاعة الياسمين</b></article>
     </div>
 
     <div class="wrap">
-      <section class="panel reveal split" id="welcome">
+      <section class="block reveal letter-grid" id="welcome">
         <div>
           <div class="eyebrow">Invitation</div>
           <h2>كلمة من العروسين</h2>
           <p>
-            في حضرة أهلكم وأحبّتكم، نفتح بابًا جديدًا من حياتنا.
-            شرفٌ لنا أن تكونوا جزءًا من هذه البداية، وأن تزيّنوا يومنا بحضوركم الدافئ.
+            بوجودكم يكتمل فرحنا. نرحّب بكم في يوم نبدأ فيه فصلًا جديدًا،
+            ونعدكم بلحظة دافئة تبقى في الذاكرة.
           </p>
         </div>
-        <div class="mono-card">
+        <div class="portrait">
           <div>
             <strong>كريم &amp; لمى</strong>
             <em>١٥ · ١٠ · ٢٠٢٦</em>
@@ -1218,7 +1215,7 @@
         </div>
       </section>
 
-      <section class="panel reveal" id="when">
+      <section class="block reveal" id="when">
         <div class="eyebrow">When</div>
         <h2>موعد الزفاف</h2>
         <div class="facts">
@@ -1232,12 +1229,12 @@
           <div class="count"><strong id="m">00</strong><span>دقيقة</span></div>
           <div class="count"><strong id="s">00</strong><span>ثانية</span></div>
         </div>
-        <div class="map-row">
+        <div class="actions">
           <button type="button" class="btn solid" id="calBtn">إضافة للتقويم</button>
         </div>
       </section>
 
-      <section class="panel reveal" id="venue">
+      <section class="block reveal" id="venue">
         <div class="eyebrow">Venue</div>
         <h2>مكان الحفل</h2>
         <div class="venue-stage">
@@ -1250,7 +1247,7 @@
           <div class="venue-card">
             <h3>قاعة الياسمين الكبرى</h3>
             <p>عمّان · شارع الملكة رانيا العبدالله · مقابل الحديقة المركزية</p>
-            <div class="map-row">
+            <div class="actions">
               <a class="btn solid" href="https://maps.google.com/?q=Amman+Jordan" target="_blank" rel="noopener">فتح الخريطة</a>
               <a class="btn" href="https://maps.google.com/?q=Amman+Jordan&dirflg=d" target="_blank" rel="noopener">الاتجاهات</a>
             </div>
@@ -1258,7 +1255,7 @@
         </div>
       </section>
 
-      <section class="panel reveal" id="program">
+      <section class="block reveal" id="program">
         <div class="eyebrow">Program</div>
         <h2>برنامج الحفل</h2>
         <ul class="timeline" id="timeline">
@@ -1267,24 +1264,24 @@
           <li><time>٨:١٥ م</time><span>العشاء</span></li>
           <li><time>٩:٣٠ م</time><span>الاحتفال واللحظات الخاصة</span></li>
         </ul>
-        <div class="note-line">
-          <p><strong>اللباس:</strong> رسمي أنيق · ألوان هادئة مفضّلة · تجنّب الأبيض الصريح</p>
+        <div class="notes">
+          <p><strong>اللباس:</strong> رسمي أنيق · ألوان هادئة · تجنّب الأبيض الصريح</p>
           <p><strong>ملاحظة:</strong> حضوركم هو الهدية الأثمن</p>
         </div>
       </section>
 
-      <section class="panel reveal" id="gallery">
+      <section class="block reveal" id="gallery">
         <div class="eyebrow">Gallery</div>
         <h2>من ذكرياتنا</h2>
         <div class="gallery" id="galleryGrid">
           <button type="button" data-src="assets/wedding/demo-gallery-1.jpg"><img src="assets/wedding/demo-gallery-1.jpg" alt="ذكرى ١" loading="lazy"></button>
           <button type="button" data-src="assets/wedding/demo-gallery-2.jpg"><img src="assets/wedding/demo-gallery-2.jpg" alt="ذكرى ٢" loading="lazy"></button>
           <button type="button" data-src="assets/wedding/demo-gallery-3.jpg"><img src="assets/wedding/demo-gallery-3.jpg" alt="ذكرى ٣" loading="lazy"></button>
-          <button type="button" data-src="assets/wedding/demo-paper.jpg"><img src="assets/wedding/demo-paper.jpg" alt="ذكرى ٤" loading="lazy"></button>
+          <button type="button" data-src="assets/wedding/desk-paper.jpg"><img src="assets/wedding/desk-paper.jpg" alt="تفاصيل" loading="lazy"></button>
         </div>
       </section>
 
-      <section class="panel reveal rsvp" id="rsvp">
+      <section class="block reveal rsvp" id="rsvp">
         <div>
           <div class="eyebrow">RSVP</div>
           <h2>تأكيد الحضور</h2>
@@ -1295,7 +1292,7 @@
             </label>
             <label>الحضور
               <input type="hidden" id="rsvpStatus" value="yes">
-              <div class="status-pills" id="statusPills" role="group" aria-label="حالة الحضور">
+              <div class="pills" id="statusPills" role="group" aria-label="حالة الحضور">
                 <button type="button" data-value="yes" class="on">سأحضر</button>
                 <button type="button" data-value="maybe">ربما</button>
                 <button type="button" data-value="no">أعتذر</button>
@@ -1304,22 +1301,19 @@
             <label>عدد الأشخاص
               <input type="number" id="rsvpGuests" name="guests" min="1" max="8" value="1">
             </label>
-            <div class="rsvp-actions">
+            <div class="actions">
               <button type="submit" class="btn solid">إرسال التأكيد</button>
               <button type="button" class="btn" id="waBtn">واتساب</button>
             </div>
           </form>
           <div class="rsvp-success" id="rsvpSuccess">
             <h3>شكرًا لتأكيدكم</h3>
-            <p id="rsvpSuccessMsg">استلمنا ردّكم بسعادة. نراكم قريبًا.</p>
+            <p id="rsvpSuccessMsg">استلمنا ردّكم بسعادة.</p>
           </div>
         </div>
         <aside class="rsvp-aside">
-          <h3>بانتظار حضوركم</h3>
-          <p>
-            وجودكم أجمل ما في هذا اليوم.
-            شاركونا اللحظة، ودعوا الباقي علينا.
-          </p>
+          <h3>بانتظاركم</h3>
+          <p>وجودكم أجمل ما في هذا اليوم. شاركونا اللحظة، ودعوا الباقي علينا.</p>
         </aside>
       </section>
     </div>
@@ -1340,8 +1334,6 @@
   <script>
     (function () {
       "use strict";
-      const GROOM = "كريم";
-      const BRIDE = "لمى";
       const WEDDING = new Date("2026-10-15T19:00:00+03:00");
       const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -1352,37 +1344,37 @@
         document.getElementById("rsvpName").value = guest;
       }
 
-      const scenePen = document.getElementById("scene-pen");
-      const sceneBook = document.getElementById("scene-book");
+      const sceneEnv = document.getElementById("scene-envelope");
+      const sceneWrite = document.getElementById("scene-write");
+      const sceneFolio = document.getElementById("scene-folio");
       const sceneInvite = document.getElementById("scene-invite");
-      const basmala = document.getElementById("basmala");
-      const namesWrite = document.getElementById("namesWrite");
-      const pen = document.getElementById("pen");
-      const penShadow = document.getElementById("penShadow");
-      const penWrap = document.getElementById("penWrap");
-      const inkCanvas = document.getElementById("inkCanvas");
-      const inkCtx = inkCanvas.getContext("2d");
-      const book = document.getElementById("book");
+      const envelope = document.getElementById("envelope");
+      const folio = document.getElementById("folio");
+      const stylus = document.getElementById("stylus");
+      const writeStage = document.getElementById("writeStage");
+      const beamCanvas = document.getElementById("beamCanvas");
+      const beamCtx = beamCanvas.getContext("2d");
       const music = document.getElementById("bgMusic");
       const musicBtn = document.getElementById("musicBtn");
       let musicOn = false;
       let skipped = false;
-      let opened = false;
-      music.volume = 0.48;
+      let envOpened = false;
+      let folioOpened = false;
+      music.volume = 0.46;
 
       function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+      function easeInOut(t) { return t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t+2, 3)/2; }
+      function lerp(a, b, t) { return a + (b - a) * t; }
 
-      function sizeInkCanvas() {
-        const r = penWrap.getBoundingClientRect();
+      function sizeBeam() {
+        const r = writeStage.getBoundingClientRect();
         const dpr = Math.min(window.devicePixelRatio || 1, 2);
-        inkCanvas.width = Math.floor(r.width * dpr);
-        inkCanvas.height = Math.floor(r.height * dpr);
-        inkCanvas.style.width = r.width + "px";
-        inkCanvas.style.height = r.height + "px";
-        inkCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        beamCanvas.width = Math.floor(r.width * dpr);
+        beamCanvas.height = Math.floor(r.height * dpr);
+        beamCanvas.style.width = r.width + "px";
+        beamCanvas.style.height = r.height + "px";
+        beamCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
       }
-      sizeInkCanvas();
-      window.addEventListener("resize", sizeInkCanvas);
 
       function setMusic(on) {
         musicOn = !!on;
@@ -1398,501 +1390,183 @@
       }
       musicBtn.addEventListener("click", function () { setMusic(!musicOn); });
 
-      function playPageSound() {
+      function softClick() {
         try {
           const ctx = new (window.AudioContext || window.webkitAudioContext)();
-          const now = ctx.currentTime;
-          const buf = ctx.createBuffer(1, ctx.sampleRate * 0.4, ctx.sampleRate);
-          const data = buf.getChannelData(0);
-          for (let i = 0; i < data.length; i++) {
-            const t = i / data.length;
-            data[i] = (Math.random() * 2 - 1) * Math.pow(1 - t, 2.2) * 0.25;
-          }
-          const src = ctx.createBufferSource();
-          src.buffer = buf;
-          const bp = ctx.createBiquadFilter();
-          bp.type = "bandpass"; bp.frequency.value = 1400;
+          const o = ctx.createOscillator();
           const g = ctx.createGain();
-          g.gain.setValueAtTime(0.001, now);
-          g.gain.exponentialRampToValueAtTime(0.4, now + 0.02);
-          g.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
-          src.connect(bp); bp.connect(g); g.connect(ctx.destination);
-          src.start();
+          o.type = "triangle";
+          o.frequency.value = 880;
+          g.gain.value = 0.0001;
+          o.connect(g); g.connect(ctx.destination);
+          const now = ctx.currentTime;
+          g.gain.exponentialRampToValueAtTime(0.03, now + 0.01);
+          g.gain.exponentialRampToValueAtTime(0.0001, now + 0.12);
+          o.start(now); o.stop(now + 0.14);
         } catch (_) {}
       }
 
-      /* Soft nib scratch while writing */
-      let scratchCtx = null;
-      let scratchAlive = null;
-      function startNibScratch() {
-        try {
-          scratchCtx = scratchCtx || new (window.AudioContext || window.webkitAudioContext)();
-          if (scratchAlive) return;
-          const ctx = scratchCtx;
-          const now = ctx.currentTime;
-          const buf = ctx.createBuffer(1, ctx.sampleRate * 1.2, ctx.sampleRate);
-          const data = buf.getChannelData(0);
-          for (let i = 0; i < data.length; i++) {
-            data[i] = (Math.random() * 2 - 1) * 0.035;
-          }
-          const src = ctx.createBufferSource();
-          src.buffer = buf;
-          src.loop = true;
-          const bp = ctx.createBiquadFilter();
-          bp.type = "bandpass"; bp.frequency.value = 2200; bp.Q.value = 0.7;
-          const g = ctx.createGain();
-          g.gain.setValueAtTime(0.001, now);
-          g.gain.exponentialRampToValueAtTime(0.085, now + 0.05);
-          src.connect(bp); bp.connect(g); g.connect(ctx.destination);
-          src.start();
-          scratchAlive = { src: src, gain: g, ctx: ctx };
-        } catch (_) {}
-      }
-      function stopNibScratch() {
-        if (!scratchAlive) return;
-        try {
-          const now = scratchAlive.ctx.currentTime;
-          scratchAlive.gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
-          const alive = scratchAlive;
-          scratchAlive = null;
-          setTimeout(function () {
-            try { alive.src.stop(); } catch (_) {}
-          }, 120);
-        } catch (_) { scratchAlive = null; }
+      function revealClip(el, p) {
+        const left = Math.max(0, Math.min(100, (1 - p) * 100));
+        el.style.clipPath = "inset(0 0 0 " + left + "%)";
+        el.style.webkitClipPath = "inset(0 0 0 " + left + "%)";
       }
 
-      function easeInOutCubic(t) {
-        return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-      }
-      function easeOutQuad(t) { return 1 - (1 - t) * (1 - t); }
-      function lerp(a, b, t) { return a + (b - a) * t; }
-
-      function wrapRect() {
-        return penWrap.getBoundingClientRect();
+      function placeStylus(x, y, angle) {
+        const h = stylus.offsetHeight || 120;
+        stylus.style.left = (x - 1.5) + "px";
+        stylus.style.top = (y - h) + "px";
+        stylus.style.transform = "rotate(" + (angle || -18) + "deg)";
       }
 
-      function revealClip(inkEl, progress) {
-        const left = Math.max(0, Math.min(100, (1 - progress) * 100));
-        inkEl.style.clipPath = "inset(0 0 0 " + left + "%)";
-        inkEl.style.webkitClipPath = "inset(0 0 0 " + left + "%)";
+      function drawBeam(from, to, alpha) {
+        beamCtx.save();
+        beamCtx.strokeStyle = "rgba(212,175,138," + (alpha || 0.35) + ")";
+        beamCtx.lineWidth = 1.2;
+        beamCtx.shadowColor = "rgba(212,175,138,.55)";
+        beamCtx.shadowBlur = 8;
+        beamCtx.lineCap = "round";
+        beamCtx.beginPath();
+        beamCtx.moveTo(from.x, from.y);
+        beamCtx.lineTo(to.x, to.y);
+        beamCtx.stroke();
+        beamCtx.restore();
       }
 
-      function revealToWorldX(inkEl, worldX) {
-        const wrap = wrapRect();
-        const inkRect = inkEl.getBoundingClientRect();
-        const inkLeft = inkRect.left - wrap.left;
-        const inkWidth = Math.max(1, inkRect.width);
-        const leftPx = Math.max(0, Math.min(inkWidth, worldX - inkLeft - 2));
-        const leftPct = (leftPx / inkWidth) * 100;
-        inkEl.style.clipPath = "inset(0 0 0 " + leftPct + "%)";
-        inkEl.style.webkitClipPath = "inset(0 0 0 " + leftPct + "%)";
-      }
-
-      function charBoxes(inkEl) {
-        const wrap = wrapRect();
-        const boxes = [];
-        function walk(node) {
-          if (node.nodeType === 3) {
-            const text = node.textContent || "";
-            for (let i = 0; i < text.length; i++) {
-              const ch = text[i];
-              const range = document.createRange();
-              range.setStart(node, i);
-              range.setEnd(node, i + 1);
-              const r = range.getBoundingClientRect();
-              if (!r.width && !r.height) continue;
-              boxes.push({
-                ch: ch,
-                isSpace: !ch.trim(),
-                x: r.left - wrap.left,
-                y: r.top - wrap.top,
-                w: Math.max(r.width, 4),
-                h: Math.max(r.height, 10),
-                cx: r.left - wrap.left + r.width * 0.5,
-                cy: r.top - wrap.top + r.height * 0.58
-              });
-            }
-          } else if (node.nodeType === 1) {
-            Array.from(node.childNodes).forEach(walk);
-          }
-        }
-        walk(inkEl);
-        return boxes;
-      }
-
-      function showAllInk(lineEl) {
-        const ink = lineEl.querySelector(".write-ink");
-        ink.classList.add("is-ready", "is-dry");
-        ink.classList.remove("is-wet");
-        revealClip(ink, 1);
-      }
-
-      let lastInk = null;
-      let penAngle = -6;
-
-      function placePen(pt, opts) {
-        opts = opts || {};
-        const writing = !!opts.writing;
-        const pressure = opts.pressure == null ? (writing ? 0.7 : 0) : opts.pressure;
-        const penW = pen.offsetWidth || 140;
-        const penH = pen.offsetHeight || 140;
-        const tipOffsetX = penW * 0.155;
-        const tipOffsetY = penH * 0.875;
-        const wrist = writing
-          ? (-7 + Math.sin((pt.x + pt.y) * 0.035) * 5 + (1 - pressure) * 4)
-          : -4;
-        penAngle = lerp(penAngle, wrist, 0.35);
-        pen.style.left = (pt.x - tipOffsetX) + "px";
-        pen.style.top = (pt.y - tipOffsetY) + "px";
-        pen.style.transform = "rotate(" + penAngle + "deg) translateY(" + (writing ? pressure * 1.5 : -8) + "px)";
-        pen.classList.toggle("pressing", writing && pressure > 0.35);
-        penShadow.style.left = (pt.x - tipOffsetX * 0.4) + "px";
-        penShadow.style.top = (pt.y + 10) + "px";
-        penShadow.classList.add("on");
-        penShadow.classList.toggle("pressing", writing && pressure > 0.35);
-
-        if (writing && lastInk) {
-          const dist = Math.hypot(pt.x - lastInk.x, pt.y - lastInk.y);
-          if (dist > 0.2) {
-            inkCtx.save();
-            inkCtx.strokeStyle = "rgba(22, 16, 10, " + (0.10 + pressure * 0.16) + ")";
-            inkCtx.lineWidth = 0.9 + pressure * 1.6 + Math.random() * 0.5;
-            inkCtx.lineCap = "round";
-            inkCtx.lineJoin = "round";
-            inkCtx.beginPath();
-            inkCtx.moveTo(lastInk.x, lastInk.y);
-            const mx = (lastInk.x + pt.x) / 2 + (Math.random() - 0.5) * 1.8;
-            const my = (lastInk.y + pt.y) / 2 + (Math.random() - 0.5) * 1.6;
-            inkCtx.quadraticCurveTo(mx, my, pt.x, pt.y);
-            inkCtx.stroke();
-
-            if (pressure > 0.55 && Math.random() > 0.78) {
-              inkCtx.fillStyle = "rgba(22,16,10," + (0.06 + Math.random() * 0.1) + ")";
-              inkCtx.beginPath();
-              inkCtx.ellipse(
-                pt.x + (Math.random() - 0.5),
-                pt.y + 0.6,
-                0.6 + Math.random() * 0.9,
-                0.35 + Math.random() * 0.45,
-                Math.random() * Math.PI,
-                0, Math.PI * 2
-              );
-              inkCtx.fill();
-            }
-            inkCtx.restore();
-          }
-        }
-        lastInk = { x: pt.x, y: pt.y };
-      }
-
-      function animateTip(from, to, duration, writingFn) {
+      function engraveLine(lineEl, duration) {
         return new Promise(function (resolve) {
+          const ink = lineEl.querySelector(".engrave-ink");
+          const stage = writeStage.getBoundingClientRect();
+          const rect = lineEl.getBoundingClientRect();
+          ink.classList.add("on");
+          stylus.classList.add("on");
           const start = performance.now();
-          function frame(now) {
-            if (skipped) { resolve(); return; }
-            const t = Math.min(1, (now - start) / duration);
-            const p = easeInOutCubic(t);
-            const pt = {
-              x: lerp(from.x, to.x, p),
-              y: lerp(from.y, to.y, p)
-            };
-            const info = writingFn ? writingFn(p, pt) : { writing: false, pressure: 0 };
-            placePen(pt, info);
-            if (t < 1) requestAnimationFrame(frame);
-            else resolve();
-          }
-          requestAnimationFrame(frame);
-        });
-      }
-
-      function samplePath(points, t) {
-        if (points.length === 1) return points[0];
-        const lens = [0];
-        let total = 0;
-        for (let i = 1; i < points.length; i++) {
-          total += Math.hypot(points[i].x - points[i - 1].x, points[i].y - points[i - 1].y);
-          lens.push(total);
-        }
-        if (total < 0.001) return points[points.length - 1];
-        const target = t * total;
-        for (let i = 1; i < lens.length; i++) {
-          if (target <= lens[i]) {
-            const segT = (target - lens[i - 1]) / Math.max(0.001, lens[i] - lens[i - 1]);
-            return {
-              x: lerp(points[i - 1].x, points[i].x, segT),
-              y: lerp(points[i - 1].y, points[i].y, segT)
-            };
-          }
-        }
-        return points[points.length - 1];
-      }
-
-      function boxStrokePath(box) {
-        const jitter = function (n) { return (Math.random() - 0.5) * n; };
-        const x0 = box.x, y0 = box.y, w = box.w, h = box.h;
-        return [
-          { x: x0 + w * 0.78 + jitter(1.2), y: y0 + h * 0.20 + jitter(1) },
-          { x: x0 + w * 0.58 + jitter(1.4), y: y0 + h * 0.38 + jitter(1.2) },
-          { x: x0 + w * 0.36 + jitter(1.2), y: y0 + h * 0.60 + jitter(1.1) },
-          { x: x0 + w * 0.24 + jitter(1), y: y0 + h * 0.78 + jitter(1) },
-          { x: x0 + w * 0.42 + jitter(1.2), y: y0 + h * 0.64 + jitter(1) }
-        ];
-      }
-
-      function writeChar(box, inkEl, revealState) {
-        return new Promise(function (resolve) {
-          if (skipped) { resolve(null); return; }
-          const path = boxStrokePath(box);
-          const duration = 150 + Math.min(240, box.w * 4.5) + Math.random() * 80;
-          const start = performance.now();
-          let endPt = path[0];
-          lastInk = null;
-          startNibScratch();
-          inkEl.classList.add("is-wet");
+          let prev = null;
 
           function frame(now) {
             if (skipped) {
-              stopNibScratch();
-              resolve(endPt);
+              revealClip(ink, 1);
+              ink.classList.add("done");
+              resolve();
               return;
             }
             const t = Math.min(1, (now - start) / duration);
-            const hand = easeOutQuad(t);
-            const wobble = Math.sin(t * Math.PI * 3.2) * 0.04;
-            const p = Math.min(1, Math.max(0, hand + wobble * (1 - t)));
-            const pt = samplePath(path, p);
-            pt.x += Math.sin(now / 28) * 0.55 + (Math.random() - 0.5) * 0.45;
-            pt.y += Math.cos(now / 33) * 0.45 + (Math.random() - 0.5) * 0.35;
-            endPt = pt;
-
-            const pressure = 0.35 + Math.sin(Math.min(1, t * Math.PI)) * 0.55;
-            placePen(pt, { writing: true, pressure: pressure });
-
-            /* peel the letter open from its right edge as the nib travels */
-            const localReveal = box.x + box.w * (1 - easeOutQuad(t));
-            revealState.x = Math.min(revealState.x, localReveal);
-            revealToWorldX(inkEl, revealState.x);
-
+            const p = easeInOut(t);
+            revealClip(ink, p);
+            /* RTL: tip travels right → left */
+            const x = (rect.left - stage.left) + rect.width * (1 - p);
+            const y = (rect.top - stage.top) + rect.height * 0.62 + Math.sin(p * Math.PI * 4) * 2.2;
+            const tip = { x: x, y: y };
+            placeStylus(tip.x, tip.y, -16 + Math.sin(p * 8) * 3);
+            if (prev) drawBeam(prev, tip, 0.28 + (1 - p) * 0.2);
+            prev = tip;
             if (t < 1) requestAnimationFrame(frame);
             else {
-              stopNibScratch();
-              revealState.x = Math.min(revealState.x, box.x);
-              revealToWorldX(inkEl, revealState.x);
-              lastInk = null;
-              resolve(endPt);
+              revealClip(ink, 1);
+              ink.classList.add("done");
+              resolve();
             }
           }
           requestAnimationFrame(frame);
         });
       }
 
-      async function travelPen(from, to, duration, lift) {
-        const mid = {
-          x: (from.x + to.x) / 2 + (Math.random() - 0.5) * 8,
-          y: Math.min(from.y, to.y) - (lift || 28) - Math.random() * 10
-        };
-        lastInk = null;
-        await animateTip(from, mid, duration * 0.45, function () {
-          return { writing: false, pressure: 0 };
-        });
-        if (skipped) return;
-        await animateTip(mid, to, duration * 0.55, function () {
-          return { writing: false, pressure: 0 };
-        });
-      }
-
-      async function writeLine(lineEl) {
-        const ink = lineEl.querySelector(".write-ink");
-        ink.classList.add("is-ready");
-        ink.classList.remove("is-dry");
-        revealClip(ink, 0);
-        pen.classList.add("on");
-        penShadow.classList.add("on");
-
-        /* force layout before measuring glyphs */
-        void ink.offsetWidth;
-        const boxes = charBoxes(ink);
-        if (!boxes.length) {
-          revealClip(ink, 1);
-          return;
-        }
-
-        const inkRect = ink.getBoundingClientRect();
-        const wrap = wrapRect();
-        const revealState = { x: inkRect.right - wrap.left + 4 };
-        let prevPt = null;
-
-        for (let i = 0; i < boxes.length; i++) {
-          if (skipped) break;
-          const box = boxes[i];
-
-          if (box.isSpace) {
-            if (prevPt) {
-              let next = null;
-              for (let j = i + 1; j < boxes.length; j++) {
-                if (!boxes[j].isSpace) { next = boxes[j]; break; }
-              }
-              if (next) {
-                const target = boxStrokePath(next)[0];
-                await travelPen(prevPt, target, 300 + Math.random() * 100, 36);
-                prevPt = target;
-              }
-            }
-            continue;
-          }
-
-          const startPt = boxStrokePath(box)[0];
-
-          if (prevPt) {
-            const dist = Math.hypot(startPt.x - prevPt.x, startPt.y - prevPt.y);
-            if (dist > 18) {
-              await travelPen(prevPt, startPt, 110 + Math.min(170, dist * 1.15), 14);
-            } else {
-              await animateTip(prevPt, startPt, 65, function () {
-                return { writing: false, pressure: 0 };
-              });
-            }
-          } else {
-            const enter = { x: startPt.x + 38, y: startPt.y - 50 };
-            placePen(enter, { writing: false });
-            await wait(110);
-            await animateTip(enter, startPt, 340, function () {
-              return { writing: false, pressure: 0 };
-            });
-          }
-          if (skipped) break;
-
-          await animateTip(startPt, { x: startPt.x, y: startPt.y + 1.5 }, 60, function (p) {
-            return { writing: p > 0.45, pressure: p * 0.35 };
-          });
-          const endPt = await writeChar(box, ink, revealState);
-          prevPt = endPt || startPt;
-          if (Math.random() > 0.7) await wait(35 + Math.random() * 60);
-        }
-
-        stopNibScratch();
-        revealClip(ink, 1);
-        ink.classList.remove("is-wet");
-        ink.classList.add("is-dry");
-        if (prevPt) {
-          await animateTip(prevPt, { x: prevPt.x - 12, y: prevPt.y - 28 }, 280, function () {
-            return { writing: false, pressure: 0 };
-          });
-        }
-        pen.classList.remove("on", "pressing");
-        penShadow.classList.remove("on", "pressing");
-        lastInk = null;
-      }
-
-      async function runPen() {
-        sizeInkCanvas();
+      async function runWrite() {
+        sizeBeam();
+        sceneWrite.classList.add("show");
         if (reduced) {
-          showAllInk(basmala);
-          showAllInk(namesWrite);
-          await wait(400);
+          ["lineBasmala", "lineNames"].forEach(function (id) {
+            const ink = document.getElementById(id).querySelector(".engrave-ink");
+            ink.classList.add("on", "done");
+            revealClip(ink, 1);
+          });
+          await wait(500);
         } else {
-          await wait(420);
-          pen.classList.add("on");
-          penShadow.classList.add("on");
-          basmala.querySelector(".write-ink").classList.add("is-ready");
-          void basmala.offsetWidth;
-          const boxes = charBoxes(basmala.querySelector(".write-ink"));
-          const firstBox = boxes.find(function (b) { return !b.isSpace; }) || boxes[0];
-          const first = firstBox ? boxStrokePath(firstBox)[0] : { x: 200, y: 120 };
-          placePen({ x: first.x + 42, y: first.y - 58 }, { writing: false });
-          await wait(280);
-          await writeLine(basmala);
+          await wait(350);
+          await engraveLine(document.getElementById("lineBasmala"), 3400);
           if (skipped) return;
-          await wait(420);
-          await writeLine(namesWrite);
-          await wait(650);
+          await wait(380);
+          await engraveLine(document.getElementById("lineNames"), 2800);
+          await wait(600);
+          stylus.classList.remove("on");
         }
         if (skipped) return;
-        scenePen.classList.add("done");
-        await wait(850);
-        sceneBook.classList.add("show");
-        document.body.classList.remove("cinematic");
+        sceneWrite.classList.add("done");
+        await wait(700);
+        sceneFolio.classList.add("show");
       }
 
-      async function openBook() {
-        if (opened) return;
-        opened = true;
-        book.classList.add("opening");
-        sceneBook.classList.add("zoom");
-        await wait(420);
-        playPageSound();
-        book.classList.add("open");
-        sparkBook();
-        burst(42);
-        await wait(700);
-        book.classList.add("open-deep");
-        sceneBook.classList.add("opened");
-        playPageSound();
-        await wait(900);
-        sceneBook.classList.add("away");
+      async function openEnvelope() {
+        if (envOpened || skipped) return;
+        envOpened = true;
+        softClick();
+        sceneEnv.classList.add("opening");
+        await wait(1400);
+        sceneEnv.classList.add("done");
+        await wait(600);
+        if (!skipped) runWrite();
+      }
+
+      envelope.addEventListener("click", openEnvelope);
+      envelope.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openEnvelope(); }
+      });
+
+      async function openFolio() {
+        if (folioOpened || skipped) return;
+        folioOpened = true;
+        folio.classList.add("opening");
+        sceneFolio.classList.add("zoom");
+        softClick();
+        await wait(280);
+        folio.classList.add("open");
+        burst(36);
+        await wait(750);
+        folio.classList.add("open-deep");
+        softClick();
+        await wait(850);
+        sceneFolio.classList.add("away");
         sceneInvite.classList.add("show");
         document.body.classList.add("invite-mode");
         document.getElementById("skipBtn").style.display = "none";
         startAmbient();
         wireReveal();
-        await wait(150);
+        await wait(120);
         document.querySelectorAll(".reveal").forEach(function (el, i) {
-          setTimeout(function () { el.classList.add("in"); }, 80 + i * 70);
+          setTimeout(function () { el.classList.add("in"); }, 60 + i * 70);
         });
       }
 
-      function sparkBook() {
-        const layer = document.getElementById("bookSpark");
-        if (!layer) return;
-        layer.innerHTML = "";
-        layer.classList.add("on");
-        for (let i = 0; i < 22; i++) {
-          const s = document.createElement("i");
-          const ang = Math.random() * Math.PI * 2;
-          const dist = 40 + Math.random() * 120;
-          s.style.left = 45 + Math.random() * 20 + "%";
-          s.style.top = 35 + Math.random() * 30 + "%";
-          s.style.setProperty("--x", Math.cos(ang) * dist + "px");
-          s.style.setProperty("--y", Math.sin(ang) * dist + "px");
-          s.style.animationDelay = (Math.random() * 0.25) + "s";
-          layer.appendChild(s);
-        }
-        setTimeout(function () { layer.classList.remove("on"); }, 1600);
-      }
-
-      book.addEventListener("click", openBook);
-      book.addEventListener("keydown", function (e) {
-        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openBook(); }
-      });
-      document.querySelector(".book-room").addEventListener("click", function () {
-        if (!opened) openBook();
-      });
-
-      /* mouse parallax on book */
-      sceneBook.addEventListener("pointermove", function (e) {
-        if (opened) return;
-        const cx = (e.clientX / window.innerWidth - 0.5) * 14;
-        const cy = (e.clientY / window.innerHeight - 0.5) * 8;
-        book.style.transform = "rotateY(" + (-18 - cx) + "deg) rotateX(" + (12 + cy) + "deg) rotateZ(-2deg)";
-      });
-      sceneBook.addEventListener("click", function () {
-        if (sceneBook.classList.contains("show") && !opened) openBook();
+      folio.addEventListener("click", openFolio);
+      folio.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openFolio(); }
       });
 
       document.getElementById("skipBtn").addEventListener("click", async function () {
         skipped = true;
-        stopNibScratch();
-        showAllInk(basmala);
-        showAllInk(namesWrite);
-        pen.classList.remove("on", "pressing");
-        penShadow.classList.remove("on", "pressing");
-        scenePen.classList.add("done");
-        document.body.classList.remove("cinematic");
-        await wait(500);
-        sceneBook.classList.add("show");
+        envOpened = true;
+        folioOpened = true;
+        sceneEnv.classList.add("opening", "done");
+        sceneWrite.classList.add("show", "done");
+        ["lineBasmala", "lineNames"].forEach(function (id) {
+          const ink = document.getElementById(id).querySelector(".engrave-ink");
+          ink.classList.add("on", "done");
+          revealClip(ink, 1);
+        });
+        sceneFolio.classList.add("show", "away");
+        sceneInvite.classList.add("show");
+        document.body.classList.add("invite-mode");
+        document.getElementById("skipBtn").style.display = "none";
+        startAmbient();
+        wireReveal();
+        document.querySelectorAll(".reveal").forEach(function (el) { el.classList.add("in"); });
       });
 
       /* countdown */
+      const d = document.getElementById("d");
+      const h = document.getElementById("h");
+      const m = document.getElementById("m");
+      const s = document.getElementById("s");
       function tick() {
         let diff = Math.max(0, WEDDING.getTime() - Date.now());
         const dd = Math.floor(diff / 86400000); diff -= dd * 86400000;
@@ -1904,27 +1578,19 @@
         m.textContent = String(mm).padStart(2, "0");
         s.textContent = String(ss).padStart(2, "0");
       }
-      const d = document.getElementById("d");
-      const h = document.getElementById("h");
-      const m = document.getElementById("m");
-      const s = document.getElementById("s");
       tick(); setInterval(tick, 1000);
 
-      /* calendar */
       function downloadCalendar() {
-        const start = "20261015T160000Z";
-        const end = "20261015T210000Z";
         const ics = [
           "BEGIN:VCALENDAR", "VERSION:2.0", "BEGIN:VEVENT",
-          "DTSTART:" + start, "DTEND:" + end,
+          "DTSTART:20261015T160000Z", "DTEND:20261015T210000Z",
           "SUMMARY:زفاف كريم و لمى",
           "LOCATION:قاعة الياسمين الكبرى - عمّان",
           "DESCRIPTION:دعوة زفاف Demo",
           "END:VEVENT", "END:VCALENDAR"
         ].join("\n");
-        const blob = new Blob([ics], { type: "text/calendar" });
         const a = document.createElement("a");
-        a.href = URL.createObjectURL(blob);
+        a.href = URL.createObjectURL(new Blob([ics], { type: "text/calendar" }));
         a.download = "wedding-kareem-lama.ics";
         a.click();
         toast("تم تجهيز ملف التقويم");
@@ -1932,7 +1598,6 @@
       document.getElementById("calBtn").addEventListener("click", downloadCalendar);
       document.getElementById("calBtnHero").addEventListener("click", downloadCalendar);
 
-      /* share */
       document.getElementById("shareBtn").addEventListener("click", async function () {
         const data = { title: "دعوة زفاف كريم و لمى", text: "ندعوكم لحضور حفل الزفاف", url: location.href };
         try {
@@ -1944,7 +1609,6 @@
         } catch (_) {}
       });
 
-      /* RSVP */
       const statusLabels = { yes: "سأحضر", maybe: "ربما", no: "أعتذر" };
       document.getElementById("statusPills").addEventListener("click", function (e) {
         const btn = e.target.closest("button[data-value]");
@@ -1967,7 +1631,7 @@
         document.getElementById("rsvpSuccessMsg").textContent = msg;
         document.getElementById("rsvpSuccess").classList.add("on");
         toast(status === "yes" ? "تم تأكيد الحضور" : "تم استلام الرد");
-        burst(22);
+        burst(20);
       });
       document.getElementById("waBtn").addEventListener("click", function () {
         const name = document.getElementById("rsvpName").value.trim() || "ضيف";
@@ -1984,7 +1648,6 @@
         setTimeout(function () { t.classList.remove("show"); }, 2800);
       }
 
-      /* lightbox */
       const lb = document.getElementById("lightbox");
       const lbImg = document.getElementById("lightboxImg");
       document.getElementById("galleryGrid").addEventListener("click", function (e) {
@@ -1996,7 +1659,6 @@
       document.getElementById("lightboxClose").addEventListener("click", function () { lb.classList.remove("on"); });
       lb.addEventListener("click", function (e) { if (e.target === lb) lb.classList.remove("on"); });
 
-      /* section dots */
       const dotLinks = document.querySelectorAll(".dots a");
       const sections = ["hero","welcome","when","venue","program","gallery","rsvp"].map(function (id) {
         return document.getElementById(id);
@@ -2017,11 +1679,10 @@
           entries.forEach(function (en) {
             if (en.isIntersecting) en.target.classList.add("in");
           });
-        }, { threshold: 0.15 });
+        }, { threshold: 0.14 });
         document.querySelectorAll(".reveal").forEach(function (el) { io.observe(el); });
       }
 
-      /* particles */
       const canvas = document.getElementById("fxCanvas");
       const ctx = canvas.getContext("2d");
       let parts = [];
@@ -2029,30 +1690,31 @@
       let W = 0, H = 0;
       function resize() { W = canvas.width = innerWidth; H = canvas.height = innerHeight; }
       addEventListener("resize", resize); resize();
+      addEventListener("resize", sizeBeam);
 
       function burst(n) {
         for (let i = 0; i < n; i++) {
           parts.push({
-            x: W * 0.5 + (Math.random() - 0.5) * W * 0.35,
-            y: H * 0.45 + (Math.random() - 0.5) * 80,
-            vx: (Math.random() - 0.5) * 3.2,
-            vy: -1 - Math.random() * 2.8,
-            r: 1.5 + Math.random() * 3,
-            a: 0.9,
+            x: W * 0.5 + (Math.random() - 0.5) * W * 0.3,
+            y: H * 0.48 + (Math.random() - 0.5) * 70,
+            vx: (Math.random() - 0.5) * 3,
+            vy: -1 - Math.random() * 2.6,
+            r: 1.2 + Math.random() * 2.6,
+            a: 0.85,
             life: 1,
-            g: 0.035 + Math.random() * 0.02
+            g: 0.03 + Math.random() * 0.02
           });
         }
       }
       function spawnSoft() {
         parts.push({
-          x: Math.random() * W, y: -10,
-          vx: -0.2 + Math.random() * 0.4,
-          vy: 0.25 + Math.random() * 0.45,
-          r: 1.2 + Math.random() * 2.4,
-          a: 0.25 + Math.random() * 0.3,
+          x: Math.random() * W, y: -8,
+          vx: -0.15 + Math.random() * 0.3,
+          vy: 0.2 + Math.random() * 0.4,
+          r: 1 + Math.random() * 2,
+          a: 0.2 + Math.random() * 0.25,
           life: 1,
-          g: 0.002
+          g: 0.0015
         });
       }
       function startAmbient() {
@@ -2060,15 +1722,15 @@
         ambient = true;
         (function loop() {
           ctx.clearRect(0, 0, W, H);
-          if (ambient && parts.length < 28 && Math.random() > 0.7) spawnSoft();
+          if (ambient && parts.length < 26 && Math.random() > 0.72) spawnSoft();
           for (let i = parts.length - 1; i >= 0; i--) {
             const p = parts[i];
-            p.vy += p.g; p.x += p.vx; p.y += p.vy; p.life -= 0.008;
+            p.vy += p.g; p.x += p.vx; p.y += p.vy; p.life -= 0.007;
             if (p.life <= 0 || p.y > H + 20) { parts.splice(i, 1); continue; }
             ctx.globalAlpha = Math.max(0, p.a * p.life);
-            ctx.fillStyle = "#b09a7d";
+            ctx.fillStyle = "#d4af8a";
             ctx.beginPath();
-            ctx.ellipse(p.x, p.y, p.r, p.r * 0.55, p.x, 0, Math.PI * 2);
+            ctx.ellipse(p.x, p.y, p.r, p.r * 0.5, p.x, 0, Math.PI * 2);
             ctx.fill();
           }
           ctx.globalAlpha = 1;
@@ -2076,7 +1738,10 @@
         })();
       }
 
-      runPen();
+      /* auto-open envelope after brief pause if user doesn't click */
+      setTimeout(function () {
+        if (!envOpened && !skipped && !reduced) openEnvelope();
+      }, 2800);
     })();
   </script>
 </body>
