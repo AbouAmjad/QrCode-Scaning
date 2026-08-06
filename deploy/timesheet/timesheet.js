@@ -5,6 +5,7 @@
 const U = require("../lib/util");
 const custody = require("../custody");
 const { fail } = require("../lib/ctx");
+const tsLog = require("./timesheet_log");
 
 const DED_TYPES = new Set(["delay", "absence", "tool_damage", "fixed_amount"]);
 
@@ -242,6 +243,7 @@ async function timesheetListAttendance(ctx) {
         baseHours,
         adjustmentHours,
         effectiveHours: Math.max(0, baseHours + adjustmentHours),
+        statusTag: adjustmentHours ? "modified" : "present",
         punchedAt: U.isoOrNull(row.punched_at),
         punchedBy: row.punched_by,
         status: row.status,
@@ -270,7 +272,31 @@ async function timesheetVoidAttendance(ctx) {
     [id, ctx.user.id, reason]
   );
   await ctx.audit({ action: "TIMESHEET_VOID_ATTENDANCE", detail: `id=${id} ${reason}` });
-  return { ok: true };
+  const ref = tsLog.refCode("TSA", id);
+  try {
+    const info = await ctx.query(
+      `SELECT worker_code, work_date, project_id, base_hours FROM timesheet_attendance WHERE id = $1`,
+      [id]
+    );
+    const row = info.rows[0];
+    if (row) {
+      await tsLog.writeActivity(ctx.query, {
+        refCode: ref,
+        eventType: "attendance_void",
+        workerCode: row.worker_code,
+        workDate: asDateOnly(row.work_date),
+        projectId: row.project_id,
+        beforeValue: Number(row.base_hours),
+        afterValue: 0,
+        deltaValue: -Number(row.base_hours),
+        unit: "hours",
+        reason,
+        meta: { attendanceId: id },
+        createdByUserId: ctx.user.id,
+      });
+    }
+  } catch (_) {}
+  return { ok: true, refCode: ref };
 }
 
 /* ---------------- hour adjustments ---------------- */
@@ -297,7 +323,8 @@ async function timesheetAdjustHours(ctx) {
     const worker = await requirePerson(ctx.query, line.workerCode || line.code);
     const delta = U.num(line.deltaHours, NaN);
     if (!Number.isFinite(delta) || delta === 0) fail("VALIDATION", { field: "deltaHours", workerCode: worker.code });
-    normalized.push({ workerCode: worker.code, deltaHours: delta });
+    const before = await tsLog.workerDayNet(ctx.query, worker.code, workDate);
+    normalized.push({ workerCode: worker.code, deltaHours: delta, beforeNet: before.netHours });
   }
 
   const hdr = await ctx.query(
@@ -306,19 +333,48 @@ async function timesheetAdjustHours(ctx) {
     [workDate, reason, ctx.user.id]
   );
   const adjustmentId = hdr.rows[0].id;
+  const ref = tsLog.refCode("TSH", adjustmentId);
   for (const line of normalized) {
     await ctx.query(
       `INSERT INTO timesheet_hour_adjustment_lines (adjustment_id, worker_code, delta_hours)
        VALUES ($1,$2,$3)`,
       [adjustmentId, line.workerCode, line.deltaHours]
     );
+    const afterNet = Math.max(0, line.beforeNet + line.deltaHours);
+    try {
+      await tsLog.writeActivity(ctx.query, {
+        refCode: ref,
+        eventType: "hours_adjust",
+        workerCode: line.workerCode,
+        workDate,
+        beforeValue: line.beforeNet,
+        afterValue: afterNet,
+        deltaValue: line.deltaHours,
+        unit: "hours",
+        reason,
+        meta: { adjustmentId: Number(adjustmentId) },
+        createdByUserId: ctx.user.id,
+      });
+      await tsLog.notifyHourChange(ctx.query, {
+        refCode: ref,
+        workerCode: line.workerCode,
+        workDate,
+        before: line.beforeNet,
+        after: afterNet,
+        delta: line.deltaHours,
+        byUser: ctx.user.username || ctx.user.id,
+        reason,
+      });
+    } catch (_) {
+      /* logging must not fail the business write */
+    }
   }
 
   await ctx.audit({
     action: "TIMESHEET_ADJUST_HOURS",
-    detail: `id=${adjustmentId} date=${workDate} lines=${normalized.length}`,
+    detail: `id=${adjustmentId} ref=${ref} date=${workDate} lines=${normalized.length}`,
   });
-  return { ok: true, adjustmentId: Number(adjustmentId), lineCount: normalized.length };
+  return { ok: true, adjustmentId: Number(adjustmentId), refCode: ref, lineCount: normalized.length };
 }
 
 async function timesheetListHourAdjustments(ctx) {
@@ -364,6 +420,7 @@ async function timesheetListHourAdjustments(ctx) {
     );
     rows.push({
       id: Number(h.id),
+      refCode: tsLog.refCode("TSH", h.id),
       workDate: asDateOnly(h.work_date),
       reason: h.reason,
       createdBy: h.created_by,
@@ -423,10 +480,37 @@ async function timesheetCreateDeduction(ctx) {
     [worker.code, workDate, projectId, dedType, amount, currency, note, ctx.user.id]
   );
   await ctx.audit({ action: "TIMESHEET_DEDUCTION", detail: `${worker.code} ${dedType} ${amount}` });
+  const dedId = Number(ins.rows[0].id);
+  const ref = tsLog.refCode("TSD", dedId);
+  try {
+    await tsLog.writeActivity(ctx.query, {
+      refCode: ref,
+      eventType: "deduction_create",
+      workerCode: worker.code,
+      workDate,
+      projectId,
+      beforeValue: null,
+      afterValue: amount,
+      deltaValue: amount,
+      unit: currency,
+      reason: note || dedType,
+      meta: { deductionId: dedId, dedType },
+      createdByUserId: ctx.user.id,
+    });
+    await tsLog.writeNotification(ctx.query, {
+      kind: "deduction_created",
+      title: `Deduction · ${worker.code}`,
+      body: `${workDate}: ${dedType} ${amount} ${currency}`,
+      refCode: ref,
+      severity: "info",
+      meta: { workerCode: worker.code, amount, dedType },
+    });
+  } catch (_) {}
   return {
     ok: true,
+    refCode: ref,
     deduction: {
-      id: Number(ins.rows[0].id),
+      id: dedId,
       workerCode: worker.code,
       workerName: worker.name,
       workDate,

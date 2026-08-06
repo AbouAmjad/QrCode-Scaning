@@ -33,10 +33,13 @@ const AppConfig = {
   ],
   DASHBOARD_REFRESH_MS: 30000,
   /** employee = Warehouse · logistics · engineer · qc · admin */
-  ROLES: ["employee", "logistics", "engineer", "qc", "admin", "worker"],
-  ROLE_RANK: { worker: 0, employee: 1, logistics: 2, engineer: 2, qc: 2, admin: 3 },
+  ROLES: ["employee", "storekeeper", "supervisor", "viewer", "logistics", "engineer", "qc", "admin", "worker"],
+  ROLE_RANK: { worker: 0, viewer: 1, storekeeper: 1, employee: 1, logistics: 2, engineer: 2, supervisor: 2, qc: 2, admin: 3 },
   ROLE_HOME: {
     employee: "index.html",
+    storekeeper: "timesheet-scan.html",
+    supervisor: "timesheet-admin.html",
+    viewer: "timesheet-admin.html",
     logistics: "projects.html",
     engineer: "consumables.html",
     qc: "qc.html",
@@ -45,10 +48,13 @@ const AppConfig = {
   },
   ROLE_LABELS: {
     employee: "Warehouse · Store Keeper",
+    storekeeper: "Storekeeper",
+    supervisor: "Supervisor",
+    viewer: "Viewer",
     logistics: "Logistics · Transport",
     engineer: "Engineering · Field",
     qc: "Quality Control",
-    admin: "System Admin",
+    admin: "System Admin / Admin",
     worker: "Labor / Worker"
   },
   /**
@@ -81,12 +87,15 @@ const AppConfig = {
     roles: ["roles.manage"],
     settings: ["settings.manage", "users.manage", "roles.manage"],
     timesheetScan: ["timesheet.scan"],
-    timesheetAdmin: ["timesheet.attendance.read", "timesheet.attendance.void", "timesheet.hours.adjust", "timesheet.deductions.manage", "timesheet.settings.manage", "timesheet.worker_accounts.manage"],
+    timesheetAdmin: ["timesheet.attendance.read", "timesheet.reports.read", "timesheet.attendance.void", "timesheet.hours.adjust", "timesheet.deductions.manage", "timesheet.settings.manage", "timesheet.worker_accounts.manage"],
     timesheetPortal: ["timesheet.portal.self"]
   },
   /** Home page only — NOT used to unlock menu items */
   ROLE_PAGES: {
     employee: ["terminal"],
+    storekeeper: ["timesheetScan", "timesheetAdmin", "terminal", "profile"],
+    supervisor: ["timesheetAdmin", "timesheetScan", "projects", "profile"],
+    viewer: ["timesheetAdmin", "profile"],
     logistics: ["projects", "forms", "dashboard", "damage", "profile"],
     engineer: ["consumables"],
     qc: ["qc"],
@@ -94,12 +103,15 @@ const AppConfig = {
     worker: ["timesheetPortal", "profile"]
   },
   ROLE_OPTIONS: [
+    { value: "admin", labelKey: "role_admin", descKey: "role_admin_desc" },
+    { value: "supervisor", labelKey: "role_supervisor", descKey: "role_supervisor_desc" },
+    { value: "storekeeper", labelKey: "role_storekeeper", descKey: "role_storekeeper_desc" },
     { value: "employee", labelKey: "role_employee", descKey: "role_employee_desc" },
+    { value: "viewer", labelKey: "role_viewer", descKey: "role_viewer_desc" },
     { value: "logistics", labelKey: "role_logistics", descKey: "role_logistics_desc" },
     { value: "engineer", labelKey: "role_engineer", descKey: "role_engineer_desc" },
     { value: "qc", labelKey: "role_qc", descKey: "role_qc_desc" },
-    { value: "worker", labelKey: "role_worker", descKey: "role_worker_desc" },
-    { value: "admin", labelKey: "role_admin", descKey: "role_admin_desc" }
+    { value: "worker", labelKey: "role_worker", descKey: "role_worker_desc" }
   ],
 
   SETTINGS_KEY: "abouamjad_settings_v1",
@@ -181,8 +193,8 @@ function normalizeRole(role) {
     employee: "employee",
     "موظف": "employee",
     "أمين مخزن": "employee",
-    store_keeper: "employee",
-    storekeeper: "employee",
+    store_keeper: "storekeeper",
+    storekeeper: "storekeeper",
     worker: "worker",
     labor: "worker",
     labour: "worker",
@@ -196,8 +208,8 @@ function normalizeRole(role) {
     "لوجستيك": "logistics",
     engineer: "engineer",
     "مهندس": "engineer",
-    supervisor: "engineer",
-    viewer: "engineer",
+    supervisor: "supervisor",
+    viewer: "viewer",
     tech: "engineer",
     qc: "qc",
     quality: "qc",
