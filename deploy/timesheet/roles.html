@@ -339,7 +339,7 @@
         roleMaps = (data && data.roles) || {};
         roleMeta = (data && data.roleMeta) || {};
         if (Array.isArray(data.editableRoles) && data.editableRoles.length) {
-          editableRoles = data.editableRoles.filter((r) => r !== "admin");
+          editableRoles = data.editableRoles.filter((r) => r !== "admin" && r !== "storekeeper");
         }
         expandedModules = new Set(groupedModules().slice(0, 4).map((g) => g.module));
         renderCards();
