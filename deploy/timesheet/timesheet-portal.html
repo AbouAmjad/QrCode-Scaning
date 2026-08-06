@@ -7,8 +7,8 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="app.css?v=live">
   <link rel="stylesheet" href="timesheet.css?v=2">
-  <script src="config.js?v=live"></script>
-  <script src="i18n.js?v=live"></script>
+  <script src="config.js?v=tsdecouple1"></script>
+  <script src="i18n.js?v=tsdecouple1"></script>
   <script src="ui.js?v=live"></script>
 </head>
 <body class="tc-page ts-page tc-worker-portal" data-page="timesheetPortal">
@@ -19,7 +19,7 @@
         <div class="ts-portal-top">
           <div>
             <h1 id="hello">My Timesheet</h1>
-            <p id="subHello">Your attendance, hours, deductions, and tools still out.</p>
+            <p id="subHello">Your attendance, hours, and deductions.</p>
           </div>
           <button class="ts-btn ts-btn-ghost" id="logoutBtn"><i class="bi bi-box-arrow-right"></i> Logout</button>
         </div>
@@ -34,14 +34,12 @@
       </div>
 
       <div class="ts-tabs">
-        <button type="button" class="ts-tab active" data-p="tools">Outstanding tools</button>
-        <button type="button" class="ts-tab" data-p="days">Days</button>
+        <button type="button" class="ts-tab active" data-p="days">Days</button>
         <button type="button" class="ts-tab" data-p="hours">Hours</button>
         <button type="button" class="ts-tab" data-p="ded">Deductions</button>
       </div>
 
-      <section class="ts-panel" id="pane-tools"></section>
-      <section class="ts-panel" id="pane-days" hidden></section>
+      <section class="ts-panel" id="pane-days"></section>
       <section class="ts-panel" id="pane-hours" hidden></section>
       <section class="ts-panel" id="pane-ded" hidden></section>
     </main>
@@ -58,7 +56,7 @@
       document.querySelectorAll("[data-p]").forEach((b) => b.onclick = () => {
         document.querySelectorAll("[data-p]").forEach((x) => x.classList.remove("active"));
         b.classList.add("active");
-        ["tools","days","hours","ded"].forEach((k) => {
+        ["days","hours","ded"].forEach((k) => {
           document.getElementById("pane-" + k).hidden = b.dataset.p !== k;
         });
       });
@@ -71,7 +69,7 @@
         const sum = await apiGet({ action: "timesheetMySummary" });
         if (sum.error === "WORKER_NOT_LINKED" || sum.error === "FORBIDDEN") {
           errBox.style.display = "block";
-          errBox.innerHTML = "<strong>Account not linked.</strong><br>Ask admin: Timesheet Admin → Worker accounts → link this login to your worker code.<br><span dir='rtl'>الحساب غير مربوط بكود العامل.</span>";
+          errBox.innerHTML = "<strong>Account not linked.</strong><br>Ask admin: Timesheet Admin → Workers → link this login to your worker code.";
           return;
         }
         if (sum.error) throw new Error(sum.error);
@@ -81,15 +79,6 @@
         sDays.textContent = sum.daysPresent;
         sHours.textContent = sum.netHours;
         sDed.textContent = `${sum.deductionsTotal} ${sum.currency || ""}`.trim();
-
-        const tools = await apiGet({ action: "timesheetMyOutstandingTools" });
-        document.getElementById("pane-tools").innerHTML =
-          `<h2><i class="bi bi-tools"></i> Outstanding tools</h2>` +
-          table(["Code","Item","Qty","Days out"],
-            (tools.rows || []).length
-              ? (tools.rows || []).map((t) => `<tr><td><strong>${t.code}</strong></td><td>${t.description||""}</td><td>${t.qty}</td><td>${t.daysOut??""}</td></tr>`).join("")
-              : `<tr><td colspan="4" class="ts-empty">No open custody — all returned</td></tr>`
-          );
 
         const days = await apiGet({ action: "timesheetMyAttendance" });
         document.getElementById("pane-days").innerHTML =

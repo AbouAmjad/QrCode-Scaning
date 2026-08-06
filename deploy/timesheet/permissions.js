@@ -57,6 +57,7 @@ const PERMISSIONS = [
   { code: "timesheet.deductions.manage", module: "Timesheet", label: "Manage deductions" },
   { code: "timesheet.settings.manage", module: "Timesheet", label: "Shift hours settings" },
   { code: "timesheet.worker_accounts.manage", module: "Timesheet", label: "Link worker logins" },
+  { code: "timesheet.workers.manage", module: "Timesheet", label: "Manage timesheet workers" },
   { code: "timesheet.portal.self", module: "Timesheet", label: "Worker self portal" },
   { code: "timesheet.reports.read", module: "Timesheet", label: "View timesheet reports" },
   { code: "timesheet.notifications.read", module: "Timesheet", label: "View timesheet notifications" }
@@ -133,6 +134,7 @@ const DEFAULT_ROLE_PERMISSIONS = {
     "dashboard.view", "projects.view", "worker.view",
     "timesheet.attendance.read", "timesheet.attendance.void", "timesheet.hours.adjust",
     "timesheet.deductions.manage", "timesheet.settings.manage",
+    "timesheet.workers.manage", "timesheet.worker_accounts.manage",
     "timesheet.reports.read", "timesheet.notifications.read"
   ],
   viewer: [

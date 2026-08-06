@@ -183,9 +183,9 @@ async function timesheetProjectSummary(ctx) {
   const rows = [];
   for (const row of r.rows) {
     const workers = await ctx.query(
-      `SELECT DISTINCT a.worker_code, c.description AS worker_name
+      `SELECT DISTINCT a.worker_code, tw.name AS worker_name
          FROM timesheet_attendance a
-         JOIN catalog c ON c.code = a.worker_code
+         JOIN timesheet_workers tw ON tw.code = a.worker_code
         WHERE a.status = 'active' AND a.project_id = $1
           AND a.work_date >= $2 AND a.work_date <= $3
         ORDER BY a.worker_code`,
@@ -249,13 +249,13 @@ async function timesheetReportSummary(ctx) {
 
   // worker
   const att = await ctx.query(
-    `SELECT a.worker_code, c.description AS worker_name,
+    `SELECT a.worker_code, tw.name AS worker_name,
             COUNT(*)::int AS days,
             COALESCE(SUM(a.base_hours),0) AS base_hours
        FROM timesheet_attendance a
-       JOIN catalog c ON c.code = a.worker_code
+       JOIN timesheet_workers tw ON tw.code = a.worker_code
       WHERE a.status = 'active' AND a.work_date >= $1 AND a.work_date <= $2
-      GROUP BY a.worker_code, c.description
+      GROUP BY a.worker_code, tw.name
       ORDER BY a.worker_code`,
     [from, to]
   );

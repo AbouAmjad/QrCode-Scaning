@@ -87,7 +87,7 @@ const AppConfig = {
     roles: ["roles.manage"],
     settings: ["settings.manage", "users.manage", "roles.manage"],
     timesheetScan: ["timesheet.scan"],
-    timesheetAdmin: ["timesheet.attendance.read", "timesheet.reports.read", "timesheet.attendance.void", "timesheet.hours.adjust", "timesheet.deductions.manage", "timesheet.settings.manage", "timesheet.worker_accounts.manage"],
+    timesheetAdmin: ["timesheet.attendance.read", "timesheet.reports.read", "timesheet.attendance.void", "timesheet.hours.adjust", "timesheet.deductions.manage", "timesheet.settings.manage", "timesheet.worker_accounts.manage", "timesheet.workers.manage"],
     timesheetPortal: ["timesheet.portal.self"]
   },
   /** Home page only — NOT used to unlock menu items */

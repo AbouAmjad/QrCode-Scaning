@@ -7,8 +7,8 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="app.css?v=live">
   <link rel="stylesheet" href="timesheet.css?v=6">
-  <script src="config.js?v=tsfeat1"></script>
-  <script src="i18n.js?v=tsfeat1"></script>
+  <script src="config.js?v=tsdecouple1"></script>
+  <script src="i18n.js?v=tsdecouple1"></script>
   <script src="ui.js?v=live"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <style>
@@ -701,7 +701,7 @@
           <div class="ta-hero-top">
             <div>
               <h1><i class="bi bi-clock-history"></i> Timesheet Admin</h1>
-              <p id="heroSub">Overview, attendance, projects, reports, and hours audit.</p>
+              <p id="heroSub">Independent workforce · attendance · reports · hours audit (not linked to store People/tools).</p>
             </div>
             <button type="button" class="ta-bell" id="notifBell" title="Alerts" aria-label="Open alerts">
               <i class="bi bi-bell"></i>
@@ -716,6 +716,7 @@
         <nav class="ta-tabs" id="mainTabs" role="tablist" aria-label="Timesheet Admin sections">
           <button type="button" class="ta-tab is-on" data-tab="overview" role="tab" aria-selected="true">Overview</button>
           <button type="button" class="ta-tab" data-tab="attendance" role="tab" aria-selected="false">Attendance</button>
+          <button type="button" class="ta-tab" data-tab="workers" role="tab" aria-selected="false">Workers</button>
           <button type="button" class="ta-tab" data-tab="projects" role="tab" aria-selected="false">Projects</button>
           <button type="button" class="ta-tab" data-tab="reports" role="tab" aria-selected="false">Reports</button>
           <button type="button" class="ta-tab" data-tab="audit" role="tab" aria-selected="false">Audit</button>
@@ -862,7 +863,8 @@
                     <select id="wsDedType" class="ts-select">
                       <option value="delay">Delay</option>
                       <option value="absence">Absence</option>
-                      <option value="tool_damage">Tool damage</option>
+                      <option value="tool_damage">Damage</option>
+                      <option value="other">Other</option>
                       <option value="fixed_amount">Fixed amount</option>
                     </select>
                   </div>
@@ -989,6 +991,56 @@
           </section>
         </div>
 
+        <!-- ========== WORKERS (independent of store People) ========== -->
+        <div class="ta-pane" id="pane-workers" role="tabpanel">
+          <section class="ta-panel">
+            <h2><i class="bi bi-people"></i> Timesheet workers</h2>
+            <p class="ts-note" style="margin-bottom:.8rem">Separate from store People / tools. Create workers here for attendance scan and portal login links.</p>
+            <div class="ta-filters" id="workerFormWrap">
+              <div>
+                <label class="ta-label" for="wkCode">Code</label>
+                <input id="wkCode" class="ts-input" placeholder="W001" autocomplete="off" maxlength="32">
+              </div>
+              <div class="ta-span-2">
+                <label class="ta-label" for="wkName">Name</label>
+                <input id="wkName" class="ts-input" placeholder="Worker name" autocomplete="off">
+              </div>
+              <div class="ta-span-2">
+                <label class="ta-label" for="wkNotes">Notes</label>
+                <input id="wkNotes" class="ts-input" placeholder="Optional" autocomplete="off">
+              </div>
+            </div>
+            <div class="ta-toolbar">
+              <button type="button" class="ts-btn ts-btn-primary" id="wkSave"><i class="bi bi-plus-lg"></i> Save worker</button>
+              <button type="button" class="ts-btn ts-btn-ghost" id="wkReload"><i class="bi bi-arrow-repeat"></i> Refresh</button>
+              <label class="ta-select-all" style="margin-left:.4rem">
+                <input type="checkbox" id="wkShowInactive"> Show inactive
+              </label>
+            </div>
+            <div id="wkList"><div class="ta-empty">Loading…</div></div>
+          </section>
+
+          <section class="ta-panel" id="linkAccountsPanel">
+            <h2><i class="bi bi-link-45deg"></i> Portal login links</h2>
+            <p class="ts-note" style="margin-bottom:.8rem">Optional: link a user login (role Worker) to a timesheet worker code.</p>
+            <div class="ta-filters">
+              <div class="ta-span-2">
+                <label class="ta-label" for="linkUserId">User</label>
+                <select id="linkUserId" class="ts-select"><option value="">Select user…</option></select>
+              </div>
+              <div>
+                <label class="ta-label" for="linkWorkerCode">Worker code</label>
+                <select id="linkWorkerCode" class="ts-select"><option value="">Select…</option></select>
+              </div>
+            </div>
+            <div class="ta-toolbar">
+              <button type="button" class="ts-btn ts-btn-primary" id="linkSave"><i class="bi bi-link"></i> Link</button>
+              <button type="button" class="ts-btn ts-btn-ghost" id="linkReload"><i class="bi bi-arrow-repeat"></i> Refresh</button>
+            </div>
+            <div id="linkList"><div class="ta-empty">Loading…</div></div>
+          </section>
+        </div>
+
         <!-- ========== ALERTS ========== -->
         <div class="ta-pane" id="pane-alerts" role="tabpanel">
           <section class="ta-panel">
@@ -1035,13 +1087,15 @@
       }
 
       const canRead = typeof can === "function"
-        ? (can("timesheet.attendance.read") || can("timesheet.hours.adjust") || can("timesheet.deductions.manage") || can("timesheet.attendance.void") || can("timesheet.settings.manage") || can("timesheet.reports.read") || (typeof getRole === "function" && getRole() === "admin"))
+        ? (can("timesheet.attendance.read") || can("timesheet.hours.adjust") || can("timesheet.deductions.manage") || can("timesheet.attendance.void") || can("timesheet.settings.manage") || can("timesheet.reports.read") || can("timesheet.workers.manage") || can("timesheet.worker_accounts.manage") || (typeof getRole === "function" && getRole() === "admin"))
         : true;
       const canAdjust = typeof can === "function" ? can("timesheet.hours.adjust") : true;
       const canDeduct = typeof can === "function" ? can("timesheet.deductions.manage") : true;
       const canVoid = typeof can === "function" ? can("timesheet.attendance.void") : true;
       const canSettings = typeof can === "function" ? can("timesheet.settings.manage") : true;
-      const canWrite = canAdjust || canDeduct || canVoid || canSettings;
+      const canWorkers = typeof can === "function" ? (can("timesheet.workers.manage") || (typeof getRole === "function" && getRole() === "admin")) : true;
+      const canLinkAccounts = typeof can === "function" ? (can("timesheet.worker_accounts.manage") || (typeof getRole === "function" && getRole() === "admin")) : true;
+      const canWrite = canAdjust || canDeduct || canVoid || canSettings || canWorkers;
       const readOnly = !canWrite;
 
       if (!canRead && typeof canAccessPage === "function" && !canAccessPage("timesheetAdmin")) {
@@ -1081,6 +1135,17 @@
       let unreadCount = 0;
 
       function applyPermissionUi() {
+        if (!canWorkers) {
+          const tab = document.querySelector('#mainTabs [data-tab="workers"]');
+          if (tab) tab.hidden = true;
+          const form = document.getElementById("workerFormWrap");
+          if (form) form.hidden = true;
+          if (wkSave) wkSave.hidden = true;
+        }
+        if (!canLinkAccounts) {
+          const panel = document.getElementById("linkAccountsPanel");
+          if (panel) panel.hidden = true;
+        }
         if (!readOnly) {
           if (!canAdjust) { wsOpenHours.hidden = true; stHours.hidden = true; }
           if (!canDeduct) { wsOpenDed.hidden = true; stDed.hidden = true; }
@@ -1094,6 +1159,7 @@
         stickyBar.classList.remove("show");
         document.body.classList.remove("has-ta-sticky");
         [wsOpenHours, wsOpenDed, wsOpenShift, wsVoid, stHours, stDed, stClear].forEach((el) => { el.hidden = true; });
+        if (wkSave) wkSave.hidden = true;
       }
 
       function localYmd(d) {
@@ -1178,6 +1244,7 @@
         if (name === "overview") loadOverview();
         if (name === "alerts") loadAlerts();
         if (name === "attendance" && !attList.dataset.loaded) applyRange("today");
+        if (name === "workers") { loadWorkers(); loadLinks(); }
         if (name === "projects" && !projList.dataset.loaded) loadProjectsSummary();
         if (name === "reports" && !repTableWrap.dataset.loaded) loadReport();
         if (name === "audit" && !audList.dataset.loaded) loadAudit();
@@ -1968,6 +2035,164 @@
           toast(e.message || "Failed", "err");
         }
       };
+
+      /* ---------- Workers (independent of store People) ---------- */
+      let workerRowsCache = [];
+
+      async function loadWorkers() {
+        if (!canWorkers && !canLinkAccounts && !canRead) {
+          wkList.innerHTML = `<div class="ta-empty">No permission</div>`;
+          return;
+        }
+        wkList.innerHTML = `<div class="ta-empty">Loading…</div>`;
+        try {
+          const res = await apiGet({
+            action: "timesheetListWorkers",
+            includeInactive: wkShowInactive.checked ? "true" : "false",
+          });
+          workerRowsCache = res.rows || [];
+          fillWorkerSelects(workerRowsCache.filter((w) => w.isActive));
+          if (!workerRowsCache.length) {
+            wkList.innerHTML = `<div class="ta-empty">No timesheet workers yet — add one above</div>`;
+            return;
+          }
+          wkList.innerHTML = `<div class="table-responsive"><table class="ts-table">
+            <thead><tr><th>Code</th><th>Name</th><th>Status</th><th>Notes</th><th></th></tr></thead>
+            <tbody>${workerRowsCache.map((w) => `<tr>
+              <td><strong>${escapeHtml(w.code)}</strong></td>
+              <td>${escapeHtml(w.name || "")}</td>
+              <td>${w.isActive ? '<span class="ta-tag present">Active</span>' : '<span class="ta-tag">Inactive</span>'}</td>
+              <td>${escapeHtml(w.notes || "")}</td>
+              <td class="ta-actions">${canWorkers ? `
+                <button type="button" class="ts-btn ts-btn-ghost" data-edit="${escapeHtml(w.code)}">Edit</button>
+                <button type="button" class="ts-btn ts-btn-ghost" data-toggle="${escapeHtml(w.code)}" data-active="${w.isActive ? "1" : "0"}">${w.isActive ? "Deactivate" : "Activate"}</button>
+              ` : ""}</td>
+            </tr>`).join("")}</tbody></table></div>`;
+
+          wkList.querySelectorAll("[data-edit]").forEach((btn) => {
+            btn.onclick = () => {
+              const w = workerRowsCache.find((x) => x.code === btn.dataset.edit);
+              if (!w) return;
+              wkCode.value = w.code;
+              wkCode.readOnly = true;
+              wkName.value = w.name || "";
+              wkNotes.value = w.notes || "";
+              wkName.focus();
+            };
+          });
+          wkList.querySelectorAll("[data-toggle]").forEach((btn) => {
+            btn.onclick = async () => {
+              try {
+                const next = btn.dataset.active !== "1";
+                await apiGet({ action: "timesheetSetWorkerActive", code: btn.dataset.toggle, isActive: next });
+                toast(next ? "Worker activated" : "Worker deactivated", "ok");
+                loadWorkers();
+              } catch (e) {
+                toast(e.message || "Failed", "err");
+              }
+            };
+          });
+        } catch (e) {
+          wkList.innerHTML = `<div class="ta-empty">${escapeHtml(e.message || "Failed")}</div>`;
+        }
+      }
+
+      function fillWorkerSelects(rows) {
+        const opts = [`<option value="">Select…</option>`]
+          .concat((rows || []).map((w) => `<option value="${escapeHtml(w.code)}">${escapeHtml(w.code)} · ${escapeHtml(w.name || "")}</option>`));
+        linkWorkerCode.innerHTML = opts.join("");
+      }
+
+      async function loadUserOptions() {
+        if (!canLinkAccounts) return;
+        try {
+          const res = await apiGet({ action: "listUsers" });
+          const users = res.items || res.users || res.rows || (Array.isArray(res) ? res : []);
+          linkUserId.innerHTML = `<option value="">Select user…</option>` +
+            users.map((u) => {
+              const id = u.id ?? u.userId;
+              const label = `${u.username || ""}${u.role ? " · " + u.role : ""}${u.fullName || u.full_name ? " · " + (u.fullName || u.full_name) : ""}`;
+              return `<option value="${id}">${escapeHtml(label)}</option>`;
+            }).join("");
+        } catch (e) {
+          /* listUsers may be admin-only — keep empty select */
+        }
+      }
+
+      async function loadLinks() {
+        if (!canLinkAccounts) {
+          linkList.innerHTML = `<div class="ta-empty">No permission to manage portal links</div>`;
+          return;
+        }
+        linkList.innerHTML = `<div class="ta-empty">Loading…</div>`;
+        try {
+          await loadUserOptions();
+          const res = await apiGet({ action: "timesheetListWorkerAccounts" });
+          const rows = res.rows || [];
+          if (!rows.length) {
+            linkList.innerHTML = `<div class="ta-empty">No portal links yet</div>`;
+            return;
+          }
+          linkList.innerHTML = `<div class="table-responsive"><table class="ts-table">
+            <thead><tr><th>User</th><th>Worker</th><th></th></tr></thead>
+            <tbody>${rows.map((r) => `<tr>
+              <td>${escapeHtml(r.username || "")}${r.fullName ? " · " + escapeHtml(r.fullName) : ""}</td>
+              <td><strong>${escapeHtml(r.workerCode)}</strong> · ${escapeHtml(r.workerName || "")}</td>
+              <td><button type="button" class="ts-btn ts-btn-ghost" data-unlink="${r.userId}">Unlink</button></td>
+            </tr>`).join("")}</tbody></table></div>`;
+          linkList.querySelectorAll("[data-unlink]").forEach((btn) => {
+            btn.onclick = async () => {
+              try {
+                await apiGet({ action: "timesheetUnlinkWorkerAccount", userId: Number(btn.dataset.unlink) });
+                toast("Unlinked", "ok");
+                loadLinks();
+              } catch (e) {
+                toast(e.message || "Failed", "err");
+              }
+            };
+          });
+        } catch (e) {
+          linkList.innerHTML = `<div class="ta-empty">${escapeHtml(e.message || "Failed")}</div>`;
+        }
+      }
+
+      wkSave.onclick = async () => {
+        if (!canWorkers) return;
+        try {
+          await apiGet({
+            action: "timesheetUpsertWorker",
+            code: wkCode.value,
+            name: wkName.value,
+            notes: wkNotes.value,
+            isActive: true,
+          });
+          toast("Worker saved", "ok");
+          wkCode.readOnly = false;
+          wkCode.value = "";
+          wkName.value = "";
+          wkNotes.value = "";
+          loadWorkers();
+        } catch (e) {
+          toast(e.message || "Save failed", "err");
+        }
+      };
+      wkReload.onclick = () => loadWorkers();
+      wkShowInactive.onchange = () => loadWorkers();
+      linkSave.onclick = async () => {
+        if (!canLinkAccounts) return;
+        try {
+          await apiGet({
+            action: "timesheetLinkWorkerAccount",
+            userId: Number(linkUserId.value),
+            workerCode: linkWorkerCode.value,
+          });
+          toast("Linked", "ok");
+          loadLinks();
+        } catch (e) {
+          toast(e.message || "Link failed", "err");
+        }
+      };
+      linkReload.onclick = () => loadLinks();
 
       /* ---------- Boot ---------- */
       await loadProjects();

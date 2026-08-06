@@ -1,13 +1,13 @@
 /**
  * Timesheet handlers — additive module (attendance, hours, deductions, portal).
+ * Workforce is independent of store catalog/people/custody.
  * Does not write custody ledgers (scans / stock).
  */
 const U = require("../lib/util");
-const custody = require("../custody");
 const { fail } = require("../lib/ctx");
 const tsLog = require("./timesheet_log");
 
-const DED_TYPES = new Set(["delay", "absence", "tool_damage", "fixed_amount"]);
+const DED_TYPES = new Set(["delay", "absence", "tool_damage", "fixed_amount", "other"]);
 
 /** pg DATE often becomes a JS Date at midnight UTC — keep calendar YYYY-MM-DD. */
 function asDateOnly(v) {
@@ -47,17 +47,17 @@ function monthRange(now = new Date()) {
   return { from, to };
 }
 
-async function requirePerson(query, code) {
+async function requireTimesheetWorker(query, code, { allowInactive = false } = {}) {
   const c = U.upper(code);
   if (!c) fail("VALIDATION", { field: "workerCode" });
   const r = await query(
-    `SELECT code, description, kind FROM catalog WHERE code = $1 LIMIT 1`,
+    `SELECT code, name, is_active FROM timesheet_workers WHERE code = $1 LIMIT 1`,
     [c]
   );
   const row = r.rows[0];
   if (!row) fail("WORKER_NOT_FOUND", { workerCode: c });
-  if (String(row.kind).toLowerCase() !== "person") fail("WORKER_NOT_FOUND", { workerCode: c, reason: "not_person" });
-  return { code: U.upper(row.code), name: row.description || row.code };
+  if (!allowInactive && row.is_active === false) fail("WORKER_INACTIVE", { workerCode: c });
+  return { code: U.upper(row.code), name: row.name || row.code, isActive: row.is_active !== false };
 }
 
 async function requireProject(query, projectId) {
@@ -117,7 +117,7 @@ async function timesheetSetSettings(ctx) {
 
 async function timesheetPunch(ctx) {
   ctx.require("timesheet.scan");
-  const worker = await requirePerson(ctx.query, ctx.params.workerCode || ctx.params.code);
+  const worker = await requireTimesheetWorker(ctx.query, ctx.params.workerCode || ctx.params.code);
   const project = await requireProject(ctx.query, ctx.params.projectId);
   const workDate = parseDate(ctx.params.workDate, todayLocalDate());
   const notes = U.trimmed(ctx.params.notes);
@@ -210,7 +210,7 @@ async function timesheetListAttendance(ctx) {
   }
 
   const r = await ctx.query(
-    `SELECT a.*, c.description AS worker_name, p.name AS project_name, u.username AS punched_by,
+    `SELECT a.*, tw.name AS worker_name, p.name AS project_name, u.username AS punched_by,
             COALESCE((
               SELECT SUM(l.delta_hours)
                 FROM timesheet_hour_adjustment_lines l
@@ -220,7 +220,7 @@ async function timesheetListAttendance(ctx) {
                  AND h.status = 'active'
             ), 0) AS adjustment_hours
        FROM timesheet_attendance a
-       JOIN catalog c ON c.code = a.worker_code
+       JOIN timesheet_workers tw ON tw.code = a.worker_code
        JOIN projects p ON p.id = a.project_id
        JOIN users u ON u.id = a.punched_by_user_id
       WHERE ${where.join(" AND ")}
@@ -320,7 +320,7 @@ async function timesheetAdjustHours(ctx) {
 
   const normalized = [];
   for (const line of lines) {
-    const worker = await requirePerson(ctx.query, line.workerCode || line.code);
+    const worker = await requireTimesheetWorker(ctx.query, line.workerCode || line.code);
     const delta = U.num(line.deltaHours, NaN);
     if (!Number.isFinite(delta) || delta === 0) fail("VALIDATION", { field: "deltaHours", workerCode: worker.code });
     const before = await tsLog.workerDayNet(ctx.query, worker.code, workDate);
@@ -411,9 +411,9 @@ async function timesheetListHourAdjustments(ctx) {
   const rows = [];
   for (const h of hdrs.rows) {
     const lines = await ctx.query(
-      `SELECT l.worker_code, l.delta_hours, c.description AS worker_name
+      `SELECT l.worker_code, l.delta_hours, tw.name AS worker_name
          FROM timesheet_hour_adjustment_lines l
-         JOIN catalog c ON c.code = l.worker_code
+         JOIN timesheet_workers tw ON tw.code = l.worker_code
         WHERE l.adjustment_id = $1
         ORDER BY l.worker_code`,
       [h.id]
@@ -459,7 +459,7 @@ async function timesheetVoidHourAdjustment(ctx) {
 
 async function timesheetCreateDeduction(ctx) {
   ctx.require("timesheet.deductions.manage");
-  const worker = await requirePerson(ctx.query, ctx.params.workerCode);
+  const worker = await requireTimesheetWorker(ctx.query, ctx.params.workerCode);
   const workDate = parseDate(ctx.params.workDate, todayLocalDate());
   const dedType = U.trimmed(ctx.params.dedType || ctx.params.type).toLowerCase();
   if (!DED_TYPES.has(dedType)) fail("VALIDATION", { field: "dedType", allowed: [...DED_TYPES] });
@@ -544,9 +544,9 @@ async function timesheetListDeductions(ctx) {
     where.push(`d.worker_code = $${args.length}`);
   }
   const r = await ctx.query(
-    `SELECT d.*, c.description AS worker_name
+    `SELECT d.*, tw.name AS worker_name
        FROM timesheet_deductions d
-       JOIN catalog c ON c.code = d.worker_code
+       JOIN timesheet_workers tw ON tw.code = d.worker_code
       WHERE ${where.join(" AND ")}
       ORDER BY d.work_date DESC, d.id DESC
       LIMIT 2000`,
@@ -593,7 +593,7 @@ async function timesheetLinkWorkerAccount(ctx) {
   ctx.require("timesheet.worker_accounts.manage");
   const userId = U.int(ctx.params.userId, 0);
   if (!userId) fail("VALIDATION", { field: "userId" });
-  const worker = await requirePerson(ctx.query, ctx.params.workerCode);
+  const worker = await requireTimesheetWorker(ctx.query, ctx.params.workerCode);
   const u = await ctx.query(`SELECT id, username, role FROM users WHERE id = $1`, [userId]);
   if (!u.rows[0]) fail("NOT_FOUND", { field: "userId" });
 
@@ -637,10 +637,10 @@ async function timesheetListWorkerAccounts(ctx) {
   const r = await ctx.query(
     `SELECT a.user_id, a.worker_code, a.is_active, a.created_at,
             u.username, u.full_name, u.role,
-            c.description AS worker_name
+            tw.name AS worker_name
        FROM timesheet_worker_accounts a
        JOIN users u ON u.id = a.user_id
-       JOIN catalog c ON c.code = a.worker_code
+       JOIN timesheet_workers tw ON tw.code = a.worker_code
       ORDER BY u.username`
   );
   return {
@@ -665,7 +665,7 @@ async function timesheetMySummary(ctx) {
   const def = monthRange();
   const from = parseDate(ctx.params.from, def.from);
   const to = parseDate(ctx.params.to, def.to);
-  const person = await requirePerson(ctx.query, workerCode);
+  const person = await requireTimesheetWorker(ctx.query, workerCode, { allowInactive: true });
 
   const att = await ctx.query(
     `SELECT COALESCE(SUM(base_hours),0) AS base_hours, COUNT(*)::int AS days
@@ -819,22 +819,90 @@ async function timesheetMyDeductions(ctx) {
   };
 }
 
-async function timesheetMyOutstandingTools(ctx) {
-  ctx.require("timesheet.portal.self");
-  const workerCode = await linkedWorkerCode(ctx);
-  const ledger = await ctx.ledger();
-  const overdueDays = Math.max(1, U.int(ctx.params.overdueDays, 1));
-  const held = custody.holdingsForPerson(ledger, workerCode, { overdueDays, now: Date.now() });
+async function timesheetListWorkers(ctx) {
+  ctx.requireAny([
+    "timesheet.workers.manage",
+    "timesheet.worker_accounts.manage",
+    "timesheet.scan",
+    "timesheet.attendance.read",
+    "timesheet.hours.adjust",
+    "timesheet.deductions.manage",
+  ]);
+  const q = U.trimmed(ctx.params.q || ctx.params.search || "").toLowerCase();
+  const includeInactive = String(ctx.params.includeInactive || "") === "true" || ctx.params.includeInactive === true;
+  const where = [];
+  const args = [];
+  if (!includeInactive) where.push(`is_active = TRUE`);
+  if (q) {
+    args.push(`%${q}%`);
+    where.push(`(LOWER(code) LIKE $${args.length} OR LOWER(name) LIKE $${args.length})`);
+  }
+  const r = await ctx.query(
+    `SELECT code, name, is_active, notes, created_at, updated_at
+       FROM timesheet_workers
+      ${where.length ? "WHERE " + where.join(" AND ") : ""}
+      ORDER BY code
+      LIMIT 2000`,
+    args
+  );
   return {
-    workerCode,
-    rows: (held || []).map((t) => ({
-      code: t.code,
-      description: t.description || "",
-      qty: t.qty,
-      daysOut: t.daysOut,
-      since: t.since || t.outAt || null,
+    rows: r.rows.map((row) => ({
+      code: row.code,
+      name: row.name || "",
+      isActive: row.is_active !== false,
+      notes: row.notes || "",
+      createdAt: U.isoOrNull(row.created_at),
+      updatedAt: U.isoOrNull(row.updated_at),
     })),
   };
+}
+
+async function timesheetUpsertWorker(ctx) {
+  ctx.require("timesheet.workers.manage");
+  const code = U.upper(ctx.params.code || ctx.params.workerCode);
+  const name = U.trimmed(ctx.params.name || ctx.params.workerName);
+  const notes = U.trimmed(ctx.params.notes);
+  if (!code) fail("VALIDATION", { field: "code" });
+  if (!/^[A-Z0-9][A-Z0-9._-]{0,31}$/.test(code)) {
+    fail("VALIDATION", { field: "code", reason: "use letters/numbers only, max 32" });
+  }
+  if (!name) fail("VALIDATION", { field: "name" });
+  const isActive =
+    ctx.params.isActive === undefined || ctx.params.isActive === null || ctx.params.isActive === ""
+      ? true
+      : !(ctx.params.isActive === false || String(ctx.params.isActive).toLowerCase() === "false" || ctx.params.isActive === 0 || ctx.params.isActive === "0");
+
+  await ctx.query(
+    `INSERT INTO timesheet_workers (code, name, is_active, notes, created_by_user_id, updated_at)
+     VALUES ($1, $2, $3, $4, $5, now())
+     ON CONFLICT (code) DO UPDATE SET
+       name = EXCLUDED.name,
+       is_active = EXCLUDED.is_active,
+       notes = EXCLUDED.notes,
+       updated_at = now()`,
+    [code, name, isActive, notes || "", ctx.user.id]
+  );
+  await ctx.audit({ action: "TIMESHEET_UPSERT_WORKER", detail: `code=${code} active=${isActive}` });
+  return { ok: true, code, name, isActive, notes: notes || "" };
+}
+
+async function timesheetSetWorkerActive(ctx) {
+  ctx.require("timesheet.workers.manage");
+  const code = U.upper(ctx.params.code || ctx.params.workerCode);
+  if (!code) fail("VALIDATION", { field: "code" });
+  await requireTimesheetWorker(ctx.query, code, { allowInactive: true });
+  const isActive = !(
+    ctx.params.isActive === false ||
+    String(ctx.params.isActive).toLowerCase() === "false" ||
+    ctx.params.isActive === 0 ||
+    ctx.params.isActive === "0"
+  );
+  await ctx.query(
+    `UPDATE timesheet_workers SET is_active = $2, updated_at = now() WHERE code = $1`,
+    [code, isActive]
+  );
+  await ctx.audit({ action: "TIMESHEET_WORKER_ACTIVE", detail: `code=${code} active=${isActive}` });
+  return { ok: true, code, isActive };
 }
 
 module.exports = {
@@ -852,9 +920,11 @@ module.exports = {
   timesheetLinkWorkerAccount,
   timesheetUnlinkWorkerAccount,
   timesheetListWorkerAccounts,
+  timesheetListWorkers,
+  timesheetUpsertWorker,
+  timesheetSetWorkerActive,
   timesheetMySummary,
   timesheetMyAttendance,
   timesheetMyHours,
   timesheetMyDeductions,
-  timesheetMyOutstandingTools,
 };
