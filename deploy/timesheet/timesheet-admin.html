@@ -2,315 +2,480 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>AbouAmjad Store System | Timesheet Admin</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="app.css?v=live">
-  <link rel="stylesheet" href="timesheet.css?v=5">
+  <link rel="stylesheet" href="timesheet.css?v=6">
   <script src="config.js?v=tsro1"></script>
   <script src="i18n.js?v=live"></script>
   <script src="ui.js?v=live"></script>
   <style>
-    .ta-stack { display: grid; gap: .85rem; max-width: 960px; }
-    .ta-row { display: grid; gap: .75rem; }
-    @media (min-width: 640px) {
-      .ta-row.two { grid-template-columns: 1fr 1fr; }
-      .ta-row.three { grid-template-columns: 1fr 1fr 1fr; }
-      .ta-row.four { grid-template-columns: 1fr 1fr 1fr 1fr; }
+    .ta-page { max-width: 920px; margin: 0 auto; }
+    .ta-hero {
+      margin-bottom: .9rem;
+      padding: 1rem 1.05rem;
+      border-radius: 18px;
+      border: 1px solid var(--tc-border);
+      background:
+        radial-gradient(700px 220px at 0% 0%, rgba(15, 118, 110, 0.14), transparent 55%),
+        var(--tc-surface);
+      box-shadow: var(--tc-shadow-soft);
     }
-    .ta-actions { display: flex; flex-wrap: wrap; gap: .55rem; align-items: center; margin-top: .15rem; }
-    .ta-msg { font-weight: 700; color: var(--tc-accent-2); min-height: 1.2em; }
-    .ta-msg.err { color: var(--tc-danger); }
+    .ta-hero h1 {
+      margin: 0;
+      font-size: clamp(1.2rem, 4vw, 1.55rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      display: flex;
+      align-items: center;
+      gap: .45rem;
+    }
+    .ta-hero p {
+      margin: .35rem 0 0;
+      color: var(--tc-muted);
+      font-size: .9rem;
+      line-height: 1.4;
+    }
     .ta-kpis {
       display: grid;
-      gap: .75rem;
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      margin: 0 0 .25rem;
+      grid-template-columns: 1fr 1fr;
+      gap: .55rem;
+      margin-bottom: .9rem;
+    }
+    @media (min-width: 720px) {
+      .ta-kpis { grid-template-columns: repeat(4, 1fr); gap: .7rem; }
     }
     .ta-kpi {
-      padding: .9rem 1rem;
-      border-radius: 16px;
+      padding: .75rem .85rem;
+      border-radius: 14px;
       border: 1px solid var(--tc-border);
       background: var(--tc-surface);
       box-shadow: var(--tc-shadow-soft);
+      min-width: 0;
     }
     .ta-kpi span {
       display: block;
-      font-size: .72rem;
+      font-size: .68rem;
       font-weight: 700;
-      letter-spacing: .03em;
+      letter-spacing: .04em;
       text-transform: uppercase;
       color: var(--tc-muted);
-      margin-bottom: .3rem;
+      margin-bottom: .2rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .ta-kpi strong {
       display: block;
-      font-size: 1.45rem;
+      font-size: clamp(1.15rem, 4vw, 1.4rem);
       font-weight: 800;
       letter-spacing: -0.03em;
       color: var(--tc-accent-2);
     }
-    .ta-presets { display: flex; flex-wrap: wrap; gap: .45rem; }
-    .ta-chip {
+    .ta-panel {
+      padding: .95rem;
+      border-radius: 18px;
       border: 1px solid var(--tc-border);
       background: var(--tc-surface);
+      box-shadow: var(--tc-shadow-soft);
+      margin-bottom: .9rem;
+    }
+    .ta-panel h2 {
+      margin: 0 0 .75rem;
+      font-size: 1rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+    }
+    .ta-presets {
+      display: flex;
+      gap: .4rem;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: .15rem;
+      margin-bottom: .7rem;
+      scrollbar-width: none;
+    }
+    .ta-presets::-webkit-scrollbar { display: none; }
+    .ta-chip {
+      flex: 0 0 auto;
+      border: 1px solid var(--tc-border);
+      background: var(--tc-surface-2);
       color: var(--tc-text);
       border-radius: 10px;
-      padding: .4rem .75rem;
+      padding: .55rem .85rem;
       font: inherit;
       font-size: .84rem;
       font-weight: 700;
       cursor: pointer;
+      min-height: 42px;
     }
-    .ta-chip:hover { border-color: color-mix(in srgb, var(--tc-accent) 45%, var(--tc-border)); }
     .ta-chip.is-on {
       background: color-mix(in srgb, var(--tc-accent) 14%, var(--tc-surface));
       border-color: var(--tc-accent);
       color: var(--tc-accent-2);
     }
-    .ta-row-pick { cursor: pointer; transition: background var(--tc-ease); }
-    .ta-row-pick:hover { background: color-mix(in srgb, var(--tc-accent) 8%, transparent); }
-    .ta-row-pick.is-selected { background: color-mix(in srgb, var(--tc-accent) 14%, transparent); }
-    .ta-worker-sheet {
-      margin-top: 1rem;
-      padding: 1.1rem 1.15rem;
-      border-radius: 18px;
-      border: 1px solid color-mix(in srgb, var(--tc-accent) 35%, var(--tc-border));
-      background:
-        radial-gradient(500px 160px at 0% 0%, rgba(15, 118, 110, 0.12), transparent 55%),
-        var(--tc-surface);
-      box-shadow: var(--tc-shadow-soft);
+    .ta-filters {
+      display: grid;
+      gap: .65rem;
+      margin-bottom: .7rem;
     }
-    .ta-worker-head {
+    @media (min-width: 640px) {
+      .ta-filters { grid-template-columns: 1fr 1fr; }
+      .ta-filters .ta-span-2 { grid-column: 1 / -1; }
+    }
+    @media (min-width: 900px) {
+      .ta-filters { grid-template-columns: 1fr 1fr 1.2fr 1.2fr; }
+      .ta-filters .ta-span-2 { grid-column: auto; }
+    }
+    .ta-label {
+      display: block;
+      font-size: .74rem;
+      font-weight: 700;
+      color: var(--tc-muted);
+      margin-bottom: .3rem;
+    }
+    .ta-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .5rem;
+      align-items: center;
+      margin-bottom: .75rem;
+    }
+    .ta-toolbar .ts-btn { min-height: 42px; flex: 1 1 auto; }
+    @media (min-width: 520px) {
+      .ta-toolbar .ts-btn { flex: 0 0 auto; }
+    }
+    .ta-msg { font-weight: 700; color: var(--tc-accent-2); font-size: .86rem; min-height: 1.1em; }
+    .ta-msg.err { color: var(--tc-danger); }
+    .ta-list-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: .5rem;
+      margin-bottom: .55rem;
+    }
+    .ta-list-head .muted { color: var(--tc-muted); font-size: .82rem; font-weight: 600; }
+    .ta-select-all {
+      display: inline-flex;
+      align-items: center;
+      gap: .4rem;
+      font-size: .84rem;
+      font-weight: 700;
+      color: var(--tc-muted);
+      min-height: 40px;
+    }
+    .ta-check {
+      width: 1.15rem;
+      height: 1.15rem;
+      accent-color: var(--tc-accent-2, #0f766e);
+      cursor: pointer;
+    }
+    .ta-list { display: grid; gap: .55rem; }
+    .ta-card {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: .65rem;
+      align-items: start;
+      padding: .85rem .9rem;
+      border-radius: 14px;
+      border: 1px solid var(--tc-border);
+      background: var(--tc-surface-2);
+      cursor: pointer;
+      transition: border-color var(--tc-ease), background var(--tc-ease), transform var(--tc-ease);
+      text-align: left;
+      font: inherit;
+      color: inherit;
+      width: 100%;
+    }
+    .ta-card:active { transform: scale(0.995); }
+    .ta-card.is-selected {
+      border-color: color-mix(in srgb, var(--tc-accent) 55%, var(--tc-border));
+      background: color-mix(in srgb, var(--tc-accent) 10%, var(--tc-surface));
+    }
+    .ta-card-main { min-width: 0; }
+    .ta-card-title {
+      font-weight: 800;
+      font-size: .95rem;
+      letter-spacing: -0.02em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .ta-card-sub {
+      margin-top: .2rem;
+      color: var(--tc-muted);
+      font-size: .8rem;
+      line-height: 1.35;
+    }
+    .ta-card-hours {
+      text-align: right;
+      font-weight: 800;
+      font-size: 1.05rem;
+      color: var(--tc-accent-2);
+      white-space: nowrap;
+    }
+    .ta-card-hours small {
+      display: block;
+      font-size: .72rem;
+      font-weight: 600;
+      color: var(--tc-muted);
+      margin-top: .1rem;
+    }
+    .ta-empty {
+      padding: 1.4rem .75rem;
+      text-align: center;
+      color: var(--tc-muted);
+      font-weight: 600;
+      border: 1px dashed var(--tc-border);
+      border-radius: 14px;
+    }
+    .ta-sheet {
+      margin-top: .85rem;
+      padding: 1rem;
+      border-radius: 16px;
+      border: 1px solid color-mix(in srgb, var(--tc-accent) 30%, var(--tc-border));
+      background: var(--tc-surface);
+    }
+    .ta-sheet-head {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      gap: .75rem;
-      flex-wrap: wrap;
-      margin-bottom: .9rem;
+      gap: .6rem;
+      margin-bottom: .8rem;
     }
-    .ta-worker-head h3 {
-      margin: .15rem 0 0;
-      font-size: 1.15rem;
+    .ta-sheet-head h3 {
+      margin: .1rem 0 0;
+      font-size: 1.05rem;
       font-weight: 800;
-      letter-spacing: -0.02em;
     }
-    .ta-worker-meta { margin: .2rem 0 0; color: var(--tc-muted); font-size: .86rem; }
-    .ta-worker-kicker {
+    .ta-kicker {
       margin: 0;
-      font-size: .72rem;
+      font-size: .7rem;
       font-weight: 700;
       letter-spacing: .04em;
       text-transform: uppercase;
       color: var(--tc-muted);
     }
-    .ta-worker-actions {
+    .ta-meta { margin: .2rem 0 0; color: var(--tc-muted); font-size: .82rem; line-height: 1.35; }
+    .ta-actions-grid {
       display: grid;
-      gap: .65rem;
-      grid-template-columns: 1fr;
+      gap: .5rem;
     }
-    @media (min-width: 560px) {
-      .ta-worker-actions { grid-template-columns: 1fr 1fr 1fr; }
+    @media (min-width: 640px) {
+      .ta-actions-grid { grid-template-columns: 1fr 1fr 1fr; }
     }
-    .ta-worker-action {
+    .ta-action {
       text-align: left;
       border: 1px solid var(--tc-border);
-      background: var(--tc-surface-2, var(--tc-surface));
-      border-radius: 14px;
-      padding: .9rem 1rem;
+      background: var(--tc-surface-2);
+      border-radius: 12px;
+      padding: .85rem .9rem;
       cursor: pointer;
       font: inherit;
       color: inherit;
-      transition: border-color var(--tc-ease), transform var(--tc-ease);
+      min-height: 72px;
     }
-    .ta-worker-action:hover {
-      border-color: color-mix(in srgb, var(--tc-accent) 50%, var(--tc-border));
-      transform: translateY(-1px);
-    }
-    .ta-worker-action i { color: var(--tc-accent-2); font-size: 1.1rem; }
-    .ta-worker-action strong { display: block; margin: .35rem 0 .2rem; font-weight: 800; }
-    .ta-worker-action span { display: block; color: var(--tc-muted); font-size: .82rem; line-height: 1.35; }
-    .ta-inline-panel {
-      margin-top: .9rem;
-      padding-top: .9rem;
+    .ta-action i { color: var(--tc-accent-2); }
+    .ta-action strong { display: block; margin: .3rem 0 .15rem; font-weight: 800; font-size: .92rem; }
+    .ta-action span { display: block; color: var(--tc-muted); font-size: .78rem; line-height: 1.3; }
+    .ta-inline {
+      margin-top: .85rem;
+      padding-top: .85rem;
       border-top: 1px solid var(--tc-border);
     }
-    .ta-inline-panel h4 {
-      margin: 0 0 .75rem;
-      font-size: .95rem;
-      font-weight: 800;
+    .ta-inline h4 { margin: 0 0 .7rem; font-size: .95rem; font-weight: 800; }
+    .ta-form-row {
+      display: grid;
+      gap: .65rem;
+      margin-bottom: .65rem;
     }
-    .ta-check {
-      width: 1.1rem;
-      height: 1.1rem;
-      accent-color: var(--tc-accent-2, #0f766e);
-      cursor: pointer;
+    @media (min-width: 520px) {
+      .ta-form-row.two { grid-template-columns: 1fr 1fr; }
     }
-    .ta-th-check { width: 2.2rem; }
-    .ta-void-link {
+    .ta-form-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .5rem;
+      align-items: center;
+      margin-top: .2rem;
+    }
+    .ta-form-actions .ts-btn { min-height: 42px; flex: 1 1 140px; }
+    .ta-void {
+      margin-top: .85rem;
       background: none;
       border: 0;
       color: var(--tc-danger);
       font: inherit;
-      font-size: .8rem;
+      font-size: .84rem;
       font-weight: 700;
       cursor: pointer;
-      padding: 0;
       text-decoration: underline;
       text-underline-offset: 2px;
-    }
-    .ta-log {
-      margin-top: 1.25rem;
-      padding-top: 1rem;
-      border-top: 1px solid var(--tc-border);
+      padding: .35rem 0;
+      min-height: 40px;
     }
     .ta-log h3 {
-      margin: 0 0 .65rem;
+      margin: 0 0 .6rem;
       font-size: .95rem;
       font-weight: 800;
     }
     .ta-log-item {
-      display: grid;
-      gap: .15rem;
-      padding: .65rem 0;
+      padding: .7rem 0;
       border-bottom: 1px solid var(--tc-border);
       font-size: .86rem;
+      line-height: 1.35;
     }
     .ta-log-item:last-child { border-bottom: 0; }
-    .ta-log-item strong { font-weight: 800; }
-    .ta-log-item .muted { color: var(--tc-muted); font-size: .8rem; }
+    .ta-log-item .muted { color: var(--tc-muted); font-size: .78rem; }
     .ta-sticky {
       position: fixed;
       left: 0;
       right: 0;
       bottom: 0;
-      z-index: 40;
-      padding: .75rem 1rem calc(.75rem + env(safe-area-inset-bottom));
-      background: color-mix(in srgb, var(--tc-surface) 92%, transparent);
-      backdrop-filter: blur(10px);
+      z-index: 50;
+      padding: .7rem .85rem calc(.7rem + env(safe-area-inset-bottom));
+      background: color-mix(in srgb, var(--tc-surface) 94%, transparent);
+      backdrop-filter: blur(12px);
       border-top: 1px solid var(--tc-border);
-      box-shadow: 0 -10px 30px -18px rgba(0,0,0,.35);
+      box-shadow: 0 -12px 28px -18px rgba(0,0,0,.4);
       display: none;
     }
     .ta-sticky.show { display: block; }
     .ta-sticky-inner {
-      max-width: 960px;
+      max-width: 920px;
       margin: 0 auto;
-      display: flex;
-      flex-wrap: wrap;
+      display: grid;
       gap: .55rem;
-      align-items: center;
-      justify-content: space-between;
     }
-    .ta-sticky-count { font-weight: 800; }
-    .ta-sticky-btns { display: flex; flex-wrap: wrap; gap: .45rem; }
-    body.has-ta-sticky { padding-bottom: 5.5rem; }
-    .ta-hours-adj { color: var(--tc-muted); font-size: .78rem; font-weight: 600; }
+    .ta-sticky-count { font-weight: 800; font-size: .95rem; }
+    .ta-sticky-btns {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr auto;
+      gap: .45rem;
+    }
+    .ta-sticky-btns .ts-btn { min-height: 44px; width: 100%; }
+    body.has-ta-sticky { padding-bottom: 6.5rem; }
+    @media (max-width: 420px) {
+      .ta-sticky-btns { grid-template-columns: 1fr 1fr; }
+      .ta-sticky-btns #stClear { grid-column: 1 / -1; }
+    }
   </style>
 </head>
 <body class="tc-page ts-page" data-page="timesheetAdmin">
   <div class="tc-wrap"><div class="tc-shell">
     <div id="app-header"></div>
     <main class="tc-main p-3">
-      <section class="ts-hero">
-        <h1><i class="bi bi-clock-history"></i> Timesheet Admin</h1>
-        <p>Select one or more workers, then adjust hours or add a deduction. Scanning marks present automatically.</p>
-        <div id="readOnlyBanner" class="ts-note" style="display:none;margin-top:.85rem">
-          Read-only access — you can view and export attendance, but cannot adjust hours, add deductions, void days, or change shift settings.
+      <div class="ta-page">
+        <section class="ta-hero">
+          <h1><i class="bi bi-clock-history"></i> Timesheet Admin</h1>
+          <p id="heroSub">Select workers, then adjust hours or add a deduction.</p>
+          <div id="readOnlyBanner" class="ts-note" style="display:none;margin-top:.7rem">
+            Read-only access — view and export only.
+          </div>
+        </section>
+
+        <div class="ta-kpis">
+          <div class="ta-kpi"><span>Present</span><strong id="kpiPresent">—</strong></div>
+          <div class="ta-kpi"><span>Net hours</span><strong id="kpiHours">—</strong></div>
+          <div class="ta-kpi"><span>Adjustments</span><strong id="kpiAdj">—</strong></div>
+          <div class="ta-kpi"><span>Deductions</span><strong id="kpiDed">—</strong></div>
         </div>
-      </section>
 
-      <div class="ta-kpis" id="kpiRow">
-        <div class="ta-kpi"><span>Present</span><strong id="kpiPresent">—</strong></div>
-        <div class="ta-kpi"><span>Net hours</span><strong id="kpiHours">—</strong></div>
-        <div class="ta-kpi"><span>Hour adjustments</span><strong id="kpiAdj">—</strong></div>
-        <div class="ta-kpi"><span>Deductions</span><strong id="kpiDed">—</strong></div>
-      </div>
+        <section class="ta-panel">
+          <h2><i class="bi bi-calendar2-check"></i> Attendance</h2>
 
-      <section class="ts-panel" id="panel-att">
-        <h2><i class="bi bi-calendar2-check"></i> Attendance list</h2>
-
-        <div class="ta-stack">
           <div class="ta-presets" id="datePresets">
             <button type="button" class="ta-chip" data-range="today">Today</button>
             <button type="button" class="ta-chip" data-range="week">This week</button>
             <button type="button" class="ta-chip" data-range="month">This month</button>
           </div>
 
-          <div class="ta-row four">
-            <div><label class="ts-label">From</label><input type="date" id="attFrom" class="ts-input"></div>
-            <div><label class="ts-label">To</label><input type="date" id="attTo" class="ts-input"></div>
+          <div class="ta-filters">
             <div>
-              <label class="ts-label">Project</label>
-              <select id="attProject" class="ts-select"><option value="">All projects</option></select>
+              <label class="ta-label" for="attFrom">From</label>
+              <input type="date" id="attFrom" class="ts-input">
             </div>
             <div>
-              <label class="ts-label">Search (code / name)</label>
-              <input type="search" id="attSearch" class="ts-input" placeholder="P001 or name…" autocomplete="off">
+              <label class="ta-label" for="attTo">To</label>
+              <input type="date" id="attTo" class="ts-input">
+            </div>
+            <div class="ta-span-2">
+              <label class="ta-label" for="attProject">Project</label>
+              <select id="attProject" class="ts-select"><option value="">All projects</option></select>
+            </div>
+            <div class="ta-span-2">
+              <label class="ta-label" for="attSearch">Search</label>
+              <input type="search" id="attSearch" class="ts-input" placeholder="Code or name…" autocomplete="off">
             </div>
           </div>
 
-          <div class="ta-actions">
+          <div class="ta-toolbar">
             <button class="ts-btn ts-btn-primary" id="attReload"><i class="bi bi-arrow-repeat"></i> Show</button>
-            <button class="ts-btn ts-btn-ghost" id="btnExport"><i class="bi bi-download"></i> Export CSV</button>
+            <button class="ts-btn ts-btn-ghost" id="btnExport"><i class="bi bi-download"></i> Export</button>
             <span class="ta-msg" id="listMsg"></span>
           </div>
 
-          <div class="table-responsive"><table class="ts-table"><thead><tr>
-            <th class="ta-th-check"><input type="checkbox" class="ta-check" id="attSelectAll" title="Select all"></th>
-            <th>Date</th><th>Worker</th><th>Project</th><th>Hours (net)</th>
-          </tr></thead><tbody id="attBody"></tbody></table></div>
+          <div class="ta-list-head">
+            <label class="ta-select-all" id="selectAllWrap">
+              <input type="checkbox" class="ta-check" id="attSelectAll"> Select all
+            </label>
+            <span class="muted" id="listCount"></span>
+          </div>
 
-          <div id="workerSheet" class="ta-worker-sheet" hidden>
-            <div class="ta-worker-head">
+          <div class="ta-list" id="attList"></div>
+
+          <div id="workerSheet" class="ta-sheet" hidden>
+            <div class="ta-sheet-head">
               <div>
-                <p class="ta-worker-kicker">Selected</p>
+                <p class="ta-kicker">Selected</p>
                 <h3 id="wsName">—</h3>
-                <p class="ta-worker-meta" id="wsMeta"></p>
+                <p class="ta-meta" id="wsMeta"></p>
               </div>
               <button type="button" class="ts-btn ts-btn-ghost" id="wsClose">Clear</button>
             </div>
 
-            <div class="ta-worker-actions">
-              <button type="button" class="ta-worker-action" id="wsOpenHours">
+            <div class="ta-actions-grid">
+              <button type="button" class="ta-action" id="wsOpenHours">
                 <i class="bi bi-plus-slash-minus"></i>
                 <strong>Add / remove hours</strong>
-                <span>Same +/− hours for all selected workers.</span>
+                <span>Same +/− for selected workers</span>
               </button>
-              <button type="button" class="ta-worker-action" id="wsOpenDed">
+              <button type="button" class="ta-action" id="wsOpenDed">
                 <i class="bi bi-cash-coin"></i>
                 <strong>Add deduction</strong>
-                <span>Delay, absence, tool damage, or fixed amount.</span>
+                <span>Delay, absence, damage, fixed</span>
               </button>
-              <button type="button" class="ta-worker-action" id="wsOpenShift">
+              <button type="button" class="ta-action" id="wsOpenShift">
                 <i class="bi bi-sliders"></i>
                 <strong>Shift hours</strong>
-                <span>Default hours per present day (e.g. 10).</span>
+                <span>Default hours per present day</span>
               </button>
             </div>
 
-            <div id="wsHoursPanel" class="ta-inline-panel" hidden>
-              <h4><i class="bi bi-plus-slash-minus"></i> Add / remove hours</h4>
-              <div class="ta-row two">
-                <div><label class="ts-label">Date</label><input type="date" id="wsAdjDate" class="ts-input"></div>
-                <div><label class="ts-label">Hours (+ or −)</label><input type="number" step="0.5" id="wsAdjDelta" class="ts-input" value="1"></div>
+            <div id="wsHoursPanel" class="ta-inline" hidden>
+              <h4>Add / remove hours</h4>
+              <div class="ta-form-row two">
+                <div><label class="ta-label">Date</label><input type="date" id="wsAdjDate" class="ts-input"></div>
+                <div><label class="ta-label">Hours (+/−)</label><input type="number" step="0.5" id="wsAdjDelta" class="ts-input" value="1"></div>
               </div>
-              <div style="margin-top:.75rem">
-                <label class="ts-label">Reason</label>
-                <input id="wsAdjReason" class="ts-input" placeholder="Overtime / late">
+              <div class="ta-form-row">
+                <div><label class="ta-label">Reason</label><input id="wsAdjReason" class="ts-input" placeholder="Overtime / late"></div>
               </div>
-              <div class="ta-actions">
+              <div class="ta-form-actions">
                 <button class="ts-btn ts-btn-primary" id="wsAdjSubmit">Save hours</button>
                 <button type="button" class="ts-btn ts-btn-ghost" id="wsAdjCancel">Cancel</button>
                 <span class="ta-msg" id="wsAdjMsg"></span>
               </div>
             </div>
 
-            <div id="wsDedPanel" class="ta-inline-panel" hidden>
-              <h4><i class="bi bi-cash-coin"></i> Add deduction</h4>
-              <div class="ta-row two">
+            <div id="wsDedPanel" class="ta-inline" hidden>
+              <h4>Add deduction</h4>
+              <div class="ta-form-row two">
                 <div>
-                  <label class="ts-label">Type</label>
+                  <label class="ta-label">Type</label>
                   <select id="wsDedType" class="ts-select">
                     <option value="delay">Delay</option>
                     <option value="absence">Absence</option>
@@ -318,44 +483,41 @@
                     <option value="fixed_amount">Fixed amount</option>
                   </select>
                 </div>
-                <div><label class="ts-label">Amount</label><input type="number" step="0.01" id="wsDedAmount" class="ts-input" placeholder="0.00"></div>
+                <div><label class="ta-label">Amount</label><input type="number" step="0.01" id="wsDedAmount" class="ts-input" placeholder="0.00"></div>
               </div>
-              <div class="ta-row two" style="margin-top:.75rem">
-                <div><label class="ts-label">Date</label><input type="date" id="wsDedDate" class="ts-input"></div>
-                <div><label class="ts-label">Note (optional)</label><input id="wsDedNote" class="ts-input"></div>
+              <div class="ta-form-row two">
+                <div><label class="ta-label">Date</label><input type="date" id="wsDedDate" class="ts-input"></div>
+                <div><label class="ta-label">Note</label><input id="wsDedNote" class="ts-input" placeholder="Optional"></div>
               </div>
-              <div class="ta-actions">
+              <div class="ta-form-actions">
                 <button class="ts-btn ts-btn-primary" id="wsDedSubmit">Save deduction</button>
                 <button type="button" class="ts-btn ts-btn-ghost" id="wsDedCancel">Cancel</button>
                 <span class="ta-msg" id="wsDedMsg"></span>
               </div>
             </div>
 
-            <div id="wsShiftPanel" class="ta-inline-panel" hidden>
-              <h4><i class="bi bi-sliders"></i> Shift hours</h4>
-              <div class="ts-note" style="margin-bottom:.75rem">Applies to every new present day (all workers).</div>
-              <div style="max-width:280px">
-                <label class="ts-label">Hours for each present day</label>
-                <input type="number" step="0.5" id="shiftHours" class="ts-input">
+            <div id="wsShiftPanel" class="ta-inline" hidden>
+              <h4>Shift hours</h4>
+              <div class="ts-note" style="margin-bottom:.7rem">Applies to every new present day.</div>
+              <div class="ta-form-row" style="max-width:260px">
+                <div><label class="ta-label">Hours per present day</label><input type="number" step="0.5" id="shiftHours" class="ts-input"></div>
               </div>
-              <div class="ta-actions">
+              <div class="ta-form-actions">
                 <button class="ts-btn ts-btn-primary" id="shiftSave">Save</button>
                 <button type="button" class="ts-btn ts-btn-ghost" id="wsShiftCancel">Cancel</button>
                 <span class="ta-msg" id="shiftMsg"></span>
               </div>
             </div>
 
-            <div class="ta-actions" style="margin-top:1rem">
-              <button type="button" class="ta-void-link" id="wsVoid">Void selected attendance day(s)…</button>
-            </div>
+            <button type="button" class="ta-void" id="wsVoid">Void selected attendance day(s)…</button>
           </div>
+        </section>
 
-          <div class="ta-log">
-            <h3><i class="bi bi-clock-history"></i> Recent changes</h3>
-            <div id="activityLog"><div class="ts-empty">None yet</div></div>
-          </div>
-        </div>
-      </section>
+        <section class="ta-panel ta-log">
+          <h3><i class="bi bi-clock-history"></i> Recent changes</h3>
+          <div id="activityLog"><div class="ta-empty">None yet</div></div>
+        </section>
+      </div>
     </main>
   </div></div>
 
@@ -365,7 +527,7 @@
       <div class="ta-sticky-btns">
         <button type="button" class="ts-btn ts-btn-primary" id="stHours">Hours +/−</button>
         <button type="button" class="ts-btn ts-btn-ghost" id="stDed">Deduction</button>
-        <button type="button" class="ts-btn ts-btn-ghost" id="stClear">Clear selection</button>
+        <button type="button" class="ts-btn ts-btn-ghost" id="stClear">Clear</button>
       </div>
     </div>
   </div>
@@ -386,13 +548,13 @@
       const readOnly = !canWrite;
 
       if (!canRead && typeof canAccessPage === "function" && !canAccessPage("timesheetAdmin")) {
-        document.querySelector("main").innerHTML = `<section class="ts-panel"><div class="ts-empty">No permission to view Timesheet Admin.</div></section>`;
+        document.querySelector("main").innerHTML = `<section class="ta-panel"><div class="ta-empty">No permission to view Timesheet Admin.</div></section>`;
         return;
       }
       if (readOnly) {
         const ban = document.getElementById("readOnlyBanner");
         if (ban) ban.style.display = "block";
-        document.querySelector(".ts-hero p").textContent = "View attendance for the selected range. Export is available.";
+        heroSub.textContent = "View attendance for the selected range. Export is available.";
       }
 
       const today = localYmd(new Date());
@@ -405,37 +567,21 @@
       let allRows = [];
       /** @type {any[]} */
       let selected = [];
-      let activePreset = "today";
 
       function applyPermissionUi() {
         if (!readOnly) {
-          if (!canAdjust) {
-            wsOpenHours.hidden = true;
-            stHours.hidden = true;
-          }
-          if (!canDeduct) {
-            wsOpenDed.hidden = true;
-            stDed.hidden = true;
-          }
+          if (!canAdjust) { wsOpenHours.hidden = true; stHours.hidden = true; }
+          if (!canDeduct) { wsOpenDed.hidden = true; stDed.hidden = true; }
           if (!canSettings) wsOpenShift.hidden = true;
           if (!canVoid) wsVoid.hidden = true;
           return;
         }
-        // Full read-only: no selection / write chrome
-        const checkTh = document.querySelector(".ta-th-check");
-        if (checkTh) checkTh.hidden = true;
-        attSelectAll.hidden = true;
+        selectAllWrap.hidden = true;
         workerSheet.hidden = true;
         stickyBar.hidden = true;
         stickyBar.classList.remove("show");
         document.body.classList.remove("has-ta-sticky");
-        wsOpenHours.hidden = true;
-        wsOpenDed.hidden = true;
-        wsOpenShift.hidden = true;
-        wsVoid.hidden = true;
-        stHours.hidden = true;
-        stDed.hidden = true;
-        stClear.hidden = true;
+        [wsOpenHours, wsOpenDed, wsOpenShift, wsVoid, stHours, stDed, stClear].forEach((el) => { el.hidden = true; });
       }
 
       function localYmd(d) {
@@ -443,7 +589,7 @@
       }
       function startOfWeek(d) {
         const x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-        const day = (x.getDay() + 6) % 7; // Mon=0
+        const day = (x.getDay() + 6) % 7;
         x.setDate(x.getDate() - day);
         return x;
       }
@@ -458,7 +604,6 @@
       function dedTypeLabel(t) {
         return ({ delay: "delay", absence: "absence", tool_damage: "tool damage", fixed_amount: "fixed amount" })[t] || t;
       }
-
       function hideActionPanels() {
         wsHoursPanel.hidden = true;
         wsDedPanel.hidden = true;
@@ -467,7 +612,6 @@
         wsDedMsg.textContent = "";
         shiftMsg.textContent = "";
       }
-
       function uniqueWorkers(rows) {
         const seen = new Set();
         const out = [];
@@ -526,24 +670,24 @@
         workerSheet.hidden = false;
       }
 
-      function readRow(tr) {
-        try { return JSON.parse(decodeURIComponent(tr.getAttribute("data-row"))); }
+      function readCard(el) {
+        try { return JSON.parse(decodeURIComponent(el.getAttribute("data-row"))); }
         catch (_) { return null; }
       }
 
       function rebuildSelectedFromDom() {
         selected = [];
-        attBody.querySelectorAll(".ta-row-pick").forEach((tr) => {
-          const cb = tr.querySelector(".ta-row-check");
+        attList.querySelectorAll(".ta-card").forEach((card) => {
+          const cb = card.querySelector(".ta-row-check");
           if (cb && cb.checked) {
-            const row = readRow(tr);
+            const row = readCard(card);
             if (row) selected.push(row);
-            tr.classList.add("is-selected");
+            card.classList.add("is-selected");
           } else {
-            tr.classList.remove("is-selected");
+            card.classList.remove("is-selected");
           }
         });
-        const boxes = [...attBody.querySelectorAll(".ta-row-check")];
+        const boxes = [...attList.querySelectorAll(".ta-row-check")];
         attSelectAll.checked = boxes.length > 0 && boxes.every((b) => b.checked);
         attSelectAll.indeterminate = boxes.some((b) => b.checked) && !attSelectAll.checked;
         syncSheetFromSelection();
@@ -554,80 +698,72 @@
         workerSheet.hidden = true;
         hideActionPanels();
         updateSticky();
-        attBody.querySelectorAll(".ta-row-pick").forEach((tr) => {
-          tr.classList.remove("is-selected");
-          const cb = tr.querySelector(".ta-row-check");
+        attList.querySelectorAll(".ta-card").forEach((card) => {
+          card.classList.remove("is-selected");
+          const cb = card.querySelector(".ta-row-check");
           if (cb) cb.checked = false;
         });
-        if (attSelectAll) {
-          attSelectAll.checked = false;
-          attSelectAll.indeterminate = false;
-        }
+        attSelectAll.checked = false;
+        attSelectAll.indeterminate = false;
       }
 
       function filteredRows() {
         const q = String(attSearch.value || "").trim().toLowerCase();
         if (!q) return allRows;
-        return allRows.filter((r) => {
-          const hay = `${r.workerCode} ${r.workerName || ""}`.toLowerCase();
-          return hay.includes(q);
-        });
+        return allRows.filter((r) => `${r.workerCode} ${r.workerName || ""}`.toLowerCase().includes(q));
       }
 
       function updateKpis(rows, dedTotal, adjTotal) {
-        const present = rows.length;
-        const hours = rows.reduce((s, r) => s + Number(r.effectiveHours || r.baseHours || 0), 0);
-        kpiPresent.textContent = String(present);
-        kpiHours.textContent = fmtNum(hours);
+        kpiPresent.textContent = String(rows.length);
+        kpiHours.textContent = fmtNum(rows.reduce((s, r) => s + Number(r.effectiveHours || r.baseHours || 0), 0));
         kpiAdj.textContent = (adjTotal > 0 ? "+" : "") + fmtNum(adjTotal);
         kpiDed.textContent = fmtNum(dedTotal);
       }
 
-      function renderTable() {
+      function renderList() {
         const rows = filteredRows();
-        const colSpan = readOnly ? 4 : 5;
-        attBody.innerHTML = rows.length
-          ? rows.map((r) => {
-              const adj = Number(r.adjustmentHours) || 0;
-              const net = r.effectiveHours != null
-                ? Number(r.effectiveHours)
-                : Math.max(0, Number(r.baseHours || 0) + adj);
-              const hoursLabel = adj
-                ? `<strong>${fmtNum(net)}</strong> <span class="ta-hours-adj">(${fmtNum(r.baseHours)}${adj > 0 ? "+" : ""}${fmtNum(adj)})</span>`
-                : fmtNum(r.baseHours);
-              if (readOnly) {
-                return `<tr>
-                  <td>${r.workDate}</td>
-                  <td><strong>${r.workerCode}</strong> · ${r.workerName || ""}</td>
-                  <td>${r.projectName || ""}</td>
-                  <td>${hoursLabel}</td>
-                </tr>`;
-              }
-              const payload = encodeURIComponent(JSON.stringify({
-                id: r.id,
-                workDate: r.workDate,
-                workerCode: r.workerCode,
-                workerName: r.workerName || "",
-                projectName: r.projectName || "",
-                projectId: r.projectId,
-                baseHours: r.baseHours,
-                adjustmentHours: adj,
-                effectiveHours: net,
-              }));
-              return `<tr class="ta-row-pick" data-row="${payload}" title="Select for actions">
-                <td><input type="checkbox" class="ta-check ta-row-check"></td>
-                <td>${r.workDate}</td>
-                <td><strong>${r.workerCode}</strong> · ${r.workerName || ""}</td>
-                <td>${r.projectName || ""}</td>
-                <td>${hoursLabel}</td>
-              </tr>`;
-            }).join("")
-          : `<tr><td colspan="${colSpan}" class="ts-empty">No attendance in this range</td></tr>`;
+        listCount.textContent = rows.length ? rows.length + " shown" : "";
+        if (!rows.length) {
+          attList.innerHTML = `<div class="ta-empty">No attendance in this range</div>`;
+          clearSelection();
+          return;
+        }
+        attList.innerHTML = rows.map((r) => {
+          const adj = Number(r.adjustmentHours) || 0;
+          const net = r.effectiveHours != null
+            ? Number(r.effectiveHours)
+            : Math.max(0, Number(r.baseHours || 0) + adj);
+          const payload = encodeURIComponent(JSON.stringify({
+            id: r.id,
+            workDate: r.workDate,
+            workerCode: r.workerCode,
+            workerName: r.workerName || "",
+            projectName: r.projectName || "",
+            projectId: r.projectId,
+            baseHours: r.baseHours,
+            adjustmentHours: adj,
+            effectiveHours: net,
+          }));
+          const checkHtml = readOnly
+            ? `<span></span>`
+            : `<input type="checkbox" class="ta-check ta-row-check" aria-label="Select ${r.workerCode}">`;
+          const adjHtml = adj
+            ? `<small>${fmtNum(r.baseHours)}${adj > 0 ? "+" : ""}${fmtNum(adj)}</small>`
+            : "";
+          return `<button type="button" class="ta-card${readOnly ? "" : " ta-row-pick"}" data-row="${payload}">
+            ${checkHtml}
+            <div class="ta-card-main">
+              <div class="ta-card-title">${r.workerCode} · ${r.workerName || ""}</div>
+              <div class="ta-card-sub">${r.workDate} · ${r.projectName || "—"}</div>
+            </div>
+            <div class="ta-card-hours">${fmtNum(net)}h${adjHtml}</div>
+          </button>`;
+        }).join("");
 
         if (readOnly) return;
-        attBody.querySelectorAll(".ta-row-pick").forEach((tr) => {
-          const cb = tr.querySelector(".ta-row-check");
-          tr.addEventListener("click", (e) => {
+        attList.querySelectorAll(".ta-card").forEach((card) => {
+          const cb = card.querySelector(".ta-row-check");
+          card.addEventListener("click", (e) => {
             if (e.target === cb) return;
             cb.checked = !cb.checked;
             rebuildSelectedFromDom();
@@ -639,7 +775,6 @@
       }
 
       function markPreset(name) {
-        activePreset = name;
         document.querySelectorAll("#datePresets .ta-chip").forEach((b) => {
           b.classList.toggle("is-on", b.dataset.range === name);
         });
@@ -681,7 +816,6 @@
           (adjRes.rows || []).forEach((h) => {
             (h.lines || []).forEach((l) => {
               events.push({
-                at: h.createdAt || h.workDate,
                 sort: h.createdAt || h.workDate || "",
                 html: `<strong>Hours ${l.deltaHours > 0 ? "+" : ""}${fmtNum(l.deltaHours)}</strong> · ${l.workerCode}` +
                   ` <span class="muted">${h.workDate} · ${h.reason || ""} · ${h.createdBy || ""}</span>`,
@@ -690,7 +824,6 @@
           });
           (dedRes.rows || []).forEach((d) => {
             events.push({
-              at: d.createdAt || d.workDate,
               sort: d.createdAt || d.workDate || "",
               html: `<strong>Deduction ${fmtNum(d.amount)} ${d.currency || ""}</strong> · ${d.workerCode}` +
                 ` <span class="muted">${d.workDate} · ${dedTypeLabel(d.dedType)} · ${d.note || ""}</span>`,
@@ -700,15 +833,12 @@
           const top = events.slice(0, 12);
           activityLog.innerHTML = top.length
             ? top.map((e) => `<div class="ta-log-item">${e.html}</div>`).join("")
-            : `<div class="ts-empty">No changes in this range</div>`;
-
-          const adjTotal = (adjRes.rows || []).reduce((s, h) => {
-            return s + (h.lines || []).reduce((ss, l) => ss + Number(l.deltaHours || 0), 0);
-          }, 0);
+            : `<div class="ta-empty">No changes in this range</div>`;
+          const adjTotal = (adjRes.rows || []).reduce((s, h) => s + (h.lines || []).reduce((ss, l) => ss + Number(l.deltaHours || 0), 0), 0);
           const dedTotal = (dedRes.rows || []).reduce((s, d) => s + Number(d.amount || 0), 0);
           return { adjTotal, dedTotal };
-        } catch (e) {
-          activityLog.innerHTML = `<div class="ts-empty">Could not load activity</div>`;
+        } catch (_) {
+          activityLog.innerHTML = `<div class="ta-empty">Could not load activity</div>`;
           return { adjTotal: 0, dedTotal: 0 };
         }
       }
@@ -726,13 +856,13 @@
           if (attProject.value) params.projectId = attProject.value;
           const res = await apiGet(params);
           allRows = res.rows || [];
-          renderTable();
+          renderList();
           const { adjTotal, dedTotal } = await loadActivity();
           updateKpis(filteredRows(), dedTotal, adjTotal);
           setMsg(listMsg, allRows.length ? `${allRows.length} records` : "");
         } catch (e) {
           allRows = [];
-          renderTable();
+          renderList();
           updateKpis([], 0, 0);
           setMsg(listMsg, e.message || String(e), true);
         }
@@ -746,7 +876,7 @@
         rows.forEach((r) => {
           const adj = Number(r.adjustmentHours) || 0;
           const net = r.effectiveHours != null ? Number(r.effectiveHours) : Math.max(0, Number(r.baseHours || 0) + adj);
-          const cols = [
+          lines.push([
             r.workDate,
             r.workerCode,
             `"${String(r.workerName || "").replace(/"/g, '""')}"`,
@@ -754,8 +884,7 @@
             r.baseHours,
             adj,
             net,
-          ];
-          lines.push(cols.join(","));
+          ].join(","));
         });
         const blob = new Blob(["\ufeff" + lines.join("\n")], { type: "text/csv;charset=utf-8" });
         const a = document.createElement("a");
@@ -766,52 +895,47 @@
         setMsg(listMsg, "Exported ✓");
       }
 
+      function openPanel(which) {
+        if (!selected.length) return;
+        workerSheet.hidden = false;
+        hideActionPanels();
+        if (which === "hours") { wsHoursPanel.hidden = false; wsAdjReason.focus(); }
+        if (which === "ded") { wsDedPanel.hidden = false; wsDedAmount.focus(); }
+        workerSheet.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
+
       document.querySelectorAll("#datePresets .ta-chip").forEach((btn) => {
         btn.addEventListener("click", () => applyRange(btn.dataset.range));
       });
       attReload.onclick = () => { markPreset(""); loadAll(); };
       attProject.onchange = () => loadAll();
       attSearch.addEventListener("input", () => {
-        renderTable();
+        renderList();
         const rows = filteredRows();
-        const hours = rows.reduce((s, r) => s + Number(r.effectiveHours || r.baseHours || 0), 0);
         kpiPresent.textContent = String(rows.length);
-        kpiHours.textContent = fmtNum(hours);
+        kpiHours.textContent = fmtNum(rows.reduce((s, r) => s + Number(r.effectiveHours || r.baseHours || 0), 0));
       });
       ["attFrom", "attTo"].forEach((id) => {
         document.getElementById(id).addEventListener("change", () => markPreset(""));
       });
       btnExport.onclick = exportCsv;
       attSelectAll.addEventListener("change", () => {
-        attBody.querySelectorAll(".ta-row-check").forEach((cb) => { cb.checked = attSelectAll.checked; });
+        attList.querySelectorAll(".ta-row-check").forEach((cb) => { cb.checked = attSelectAll.checked; });
         rebuildSelectedFromDom();
       });
       wsClose.onclick = clearSelection;
       stClear.onclick = clearSelection;
-      stHours.onclick = () => {
-        if (!selected.length) return;
-        workerSheet.hidden = false;
-        hideActionPanels();
-        wsHoursPanel.hidden = false;
-        workerSheet.scrollIntoView({ behavior: "smooth", block: "nearest" });
-        wsAdjReason.focus();
-      };
-      stDed.onclick = () => {
-        if (!selected.length) return;
-        workerSheet.hidden = false;
-        hideActionPanels();
-        wsDedPanel.hidden = false;
-        workerSheet.scrollIntoView({ behavior: "smooth", block: "nearest" });
-        wsDedAmount.focus();
-      };
+      stHours.onclick = () => openPanel("hours");
+      stDed.onclick = () => openPanel("ded");
 
-      wsOpenHours.onclick = () => { hideActionPanels(); wsHoursPanel.hidden = false; wsAdjReason.focus(); };
-      wsOpenDed.onclick = () => { hideActionPanels(); wsDedPanel.hidden = false; wsDedAmount.focus(); };
+      wsOpenHours.onclick = () => openPanel("hours");
+      wsOpenDed.onclick = () => openPanel("ded");
       wsOpenShift.onclick = async () => {
         hideActionPanels();
         wsShiftPanel.hidden = false;
         await loadSettings();
         shiftHours.focus();
+        workerSheet.scrollIntoView({ behavior: "smooth", block: "nearest" });
       };
       wsAdjCancel.onclick = () => { wsHoursPanel.hidden = true; wsAdjMsg.textContent = ""; };
       wsDedCancel.onclick = () => { wsDedPanel.hidden = true; wsDedMsg.textContent = ""; };
@@ -823,12 +947,11 @@
         if (!wsAdjReason.value.trim()) return setMsg(wsAdjMsg, "Enter reason", true);
         const delta = Number(wsAdjDelta.value);
         if (!Number.isFinite(delta) || delta === 0) return setMsg(wsAdjMsg, "Enter non-zero hours", true);
-        const lines = workers.map((w) => ({ workerCode: w.workerCode, deltaHours: delta }));
         const res = await apiGet({
           action: "timesheetAdjustHours",
           workDate: wsAdjDate.value,
           reason: wsAdjReason.value,
-          lines: JSON.stringify(lines),
+          lines: JSON.stringify(workers.map((w) => ({ workerCode: w.workerCode, deltaHours: delta }))),
         });
         setMsg(wsAdjMsg, res.ok ? `Saved for ${res.lineCount} worker(s) ✓` : (res.error || "Failed"), !res.ok);
         if (res.ok) {
@@ -868,11 +991,7 @@
 
       wsVoid.onclick = async () => {
         if (!selected.length) return;
-        const reason = prompt(
-          selected.length === 1
-            ? "Why void this day?"
-            : `Why void these ${selected.length} days?`
-        );
+        const reason = prompt(selected.length === 1 ? "Why void this day?" : `Why void these ${selected.length} days?`);
         if (!reason) return;
         for (const row of selected) {
           await apiGet({ action: "timesheetVoidAttendance", id: row.id, reason });
