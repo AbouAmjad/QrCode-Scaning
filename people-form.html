@@ -7,11 +7,11 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="app.css?v=live">
+  <link rel="stylesheet" href="app.css?v=themes1">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#0f766e">
-  <script src="config.js?v=live"></script>
-  <script src="i18n.js?v=live"></script>
+  <script src="config.js?v=themes1"></script>
+  <script src="i18n.js?v=themes1"></script>
   <script src="ui.js?v=live"></script>
   <style>
     .pf-page { font-family: "Plus Jakarta Sans", system-ui, sans-serif; }
@@ -133,8 +133,16 @@
             <div class="pp-grid-2">
               <div class="tc-field mb-2">
                 <label data-i18n="personCode">Person code</label>
-                <input id="code" class="form-control" placeholder="P101" autocomplete="off">
-                <p class="pp-hint" data-i18n="personCodeHint">Leave empty to auto-assign next P code</p>
+                <div class="d-flex gap-2 align-items-start">
+                  <input id="code" class="form-control" placeholder="P101" autocomplete="off">
+                  <button type="button" class="tc-btn" id="btnSuggestCode" title="Fill next free code (reuses gaps)">
+                    <i class="bi bi-magic"></i>
+                  </button>
+                </div>
+                <p class="pp-hint" id="codeHint">
+                  Next free code fills deleted/skipped numbers first (e.g. P102 before P105).
+                  Leave empty to auto-assign on save.
+                </p>
               </div>
               <div class="tc-field mb-2">
                 <label data-i18n="phone">Phone</label>
@@ -205,9 +213,14 @@
       document.getElementById("photoCamera").onchange = (e) => onPhotoPick(e.target);
       document.getElementById("photoGallery").onchange = (e) => onPhotoPick(e.target);
 
+      document.getElementById("btnSuggestCode").onclick = () => suggestAndFillCode(true);
+
       await loadSuppliers();
       if (codeParam) await loadPerson(codeParam);
-      else setMode(false);
+      else {
+        setMode(false);
+        await suggestAndFillCode(false);
+      }
     }, { pageId: "people" }));
 
     function setMode(isEdit) {
@@ -335,6 +348,64 @@
       if (dup && dup.code && dup.code !== editing) {
         TCUI.toast(t("idDuplicateIqama", { code: dup.code, name: dup.name || "" }), "err");
       }
+    }
+
+    async function suggestAndFillCode(forceToast) {
+      if (editing) return;
+      const hint = document.getElementById("codeHint");
+      try {
+        const res = await apiGet({ action: "suggestPersonCode" });
+        if (!res || res.error || !res.code) throw new Error((res && res.error) || "suggest failed");
+        const input = document.getElementById("code");
+        // Don't overwrite if user already typed a different code (unless magic button).
+        if (forceToast || !String(input.value || "").trim()) {
+          input.value = res.code;
+        }
+        const gapNote = res.filledGap
+          ? `Fills a gap (deleted/skipped).`
+          : `No gaps — next after highest.`;
+        const upcoming = Array.isArray(res.upcoming) && res.upcoming.length
+          ? ` Free: ${res.upcoming.join(", ")}`
+          : "";
+        if (hint) {
+          hint.textContent = `Suggested ${res.code}. ${gapNote}${upcoming} · Leave empty to auto-assign on save.`;
+        }
+        if (forceToast) TCUI.toast(`${res.code} · ${gapNote}`, "ok");
+      } catch (_) {
+        // Fallback: compute client-side from listPeople
+        try {
+          const data = await apiGet({ action: "listPeople" });
+          const codes = ((data && data.items) || []).map((p) => p.code);
+          const next = clientNextPersonCode(codes);
+          const input = document.getElementById("code");
+          if (forceToast || !String(input.value || "").trim()) input.value = next.code;
+          if (hint) {
+            hint.textContent = `Suggested ${next.code} (fills gaps first). Leave empty to auto-assign on save.`;
+          }
+          if (forceToast) TCUI.toast(next.code, "ok");
+        } catch (e2) {
+          if (hint) hint.textContent = "Leave empty to auto-assign the next free P code (fills gaps).";
+          if (forceToast) TCUI.toast(e2.message || "Could not suggest code", "err");
+        }
+      }
+    }
+
+    /** Mirror of server gap-fill when suggestPersonCode is unavailable. */
+    function clientNextPersonCode(existingCodes) {
+      const nums = [];
+      for (const raw of existingCodes || []) {
+        const m = String(raw || "").toUpperCase().match(/^P(\d+)$/);
+        if (m) nums.push(Number(m[1]));
+      }
+      if (!nums.length) return { code: "P101" };
+      const used = new Set(nums);
+      const max = Math.max(...nums);
+      const highCount = nums.filter((n) => n >= 100).length;
+      const seriesStart = highCount * 2 >= nums.length ? 100 : 1;
+      let n = seriesStart;
+      while (n <= max && used.has(n)) n += 1;
+      if (n > max) n = max + 1;
+      return { code: "P" + n, filledGap: n <= max };
     }
 
     async function checkPersonCodeAvailable() {

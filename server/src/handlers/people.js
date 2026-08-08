@@ -154,14 +154,88 @@ async function resolveSupplierId(ctx, params) {
   return r.rows[0].id;
 }
 
+/**
+ * Next free person code, filling deleted/skipped gaps.
+ * If most people are in the P100+ series, search gaps from 100 upward
+ * (avoids suggesting P002 when P001 is a lone outlier and the real series is P101…).
+ * Otherwise fill the lowest free number from 1.
+ */
+function nextAvailablePersonCode(existingCodes) {
+  const nums = [];
+  for (const raw of existingCodes || []) {
+    const m = String(raw || "")
+      .toUpperCase()
+      .match(/^P(\d+)$/);
+    if (m) nums.push(Number(m[1]));
+  }
+  if (!nums.length) return { code: "P101", number: 101, filledGap: false, seriesStart: 101 };
+
+  const used = new Set(nums);
+  const max = Math.max(...nums);
+  const highCount = nums.filter((n) => n >= 100).length;
+  const seriesStart = highCount * 2 >= nums.length ? 100 : 1;
+
+  let n = seriesStart;
+  while (n <= max && used.has(n)) n += 1;
+  if (n > max) n = max + 1;
+
+  return {
+    code: `P${n}`,
+    number: n,
+    filledGap: n <= max,
+    seriesStart,
+    max,
+    usedCount: nums.length,
+  };
+}
+
+async function loadPersonNumbers(query) {
+  const r = await query(
+    `SELECT code FROM catalog WHERE kind = 'person' AND code ~ '^P[0-9]+$' ORDER BY code ASC`
+  );
+  return r.rows.map((row) => U.upper(row.code));
+}
+
+async function suggestPersonCode(ctx) {
+  ctx.requireAny(["worker.create", "worker.edit", "worker.view"]);
+  const codes = await loadPersonNumbers(ctx.query);
+  const next = nextAvailablePersonCode(codes);
+  // Surface a few upcoming free codes for the form hint.
+  const used = new Set(
+    codes
+      .map((c) => {
+        const m = c.match(/^P(\d+)$/);
+        return m ? Number(m[1]) : null;
+      })
+      .filter((n) => n != null)
+  );
+  const upcoming = [];
+  let cursor = next.seriesStart;
+  const maxScan = (next.max || 100) + 20;
+  while (upcoming.length < 5 && cursor <= maxScan) {
+    if (!used.has(cursor)) upcoming.push(`P${cursor}`);
+    cursor += 1;
+  }
+  return { ...next, upcoming };
+}
+
 async function upsertPerson(ctx) {
   const isEdit = U.bool(ctx.params.isEdit) || !!U.trimmed(ctx.params.originalCode);
   ctx.require(isEdit ? "worker.edit" : "worker.create");
 
   const { params, query } = ctx;
-  const code = U.upper(params.code);
+  let code = U.upper(params.code);
   const originalCode = U.upper(params.originalCode);
   const name = U.trimmed(params.name);
+  let autoAssigned = false;
+
+  // New person with empty code → fill the first free gap (or max+1).
+  if (!code && !isEdit && !originalCode) {
+    const next = nextAvailablePersonCode(await loadPersonNumbers(query));
+    code = next.code;
+    autoAssigned = true;
+  }
+
   if (!code) return { success: false, error: "CODE_REQUIRED" };
   if (!U.isPersonCode(code)) return { success: false, error: "CODE_MUST_START_WITH_P" };
   if (!name) return { success: false, error: "NAME_REQUIRED" };
@@ -236,9 +310,9 @@ async function upsertPerson(ctx) {
   custody.invalidate();
   await ctx.audit({
     action: isEdit ? "PERSON_UPDATE" : "PERSON_CREATE",
-    after: JSON.stringify({ code, name }),
+    after: JSON.stringify({ code, name, autoAssigned }),
   });
-  return { success: true, code, name, supplierId };
+  return { success: true, code, name, supplierId, autoAssigned };
 }
 
 async function deletePerson(ctx) {
@@ -364,6 +438,8 @@ async function deleteSupplier(ctx) {
 module.exports = {
   listPeople,
   getPersonCustody,
+  suggestPersonCode,
+  nextAvailablePersonCode,
   upsertPerson,
   deletePerson,
   setPersonIdImage,

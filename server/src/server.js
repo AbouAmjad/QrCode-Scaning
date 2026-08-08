@@ -45,6 +45,7 @@ const ACTIONS = {
   /* people + suppliers */
   listPeople: people.listPeople,
   getPersonCustody: people.getPersonCustody,
+  suggestPersonCode: people.suggestPersonCode,
   upsertPerson: people.upsertPerson,
   deletePerson: people.deletePerson,
   setPersonIdImage: people.setPersonIdImage,
