@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>AbouAmjad Store System | Project</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="app.css?v=live">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f766e">
+  <script src="config.js?v=live"></script>
+  <script src="i18n.js?v=live"></script>
+  <script src="ui.js?v=live"></script>
+  <script src="export-utils.js?v=live"></script>
+  <style>
+    body.tc-page{font-family:"Plus Jakarta Sans",var(--tc-font);padding-bottom:calc(1rem + env(safe-area-inset-bottom,0px))}
+    .pd-hero{
+      background:
+        radial-gradient(120% 90% at 100% 0%, rgba(15,118,110,.16), transparent 55%),
+        linear-gradient(165deg, var(--tc-surface) 0%, var(--tc-surface-2) 100%);
+      border:1px solid var(--tc-border);border-radius:20px;padding:1.15rem;margin-bottom:1rem;
+      box-shadow:0 16px 36px -26px rgba(20,32,51,.45);
+    }
+    .pd-hero .code{
+      display:inline-flex;font-size:.7rem;font-weight:800;color:var(--tc-accent-2);letter-spacing:.04em;
+      background:var(--tc-accent-soft);padding:.18rem .55rem;border-radius:999px;margin-bottom:.4rem;
+    }
+    .pd-hero h1{font-size:clamp(1.25rem,5.5vw,1.55rem);font-weight:800;margin:.1rem 0 .45rem;line-height:1.2;letter-spacing:-.02em}
+    .pd-hero .meta{display:flex;flex-wrap:wrap;gap:.35rem .7rem;font-size:.78rem;color:var(--tc-muted);font-weight:600}
+    .pd-chip{display:inline-flex;align-items:center;gap:.3rem;font-size:.72rem;font-weight:800;padding:.28rem .6rem;border-radius:999px;vertical-align:middle}
+    .pd-chip.on{background:#d1fae5;color:#047857}
+    .pd-chip.off{background:#f1f5f9;color:#64748b}
+    .pd-actions{display:grid;grid-template-columns:1fr;gap:.45rem;margin-top:1rem}
+    .pd-actions .tc-btn{min-height:46px;justify-content:center;border-radius:14px;font-weight:800}
+    @media(min-width:640px){.pd-actions{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(min-width:900px){.pd-actions{display:flex;flex-wrap:wrap}.pd-actions .tc-btn{min-height:42px}}
+
+    .pd-tabs{
+      display:flex;gap:.3rem;margin-bottom:1rem;padding:.28rem;border-radius:14px;
+      background:var(--tc-surface-2);border:1px solid var(--tc-border);
+      overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;
+    }
+    .pd-tabs::-webkit-scrollbar{display:none}
+    .pd-tabs button{
+      border:0;background:transparent;color:var(--tc-muted);flex:1 0 auto;
+      font-weight:800;font-size:.78rem;padding:.62rem .75rem;border-radius:11px;cursor:pointer;
+      white-space:nowrap;min-height:42px;-webkit-tap-highlight-color:transparent;
+    }
+    .pd-tabs button.active{background:var(--tc-surface);color:var(--tc-accent-2);box-shadow:0 6px 16px -10px rgba(20,32,51,.35)}
+
+    .pd-panel{background:var(--tc-surface);border:1px solid var(--tc-border);border-radius:18px;padding:.85rem;display:none}
+    .pd-panel.show{display:block}
+    .pd-empty{text-align:center;padding:2rem 1rem;color:var(--tc-muted)}
+
+    .pd-cards{display:flex;flex-direction:column;gap:.55rem}
+    .pd-card{
+      display:grid;grid-template-columns:1fr auto;gap:.45rem .75rem;align-items:start;
+      padding:.9rem;border:1px solid var(--tc-border);border-radius:14px;background:var(--tc-surface-2);
+    }
+    .pd-card .code{font-weight:800;font-size:.92rem}
+    .pd-card .desc{font-size:.78rem;color:var(--tc-muted);margin-top:.15rem;line-height:1.35}
+    .pd-card .qty{
+      font-size:1.25rem;font-weight:800;line-height:1;font-variant-numeric:tabular-nums;text-align:end;
+    }
+    .pd-card .qty-lbl{font-size:.62rem;font-weight:800;color:var(--tc-muted);text-transform:uppercase;letter-spacing:.04em;text-align:end;margin-top:.15rem}
+    .pd-card .sub{grid-column:1 / -1;display:flex;flex-wrap:wrap;gap:.35rem;margin-top:.15rem}
+    .pd-card .acts{grid-column:1 / -1;display:grid;grid-template-columns:repeat(3,1fr);gap:.4rem;margin-top:.35rem}
+    .pd-card .acts .tc-btn{min-height:42px;justify-content:center;border-radius:12px}
+    .pd-card .acts.one{grid-template-columns:1fr}
+    .pd-card .acts.two{grid-template-columns:1fr 1fr}
+
+    .pd-table-wrap{display:none;overflow-x:auto}
+    @media(min-width:900px){
+      .pd-cards{display:none}
+      .pd-table-wrap{display:block}
+    }
+    .pd-table{width:100%;border-collapse:collapse;font-size:.85rem}
+    .pd-table th,.pd-table td{padding:.55rem .65rem;border-bottom:1px solid var(--tc-border);text-align:start}
+    .pd-table th{font-size:.68rem;text-transform:uppercase;letter-spacing:.04em;color:var(--tc-muted);font-weight:800}
+
+    .pd-detail{display:grid;gap:.75rem}
+    .pd-detail-item{
+      padding:.75rem .85rem;border-radius:12px;background:var(--tc-surface-2);border:1px solid var(--tc-border);
+    }
+    .pd-detail-item .k{font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--tc-muted)}
+    .pd-detail-item .v{font-weight:800;margin-top:.2rem;word-break:break-word}
+  </style>
+</head>
+<body class="tc-page">
+  <div class="tc-wrap">
+    <div class="tc-shell">
+      <div id="app-header"></div>
+      <div id="hero"></div>
+      <div class="pd-tabs" id="tabs">
+        <button type="button" class="active" data-tab="holdings" data-i18n="prjOnSiteNow">On site now</button>
+        <button type="button" data-tab="dispatches" data-i18n="prjDispatches">Dispatches</button>
+        <button type="button" data-tab="details" data-i18n="prjDetails">Details</button>
+      </div>
+      <div class="pd-panel show" id="panel-holdings"></div>
+      <div class="pd-panel" id="panel-dispatches"></div>
+      <div class="pd-panel" id="panel-details"></div>
+    </div>
+  </div>
+
+  <div class="tc-modal-backdrop" id="exportModal" style="display:none">
+    <div class="tc-modal" style="max-width:420px">
+      <div class="tc-modal-head">
+        <div>
+          <h3 class="h5 mb-1" data-i18n="export">Export</h3>
+          <p class="tc-text-muted small mb-0" id="exportModalHint" data-i18n="chooseExportFormat">Choose Excel or PDF</p>
+        </div>
+        <button type="button" class="tc-btn tc-btn-sm" id="btnCloseExport"><i class="bi bi-x-lg"></i></button>
+      </div>
+      <div class="tc-modal-body d-grid gap-2">
+        <button type="button" class="tc-btn tc-btn-primary" id="btnExportXlsx"><i class="bi bi-file-earmark-spreadsheet"></i> <span data-i18n="exportExcel">Excel (.xlsx)</span></button>
+        <button type="button" class="tc-btn" id="btnExportPdf"><i class="bi bi-file-earmark-pdf"></i> <span data-i18n="exportPdf">PDF</span></button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script>
+    let project = null;
+    let holdings = [];
+    let dispatches = [];
+
+    function qs(name) {
+      return new URLSearchParams(location.search).get(name);
+    }
+
+    function escHtml(s) {
+      return String(s == null ? "" : s)
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+
+    function fmtWhen(v) {
+      if (!v) return "—";
+      const d = new Date(v);
+      if (Number.isNaN(d.getTime())) return String(v);
+      return d.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
+    }
+
+    document.addEventListener("DOMContentLoaded", () => TCUI.bootPage(() => {
+      TCUI.mountHeader("app-header", {
+        active: "projects",
+        titleKey: "projects",
+        subtitleKey: "projectsSub",
+        icon: "bi-buildings"
+      });
+      document.querySelectorAll("#tabs button").forEach((btn) => {
+        btn.onclick = () => {
+          document.querySelectorAll("#tabs button").forEach((b) => b.classList.toggle("active", b === btn));
+          const tab = btn.getAttribute("data-tab");
+          document.querySelectorAll(".pd-panel").forEach((p) => p.classList.remove("show"));
+          document.getElementById("panel-" + tab).classList.add("show");
+        };
+      });
+      document.getElementById("btnCloseExport").onclick = closeExportModal;
+      document.getElementById("btnExportXlsx").onclick = () => doExport("xlsx");
+      document.getElementById("btnExportPdf").onclick = () => doExport("pdf");
+      document.getElementById("exportModal").addEventListener("click", (e) => {
+        if (e.target.id === "exportModal") closeExportModal();
+      });
+      load();
+    }, { pageId: "projects" }));
+
+    async function load() {
+      const id = qs("id");
+      const code = qs("code");
+      if (!id && !code) {
+        location.href = "warehouses.html#projects";
+        return;
+      }
+      try {
+        const data = await apiGet({ action: "getProject", id: id || "", code: code || "" });
+        if (!data || data.error || !data.success) throw new Error((data && data.error) || t("error"));
+        project = data.item;
+        holdings = data.holdings || [];
+        dispatches = data.dispatches || [];
+        renderHero();
+        renderHoldings();
+        renderDispatches();
+        renderDetails();
+      } catch (e) {
+        document.getElementById("hero").innerHTML = `<div class="pd-empty text-danger">${escHtml(e.message)}</div>`;
+      }
+    }
+
+    function renderHero() {
+      const st = project.status === "closed"
+        ? `<span class="pd-chip off">${t("prjStatusClosed") || "Closed"}</span>`
+        : `<span class="pd-chip on">${t("prjStatusActive") || "Active"}</span>`;
+      const toolsQty = holdings.reduce((s, h) => s + (h.qty || 0), 0);
+      document.getElementById("hero").innerHTML = `
+        <div class="pd-hero">
+          <div class="code">${escHtml(project.code)}</div>
+          <h1>${escHtml(project.name)} ${st}</h1>
+          <div class="meta">
+            ${project.site ? `<span><i class="bi bi-geo-alt"></i> ${escHtml(project.site)}</span>` : ""}
+            ${project.client ? `<span><i class="bi bi-briefcase"></i> ${escHtml(project.client)}</span>` : ""}
+            <span><i class="bi bi-tools"></i> ${toolsQty} ${t("prjOnSite") || "on site"}</span>
+          </div>
+          <div class="pd-actions">
+            <a class="tc-btn" href="warehouses.html#projects"><i class="bi bi-arrow-left"></i> ${t("back") || "Back"}</a>
+            ${can("projects.dispatch") || can("projects.manage") ? `<a class="tc-btn tc-btn-primary" href="project-dispatch.html?projectId=${encodeURIComponent(project.id)}&mode=out">
+              <i class="bi bi-box-arrow-up"></i> ${t("prjNewDispatch") || "Dispatch tools"}
+            </a>` : ""}
+            ${can("projects.return") || can("projects.dispatch") || can("projects.manage") ? `<a class="tc-btn" href="project-dispatch.html?projectId=${encodeURIComponent(project.id)}&mode=return">
+              <i class="bi bi-box-arrow-in-down"></i> ${t("prjReturnTools") || "Record return"}
+            </a>` : ""}
+            <button type="button" class="tc-btn" id="btnExportOnSite"><i class="bi bi-download"></i> ${t("export") || "Export"}</button>
+            ${can("projects.manage") ? `<button type="button" class="tc-btn tc-btn-danger" id="btnDeleteProject"><i class="bi bi-trash"></i> ${t("deleteProject") || "Delete project"}</button>` : ""}
+          </div>
+        </div>`;
+      const delBtn = document.getElementById("btnDeleteProject");
+      if (delBtn) delBtn.onclick = deleteProject;
+      const expBtn = document.getElementById("btnExportOnSite");
+      if (expBtn) expBtn.onclick = openExportModal;
+    }
+
+    function renderHoldings() {
+      const el = document.getElementById("panel-holdings");
+      const toolbar = `<div class="d-flex flex-wrap gap-2 align-items-center justify-content-between mb-3">
+        <div class="tc-text-muted small fw-bold">${holdings.length} ${t("prjOnSite") || "on site"} · ${holdings.reduce((s, h) => s + (h.qty || 0), 0)} ${t("qty") || "qty"}</div>
+        <button type="button" class="tc-btn tc-btn-sm" id="btnExportHoldings"><i class="bi bi-download"></i> ${t("export") || "Export"} PDF / Excel</button>
+      </div>`;
+      if (!holdings.length) {
+        el.innerHTML = toolbar + `<div class="pd-empty"><i class="bi bi-inbox" style="font-size:1.8rem;display:block;margin-bottom:.4rem;opacity:.5"></i>${t("prjNoHoldings") || "No tools currently on this project."}</div>`;
+        const b = document.getElementById("btnExportHoldings");
+        if (b) b.onclick = openExportModal;
+        return;
+      }
+      const cards = holdings.map((h) => `
+        <div class="pd-card">
+          <div>
+            <div class="code">${escHtml(h.code)}</div>
+            <div class="desc">${escHtml(h.description || "")}</div>
+          </div>
+          <div>
+            <div class="qty">${escHtml(h.qty)}</div>
+            <div class="qty-lbl">${t("qty") || "Qty"}</div>
+          </div>
+        </div>`).join("");
+      const table = `<div class="pd-table-wrap"><table class="pd-table">
+        <thead><tr>
+          <th>${t("code") || "Code"}</th>
+          <th>${t("description") || "Description"}</th>
+          <th>${t("qty") || "Qty"}</th>
+        </tr></thead>
+        <tbody>${holdings.map((h) => `<tr>
+          <td><strong>${escHtml(h.code)}</strong></td>
+          <td>${escHtml(h.description)}</td>
+          <td>${escHtml(h.qty)}</td>
+        </tr>`).join("")}</tbody>
+      </table></div>`;
+      el.innerHTML = toolbar + `<div class="pd-cards">${cards}</div>${table}`;
+      const btn = document.getElementById("btnExportHoldings");
+      if (btn) btn.onclick = openExportModal;
+    }
+
+    function openExportModal() {
+      if (!project) return;
+      const totalQty = holdings.reduce((s, h) => s + (h.qty || 0), 0);
+      document.getElementById("exportModalHint").textContent =
+        `${project.code || ""} · ${holdings.length} lines · ${totalQty} qty · ${t("chooseExportFormat") || "Choose Excel or PDF"}`;
+      document.getElementById("exportModal").style.display = "block";
+    }
+    function closeExportModal() {
+      document.getElementById("exportModal").style.display = "none";
+    }
+    function doExport(format) {
+      closeExportModal();
+      if (!project) return;
+      try {
+        if (typeof TCExport === "undefined") throw new Error("Export not loaded");
+        if (format === "pdf") TCExport.exportProjectOnSitePdf(project, holdings);
+        else {
+          if (typeof XLSX === "undefined") throw new Error("Excel library not loaded");
+          TCExport.exportProjectOnSiteExcel(project, holdings);
+        }
+      } catch (e) {
+        alert(e.message || t("error"));
+      }
+    }
+
+    function renderDispatches() {
+      const el = document.getElementById("panel-dispatches");
+      if (!dispatches.length) {
+        el.innerHTML = `<div class="pd-empty">${t("prjNoDispatches") || "No dispatches yet."}</div>`;
+        return;
+      }
+      const canEdit = can("projects.dispatch") || can("projects.manage");
+      const cards = dispatches.map((d) => {
+        const typeLabel = d.type === "return"
+          ? (t("prjTypeReturn") || "Return")
+          : (t("prjTypeOut") || "Dispatch");
+        const actClass = canEdit ? "three" : "one";
+        return `<div class="pd-card">
+          <div>
+            <div class="code">${escHtml(d.formNo)}</div>
+            <div class="desc">${escHtml(d.recipientName || "—")} · ${escHtml(fmtWhen(d.issuedAt))}</div>
+          </div>
+          <div>
+            <div class="qty">${escHtml(d.totalQty != null ? d.totalQty : "—")}</div>
+            <div class="qty-lbl">${escHtml(typeLabel)}</div>
+          </div>
+          <div class="acts ${canEdit ? "three" : "one"}" style="${canEdit ? "grid-template-columns:repeat(3,1fr)" : ""}">
+            ${canEdit ? `<button type="button" class="tc-btn tc-btn-sm" data-edit="${escHtml(d.id)}"><i class="bi bi-pencil"></i></button>` : ""}
+            <button type="button" class="tc-btn tc-btn-sm" data-print="${escHtml(d.id)}"><i class="bi bi-printer"></i> ${t("print") || "Print"}</button>
+            ${canEdit ? `<button type="button" class="tc-btn tc-btn-sm tc-btn-danger" data-del="${escHtml(d.id)}" data-form="${escHtml(d.formNo)}"><i class="bi bi-trash"></i></button>` : ""}
+          </div>
+        </div>`;
+      }).join("");
+
+      const table = `<div class="pd-table-wrap"><table class="pd-table">
+        <thead><tr>
+          <th>${t("prjFormNo") || "Form"}</th>
+          <th>${t("prjType") || "Type"}</th>
+          <th>${t("prjRecipient") || "Recipient"}</th>
+          <th>${t("qty") || "Qty"}</th>
+          <th>${t("when") || "When"}</th>
+          <th></th>
+        </tr></thead>
+        <tbody>${dispatches.map((d) => {
+          const typeLabel = d.type === "return"
+            ? (t("prjTypeReturn") || "Return")
+            : (t("prjTypeOut") || "Dispatch");
+          return `<tr>
+            <td><strong>${escHtml(d.formNo)}</strong></td>
+            <td>${escHtml(typeLabel)}</td>
+            <td>${escHtml(d.recipientName)}</td>
+            <td>${escHtml(d.totalQty != null ? d.totalQty : "—")}</td>
+            <td>${escHtml(fmtWhen(d.issuedAt))}</td>
+            <td class="text-nowrap">
+              ${canEdit ? `<button type="button" class="tc-btn tc-btn-sm" data-edit="${escHtml(d.id)}"><i class="bi bi-pencil"></i></button>` : ""}
+              <button type="button" class="tc-btn tc-btn-sm" data-print="${escHtml(d.id)}"><i class="bi bi-printer"></i></button>
+              ${canEdit ? `<button type="button" class="tc-btn tc-btn-sm tc-btn-danger" data-del="${escHtml(d.id)}" data-form="${escHtml(d.formNo)}"><i class="bi bi-trash"></i></button>` : ""}
+            </td>
+          </tr>`;
+        }).join("")}</tbody>
+      </table></div>`;
+
+      el.innerHTML = `<div class="pd-cards">${cards}</div>${table}`;
+      el.querySelectorAll("[data-print]").forEach((btn) => {
+        btn.onclick = () => reprint(btn.getAttribute("data-print"));
+      });
+      el.querySelectorAll("[data-edit]").forEach((btn) => {
+        btn.onclick = () => {
+          location.href = "project-dispatch.html?edit=" + encodeURIComponent(btn.getAttribute("data-edit"));
+        };
+      });
+      el.querySelectorAll("[data-del]").forEach((btn) => {
+        btn.onclick = () => deleteInvoice(btn.getAttribute("data-del"), btn.getAttribute("data-form"));
+      });
+    }
+
+    function renderDetails() {
+      document.getElementById("panel-details").innerHTML = `
+        <div class="pd-detail">
+          <div class="pd-detail-item"><div class="k">${t("prjCode") || "Code"}</div><div class="v">${escHtml(project.code)}</div></div>
+          <div class="pd-detail-item"><div class="k">${t("prjStatus") || "Status"}</div><div class="v">${escHtml(project.status)}</div></div>
+          <div class="pd-detail-item"><div class="k">${t("prjSite") || "Site"}</div><div class="v">${escHtml(project.site || "—")}</div></div>
+          <div class="pd-detail-item"><div class="k">${t("prjClient") || "Client"}</div><div class="v">${escHtml(project.client || "—")}</div></div>
+          <div class="pd-detail-item"><div class="k">${t("notes") || "Notes"}</div><div class="v">${escHtml(project.notes || "—")}</div></div>
+        </div>`;
+    }
+
+    async function reprint(id) {
+      try {
+        const data = await apiGet({ action: "getProjectDispatch", id });
+        if (!data || !data.success || !data.dispatch) throw new Error((data && data.error) || t("error"));
+        TCExport.printProjectHandover(data.dispatch);
+      } catch (e) {
+        TCUI.toast(e.message || t("error"), "err");
+      }
+    }
+
+    async function deleteInvoice(id, formNo) {
+      if (!can("projects.dispatch") && !can("projects.manage")) {
+        return TCUI.toast("FORBIDDEN", "err");
+      }
+      const label = formNo || id;
+      if (!confirm(
+        t("prjDeleteInvoiceConfirm", { form: label })
+        || `Delete invoice ${label}? Stock will be restored according to this form.`
+      )) return;
+      try {
+        const data = await apiPostPlain({ action: "deleteProjectDispatch", id });
+        if (!data || !data.success) {
+          if (data && data.error === "DISPATCH_HAS_RETURNS") {
+            throw new Error(
+              t("prjDeleteInvoiceBlocked")
+              || `Cannot delete: some tools were already returned (${data.code || ""}).`
+            );
+          }
+          throw new Error((data && data.error) || t("error"));
+        }
+        TCUI.toast(t("prjInvoiceDeleted") || "Invoice deleted", "ok");
+        await load();
+      } catch (e) {
+        TCUI.toast(e.message || t("error"), "err");
+      }
+    }
+
+    async function deleteProject() {
+      if (!project || !can("projects.manage")) return;
+      const toolsQty = holdings.reduce((s, h) => s + (h.qty || 0), 0);
+      if (toolsQty > 0) {
+        TCUI.toast(t("deleteProjectBlocked", { n: toolsQty }) || `Return all tools first (${toolsQty} on site).`, "err");
+        return;
+      }
+      const label = project.name || project.code;
+      if (!confirm(t("deleteProjectConfirm", { name: label }) || `Delete project ${label}?`)) return;
+      const btn = document.getElementById("btnDeleteProject");
+      if (btn) btn.disabled = true;
+      try {
+        const data = await apiGet({ action: "deleteProject", id: project.id });
+        if (!data || data.error || !data.success) {
+          if (data && data.error === "PROJECT_HAS_STOCK") {
+            throw new Error(t("deleteProjectBlocked", { n: data.onSite || 0 }));
+          }
+          throw new Error((data && data.error) || t("error"));
+        }
+        TCUI.toast(t("projectDeleted") || "Project deleted", "ok");
+        location.href = "warehouses.html#projects";
+      } catch (e) {
+        TCUI.toast(e.message || t("error"), "err");
+        if (btn) btn.disabled = false;
+      }
+    }
+  </script>
+</body>
+</html>

@@ -5,6 +5,7 @@ Code.gs.txt
 server/.env
 deploy-tmp/api.env
 deploy-tmp/node_modules/
+node_modules/
 
 # Backups
 backup/

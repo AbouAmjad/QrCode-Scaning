@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AbouAmjad Store System | Profile</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="app.css?v=live">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f766e">
+  <script src="config.js?v=live"></script>
+  <script src="i18n.js?v=live"></script>
+  <script src="ui.js?v=live"></script>
+</head>
+<body class="tc-page">
+  <div class="tc-wrap">
+    <div class="tc-shell">
+      <div id="app-header"></div>
+
+      <div class="pf-profile-wrap">
+        <section class="pf-profile-hero">
+          <div>
+            <div class="pf-avatar-stage">
+              <div class="pf-avatar-ring">
+                <img id="avatarImg" alt="">
+                <span class="pf-avatar-initial" id="avatarInitial">?</span>
+              </div>
+            </div>
+            <div class="pf-avatar-actions">
+              <label class="tc-btn tc-btn-primary">
+                <i class="bi bi-camera"></i> <span data-i18n="profileUploadPhoto">Upload photo</span>
+                <input id="avatarFile" type="file" accept="image/*" capture="user" hidden>
+              </label>
+              <button type="button" class="tc-btn" id="btnClearAvatar">
+                <i class="bi bi-trash"></i> <span data-i18n="profileRemovePhoto">Remove</span>
+              </button>
+            </div>
+            <p class="pf-hint" data-i18n="profilePhotoHint">Square photo recommended · max ~2 MB</p>
+          </div>
+          <div class="pf-hero-meta">
+            <h1 id="heroName">—</h1>
+            <p class="pf-hero-sub" id="heroUser">@user</p>
+            <div class="pf-hero-chips">
+              <span class="pf-chip role" id="heroRole"><i class="bi bi-shield"></i> —</span>
+              <span class="pf-chip" id="heroPhone"><i class="bi bi-telephone"></i> —</span>
+            </div>
+          </div>
+        </section>
+
+        <div class="pf-profile-grid">
+          <section class="pf-card">
+            <h2 class="pf-card-title"><i class="bi bi-person-vcard"></i> <span data-i18n="profileDetails">Profile details</span></h2>
+            <div class="tc-field">
+              <label data-i18n="regFullName">Full name</label>
+              <input type="text" id="fullName" class="form-control" autocomplete="name">
+            </div>
+            <div class="tc-field">
+              <label data-i18n="loginUser">Username</label>
+              <input type="text" id="username" class="form-control" disabled>
+            </div>
+            <div class="tc-field">
+              <label data-i18n="regPhone">Phone</label>
+              <input type="tel" id="phone" class="form-control" autocomplete="tel">
+            </div>
+            <div class="tc-field">
+              <label data-i18n="regEmail">Email (optional)</label>
+              <input type="email" id="email" class="form-control" autocomplete="email">
+            </div>
+            <button type="button" class="tc-btn tc-btn-primary w-100" id="btnSaveProfile">
+              <i class="bi bi-check2"></i> <span data-i18n="profileSave">Save profile</span>
+            </button>
+            <a class="tc-btn w-100 mt-2" href="settings.html">
+              <i class="bi bi-gear"></i> <span data-i18n="settings">Settings</span>
+            </a>
+          </section>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let pendingAvatarDataUrl = "";
+    let clearAvatarFlag = false;
+    let profile = null;
+
+    function escHtml(s) {
+      return String(s == null ? "" : s)
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+
+    function setAvatarPreview(url, initialSource) {
+      const img = document.getElementById("avatarImg");
+      const ini = document.getElementById("avatarInitial");
+      const name = initialSource || document.getElementById("fullName").value || getSessionUser() || "?";
+      ini.textContent = String(name).trim().charAt(0).toUpperCase() || "?";
+      if (url) {
+        img.src = url;
+        img.classList.add("on");
+        ini.classList.add("hide");
+      } else {
+        img.removeAttribute("src");
+        img.classList.remove("on");
+        ini.classList.remove("hide");
+      }
+    }
+
+    function fillHero(p) {
+      const name = p.fullName || p.username || "—";
+      document.getElementById("heroName").textContent = name;
+      document.getElementById("heroUser").textContent = "@" + (p.username || "");
+      const roleLabel = typeof TCI18N !== "undefined" ? TCI18N.roleLabelI18n(p.role) : (p.role || "");
+      document.getElementById("heroRole").innerHTML = `<i class="bi bi-shield"></i> ${escHtml(roleLabel)}`;
+      document.getElementById("heroPhone").innerHTML =
+        `<i class="bi bi-telephone"></i> ${escHtml(p.phone || "—")}`;
+      setAvatarPreview(p.avatarUrl || "", name);
+    }
+
+    async function loadProfile() {
+      const data = await apiGet({ action: "getMyProfile" });
+      if (!data || data.success === false || data.error) {
+        TCUI.toast((data && data.error) || t("error"), "err");
+        return;
+      }
+      profile = data;
+      document.getElementById("fullName").value = data.fullName || "";
+      document.getElementById("username").value = data.username || "";
+      document.getElementById("phone").value = data.phone || "";
+      document.getElementById("email").value = data.email || "";
+      pendingAvatarDataUrl = "";
+      clearAvatarFlag = false;
+      fillHero(data);
+      setSession({
+        avatarUrl: data.avatarUrl || "",
+        fullName: data.fullName || ""
+      });
+    }
+
+    async function onAvatarPick(e) {
+      const file = e.target.files && e.target.files[0];
+      e.target.value = "";
+      if (!file) return;
+      try {
+        const dataUrl = typeof compressImageFile === "function"
+          ? await compressImageFile(file, 720, 0.78)
+          : await new Promise((resolve, reject) => {
+              const r = new FileReader();
+              r.onload = () => resolve(r.result);
+              r.onerror = reject;
+              r.readAsDataURL(file);
+            });
+        pendingAvatarDataUrl = dataUrl;
+        clearAvatarFlag = false;
+        setAvatarPreview(dataUrl, document.getElementById("fullName").value);
+        TCUI.toast(t("profilePhotoReady"), "ok");
+      } catch (err) {
+        TCUI.toast(err.message || t("error"), "err");
+      }
+    }
+
+    async function saveProfile() {
+      const btn = document.getElementById("btnSaveProfile");
+      btn.disabled = true;
+      try {
+        const payload = {
+          action: "updateMyProfile",
+          fullName: document.getElementById("fullName").value.trim(),
+          phone: document.getElementById("phone").value.trim(),
+          email: document.getElementById("email").value.trim()
+        };
+        if (clearAvatarFlag) payload.clearAvatar = true;
+        else if (pendingAvatarDataUrl) payload.avatarBase64 = pendingAvatarDataUrl;
+
+        const res = await apiGet(payload);
+        if (!res || res.success === false || res.error) {
+          TCUI.toast((res && res.error) || t("error"), "err");
+          return;
+        }
+        pendingAvatarDataUrl = "";
+        clearAvatarFlag = false;
+        setSession({
+          avatarUrl: res.avatarUrl || "",
+          fullName: res.fullName || ""
+        });
+        TCUI.toast(t("profileSaved"), "ok");
+        await loadProfile();
+        if (typeof TCUI.mountHeader === "function") {
+          TCUI.mountHeader("app-header", {
+            active: "profile",
+            titleKey: "profile",
+            subtitleKey: "profileSub",
+            icon: "bi-person-circle"
+          });
+        }
+      } catch (e) {
+        TCUI.toast(e.message || t("error"), "err");
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => TCUI.bootPage(async () => {
+      TCUI.mountHeader("app-header", {
+        active: "profile",
+        titleKey: "profile",
+        subtitleKey: "profileSub",
+        icon: "bi-person-circle"
+      });
+      document.getElementById("avatarFile").onchange = onAvatarPick;
+      document.getElementById("btnClearAvatar").onclick = () => {
+        pendingAvatarDataUrl = "";
+        clearAvatarFlag = true;
+        setAvatarPreview("", document.getElementById("fullName").value);
+      };
+      document.getElementById("btnSaveProfile").onclick = saveProfile;
+      document.getElementById("fullName").oninput = () => {
+        if (!document.getElementById("avatarImg").classList.contains("on")) {
+          setAvatarPreview("", document.getElementById("fullName").value);
+        }
+        document.getElementById("heroName").textContent =
+          document.getElementById("fullName").value.trim() || getSessionUser() || "—";
+      };
+      await loadProfile();
+    }, { pageId: "profile" }));
+  </script>
+</body>
+</html>

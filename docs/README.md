@@ -1,74 +1,66 @@
 # ToolCustody Documentation
 
-**Product:** ToolCustody — Abu Amjad  
+**Product:** ToolCustody — Abu Amjad / AbouAmjad Store System (AICS)  
 **Type:** QR-based Tool Custody Management System  
-**Status:** Production operational / Enterprise hardening in progress  
+**Status:** Production operational (**Node.js + PostgreSQL** on VPS)
+
+## AI / agent entry point (read first)
+
+| Document | Description |
+|----------|-------------|
+| [../AI_PROJECT_MEMORY.md](../AI_PROJECT_MEMORY.md) | Permanent rules — **mandatory** before any change |
+| [../PROJECT_CONTEXT.md](../PROJECT_CONTEXT.md) | Live production snapshot |
+| [../ARCHITECTURE.md](../ARCHITECTURE.md) | Current architecture (Node + Postgres) |
+| [../TASKS.md](../TASKS.md) | Live task board |
+| [../DECISIONS.md](../DECISIONS.md) | Decision log |
+| [../CHANGELOG.md](../CHANGELOG.md) | Live changelog |
+
+If anything in `/docs` conflicts with the root memory files about the **live** stack, the **root files win**.
 
 ## Purpose of this folder
 
-This `/docs` tree is the authoritative technical documentation for ToolCustody.  
-It describes the **as-built system** (what exists in the codebase today) and clearly labels **planned** capabilities.
+This `/docs` tree holds expanded technical documentation.  
+Some older files still describe the Google Apps Script / Sheets era — treat those as **historical** unless revived by an approved plan.
 
 ## Quick links
 
 | Document | Description |
 |----------|-------------|
 | [SYSTEM_OVERVIEW.md](./SYSTEM_OVERVIEW.md) | Product & runtime overview |
-| [SOFTWARE_ARCHITECTURE_DOCUMENT.md](./SOFTWARE_ARCHITECTURE_DOCUMENT.md) | Architecture |
-| [SOFTWARE_REQUIREMENTS_SPECIFICATION.md](./SOFTWARE_REQUIREMENTS_SPECIFICATION.md) | Requirements |
-| [DATABASE_DESIGN.md](./DATABASE_DESIGN.md) | Google Sheets data model |
-| [API_REFERENCE.md](./API_REFERENCE.md) | Apps Script API |
+| [SOFTWARE_ARCHITECTURE_DOCUMENT.md](./SOFTWARE_ARCHITECTURE_DOCUMENT.md) | Architecture (may lag live stack) |
+| [VPS_DEPLOY.md](./VPS_DEPLOY.md) | VPS deploy notes |
 | [SECURITY_POLICY.md](./SECURITY_POLICY.md) | Security posture |
-| [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) | Deploy Pages + GAS |
-| [PROJECT_ROADMAP.md](./PROJECT_ROADMAP.md) | Phased roadmap |
 | [KNOWN_ISSUES.md](./KNOWN_ISSUES.md) | Known defects & risks |
-| [MASTER_PROMPT.md](./MASTER_PROMPT.md) | AI / engineer constitution |
-| [DOCUMENTATION_QUALITY_REVIEW.md](./DOCUMENTATION_QUALITY_REVIEW.md) | Docs quality ratings & fixes |
-| [CODE_AUDIT_REPORT.md](./CODE_AUDIT_REPORT.md) | Enterprise code audit findings |
-| [IMPLEMENTATION_PRIORITY.md](./IMPLEMENTATION_PRIORITY.md) | Remediation waves (no impl yet) |
-| [GITHUB_ISSUES.md](./GITHUB_ISSUES.md) | One GitHub Issue per audit finding |
+| [MASTER_PROMPT.md](./MASTER_PROMPT.md) | AI / engineer constitution (also see root memory) |
+| [DECISIONS/](./DECISIONS/) | Older ADRs |
 
 ## Documentation map
 
 ```
 docs/
 ├── README.md                          ← you are here
-├── MASTER_PROMPT.md                   ← engineering rules for agents
-├── SYSTEM_OVERVIEW.md
-├── SOFTWARE_ARCHITECTURE_DOCUMENT.md
-├── SOFTWARE_REQUIREMENTS_SPECIFICATION.md
-├── DATABASE_DESIGN.md
-├── API_REFERENCE.md
-├── SECURITY_POLICY.md
-├── DEPLOYMENT_GUIDE.md
-├── DEVELOPMENT_RULES.md
-├── CODING_STANDARDS.md
-├── UI_UX_GUIDELINES.md
-├── CONTRIBUTING.md
-├── CHANGELOG.md
-├── PROJECT_ROADMAP.md
-├── RELEASE_PLAN.md
-├── KNOWN_ISSUES.md
-├── DOCUMENTATION_QUALITY_REVIEW.md
-├── CODE_AUDIT_REPORT.md
-├── IMPLEMENTATION_PRIORITY.md
-├── GITHUB_ISSUES.md
-├── TEST_PLAN.md
-├── DECISIONS/                         ← Architecture Decision Records
-├── WORKFLOWS/                         ← Operational workflows
-├── FEATURES/                          ← Feature specs (as-built + planned)
-└── TEST_CASES/                        ← Manual test cases
+├── MASTER_PROMPT.md
+├── … (workflows, features, test cases)
+└── DECISIONS/                         ← older Architecture Decision Records
+
+(repo root)
+├── AI_PROJECT_MEMORY.md               ← agent constitution (live)
+├── PROJECT_CONTEXT.md
+├── ARCHITECTURE.md
+├── TASKS.md
+├── DECISIONS.md
+└── CHANGELOG.md
 ```
 
-## Technology stack
+## Technology stack (LIVE)
 
 | Layer | Technology |
 |-------|------------|
-| Frontend | HTML, CSS, JavaScript (vanilla) |
-| Hosting | GitHub Pages |
-| Offline | PWA (`manifest.json`, `sw.js`) |
-| Backend | Google Apps Script |
-| Storage | Google Sheets + Google Drive (damage photos) |
+| Frontend | HTML, CSS, JavaScript (vanilla), multi-page |
+| Hosting | nginx on VPS (`aics.iskndr.com`) |
+| Offline | SW present but **no API cache** (ledger freshness) |
+| Backend | Node.js Express action dispatcher (`server/src/`) |
+| Storage | PostgreSQL + disk uploads |
 
 ## Core workflow (immutable unless explicitly changed)
 
@@ -76,30 +68,30 @@ docs/
 Person (P…)  →  Direction (OUT | IN)  →  Tools (I / E / C / B…)
 ```
 
-Custody state is **rebuilt from scan history** by `parser.js`.  
-It is not stored as a separate inventory table.
+Custody state is rebuilt from the **`scans`** tape (server `custody.js`; client `parser.js` for some legacy views).
 
 ## Source of truth (code)
 
 | Concern | Module / file |
 |---------|----------------|
 | Scan session rules | `scan.js` (`ScanEngine`) |
-| Custody math | `parser.js` (`CustodyParser`) |
+| Client custody math | `parser.js` (`CustodyParser`) |
+| Server custody math | `server/src/custody.js` |
+| Stock snapshot | `server/src/lib/stock.js` |
 | API / auth helpers | `config.js` |
 | UI chrome / auth gate | `ui.js` (`TCUI`) |
-| Backend | `Code.gs.example` (template) / `Code.gs.txt` (local secrets, gitignored) |
+| Backend | `server/src/server.js` + `handlers/*` |
 
 ## Live endpoints
 
 - **GitHub:** https://github.com/AbouAmjad/QrCode-Scaning  
-- **Site:** https://abouamjad.github.io/QrCode-Scaning/  
+- **Production site:** https://aics.iskndr.com  
 
 ## How to use these docs
 
-1. New engineers: start with System Overview → Architecture → Workflows.  
-2. API integrators: API Reference + Database Design.  
-3. Operators: Deployment Guide + Workflows + Known Issues.  
-4. AI agents: Master Prompt **before** any code change.
+1. **AI agents:** root `AI_PROJECT_MEMORY.md` → `PROJECT_CONTEXT.md` → `ARCHITECTURE.md` → `TASKS.md` before any code change.  
+2. New engineers: same, then Workflows under `/docs`.  
+3. Operators: VPS deploy + Known Issues.
 
 ## Status legend used in feature docs
 
@@ -111,9 +103,4 @@ It is not stored as a separate inventory table.
 
 ---
 
-*Last documentation generation: based on codebase audit of ToolCustody (static PWA + Apps Script + Sheets).*
-
-
-## Documentation completion status
-
-All markdown files under `/docs` are populated. Feature docs use status labels **AS-BUILT**, **PARTIAL**, or **PLANNED**. See [KNOWN_ISSUES.md](./KNOWN_ISSUES.md) for defects that affect as-built accuracy.
+*Last documentation update: 2026-08-05 — live stack is Node + PostgreSQL; root memory files are authoritative for agents.*

@@ -10,7 +10,8 @@ Validate damage submit/list flows on `damage.html` including photo paths.
 
 | ID | Steps | Expected |
 |----|-------|----------|
-| G1 | Submit without photo | Success message; Damage sheet row |
+| G1 | Submit without photo | Success message; Damage row created |
+| G1b | Person holds tool, then damage that tool | Tool leaves Not returned / outstanding for that person; still listed under Damage |
 | G2 | Submit with photo | Success or remark notes photo failure gracefully |
 | G3 | Person not starting with P | Client validation error |
 | G4 | Tool bad prefix | Client validation error |

@@ -1,7 +1,7 @@
 /** Strict scan session — Person → IN|OUT → tool(s) */
 const ScanEngine = (() => {
   const DIRECTIONS = ["IN", "OUT"];
-  const DUPLICATE_MS = 600;
+  const DUPLICATE_MS = 450;
 
   let session = {
     personCode: null,
@@ -104,12 +104,13 @@ const ScanEngine = (() => {
     });
     const hint = document.getElementById("scanStepHint");
     if (!hint) return;
+    const tr = typeof t === "function" ? t : (k, v) => k;
     const hints = {
-      person: "Step 1 — Scan worker code (P…)",
-      direction: "Step 2 — Scan IN or OUT",
-      conflict: "Choose IN or OUT in the dialog",
-      tools: "Step 3 — Scan tool codes",
-      "tools-active": `Step 3 — ${session.toolCount} tool(s) · scan more or new P`
+      person: tr("step1"),
+      direction: tr("step2"),
+      conflict: tr("conflictSub"),
+      tools: tr("step3"),
+      "tools-active": tr("step3active", { n: session.toolCount })
     };
     hint.textContent = hints[s.step] || hints.person;
   }
@@ -149,12 +150,11 @@ const ScanEngine = (() => {
   function process(codeRaw) {
     const code = normalize(codeRaw);
     if (!code) return { ok: false, type: "empty" };
+    const kind = classify(code);
 
-    if (isDuplicateBurst(code)) {
+    if (kind !== "tool" && isDuplicateBurst(code)) {
       return { ok: false, type: "burst", code, message: "Duplicate scan ignored — wait a moment" };
     }
-
-    const kind = classify(code);
 
     if (kind === "unknown") {
       return { ok: false, type: "unknown", code, message: "Unknown code — ignored" };
@@ -170,7 +170,7 @@ const ScanEngine = (() => {
       session.toolsInBatch = [];
       session.awaitingDirectionChoice = false;
       syncUi();
-      return { ok: true, type: "person", code, queue: true, logDesc: "Person — select IN or OUT" };
+      return { ok: true, type: "person", code, queue: true, logDesc: (typeof t === "function" ? t("personSelectDir") : "Person — select IN or OUT") };
     }
 
     if (kind === "direction") {
@@ -206,7 +206,9 @@ const ScanEngine = (() => {
       syncUi();
       return {
         ok: true, type: "direction", code, queue: true,
-        logDesc: code === "OUT" ? "Direction: OUT" : "Direction: IN"
+        logDesc: code === "OUT"
+          ? (typeof t === "function" ? t("directionOut") : "Direction: OUT")
+          : (typeof t === "function" ? t("directionIn") : "Direction: IN")
       };
     }
 
@@ -223,25 +225,40 @@ const ScanEngine = (() => {
       if (!session.direction) {
         return { ok: false, type: "tool", code, message: "Select IN or OUT first", needsWarning: true, danger: true };
       }
-      if (session.toolsInBatch.includes(code)) {
-        return {
-          ok: false, type: "tool", code,
-          message: "Tool already scanned in this batch",
-          danger: true
-        };
-      }
+      // Same code may be scanned multiple times = quantity. Accidental
+      // rapid double-scans are still blocked by the duplicate burst guard above.
       const who = session.personLabel || session.personCode;
       const isCons = typeof isConsumable === "function" && isConsumable(code);
       const dirLabel = session.direction === "OUT"
         ? (isCons ? `Issued · ${who}` : `OUT · ${who}`)
-        : (isCons ? `IN log · ${who}` : `IN · ${who}`);
-      session.toolCount++;
-      session.toolsInBatch.push(code);
-      syncUi();
-      return { ok: true, type: "tool", code, queue: true, logDesc: dirLabel, dirLabel };
+        : (isCons ? `Returned to stock · ${who}` : `IN · ${who}`);
+      // Do NOT commit to batch yet — terminal may need PPE confirmation first
+      return {
+        ok: true, type: "tool", code, queue: true, logDesc: dirLabel, dirLabel,
+        direction: session.direction, personCode: session.personCode, needsCommit: true
+      };
     }
 
     return { ok: false, type: "unknown", code, message: "Unknown code" };
+  }
+
+  function commitTool(code) {
+    const c = normalize(code);
+    if (!c) return false;
+    session.toolCount++;
+    session.toolsInBatch.push(c);
+    syncUi();
+    return true;
+  }
+
+  function uncommitTool(code) {
+    const c = normalize(code);
+    const i = session.toolsInBatch.lastIndexOf(c);
+    if (i < 0) return false;
+    session.toolsInBatch.splice(i, 1);
+    session.toolCount = Math.max(0, session.toolCount - 1);
+    syncUi();
+    return true;
   }
 
   function resolveConflict(dir) {
@@ -251,7 +268,9 @@ const ScanEngine = (() => {
     syncUi();
     return {
       ok: true, type: "direction", code: dir, queue: true,
-      logDesc: dir === "OUT" ? "Direction: OUT (confirmed)" : "Direction: IN (confirmed)"
+      logDesc: dir === "OUT"
+        ? (typeof t === "function" ? t("directionOutOk") : "Direction: OUT (confirmed)")
+        : (typeof t === "function" ? t("directionInOk") : "Direction: IN (confirmed)")
     };
   }
 
@@ -261,8 +280,24 @@ const ScanEngine = (() => {
     syncUi();
   }
 
+  function clearSession() {
+    session = emptySession();
+    syncUi();
+  }
+
+  /** Clear IN/OUT only (keep person) when no tools committed in this batch. */
+  function resetDirection() {
+    if (session.toolCount > 0) return false;
+    session.direction = null;
+    session.awaitingDirectionChoice = false;
+    session.toolsInBatch = [];
+    syncUi();
+    return true;
+  }
+
   return {
-    normalize, classify, process, resolveConflict, cancelConflict,
+    normalize, classify, process, resolveConflict, cancelConflict, clearSession,
+    commitTool, uncommitTool, resetDirection,
     rebuildFromQueue, getSession, setPersonLabel, getStepState, updateStepUi
   };
 })();

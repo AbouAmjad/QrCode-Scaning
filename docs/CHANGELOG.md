@@ -1,10 +1,14 @@
 # Changelog
 
 All notable ToolCustody changes should be recorded here.  
-Detailed history also lives in git commits on `main`.
+**Authoritative live changelog:** [../CHANGELOG.md](../CHANGELOG.md)  
+Detailed history also lives in git commits.
 
-## Unreleased
-- Documentation quality review pass: normalized test-case structure, expanded thin guides, full per-document ratings in [DOCUMENTATION_QUALITY_REVIEW.md](./DOCUMENTATION_QUALITY_REVIEW.md).
+## Unreleased / 2026-08-05
+- Production recovery after Timesheet overwrite; Node+Postgres API modular restore
+- Stock formula fix; project_stock rebuild; project dispatch schema alignment
+- Root AI memory documentation set (`AI_PROJECT_MEMORY.md` et al.)
+- See root [CHANGELOG.md](../CHANGELOG.md) for full entry
 
 ## 2026-07 — Custody platform hardening wave
 - Strict `ScanEngine` session (Person → IN/OUT → Tools)
@@ -27,4 +31,3 @@ Detailed history also lives in git commits on `main`.
 - [RELEASE_PLAN.md](./RELEASE_PLAN.md)
 - [PROJECT_ROADMAP.md](./PROJECT_ROADMAP.md)
 - [KNOWN_ISSUES.md](./KNOWN_ISSUES.md)
-

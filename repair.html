@@ -3,15 +3,35 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ToolCustody | Repair</title>
+  <title>AbouAmjad Store System | Repair</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="app.css">
+  <link rel="stylesheet" href="app.css?v=live">
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#1e3a5f">
-  <script src="config.js"></script>
-  <script src="ui.js"></script>
+  <meta name="theme-color" content="#0f766e">
+  <script src="config.js?v=live"></script>
+  <script src="i18n.js?v=live"></script>
+  <script src="ui.js?v=live"></script>
+  <script src="export-utils.js?v=live"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <style>
+    .rp-row{cursor:pointer}
+    .rp-row:hover td{background:color-mix(in srgb,var(--tc-accent) 8%,transparent)}
+    .rp-code{color:var(--tc-accent-2);text-decoration:none;font-weight:800}
+    .rp-code:hover{text-decoration:underline}
+    .rp-desc{display:block;font-size:.72rem;color:var(--tc-muted);font-weight:600;margin-top:.1rem}
+    .rp-chip{
+      display:inline-flex;align-items:center;gap:.25rem;font-size:.72rem;font-weight:800;
+      padding:.2rem .55rem;border-radius:999px;border:1px solid var(--tc-border);background:var(--tc-surface-2);
+    }
+    .rp-chip.scrap{background:#fee2e2;color:#b91c1c;border-color:transparent}
+    .rp-chip.repair{background:#ffedd5;color:#c2410c;border-color:transparent}
+    .rp-chip.parts{background:#fef3c7;color:#b45309;border-color:transparent}
+    .rp-chip.active{background:#d1fae5;color:#047857;border-color:transparent}
+    .rp-chip.returned{background:#e0e7ff;color:#4338ca;border-color:transparent}
+    .rp-toolbar{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;margin-top:.85rem}
+    .rp-toolbar .tc-select{min-width:160px}
+  </style>
 </head>
 <body class="tc-page">
   <div class="tc-wrap">
@@ -20,63 +40,190 @@
       <div class="row g-4">
         <div class="col-lg-4">
           <div class="tc-card">
-            <span class="tc-section-badge"><i class="bi bi-wrench"></i> Lifecycle change</span>
-            <div class="tc-field mt-3"><label>Tool code</label><input id="code" class="form-control" placeholder="I1001"></div>
-            <div class="tc-field"><label>State</label>
+            <span class="tc-section-badge"><i class="bi bi-wrench"></i> <span data-i18n="repairLifecycle">Lifecycle change</span></span>
+            <div class="tc-field mt-3"><label data-i18n="toolCode">Tool code</label><input id="code" class="form-control" placeholder="I1001"></div>
+            <div class="tc-field"><label data-i18n="state">State</label>
               <select id="state" class="tc-select w-100">
-                <option>Active</option>
-                <option>Under Repair</option>
-                <option>Awaiting Parts</option>
-                <option>Scrap</option>
-                <option>Returned</option>
+                <option value="Active" data-i18n="rpStateActive">Active</option>
+                <option value="Under Repair" data-i18n="rpStateRepair">Under Repair</option>
+                <option value="Awaiting Parts" data-i18n="rpStateParts">Awaiting Parts</option>
+                <option value="Scrap" data-i18n="rpStateScrap">Scrap</option>
+                <option value="Returned" data-i18n="rpStateReturned">Returned</option>
               </select>
             </div>
-            <div class="tc-field"><label>Note</label><input id="note" class="form-control" placeholder="Vendor / parts…"></div>
-            <button class="tc-btn tc-btn-primary w-100" id="btnSave"><i class="bi bi-check2"></i> Update state</button>
+            <div class="tc-field"><label data-i18n="note">Note</label><input id="note" class="form-control" data-i18n-placeholder="rpNotePh" placeholder="Vendor / parts…"></div>
+            <button class="tc-btn tc-btn-primary w-100" id="btnSave"><i class="bi bi-check2"></i> <span data-i18n="rpUpdateState">Update state</span></button>
           </div>
         </div>
         <div class="col-lg-8">
           <div class="tc-card">
-            <span class="tc-section-badge"><i class="bi bi-list-ul"></i> Current states</span>
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+              <span class="tc-section-badge"><i class="bi bi-list-ul"></i> <span data-i18n="rpCurrentStates">Current states</span></span>
+              <button type="button" class="tc-btn tc-btn-sm" id="btnExportScrap" title="Export scrap list">
+                <i class="bi bi-download"></i> <span data-i18n="rpExportScrap">Export scrap</span>
+              </button>
+            </div>
+            <div class="rp-toolbar">
+              <select id="filterState" class="tc-select">
+                <option value="" data-i18n="rpAllStates">All states</option>
+                <option value="Active" data-i18n="rpStateActive">Active</option>
+                <option value="Under Repair" data-i18n="rpStateRepair">Under Repair</option>
+                <option value="Awaiting Parts" data-i18n="rpStateParts">Awaiting Parts</option>
+                <option value="Scrap" data-i18n="rpStateScrap">Scrap</option>
+                <option value="Returned" data-i18n="rpStateReturned">Returned</option>
+              </select>
+              <input id="filterQ" class="tc-search" style="flex:1;min-width:140px" data-i18n-placeholder="searchPlaceholder" placeholder="Search…">
+              <button type="button" class="tc-btn" id="btnRefresh"><i class="bi bi-arrow-clockwise"></i></button>
+            </div>
             <div class="table-responsive mt-2">
               <table class="table tc-table mb-0">
-                <thead><tr><th>Code</th><th>State</th><th>Updated</th><th>Note</th></tr></thead>
-                <tbody id="lifeBody"><tr><td colspan="4" class="tc-text-muted text-center">Loading…</td></tr></tbody>
+                <thead>
+                  <tr>
+                    <th data-i18n="code">Code</th>
+                    <th data-i18n="state">State</th>
+                    <th data-i18n="updated">Updated</th>
+                    <th data-i18n="note">Note</th>
+                  </tr>
+                </thead>
+                <tbody id="lifeBody"><tr><td colspan="4" class="tc-text-muted text-center" data-i18n="loading">Loading…</td></tr></tbody>
               </table>
             </div>
+            <div class="small tc-text-muted mt-2" id="listHint"></div>
           </div>
         </div>
       </div>
     </div>
   </div>
+
+  <div class="tc-modal-backdrop" id="exportModal" style="display:none">
+    <div class="tc-modal" style="max-width:420px">
+      <div class="tc-modal-head">
+        <div>
+          <h3 class="h5 mb-1" data-i18n="rpExportScrap">Export scrap</h3>
+          <p class="tc-text-muted small mb-0" id="exportSub"></p>
+        </div>
+        <button type="button" class="tc-btn tc-btn-sm" id="btnCloseExport"><i class="bi bi-x-lg"></i></button>
+      </div>
+      <div class="tc-modal-body d-grid gap-2">
+        <button type="button" class="tc-btn tc-btn-primary" id="btnExportXlsx"><i class="bi bi-file-earmark-spreadsheet"></i> <span data-i18n="exportExcel">Excel (.xlsx)</span></button>
+        <button type="button" class="tc-btn" id="btnExportPdf"><i class="bi bi-file-earmark-pdf"></i> <span data-i18n="exportPdf">PDF</span></button>
+      </div>
+    </div>
+  </div>
+
   <script>
+    let allItems = [];
+
     document.addEventListener("DOMContentLoaded", () => TCUI.bootPage(() => {
       TCUI.mountHeader("app-header", {
-        active: "repair", title: "Repair / Lifecycle",
-        subtitle: "Active · Under Repair · Awaiting Parts · Scrap · Returned",
+        active: "repair",
+        titleKey: "repair",
+        subtitleKey: "repairSub",
         icon: "bi-wrench"
       });
-      loadList();
       document.getElementById("btnSave").onclick = saveState;
-    }, { minRole: "supervisor" }));
+      document.getElementById("btnRefresh").onclick = loadList;
+      document.getElementById("filterState").onchange = renderList;
+      document.getElementById("filterQ").oninput = renderList;
+      document.getElementById("btnExportScrap").onclick = openExportModal;
+      document.getElementById("btnCloseExport").onclick = closeExportModal;
+      document.getElementById("exportModal").addEventListener("click", (e) => {
+        if (e.target.id === "exportModal") closeExportModal();
+      });
+      document.getElementById("btnExportXlsx").onclick = () => doExportScrap("xlsx");
+      document.getElementById("btnExportPdf").onclick = () => doExportScrap("pdf");
+      loadList();
+    }, { pageId: "repair" }));
+
+    function t(k, fb) {
+      return typeof TCI18N !== "undefined" ? TCI18N.t(k) : (fb || k);
+    }
+
+    function esc(s) {
+      return typeof escHtml === "function" ? escHtml(s) : String(s == null ? "" : s)
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+
+    function fmtDate(v) {
+      if (!v) return "";
+      const d = new Date(v);
+      if (Number.isNaN(d.getTime())) return String(v);
+      return d.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
+    }
+
+    function chipClass(state) {
+      if (state === "Scrap") return "scrap";
+      if (state === "Under Repair") return "repair";
+      if (state === "Awaiting Parts") return "parts";
+      if (state === "Returned") return "returned";
+      if (state === "Active") return "active";
+      return "";
+    }
+
+    function scrapItems() {
+      return allItems.filter((i) => i.state === "Scrap");
+    }
+
+    function filtered() {
+      const st = document.getElementById("filterState").value;
+      const q = document.getElementById("filterQ").value.trim().toLowerCase();
+      return allItems.filter((i) => {
+        if (st && i.state !== st) return false;
+        if (!q) return true;
+        return (i.code + " " + (i.description || "") + " " + (i.note || "") + " " + (i.state || "")).toLowerCase().includes(q);
+      });
+    }
+
+    function openProduct(code) {
+      if (!code) return;
+      location.href = "tool.html?code=" + encodeURIComponent(code);
+    }
+
+    function renderList() {
+      const body = document.getElementById("lifeBody");
+      const list = filtered();
+      const scrapCount = scrapItems().length;
+      document.getElementById("listHint").textContent =
+        t("rpListHint", "{shown} shown · {scrap} scrap")
+          .replace("{shown}", String(list.length))
+          .replace("{scrap}", String(scrapCount));
+      document.getElementById("btnExportScrap").disabled = scrapCount === 0;
+
+      if (!list.length) {
+        body.innerHTML = `<tr><td colspan="4" class="tc-text-muted text-center">${esc(t("rpEmpty", "No lifecycle rows"))}</td></tr>`;
+        return;
+      }
+      body.innerHTML = list.map((i) => {
+        const desc = i.description
+          ? `<span class="rp-desc">${esc(i.description)}</span>`
+          : "";
+        return `<tr class="rp-row" data-code="${esc(i.code)}" title="${esc(t("rpOpenDetails", "Open product details"))}">
+          <td>
+            <a class="rp-code" href="tool.html?code=${encodeURIComponent(i.code)}">${esc(i.code)}</a>
+            ${desc}
+          </td>
+          <td><span class="rp-chip ${chipClass(i.state)}">${esc(i.state)}</span></td>
+          <td>${esc(fmtDate(i.updatedAt))}</td>
+          <td>${esc(i.note || "")}</td>
+        </tr>`;
+      }).join("");
+
+      body.querySelectorAll("tr.rp-row").forEach((tr) => {
+        tr.addEventListener("click", (e) => {
+          if (e.target.closest("a")) return;
+          openProduct(tr.getAttribute("data-code"));
+        });
+      });
+    }
 
     async function loadList() {
       const body = document.getElementById("lifeBody");
       try {
         const data = await apiGet({ action: "getLifecycle" });
-        const items = (data && data.items) || [];
-        if (!items.length) {
-          body.innerHTML = `<tr><td colspan="4" class="tc-text-muted text-center">No lifecycle rows</td></tr>`;
-          return;
-        }
-        body.innerHTML = items.map(i => `<tr>
-          <td><strong>${escHtml(i.code)}</strong></td>
-          <td>${escHtml(i.state)}</td>
-          <td>${escHtml(i.updatedAt || "")}</td>
-          <td>${escHtml(i.note || "")}</td>
-        </tr>`).join("");
+        allItems = (data && data.items) || [];
+        renderList();
       } catch (e) {
-        body.innerHTML = `<tr><td colspan="4" class="text-danger text-center">${escHtml(e.message || "Error")}</td></tr>`;
+        body.innerHTML = `<tr><td colspan="4" class="text-danger text-center">${esc(e.message || t("error", "Error"))}</td></tr>`;
       }
     }
 
@@ -92,9 +239,49 @@
         });
         if (res.error) { TCUI.toast(res.error, "err"); return; }
         TCUI.toast(res.code + " → " + res.state, "ok");
+        document.getElementById("note").value = "";
         loadList();
       } catch (e) {
-        TCUI.toast(e.message || "Failed", "err");
+        TCUI.toast(e.message || t("error", "Failed"), "err");
+      }
+    }
+
+    function openExportModal() {
+      const n = scrapItems().length;
+      if (!n) {
+        TCUI.toast(t("rpNoScrap", "No scrap items to export"), "err");
+        return;
+      }
+      document.getElementById("exportSub").textContent =
+        t("rpExportScrapSub", "{n} scrap item(s)").replace("{n}", String(n));
+      document.getElementById("exportModal").style.display = "block";
+    }
+
+    function closeExportModal() {
+      document.getElementById("exportModal").style.display = "none";
+    }
+
+    function doExportScrap(format) {
+      const items = scrapItems().map((i) => ({
+        code: i.code,
+        description: i.description || "",
+        state: i.state,
+        updatedAt: fmtDate(i.updatedAt),
+        note: i.note || "",
+        byUser: i.byUser || ""
+      }));
+      if (!items.length) {
+        TCUI.toast(t("rpNoScrap", "No scrap items to export"), "err");
+        return;
+      }
+      try {
+        const label = TCExport.stamp();
+        if (format === "pdf") TCExport.exportScrapPdf(items, label);
+        else TCExport.exportScrapExcel(items, label);
+        TCUI.toast(t("rpExportOk", "Scrap list exported"), "ok");
+        closeExportModal();
+      } catch (e) {
+        TCUI.toast(e.message || t("error", "Export failed"), "err");
       }
     }
   </script>

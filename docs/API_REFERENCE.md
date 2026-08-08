@@ -90,8 +90,9 @@ Returns **full history**, with `isTargetDay` marking rows matching `date`.
 ### `submitDamage`
 **Auth:** token  
 **Fields:** `toolCode`, `personCode`, `qty`, `remark`, optional `date`, optional `imageBase64`  
-**Success:** `{ "success": true, "row": n, "item": {...} }`  
-**Errors:** validation / sheet write errors as `{ "error": "..." }`
+**Success:** `{ "success": true, "row": n, "custodyCleared": n, "item": {...} }`  
+**Side effects:** inserts damage row; reduces warehouse stock; for non-consumable tools appends custody return scans (`person → IN → tool × qty`) so the item leaves Not returned.  
+**Errors:** validation / write errors as `{ "error": "..." }`
 
 ---
 
