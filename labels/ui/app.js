@@ -483,20 +483,13 @@ export async function bootLabelApp() {
     const catRow = (categoryTree.categories || []).find((c) => c.name === catName);
     const subNames = new Set();
     if (catName) {
-      for (const s of categoryTree.subcategories || []) {
-        if (!catRow || s.categoryId === catRow.id) {
-          if (!catRow || s.categoryId === catRow.id) subNames.add(s.name);
-        }
-      }
-      // Also from catalog rows under this category
-      for (const it of pickerItems) {
-        if (it.category === catName && it.subcategory) subNames.add(it.subcategory);
-      }
-      // Tree subs for this category id
       if (catRow) {
         for (const s of categoryTree.subcategories || []) {
-          if (s.categoryId === catRow.id) subNames.add(s.name);
+          if (s.categoryId === catRow.id && s.name) subNames.add(s.name);
         }
+      }
+      for (const it of pickerItems) {
+        if (it.category === catName && it.subcategory) subNames.add(it.subcategory);
       }
     } else {
       for (const s of categoryTree.subcategories || []) if (s.name) subNames.add(s.name);
