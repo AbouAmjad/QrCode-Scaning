@@ -52,7 +52,12 @@ export async function bootLabelApp() {
     },
     onSave: async (doc) => {
       await saveTpl(false, doc);
-    }
+    },
+    onSaveAs: async (doc) => {
+      await saveTpl(true, doc);
+    },
+    onCalibrate: () => openCalibration(),
+    onPickItems: () => openPicker({ mode: "all", tab: "tools" })
   });
 
   const preview = new LabelPreview({
@@ -280,9 +285,6 @@ export async function bootLabelApp() {
     }
   }
 
-  document.getElementById("btnSaveTpl")?.addEventListener("click", () => saveTpl(false));
-  document.getElementById("btnSaveAsTpl")?.addEventListener("click", () => saveTpl(true));
-
   document.getElementById("btnGen")?.addEventListener("click", async () => {
     readSizeFieldsIntoDocument();
     lastItems = parseCodeLines(document.getElementById("codes")?.value);
@@ -383,9 +385,6 @@ export async function bootLabelApp() {
   });
 
   const pickerModal = document.getElementById("pickerModal");
-  document.getElementById("btnPick")?.addEventListener("click", () =>
-    openPicker({ mode: "all", tab: "tools" })
-  );
   document.getElementById("btnPickPeople")?.addEventListener("click", () =>
     openPicker({ mode: "people", tab: "people" })
   );
@@ -558,6 +557,8 @@ export async function bootLabelApp() {
       b.classList.toggle("active", b.dataset.tab === pickerTab)
     );
     pickerModal?.classList.add("open");
+    // Allow picker above Design Studio when opened from studio.
+    if (pickerModal) pickerModal.style.zIndex = "21000";
     await loadPickerTab(pickerTab);
   }
 
@@ -778,9 +779,11 @@ export async function bootLabelApp() {
   document.getElementById("btnApplyReplace")?.addEventListener("click", () => applyPicker("replace"));
   document.getElementById("btnApplyAdd")?.addEventListener("click", () => applyPicker("add"));
 
-  document.getElementById("btnCalibrate")?.addEventListener("click", () => {
+  function openCalibration() {
     const modal = document.getElementById("calibModal");
     modal?.classList.add("open");
+    // Calibration sits above studio when both are open.
+    if (modal) modal.style.zIndex = "21000";
     mountCalibrationWizard(document.getElementById("calibHost"), {
       labelW: documentModel.labelW,
       labelH: documentModel.labelH,
@@ -789,7 +792,7 @@ export async function bootLabelApp() {
         updateCalibChip(cal);
       }
     });
-  });
+  }
   document.getElementById("btnCloseCalib")?.addEventListener("click", () =>
     document.getElementById("calibModal")?.classList.remove("open")
   );

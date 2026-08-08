@@ -25,15 +25,19 @@ const HANDLES = ["nw", "n", "ne", "e", "se", "s", "sw", "w"];
  * @param {{
  *   onChange?: (doc: object) => void,
  *   onSave?: (doc: object) => void|Promise<void>,
- *   onSaveAs?: (doc: object) => void|Promise<void>
+ *   onSaveAs?: (doc: object) => void|Promise<void>,
+ *   onCalibrate?: () => void,
+ *   onPickItems?: () => void
  * }} [opts]
  */
 export class LabelStudio {
-  constructor(root, { onChange, onSave, onSaveAs } = {}) {
+  constructor(root, { onChange, onSave, onSaveAs, onCalibrate, onPickItems } = {}) {
     this.root = root;
     this.onChange = onChange;
     this.onSave = onSave;
     this.onSaveAs = onSaveAs;
+    this.onCalibrate = onCalibrate;
+    this.onPickItems = onPickItems;
     this.store = new DocumentStore();
     this.selection = new SelectionModel();
     this.viewport = new Viewport({ zoom: getStudioZoom() });
@@ -674,6 +678,15 @@ export class LabelStudio {
     this.root.querySelector("[data-save]")?.addEventListener("click", () => {
       void this.save(false);
     });
+    this.root.querySelector("[data-save-as]")?.addEventListener("click", () => {
+      void this.save(true);
+    });
+    this.root.querySelector("[data-calibrate]")?.addEventListener("click", () => {
+      this.onCalibrate?.();
+    });
+    this.root.querySelector("[data-pick-items]")?.addEventListener("click", () => {
+      this.onPickItems?.();
+    });
 
     this.root.querySelectorAll("[data-tool]").forEach((btn) => {
       btn.addEventListener("click", () => this._onTool(btn.dataset.tool));
@@ -1134,6 +1147,9 @@ function studioLabel(key, en, ar) {
 function studioMarkup() {
   const back = studioLabel("studioBack", "← Back", "← رجوع");
   const save = studioLabel("saveDesign", "Save design", "حفظ التصميم");
+  const saveAs = studioLabel("saveAsTemplate", "Save as…", "حفظ باسم…");
+  const pickItems = studioLabel("pickItems", "Choose items…", "اختيار عناصر…");
+  const calibrate = studioLabel("calibratePrinter", "Calibrate", "معايرة");
   const done = studioLabel("studioDone", "Done", "تم");
   const title = studioLabel("designStudio", "Design Studio", "استوديو التصميم");
   return `
@@ -1161,6 +1177,18 @@ function studioMarkup() {
           </div>
         </div>
         <div class="le-head-actions">
+          <button type="button" class="le-btn le-btn-ghost" data-pick-items title="${escapeAttr(pickItems)}">
+            <i class="bi bi-check2-square"></i>
+            <span>${escapeHtml(pickItems)}</span>
+          </button>
+          <button type="button" class="le-btn le-btn-ghost" data-calibrate title="${escapeAttr(calibrate)}">
+            <i class="bi bi-rulers"></i>
+            <span>${escapeHtml(calibrate)}</span>
+          </button>
+          <button type="button" class="le-btn le-btn-ghost" data-save-as title="${escapeAttr(saveAs)}">
+            <i class="bi bi-files"></i>
+            <span>${escapeHtml(saveAs)}</span>
+          </button>
           <button type="button" class="le-btn le-btn-save" data-save title="${escapeAttr(save)} (Ctrl+S)">
             <i class="bi bi-save-fill"></i>
             <span>${escapeHtml(save)}</span>
