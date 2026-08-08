@@ -49,6 +49,11 @@ export function bindShortcuts(handlers, { isEnabled } = {}) {
       else handlers.group?.();
       return;
     }
+    if (key === "Escape") {
+      e.preventDefault();
+      handlers.close?.();
+      return;
+    }
     if (key === "Delete" || key === "Backspace") {
       e.preventDefault();
       handlers.delete?.();

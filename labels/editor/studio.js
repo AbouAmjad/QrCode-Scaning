@@ -99,7 +99,8 @@ export class LabelStudio {
         zoom: (dir) => this.nudgeZoom(dir),
         save: () => {
           void this.save();
-        }
+        },
+        close: () => this.close(true)
       },
       { isEnabled: () => this._open }
     );
@@ -129,6 +130,7 @@ export class LabelStudio {
     this._open = true;
     this.el.studio.hidden = false;
     this.el.studio.classList.add("open");
+    this.root.classList.add("studio-open");
     requestAnimationFrame(() => {
       this.viewport.fit(
         this.el.wrap.clientWidth,
@@ -146,6 +148,7 @@ export class LabelStudio {
     this._open = false;
     this.el.studio.hidden = true;
     this.el.studio.classList.remove("open");
+    this.root.classList.remove("studio-open");
   }
 
   /** Persist current document via host callbacks (does not close the studio). */
@@ -462,8 +465,10 @@ export class LabelStudio {
   }
 
   _wireChrome() {
-    this.root.querySelector("[data-back]")?.addEventListener("click", () => this.close(true));
-    this.root.querySelector("[data-done]")?.addEventListener("click", () => this.close(true));
+    const closeStudio = () => this.close(true);
+    this.root.querySelectorAll("[data-back], [data-done]").forEach((btn) => {
+      btn.addEventListener("click", closeStudio);
+    });
     this.root.querySelector("[data-save]")?.addEventListener("click", () => {
       void this.save(false);
     });
@@ -816,22 +821,18 @@ function studioLabel(key, en, ar) {
 }
 
 function studioMarkup() {
-  const back = studioLabel("studioBack", "Back", "رجوع");
+  const back = studioLabel("studioBack", "← Back", "← رجوع");
   const reset = studioLabel("studioReset", "Reset", "إعادة ضبط");
   const save = studioLabel("saveDesign", "Save design", "حفظ التصميم");
   const saveAs = studioLabel("saveAsTemplate", "Save as…", "حفظ باسم…");
   const done = studioLabel("studioDone", "Done", "تم");
   const title = studioLabel("designStudio", "Design Studio", "استوديو التصميم");
-  const backIcon =
-    (typeof document !== "undefined" && document.documentElement?.lang === "ar")
-      ? "bi-arrow-right"
-      : "bi-arrow-left";
   return `
     <div class="le-studio" hidden>
       <header class="le-head">
         <div class="le-head-title">
-          <button type="button" class="le-btn le-btn-ghost" data-back title="${escapeAttr(back)}">
-            <i class="bi ${backIcon}"></i> ${escapeHtml(back)}
+          <button type="button" class="le-btn le-btn-exit" data-back title="${escapeAttr(back)}">
+            ${escapeHtml(back)}
           </button>
           <div>
             <h3>${escapeHtml(title)}</h3>
@@ -848,8 +849,8 @@ function studioMarkup() {
           <button type="button" class="le-btn le-btn-save" data-save title="${escapeAttr(save)} (Ctrl+S)">
             <i class="bi bi-save-fill"></i> ${escapeHtml(save)}
           </button>
-          <button type="button" class="le-btn le-btn-accent" data-done id="leDone" title="${escapeAttr(done)}">
-            <i class="bi bi-check2"></i> ${escapeHtml(done)}
+          <button type="button" class="le-btn le-btn-done" data-done id="leDone" title="${escapeAttr(done)}">
+            <i class="bi bi-check2-circle"></i> ${escapeHtml(done)}
           </button>
         </div>
       </header>
