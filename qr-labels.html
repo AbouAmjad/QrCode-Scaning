@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="app.css?v=themes1">
-  <link rel="stylesheet" href="labels/ui/styles.css?v=19">
+  <link rel="stylesheet" href="labels/ui/styles.css?v=20">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#0f766e">
   <script src="labels/vendor/qr-code-styling.js" id="qrLibScript"></script>
@@ -101,6 +101,12 @@
               <button type="button" class="tc-btn tc-btn-primary" id="btnPick">
                 <i class="bi bi-check2-square"></i> <span data-i18n="pickItems">Choose items…</span>
               </button>
+              <button type="button" class="tc-btn" id="btnPickPeople" title="Print people labels">
+                <i class="bi bi-people"></i> <span data-i18n="printPeople">Print people…</span>
+              </button>
+              <button type="button" class="tc-btn" id="btnPickByCategory" title="Print by category / sub-category / item">
+                <i class="bi bi-diagram-3"></i> <span data-i18n="printByCategory">By category…</span>
+              </button>
               <button type="button" class="tc-btn" id="btnImportCsv" title="Import CSV / TSV for data merge">
                 <i class="bi bi-filetype-csv"></i> Import CSV
               </button>
@@ -158,11 +164,11 @@
 
   <!-- Picker -->
   <div class="tc-modal-backdrop" id="pickerModal">
-    <div class="tc-modal">
+    <div class="tc-modal ql-picker-modal">
       <div class="tc-modal-head d-flex justify-content-between">
         <div>
-          <h3 class="h5 mb-1" data-i18n="pickItemsTitle">Choose what to print</h3>
-          <p class="tc-text-muted small mb-0" data-i18n="pickItemsHint">Search, tick what you need, or select all filtered.</p>
+          <h3 class="h5 mb-1" id="pickerTitle" data-i18n="pickItemsTitle">Choose what to print</h3>
+          <p class="tc-text-muted small mb-0" id="pickerHint" data-i18n="pickItemsHint">Search, tick what you need, or select all filtered.</p>
         </div>
         <button type="button" class="tc-btn tc-btn-sm" id="btnClosePicker"><i class="bi bi-x-lg"></i></button>
       </div>
@@ -172,18 +178,66 @@
           <button type="button" class="active" data-tab="tools" data-i18n="products">Tools</button>
           <button type="button" data-tab="consumables" data-i18n="consumables">Consumables</button>
         </div>
-        <div class="d-flex flex-wrap gap-2 mb-2">
-          <input type="search" id="pickerSearch" class="tc-search form-control" placeholder="Search…">
-          <button type="button" class="tc-btn" id="btnSelectFiltered"><i class="bi bi-check2-all"></i> Select filtered</button>
-          <button type="button" class="tc-btn" id="btnClearSelection"><i class="bi bi-square"></i> Clear</button>
+
+        <div class="ql-picker-filters" id="peopleFilters" hidden>
+          <label>
+            <span data-i18n="supplier">Supplier</span>
+            <select id="peopleSupplierFilter">
+              <option value="">All suppliers</option>
+            </select>
+          </label>
+          <label>
+            <span data-i18n="peopleStatusFilter">Status</span>
+            <select id="peopleStatusFilter">
+              <option value="all">All people</option>
+              <option value="holding">Holding tools</option>
+              <option value="never">Never took tools</option>
+            </select>
+          </label>
         </div>
+
+        <div class="ql-picker-filters" id="catalogFilters" hidden>
+          <label>
+            <span data-i18n="category">Category</span>
+            <select id="catFilter">
+              <option value="">All categories</option>
+            </select>
+          </label>
+          <label>
+            <span data-i18n="subcategory">Sub-category</span>
+            <select id="subFilter">
+              <option value="">All sub-categories</option>
+            </select>
+          </label>
+          <label>
+            <span data-i18n="itemType">Item</span>
+            <select id="itemFilter">
+              <option value="">All items</option>
+            </select>
+          </label>
+          <label>
+            <span data-i18n="kind">Kind</span>
+            <select id="kindFilter">
+              <option value="all">Tools + consumables</option>
+              <option value="tools">Tools only</option>
+              <option value="consumables">Consumables only</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2 mb-2">
+          <input type="search" id="pickerSearch" class="tc-search form-control" placeholder="Search…" data-i18n-placeholder="search">
+          <button type="button" class="tc-btn" id="btnSelectFiltered"><i class="bi bi-check2-all"></i> <span data-i18n="selectFiltered">Select filtered</span></button>
+          <button type="button" class="tc-btn" id="btnClearSelection"><i class="bi bi-square"></i> <span data-i18n="clearSelection">Clear</span></button>
+        </div>
+        <div class="ql-picker-meta" id="pickerMeta"></div>
         <div class="ql-picker-list" id="pickerList"></div>
       </div>
       <div class="tc-modal-foot d-flex justify-content-between align-items-center">
-        <div><span id="pickerTickCount">0</span> selected</div>
+        <div><span id="pickerTickCount">0</span> <span data-i18n="selected">selected</span></div>
         <div class="d-flex gap-2">
-          <button type="button" class="tc-btn" id="btnApplyReplace">Replace queue</button>
-          <button type="button" class="tc-btn tc-btn-primary" id="btnApplyAdd"><i class="bi bi-plus-lg"></i> Add to queue</button>
+          <button type="button" class="tc-btn" id="btnApplyReplace" data-i18n="replaceQueue">Replace queue</button>
+          <button type="button" class="tc-btn tc-btn-primary" id="btnApplyAdd"><i class="bi bi-plus-lg"></i> <span data-i18n="addToQueue">Add to queue</span></button>
         </div>
       </div>
     </div>
@@ -204,7 +258,7 @@
   <div id="editorHost"></div>
 
   <script type="module">
-    import { bootLabelApp } from "./labels/ui/app.js?v=19";
+    import { bootLabelApp } from "./labels/ui/app.js?v=20";
 
     document.addEventListener("DOMContentLoaded", () => {
       const start = async () => {

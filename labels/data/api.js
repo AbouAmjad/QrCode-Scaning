@@ -68,3 +68,14 @@ export async function listCatalog() {
   if (data?.error) throw new Error(data.error);
   return data.items || [];
 }
+
+/** Category → subcategory → item tree for catalog pickers. */
+export async function listCategories() {
+  const data = await callGet({ action: "listCategories" });
+  if (data?.error) throw new Error(data.error);
+  return {
+    categories: data.categories || [],
+    subcategories: data.subcategories || [],
+    items: data.items || []
+  };
+}

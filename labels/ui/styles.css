@@ -569,7 +569,8 @@ body.le-studio-open .tc-nav-drawer {
 .preview-modal { width: min(960px, 96vw); max-height: 92vh; display: flex; flex-direction: column; }
 .preview-modal .tc-modal-body { overflow: auto; background: #e2e8f0; }
 .lr-preview-sheet { margin: 0 auto; }
-.ql-picker-tabs { display: flex; gap: .35rem; margin-bottom: .65rem; }
+.ql-picker-modal { width: min(720px, 96vw); }
+.ql-picker-tabs { display: flex; gap: .35rem; margin-bottom: .65rem; flex-wrap: wrap; }
 .ql-picker-tabs button {
   border: 1px solid var(--tc-border);
   background: var(--tc-surface-2);
@@ -583,6 +584,42 @@ body.le-studio-open .tc-nav-drawer {
   background: var(--tc-accent);
   color: #fff;
   border-color: transparent;
+}
+.ql-picker-filters {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .55rem;
+  margin-bottom: .65rem;
+}
+@media (min-width: 700px) {
+  .ql-picker-filters { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+.ql-picker-filters label {
+  display: flex;
+  flex-direction: column;
+  gap: .2rem;
+  font-size: .68rem;
+  font-weight: 700;
+  color: var(--tc-muted);
+  text-transform: uppercase;
+  letter-spacing: .03em;
+}
+.ql-picker-filters select {
+  border: 1px solid var(--tc-border);
+  border-radius: 10px;
+  background: var(--tc-surface);
+  color: var(--tc-ink, inherit);
+  padding: .4rem .5rem;
+  font-size: .82rem;
+  font-weight: 650;
+  text-transform: none;
+  letter-spacing: 0;
+}
+.ql-picker-meta {
+  font-size: .75rem;
+  color: var(--tc-muted);
+  margin: 0 0 .4rem;
+  font-weight: 650;
 }
 .ql-picker-list { max-height: 42vh; overflow: auto; }
 .ql-picker-row {
