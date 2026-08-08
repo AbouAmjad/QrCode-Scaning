@@ -14,6 +14,8 @@ export function alignLayers(layers, mode, box) {
   const cy = (minY + maxB) / 2;
   const usableW = box?.usableW ?? 50;
   const usableH = box?.usableH ?? 30;
+  const ox = Number(box?.ox) || 0;
+  const oy = Number(box?.oy) || 0;
 
   return layers.map((ly) => {
     const next = { ...ly };
@@ -37,16 +39,34 @@ export function alignLayers(layers, mode, box) {
         next.y = roundMm(cy - Number(ly.h) / 2);
         break;
       case "centerLabelH":
-        next.x = roundMm((usableW - Number(ly.w)) / 2);
+        next.x = roundMm(ox + (usableW - Number(ly.w)) / 2);
         break;
       case "centerLabelV":
-        next.y = roundMm((usableH - Number(ly.h)) / 2);
+        next.y = roundMm(oy + (usableH - Number(ly.h)) / 2);
         break;
       default:
         break;
     }
     return next;
   });
+}
+
+/** Center a single layer on the printable label area (H + V). */
+export function centerLayerOnLabel(layer, box) {
+  if (!layer || !box) return layer;
+  const ox = Number(box.ox) || 0;
+  const oy = Number(box.oy) || 0;
+  return {
+    ...layer,
+    x: roundMm(ox + (box.usableW - Number(layer.w)) / 2),
+    y: roundMm(oy + (box.usableH - Number(layer.h)) / 2)
+  };
+}
+
+/** Re-apply centering for layers flagged keepCentered. */
+export function applyKeepCentered(layers, box) {
+  if (!Array.isArray(layers) || !box) return layers;
+  return layers.map((ly) => (ly.keepCentered ? centerLayerOnLabel(ly, box) : ly));
 }
 
 export function distributeLayers(layers, axis = "h") {

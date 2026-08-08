@@ -8,7 +8,7 @@ import { createLayer, layoutPresets } from "../elements/create.js";
 import { listElementTypes } from "../elements/registry.js";
 import { contentBox } from "../layout/box.js";
 import { snapPosition } from "../layout/snap.js";
-import { alignLayers, distributeLayers } from "../layout/align.js";
+import { alignLayers, distributeLayers, centerLayerOnLabel, applyKeepCentered } from "../layout/align.js";
 import { renderLabel, ensureQrLibrary, ensureBarcodeLibrary } from "../render/engine.js";
 import { getStudioZoom, setStudioZoom } from "../data/storage.js";
 import { fileToLabelImageDataUrl, pickImageFile } from "../data/image-file.js";
@@ -185,6 +185,7 @@ export class LabelStudio {
         d.pageW = labelW;
         d.pageH = labelH;
       }
+      d.layers = applyKeepCentered(d.layers, contentBox(d));
     }, "label size");
     const wEl = this.root.querySelector('[data-size="labelW"]');
     const hEl = this.root.querySelector('[data-size="labelH"]');
@@ -394,9 +395,24 @@ export class LabelStudio {
         this.store.update((d) => {
           const t = d.layers.find((x) => x.id === ly.id);
           if (!t) return;
+          if (key === "keepCentered") {
+            t.keepCentered = !!val;
+            if (t.keepCentered) {
+              const c = centerLayerOnLabel(t, contentBox(d));
+              t.x = c.x;
+              t.y = c.y;
+            }
+            return;
+          }
           if (key === "displayValue") t.displayValue = val === true || val === "true";
           else if (key === "weight" || key === "font") t[key] = Number(val);
           else t[key] = val;
+          if ((key === "w" || key === "h") && t.keepCentered) {
+            const c = centerLayerOnLabel(t, contentBox(d));
+            t.x = c.x;
+            t.y = c.y;
+          }
+          if ((key === "x" || key === "y") && t.keepCentered) t.keepCentered = false;
         }, "inspect");
       };
       input.addEventListener("change", apply);
@@ -422,6 +438,34 @@ export class LabelStudio {
         if (t) t.src = "";
       }, "clear image");
     });
+    root.querySelector("[data-img-center]")?.addEventListener("click", () => {
+      this.centerLayer(ly.id, { keep: false });
+    });
+    root.querySelector('[data-f="keepCentered"]')?.addEventListener("change", (e) => {
+      const on = !!e.target.checked;
+      this.store.update((d) => {
+        const t = d.layers.find((x) => x.id === ly.id);
+        if (!t) return;
+        t.keepCentered = on;
+        if (on) {
+          const c = centerLayerOnLabel(t, contentBox(d));
+          t.x = c.x;
+          t.y = c.y;
+        }
+      }, on ? "keep centered" : "unlock center");
+    });
+  }
+
+  /** Center a layer on the label; optionally lock keepCentered. */
+  centerLayer(id, { keep = false } = {}) {
+    this.store.update((d) => {
+      const t = d.layers.find((x) => x.id === id);
+      if (!t) return;
+      const c = centerLayerOnLabel(t, contentBox(d));
+      t.x = c.x;
+      t.y = c.y;
+      if (keep) t.keepCentered = true;
+    }, "center on label");
   }
 
   /**
@@ -439,17 +483,22 @@ export class LabelStudio {
         let t = targetId ? d.layers.find((x) => x.id === targetId) : null;
         if (!t) {
           t = createLayer("image", {
-            x: Math.max(d.innerMargin || 0, 2),
-            y: Math.max(d.innerMargin || 0, 2),
             w: Math.min(18, d.labelW - 4),
             h: Math.min(18, d.labelH - 4),
-            name: file.name ? String(file.name).replace(/\.[^.]+$/, "").slice(0, 40) : "Picture"
+            name: file.name ? String(file.name).replace(/\.[^.]+$/, "").slice(0, 40) : "Picture",
+            keepCentered: true
           });
           d.layers.push(t);
           targetId = t.id;
         }
         t.src = src;
         t.visible = true;
+        if (t.keepCentered !== false) {
+          t.keepCentered = true;
+          const c = centerLayerOnLabel(t, contentBox(d));
+          t.x = c.x;
+          t.y = c.y;
+        }
         this.selection.set([t.id]);
       }, "upload image");
       this.el.status.textContent = "Image added";
@@ -863,6 +912,8 @@ export class LabelStudio {
       });
       t.x = snapped.x;
       t.y = snapped.y;
+      // Manual drag unlocks "keep centered".
+      if (t.keepCentered) t.keepCentered = false;
       if (o === this._drag.origins[0]) this.guides.setSmartGuides(snapped.guides);
     }
     this.store.replaceQuiet(draft);
@@ -891,7 +942,13 @@ export class LabelStudio {
         y += h - nh;
         h = nh;
       }
-      return { ...l, x, y, w, h };
+      const next = { ...l, x, y, w, h };
+      if (next.keepCentered) {
+        const c = centerLayerOnLabel(next, contentBox(draft));
+        next.x = c.x;
+        next.y = c.y;
+      }
+      return next;
     });
     this.store.replaceQuiet(draft);
     this.schedulePaint(false);
@@ -1040,6 +1097,7 @@ function typeFieldsHtml(ly) {
   }
   if (ly.type === "image") {
     const has = !!ly.src;
+    const keep = !!ly.keepCentered;
     return `
       <div class="lp-section span-2">Image</div>
       <div class="lp-img-actions span-2">
@@ -1049,6 +1107,14 @@ function typeFieldsHtml(ly) {
         <button type="button" class="lp-img-btn ghost" data-img-clear ${has ? "" : "disabled"}>Clear</button>
       </div>
       ${has ? `<div class="lp-img-preview span-2"><img src="${escapeAttr(ly.src)}" alt=""></div>` : `<p class="lp-empty span-2" style="margin:0">No image yet — upload a PNG/JPG/WebP.</p>`}
+      <div class="lp-section span-2">Position</div>
+      <div class="lp-img-actions span-2">
+        <button type="button" class="lp-img-btn ghost" data-img-center title="Center on label">
+          <i class="bi bi-crosshair"></i> Center on label
+        </button>
+      </div>
+      <label class="span-2 lp-check"><input data-f="keepCentered" type="checkbox" ${keep ? "checked" : ""}> Keep centered on label</label>
+      <p class="lp-empty span-2" style="margin:0">When on, the image stays in the middle if you resize the label or the image box. Dragging it turns this off.</p>
       <label>Fit<select data-f="fit">
         <option value="contain" ${ly.fit !== "cover" && ly.fit !== "fill" ? "selected" : ""}>Contain</option>
         <option value="cover" ${ly.fit === "cover" ? "selected" : ""}>Cover</option>
