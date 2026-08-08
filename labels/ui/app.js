@@ -351,7 +351,7 @@ export async function bootLabelApp() {
     const bar = document.getElementById("selectedBar");
     const count = document.getElementById("selectedCount");
     if (count) count.textContent = String(items.length);
-    if (bar) bar.style.display = items.length ? "" : "none";
+    if (bar) bar.hidden = !items.length;
   }
   document.getElementById("codes")?.addEventListener("input", updateSelectedBar);
 
