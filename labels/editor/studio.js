@@ -797,7 +797,7 @@ function typeFieldsHtml(ly) {
   return "";
 }
 
-function studioLabel(key, fallback) {
+function studioLabel(key, en, ar) {
   try {
     if (typeof TCI18N !== "undefined" && TCI18N.t) {
       const v = TCI18N.t(key);
@@ -806,24 +806,31 @@ function studioLabel(key, fallback) {
   } catch {
     /* ignore */
   }
-  return fallback;
+  const lang =
+    (typeof document !== "undefined" && document.documentElement?.lang) || "en";
+  return lang === "ar" ? ar || en : en;
 }
 
 function studioMarkup() {
-  const back = studioLabel("studioBack", "رجوع");
-  const reset = studioLabel("studioReset", "إعادة ضبط");
-  const save = studioLabel("saveTemplate", "حفظ القالب");
-  const saveAs = studioLabel("saveAsTemplate", "حفظ باسم…");
-  const done = studioLabel("studioDone", "تم");
+  const back = studioLabel("studioBack", "Back", "رجوع");
+  const reset = studioLabel("studioReset", "Reset", "إعادة ضبط");
+  const save = studioLabel("saveTemplate", "Save template", "حفظ القالب");
+  const saveAs = studioLabel("saveAsTemplate", "Save as…", "حفظ باسم…");
+  const done = studioLabel("studioDone", "Done", "تم");
+  const title = studioLabel("designStudio", "Design Studio", "استوديو التصميم");
+  const backIcon =
+    (typeof document !== "undefined" && document.documentElement?.lang === "ar")
+      ? "bi-arrow-right"
+      : "bi-arrow-left";
   return `
     <div class="le-studio" hidden>
       <header class="le-head">
         <div class="le-head-title">
           <button type="button" class="le-btn le-btn-ghost" data-back title="${escapeAttr(back)}">
-            <i class="bi bi-arrow-right"></i> ${escapeHtml(back)}
+            <i class="bi ${backIcon}"></i> ${escapeHtml(back)}
           </button>
           <div>
-            <h3>${escapeHtml(studioLabel("openDesignStudio", "Design Studio"))}</h3>
+            <h3>${escapeHtml(title)}</h3>
             <div class="meta" data-meta>50×30 mm</div>
           </div>
         </div>
