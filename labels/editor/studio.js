@@ -131,6 +131,7 @@ export class LabelStudio {
     this.el.studio.hidden = false;
     this.el.studio.classList.add("open");
     this.root.classList.add("studio-open");
+    document.body.classList.add("le-studio-open");
     requestAnimationFrame(() => {
       this.viewport.fit(
         this.el.wrap.clientWidth,
@@ -149,6 +150,7 @@ export class LabelStudio {
     this.el.studio.hidden = true;
     this.el.studio.classList.remove("open");
     this.root.classList.remove("studio-open");
+    document.body.classList.remove("le-studio-open");
   }
 
   /** Persist current document via host callbacks (does not close the studio). */
@@ -830,39 +832,43 @@ function studioMarkup() {
   return `
     <div class="le-studio" hidden>
       <header class="le-head">
-        <div class="le-head-title">
-          <button type="button" class="le-btn le-btn-ghost" data-back>${escapeHtml(back)}</button>
-          <div>
-            <h3>${escapeHtml(title)}</h3>
-            <div class="meta" data-meta>50×30 mm</div>
-          </div>
+        <button type="button" class="le-btn le-btn-back" data-back>
+          <i class="bi bi-arrow-left"></i>
+          <span>${escapeHtml(back)}</span>
+        </button>
+        <div class="le-head-brand">
+          <div class="le-head-kicker">AbouAmjad Labels</div>
+          <h3>${escapeHtml(title)}</h3>
+          <div class="meta" data-meta>50×30 mm</div>
         </div>
         <div class="le-head-actions">
           <button type="button" class="le-btn le-btn-save" data-save title="${escapeAttr(save)} (Ctrl+S)">
-            <i class="bi bi-save"></i> ${escapeHtml(save)}
+            <i class="bi bi-save-fill"></i>
+            <span>${escapeHtml(save)}</span>
           </button>
           <button type="button" class="le-btn le-btn-done" data-done id="leDone">
-            ${escapeHtml(done)}
+            <i class="bi bi-check2"></i>
+            <span>${escapeHtml(done)}</span>
           </button>
         </div>
       </header>
       <div class="lt-toolbar">
         <div class="lt-group">
-          <button type="button" data-tool="select" class="is-active" title="Select">Select</button>
-          <button type="button" data-tool="hand" title="Pan">Hand</button>
+          <button type="button" data-tool="select" class="is-active" title="Select"><i class="bi bi-cursor"></i> Select</button>
+          <button type="button" data-tool="hand" title="Pan"><i class="bi bi-hand-index"></i> Hand</button>
         </div>
         <div class="lt-group">
-          <button type="button" data-tool="qr">+ QR</button>
-          <button type="button" data-tool="text">+ Text</button>
-          <button type="button" data-tool="image">+ Image</button>
-          <button type="button" data-tool="shape">+ Shape</button>
-          <button type="button" data-tool="line">+ Line</button>
+          <button type="button" data-tool="qr"><i class="bi bi-qr-code"></i> QR</button>
+          <button type="button" data-tool="text"><i class="bi bi-type"></i> Text</button>
+          <button type="button" data-tool="image"><i class="bi bi-image"></i> Image</button>
+          <button type="button" data-tool="shape"><i class="bi bi-square"></i> Shape</button>
+          <button type="button" data-tool="line"><i class="bi bi-slash-lg"></i> Line</button>
         </div>
         <div class="lt-group">
-          <button type="button" data-tool="duplicate" title="Duplicate (Ctrl+D)">Duplicate</button>
-          <button type="button" data-tool="delete" title="Delete (Del)">Delete</button>
-          <button type="button" data-tool="undo">Undo</button>
-          <button type="button" data-tool="redo">Redo</button>
+          <button type="button" data-tool="duplicate" title="Duplicate (Ctrl+D)"><i class="bi bi-copy"></i></button>
+          <button type="button" data-tool="delete" title="Delete (Del)"><i class="bi bi-trash"></i></button>
+          <button type="button" data-tool="undo" title="Undo"><i class="bi bi-arrow-counterclockwise"></i></button>
+          <button type="button" data-tool="redo" title="Redo"><i class="bi bi-arrow-clockwise"></i></button>
         </div>
         <div class="lt-group">
           <select data-align aria-label="Align">
@@ -885,7 +891,7 @@ function studioMarkup() {
             <option value="qrOnly">QR only</option>
           </select>
         </div>
-        <div class="lt-group">
+        <div class="lt-group lt-group-end">
           <button type="button" data-tool="grid">Grid</button>
           <button type="button" data-tool="snap">Snap</button>
           <button type="button" data-tool="zoom-out">−</button>
