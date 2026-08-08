@@ -159,7 +159,7 @@
       <div class="tc-modal-head" style="background:linear-gradient(135deg,#fef2f2,#fff7ed)">
         <div>
           <div class="fw-bold fs-5 text-danger"><i class="bi bi-exclamation-octagon-fill"></i> <span data-i18n="ppeWarnTitle">PPE re-issue warning</span></div>
-          <div class="tc-text-muted small" data-i18n="ppeWarnSub">Less than 7 days since last issue</div>
+          <div class="tc-text-muted small" data-i18n="ppeWarnSub">Less than 6 days since last issue</div>
         </div>
       </div>
       <div class="tc-modal-body">
@@ -591,7 +591,7 @@
       const person = ScanEngine.getSession().personLabel || info.personCode || "—";
       const itemLabel = info.lastDescription || info.lastCode || info.itemCode || info.familyLabel || "PPE";
       document.getElementById("ppeWarnLead").textContent =
-        `${person} already received ${itemLabel} less than ${info.cooldownDays || 7} days ago.`;
+        `${person} already received ${itemLabel} less than ${info.cooldownDays || (typeof getPpeCooldownDays === "function" ? getPpeCooldownDays() : 6)} days ago.`;
       document.getElementById("ppeLastWhen").textContent =
         info.lastIssuedLabel || info.lastIssuedAt || "—";
       document.getElementById("ppeLastItem").textContent =
@@ -609,7 +609,7 @@
     function findLocalPpeIssue(personCode, itemCode) {
       const want = String(itemCode || "").toUpperCase();
       if (!want) return null;
-      const cooldownDays = typeof getPpeCooldownDays === "function" ? getPpeCooldownDays() : 7;
+      const cooldownDays = typeof getPpeCooldownDays === "function" ? getPpeCooldownDays() : 6;
       const cutoff = Date.now() - cooldownDays * 24 * 60 * 60 * 1000;
       const scans = loadScans().slice().sort((a, b) => (a.seq || 0) - (b.seq || 0));
       let lastPerson = null;
@@ -835,25 +835,26 @@
           info.lastDescription = local.description;
           info.lastIssuedLabel = local.lastIssuedLabel;
           info.daysAgo = local.daysAgo;
-          info.daysLeft = Math.max(0, (info.cooldownDays || 7) - (local.daysAgo || 0));
+          info.daysLeft = Math.max(0, (info.cooldownDays || (typeof getPpeCooldownDays === "function" ? getPpeCooldownDays() : 6)) - (local.daysAgo || 0));
         }
       } else if ((!info || !info.applies) && famLocal) {
         const local = findLocalPpeIssue(personCode, itemCode);
         if (local) {
+          const cd = typeof getPpeCooldownDays === "function" ? getPpeCooldownDays() : 6;
           info = {
             applies: true,
             restricted: true,
             family: famLocal.id,
             familyLabel: famLocal.label,
             scope: "item",
-            cooldownDays: typeof getPpeCooldownDays === "function" ? getPpeCooldownDays() : 7,
+            cooldownDays: cd,
             personCode,
             itemCode,
             lastCode: local.code,
             lastDescription: local.description,
             lastIssuedLabel: local.lastIssuedLabel,
             daysAgo: local.daysAgo,
-            daysLeft: Math.max(0, (typeof getPpeCooldownDays === "function" ? getPpeCooldownDays() : 7) - (local.daysAgo || 0)),
+            daysLeft: Math.max(0, cd - (local.daysAgo || 0)),
           };
         }
       }

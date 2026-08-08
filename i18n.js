@@ -602,7 +602,7 @@ const TCI18N = (() => {
       conflictSub: "IN and OUT both scanned — choose one",
       conflictBody: "You scanned IN and OUT. What is your final direction?",
       ppeWarnTitle: "PPE re-issue warning",
-      ppeWarnSub: "Less than 7 days since last issue",
+      ppeWarnSub: "Less than 6 days since last issue",
       ppeLastIssue: "Last issued",
       ppeWarnAsk: "Issue again anyway, or cancel this scan?",
       ppeForceIssue: "Yes — issue anyway",

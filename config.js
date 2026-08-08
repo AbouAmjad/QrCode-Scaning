@@ -20,7 +20,7 @@ const AppConfig = {
    * the cooldown itself is enforced per product code (SKU), not per family —
    * e.g. Mechanical Gloves (C12-B) is independent of Welding Gloves (C12-A).
    */
-  PPE_COOLDOWN_DAYS: 7,
+  PPE_COOLDOWN_DAYS: 6,
   PPE_RULES: [
     {
       id: "gloves",

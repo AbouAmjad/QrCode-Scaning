@@ -25,7 +25,7 @@ const PPE_RULES = [
       "goggle|goggles|glasses|sunglass|sunglasses|saftey|eye\\s*protect|safety\\s*glass|نظارة|نظارات|^c13([-a-z0-9]|$)",
   },
 ];
-const PPE_COOLDOWN_DAYS = Number(process.env.PPE_COOLDOWN_DAYS || 7) || 7;
+const PPE_COOLDOWN_DAYS = Number(process.env.PPE_COOLDOWN_DAYS || 6) || 6;
 
 function ensureUploadDir() {
   try {
