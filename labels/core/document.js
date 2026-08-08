@@ -124,10 +124,17 @@ export function bindItem(doc, item) {
   return doc.layers.map((ly) => {
     const copy = { ...ly };
     if (ly.type === "qr") copy.qrValue = code || String(ly.text || "QR");
+    if (ly.type === "barcode") {
+      copy.barcodeValue = code || String(ly.text || "CODE");
+      if (ly.role === "code" || !ly.text || ly.bindCode !== false) {
+        copy.text = code || ly.text || "CODE";
+      }
+    }
     if (ly.type === "text") {
       if (ly.role === "brand") copy.text = doc.brand || ly.text;
       else if (ly.role === "code") copy.text = code || ly.text || "";
       else if (ly.role === "desc") copy.text = name || ly.text || "";
+      else if (ly.role === "footer") copy.text = ly.text || "";
     }
     if (ly.type === "image" && imageUrl) copy.src = imageUrl;
     return copy;

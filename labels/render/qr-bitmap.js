@@ -49,10 +49,10 @@ export async function renderQrDataUrl(ly, value, dpi = 192) {
       qrOptions: { errorCorrectionLevel: ly.errorCorrection || "M" },
       dotsOptions: { color: ly.color || "#0f172a", type: qrDotType(ly.style) },
       cornersSquareOptions: {
-        color: ly.cornerColor || ly.color || "#0f766e",
+        color: ly.cornerColor || ly.color || "#0f172a",
         type: qrDotType(ly.style) === "square" ? "square" : "extra-rounded"
       },
-      cornersDotOptions: { color: ly.cornerColor || ly.color || "#0f766e" },
+      cornersDotOptions: { color: ly.cornerColor || ly.color || "#0f172a" },
       backgroundOptions: { color: ly.bg || "#ffffff" }
     });
     const blob = await Promise.race([

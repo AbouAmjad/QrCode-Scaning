@@ -1,7 +1,7 @@
 /**
  * ui/preview.js — preview modal uses the same renderSheet as print.
  */
-import { ensureQrLibrary } from "../render/engine.js";
+import { ensureQrLibrary, ensureBarcodeLibrary } from "../render/engine.js";
 import { renderSheet } from "../render/sheet.js";
 import { loadCalibration } from "../data/storage.js";
 
@@ -15,7 +15,8 @@ export class LabelPreview {
   }
 
   async show(doc, items, { flip = false } = {}) {
-    await ensureQrLibrary();
+    await Promise.all([ensureQrLibrary(), ensureBarcodeLibrary().catch(() => {})]);
+    // Preview/print never show editor guides — renderSheet uses mode preview/print only.
     this.doc = doc;
     this.items = items || [];
     if (this.flipToggle) this.flipToggle.checked = !!flip;

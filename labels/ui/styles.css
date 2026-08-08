@@ -181,6 +181,34 @@ body.le-studio-open .tc-nav-drawer {
   color: #94a3b8;
   font-weight: 650;
 }
+.le-size-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: .4rem;
+  margin-top: .35rem;
+}
+.le-size-row label {
+  display: inline-flex;
+  align-items: center;
+  gap: .25rem;
+  font-size: .7rem;
+  font-weight: 700;
+  color: #94a3b8;
+}
+.le-size-row input,
+.le-size-row select {
+  width: 4.2rem;
+  border: 1px solid rgba(255,255,255,.2);
+  background: rgba(255,255,255,.08);
+  color: #fff;
+  border-radius: 8px;
+  padding: .2rem .35rem;
+  font-size: .75rem;
+  font-weight: 700;
+}
+.le-size-row select { width: auto; min-width: 6.5rem; }
 .le-head-actions {
   display: flex;
   flex-wrap: wrap;
@@ -420,6 +448,30 @@ body.le-studio-open .tc-nav-drawer {
   font-size: .8rem;
 }
 .lp-empty { color: var(--le-muted); font-size: .8rem; }
+.lp-section {
+  margin: .35rem 0 .15rem;
+  font-size: .68rem;
+  font-weight: 800;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  color: var(--le-muted);
+}
+.lp-multi-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .35rem;
+  margin-top: .55rem;
+}
+.lp-multi-actions button {
+  border: 1px solid var(--le-line);
+  background: #fff;
+  border-radius: 8px;
+  padding: .35rem .5rem;
+  font-size: .72rem;
+  font-weight: 750;
+  cursor: pointer;
+}
+.lt-align button { min-width: 1.85rem; }
 
 .cal-wizard { display: grid; gap: .65rem; }
 .cal-wizard .cal-grid {

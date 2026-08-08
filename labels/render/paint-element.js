@@ -4,6 +4,7 @@
  */
 import { objectBoxCss } from "../layout/index.js";
 import { renderQrDataUrl } from "./qr-bitmap.js";
+import { renderBarcodeDataUrl } from "./barcode-bitmap.js";
 
 function applyOpacity(el, obj) {
   el.style.opacity = String(obj.opacity == null ? 1 : obj.opacity);
@@ -13,6 +14,8 @@ export async function paintElement(obj, spec, { dpi = 192 } = {}) {
   switch (obj.type) {
     case "qr":
       return paintQr(obj, dpi);
+    case "barcode":
+      return paintBarcode(obj, dpi);
     case "text":
       return paintText(obj);
     case "image":
@@ -26,6 +29,36 @@ export async function paintElement(obj, spec, { dpi = 192 } = {}) {
     default:
       return paintText(obj);
   }
+}
+
+async function paintBarcode(obj, dpi) {
+  const el = document.createElement("div");
+  el.className = "lr-barcode";
+  el.dataset.layerId = obj.id || "";
+  el.dataset.type = "barcode";
+  el.style.cssText = objectBoxCss(obj);
+  applyOpacity(el, obj);
+  el.style.display = "grid";
+  el.style.placeItems = "center";
+  el.style.background = obj.bg || "#ffffff";
+  el.style.overflow = "hidden";
+  const value = obj.barcodeValue || obj.text || "CODE";
+  const url = await renderBarcodeDataUrl(obj, value, dpi);
+  if (url) {
+    const img = document.createElement("img");
+    img.src = url;
+    img.alt = value;
+    img.draggable = false;
+    img.style.width = "100%";
+    img.style.height = "100%";
+    img.style.objectFit = "contain";
+    el.appendChild(img);
+  } else {
+    el.textContent = value;
+    el.style.fontSize = "7pt";
+    el.style.fontWeight = "700";
+  }
+  return el;
 }
 
 async function paintQr(obj, dpi) {

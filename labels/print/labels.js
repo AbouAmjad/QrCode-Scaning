@@ -1,11 +1,11 @@
 import { renderSheet } from "../render/sheet.js";
-import { sharedPrintCss, ensureQrLibrary } from "../render/engine.js";
+import { sharedPrintCss, ensureQrLibrary, ensureBarcodeLibrary } from "../render/engine.js";
 import { loadCalibration } from "../data/storage.js";
 import { createDocument } from "../core/document.js";
 import { printInFrame, printInPlace } from "./frame.js";
 
 export async function printLabels(docOrPartial, items, { flip = false } = {}) {
-  await ensureQrLibrary();
+  await Promise.all([ensureQrLibrary(), ensureBarcodeLibrary().catch(() => {})]);
   const doc = createDocument(docOrPartial);
   const sheet = await renderSheet(doc, items, {
     mode: "print",

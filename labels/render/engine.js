@@ -7,6 +7,7 @@ import { layoutAbsolute, labelShellCss, mirrorLayers } from "../layout/index.js"
 import { paintElement } from "./paint-element.js";
 
 export { ensureQrLibrary } from "./qr-bitmap.js";
+export { ensureBarcodeLibrary } from "./barcode-bitmap.js";
 export { sharedPrintCss } from "./print-css.js";
 
 /**

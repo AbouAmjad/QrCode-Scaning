@@ -8,12 +8,13 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="app.css?v=themes1">
-  <link rel="stylesheet" href="labels/ui/styles.css?v=14">
+  <link rel="stylesheet" href="labels/ui/styles.css?v=15">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#0f766e">
   <script src="labels/vendor/qr-code-styling.js" id="qrLibScript"></script>
+  <script src="labels/vendor/jsbarcode.min.js"></script>
   <script src="config.js?v=themes1"></script>
-  <script src="i18n.js?v=studio14"></script>
+  <script src="i18n.js?v=studio15"></script>
   <script src="ui.js?v=live"></script>
 </head>
 <body class="tc-page ql-page">
@@ -100,16 +101,20 @@
               <button type="button" class="tc-btn tc-btn-primary" id="btnPick">
                 <i class="bi bi-check2-square"></i> <span data-i18n="pickItems">Choose items…</span>
               </button>
+              <button type="button" class="tc-btn" id="btnImportCsv" title="Import CSV / TSV for data merge">
+                <i class="bi bi-filetype-csv"></i> Import CSV
+              </button>
+              <input type="file" id="csvFile" accept=".csv,.tsv,.txt,text/csv,text/tab-separated-values" hidden>
             </div>
             <div class="ql-selected-bar" id="selectedBar" style="display:none">
               <span id="selectedCount">0</span>
               <span data-i18n="itemsQueued">in queue</span>
             </div>
             <textarea id="codes" class="form-control" rows="5" placeholder="P001 | Ahmad&#10;I1001 | Hammer"></textarea>
-            <p class="ql-hint" data-i18n="labelsCodesHint">Pick a saved template, change codes only, then Generate.</p>
+            <p class="ql-hint" data-i18n="labelsCodesHint">Pick a saved template, change codes only, then Generate. CSV columns: code, name.</p>
             <div class="ql-actions">
               <button class="tc-btn tc-btn-primary" id="btnGen">
-                <i class="bi bi-magic"></i> <span data-i18n="generate">Generate</span>
+                <i class="bi bi-magic"></i> <span data-i18n="generate">Generate / Print preview</span>
               </button>
               <button class="tc-btn" id="btnClear">
                 <i class="bi bi-x-lg"></i> <span data-i18n="clearLabels">Clear</span>
@@ -127,7 +132,7 @@
       <div class="tc-modal-head d-flex align-items-start justify-content-between gap-2">
         <div>
           <h3 class="h5 mb-0" id="previewModalTitle"><i class="bi bi-eye"></i> <span data-i18n="printPreview">Print preview</span></h3>
-          <p class="tc-text-muted small mb-0 mt-1">Same renderer as Design Studio — prints via hidden frame (no popup).</p>
+          <p class="tc-text-muted small mb-0 mt-1">Thermal print preview — no editor grid or alignment guides. Same renderer as print.</p>
         </div>
         <span class="ql-chip badge text-bg-light text-dark" id="previewMeta"></span>
         <button type="button" class="tc-btn tc-btn-sm" id="btnClosePreview"><i class="bi bi-x-lg"></i></button>
@@ -199,7 +204,7 @@
   <div id="editorHost"></div>
 
   <script type="module">
-    import { bootLabelApp } from "./labels/ui/app.js?v=14";
+    import { bootLabelApp } from "./labels/ui/app.js?v=15";
 
     document.addEventListener("DOMContentLoaded", () => {
       const start = async () => {

@@ -58,13 +58,31 @@ function defQr() {
     h: 30,
     z: 1,
     frame: "none",
-    style: "rounded",
+    style: "square",
     color: "#0f172a",
-    cornerColor: "#0f766e",
+    cornerColor: "#0f172a",
     bg: "#ffffff",
     quiet: 0,
     errorCorrection: "M",
     padding: 0
+  });
+}
+
+function defBarcode() {
+  return baseLayer("barcode", {
+    name: "Barcode",
+    x: 2,
+    y: 20,
+    w: 30,
+    h: 10,
+    z: 5,
+    format: "CODE128",
+    text: "I1001",
+    displayValue: true,
+    font: 7,
+    color: "#0f172a",
+    bg: "#ffffff",
+    quiet: 2
   });
 }
 
@@ -129,6 +147,7 @@ function defBackground() {
 /** Register built-in element types once. */
 export function registerBuiltins() {
   registerElement({ type: "qr", label: "QR Code", defaults: defQr });
+  registerElement({ type: "barcode", label: "Barcode", defaults: defBarcode });
   registerElement({
     type: "text",
     label: "Text",
@@ -146,39 +165,67 @@ export function registerBuiltins() {
 
 registerBuiltins();
 
+/**
+ * Default thermal layout — brand-first hierarchy, thin divider, unified QR ink.
+ * Tuned for ~50×30 mm; scales acceptably on nearby sizes.
+ */
 export function createDefaultLayers() {
   return [
-    normalizeLayer(defQr()),
+    normalizeLayer({
+      ...defQr(),
+      id: "ly-qr",
+      x: 1,
+      y: 1,
+      w: 16,
+      h: 16,
+      z: 1,
+      style: "square",
+      color: "#0f172a",
+      cornerColor: "#0f172a"
+    }),
     normalizeLayer(
       defText({
         id: "ly-brand",
         name: "Brand",
         role: "brand",
-        x: 19,
-        y: 1.2,
-        w: 30,
-        h: 4.8,
-        z: 2,
+        x: 18.5,
+        y: 1,
+        w: 30.5,
+        h: 6,
+        z: 4,
         text: "AbouAmjad Store",
-        font: 7,
-        weight: 700,
-        color: "#64748b",
-        tracking: 0.04
+        font: 9.5,
+        weight: 800,
+        color: "#0f172a",
+        tracking: 0.01
       })
     ),
+    normalizeLayer({
+      ...defLine(),
+      id: "ly-rule",
+      name: "Divider",
+      x: 18.5,
+      y: 7.4,
+      w: 30.5,
+      h: 0.25,
+      z: 3,
+      stroke: "#0f172a",
+      strokeWidth: 0.18
+    }),
     normalizeLayer(
       defText({
         id: "ly-code",
         name: "Code",
         role: "code",
-        x: 19,
-        y: 7.2,
-        w: 30,
-        h: 9.6,
-        z: 3,
+        x: 18.5,
+        y: 8,
+        w: 30.5,
+        h: 7,
+        z: 5,
         text: "I1001",
-        font: 13,
-        weight: 900
+        font: 12,
+        weight: 800,
+        color: "#0f172a"
       })
     ),
     normalizeLayer(
@@ -186,24 +233,41 @@ export function createDefaultLayers() {
         id: "ly-desc",
         name: "Description",
         role: "desc",
-        x: 19,
-        y: 18,
-        w: 30,
-        h: 9.6,
-        z: 4,
-        text: "Sample tool",
-        font: 9,
+        x: 18.5,
+        y: 15.2,
+        w: 30.5,
+        h: 5.5,
+        z: 6,
+        text: "Product name",
+        font: 8,
         weight: 600,
         color: "#334155"
+      })
+    ),
+    normalizeLayer(
+      defText({
+        id: "ly-footer",
+        name: "Footer",
+        role: "footer",
+        x: 1,
+        y: 25.2,
+        w: 48,
+        h: 3.8,
+        z: 7,
+        text: "aics.iskndr.com",
+        font: 6.5,
+        weight: 600,
+        color: "#64748b",
+        align: "left"
       })
     ),
     normalizeLayer({
       ...defImage(),
       id: "ly-image",
       x: 36,
-      y: 6,
-      w: 13,
-      h: 18,
+      y: 8,
+      w: 12,
+      h: 12,
       z: 0,
       visible: false
     })
@@ -253,7 +317,37 @@ export function layoutPresets() {
         w: 50,
         h: 30,
         z: 1,
-        name: "QR Code"
+        name: "QR Code",
+        color: "#0f172a",
+        cornerColor: "#0f172a",
+        style: "square"
+      })
+    ],
+    barcode: () => [
+      createLayer("barcode", {
+        id: "ly-barcode",
+        x: 3,
+        y: 8,
+        w: 44,
+        h: 14,
+        z: 1,
+        format: "CODE128",
+        text: "I1001",
+        displayValue: true
+      }),
+      createLayer("text", {
+        id: "ly-brand",
+        role: "brand",
+        name: "Brand",
+        x: 3,
+        y: 1.5,
+        w: 44,
+        h: 5,
+        font: 10,
+        weight: 800,
+        align: "center",
+        text: "AbouAmjad Store",
+        z: 2
       })
     ]
   };

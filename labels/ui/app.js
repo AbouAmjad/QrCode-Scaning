@@ -14,9 +14,9 @@ import {
   loadCalibration
 } from "../data/storage.js";
 import { mountCalibrationWizard } from "../print/calibration.js";
-import { parseCodeLines, itemsToText } from "../data/codes.js";
+import { parseCodeLines, parseCsvCodes, itemsToText } from "../data/codes.js";
 import { parseServerTemplate } from "../data/serialize.js";
-import { ensureQrLibrary } from "../render/engine.js";
+import { ensureQrLibrary, ensureBarcodeLibrary } from "../render/engine.js";
 
 function t(key, fallback) {
   if (typeof TCI18N !== "undefined" && TCI18N.t) return TCI18N.t(key) || fallback || key;
@@ -29,7 +29,10 @@ function toast(msg, kind = "ok") {
 }
 
 export async function bootLabelApp() {
-  await ensureQrLibrary().catch((e) => console.warn("[QR Labels] QR lib", e));
+  await Promise.all([
+    ensureQrLibrary().catch((e) => console.warn("[QR Labels] QR lib", e)),
+    ensureBarcodeLibrary().catch((e) => console.warn("[QR Labels] barcode lib", e))
+  ]);
 
   let templates = [];
   let activeId = null;
@@ -347,6 +350,35 @@ export async function bootLabelApp() {
     if (bar) bar.style.display = items.length ? "" : "none";
   }
   document.getElementById("codes")?.addEventListener("input", updateSelectedBar);
+
+  document.getElementById("btnImportCsv")?.addEventListener("click", () => {
+    document.getElementById("csvFile")?.click();
+  });
+  document.getElementById("csvFile")?.addEventListener("change", async (e) => {
+    const file = e.target?.files?.[0];
+    if (e.target) e.target.value = "";
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const items = parseCsvCodes(text);
+      if (!items.length) {
+        toast(t("csvEmpty", "No codes found in CSV"), "err");
+        return;
+      }
+      const ta = document.getElementById("codes");
+      if (ta) ta.value = itemsToText(items);
+      updateSelectedBar();
+      toast(
+        t("csvImported", `Imported ${items.length} row(s)`).replace(
+          "{n}",
+          String(items.length)
+        ),
+        "ok"
+      );
+    } catch (err) {
+      toast(err.message || String(err), "err");
+    }
+  });
 
   const pickerModal = document.getElementById("pickerModal");
   document.getElementById("btnPick")?.addEventListener("click", () => openPicker());

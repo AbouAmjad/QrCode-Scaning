@@ -9,7 +9,7 @@ import { listElementTypes } from "../elements/registry.js";
 import { contentBox } from "../layout/box.js";
 import { snapPosition } from "../layout/snap.js";
 import { alignLayers, distributeLayers } from "../layout/align.js";
-import { renderLabel, ensureQrLibrary } from "../render/engine.js";
+import { renderLabel, ensureQrLibrary, ensureBarcodeLibrary } from "../render/engine.js";
 import { getStudioZoom, setStudioZoom } from "../data/storage.js";
 import { Viewport } from "./viewport.js";
 import { SelectionModel } from "./selection.js";
@@ -123,7 +123,10 @@ export class LabelStudio {
   }
 
   async open(partial) {
-    await ensureQrLibrary().catch((e) => console.warn("[studio] QR lib", e));
+    await Promise.all([
+      ensureQrLibrary().catch((e) => console.warn("[studio] QR lib", e)),
+      ensureBarcodeLibrary().catch((e) => console.warn("[studio] barcode lib", e))
+    ]);
     this.store.reset(partial || {}, "open");
     this.selection.clear();
     this.viewport.setZoom(getStudioZoom());
@@ -171,6 +174,38 @@ export class LabelStudio {
     this.store.redo();
   }
 
+  setLabelSize(w, h) {
+    const labelW = Math.max(15, Number(w) || this.doc.labelW);
+    const labelH = Math.max(10, Number(h) || this.doc.labelH);
+    this.store.update((d) => {
+      d.labelW = labelW;
+      d.labelH = labelH;
+      if (d.page === "thermal") {
+        d.pageW = labelW;
+        d.pageH = labelH;
+      }
+    }, "label size");
+    const wEl = this.root.querySelector('[data-size="labelW"]');
+    const hEl = this.root.querySelector('[data-size="labelH"]');
+    if (wEl) wEl.value = String(labelW);
+    if (hEl) hEl.value = String(labelH);
+    const preset = this.root.querySelector("[data-size-preset]");
+    if (preset) {
+      const key = `${labelW}x${labelH}`;
+      const opt = [...preset.options].find((o) => o.value === key);
+      preset.value = opt ? key : "custom";
+    }
+    requestAnimationFrame(() => {
+      this.viewport.fit(
+        this.el.wrap.clientWidth,
+        this.el.wrap.clientHeight,
+        labelW,
+        labelH
+      );
+      this.schedulePaint(true);
+    });
+  }
+
   schedulePaint(full = true) {
     if (this._raf) cancelAnimationFrame(this._raf);
     this._raf = requestAnimationFrame(() => {
@@ -182,7 +217,11 @@ export class LabelStudio {
   async paint(full = true) {
     if (!this._open) return;
     const doc = this.doc;
-    this.el.meta.textContent = `${doc.labelW}×${doc.labelH} mm · ${doc.page}`;
+    if (this.el.meta) this.el.meta.textContent = `${doc.labelW}×${doc.labelH} mm · ${doc.page}`;
+    const wEl = this.root.querySelector('[data-size="labelW"]');
+    const hEl = this.root.querySelector('[data-size="labelH"]');
+    if (wEl && document.activeElement !== wEl) wEl.value = String(doc.labelW);
+    if (hEl && document.activeElement !== hEl) hEl.value = String(doc.labelH);
     this.el.zoom.textContent = `${this.viewport.zoomPercent()}%`;
 
     const scale = this.viewport.zoom === "fit" ? 1 : Number(this.viewport.zoom) || 1;
@@ -195,7 +234,7 @@ export class LabelStudio {
     if (full) {
       this.el.host.innerHTML = "";
       try {
-        const node = await renderLabel(doc, { code: "SAMPLE", name: "Preview" }, {
+        const node = await renderLabel(doc, { code: "I1001", name: "Product name" }, {
           mode: "editor",
           interactive: true,
           applyCalibration: false
@@ -304,31 +343,56 @@ export class LabelStudio {
       return;
     }
     if (selected.length > 1) {
-      this.el.inspector.innerHTML = `<p class="lp-empty">${selected.length} selected</p>`;
+      this.el.inspector.innerHTML = `
+        <p class="lp-empty">${selected.length} selected</p>
+        <div class="lp-multi-actions">
+          <button type="button" data-multi="group">Group</button>
+          <button type="button" data-multi="ungroup">Ungroup</button>
+          <button type="button" data-multi="align-left">Align left</button>
+          <button type="button" data-multi="align-h">Center H</button>
+          <button type="button" data-multi="align-right">Align right</button>
+        </div>`;
+      this.el.inspector.querySelectorAll("[data-multi]").forEach((btn) => {
+        btn.addEventListener("click", () => this._onTool(btn.dataset.multi));
+      });
       return;
     }
     const ly = selected[0];
     this.el.inspector.innerHTML = `
       <div class="lp-fields">
         <label class="span-2">Name<input data-f="name" value="${escapeAttr(ly.name || "")}"></label>
-        <label>X<input data-f="x" type="number" step="0.1" value="${ly.x}"></label>
-        <label>Y<input data-f="y" type="number" step="0.1" value="${ly.y}"></label>
-        <label>W<input data-f="w" type="number" step="0.1" value="${ly.w}"></label>
-        <label>H<input data-f="h" type="number" step="0.1" value="${ly.h}"></label>
-        <label>Rotate<input data-f="rotation" type="number" step="1" value="${ly.rotation || 0}"></label>
+        <div class="lp-section span-2">Position (mm)</div>
+        <label>X mm<input data-f="x" type="number" step="0.1" value="${Number(ly.x).toFixed(1)}"></label>
+        <label>Y mm<input data-f="y" type="number" step="0.1" value="${Number(ly.y).toFixed(1)}"></label>
+        <label>W mm<input data-f="w" type="number" step="0.1" value="${Number(ly.w).toFixed(1)}"></label>
+        <label>H mm<input data-f="h" type="number" step="0.1" value="${Number(ly.h).toFixed(1)}"></label>
+        <label>Rotate °<input data-f="rotation" type="number" step="1" value="${ly.rotation || 0}"></label>
         <label>Opacity<input data-f="opacity" type="number" min="0" max="1" step="0.05" value="${ly.opacity ?? 1}"></label>
         ${typeFieldsHtml(ly)}
       </div>`;
     this.el.inspector.querySelectorAll("[data-f]").forEach((input) => {
-      input.addEventListener("change", () => {
+      const apply = () => {
         const key = input.dataset.f;
-        let val = input.type === "number" ? Number(input.value) : input.value;
+        let val =
+          input.type === "number"
+            ? Number(input.value)
+            : input.type === "checkbox"
+              ? !!input.checked
+              : input.value;
         this.store.update((d) => {
           const t = d.layers.find((x) => x.id === ly.id);
           if (!t) return;
-          t[key] = val;
+          if (key === "displayValue") t.displayValue = val === true || val === "true";
+          else if (key === "weight" || key === "font") t[key] = Number(val);
+          else t[key] = val;
         }, "inspect");
-      });
+      };
+      input.addEventListener("change", apply);
+      if (input.tagName === "TEXTAREA" || input.type === "text" || input.type === "number") {
+        input.addEventListener("input", () => {
+          if (input.type === "number") return; // commit numbers on change
+        });
+      }
     });
   }
 
@@ -489,15 +553,23 @@ export class LabelStudio {
       btn.addEventListener("click", () => this._onTool(btn.dataset.tool));
     });
 
-    this.root.querySelector("[data-align]")?.addEventListener("change", (e) => {
-      const v = e.target.value;
-      e.target.value = "";
-      if (v) this._onTool(v);
-    });
     this.root.querySelector("[data-preset]")?.addEventListener("change", (e) => {
       const v = e.target.value;
       e.target.value = "";
       if (v) this.applyPreset(v);
+    });
+    this.root.querySelector("[data-size-preset]")?.addEventListener("change", (e) => {
+      const v = e.target.value;
+      if (!v || v === "custom") return;
+      const [w, h] = v.split("x").map(Number);
+      if (w > 0 && h > 0) this.setLabelSize(w, h);
+    });
+    this.root.querySelectorAll("[data-size]").forEach((input) => {
+      input.addEventListener("change", () => {
+        const w = Number(this.root.querySelector('[data-size="labelW"]')?.value);
+        const h = Number(this.root.querySelector('[data-size="labelH"]')?.value);
+        if (w > 0 && h > 0) this.setLabelSize(w, h);
+      });
     });
 
     const wrap = this.el.wrap;
@@ -767,14 +839,28 @@ function positionHandle(el, ly, h) {
 
 function typeFieldsHtml(ly) {
   if (ly.type === "text") {
+    const fam = ly.fontFamily || '"Plus Jakarta Sans", system-ui, sans-serif';
     return `
-      <label class="span-2">Text<textarea data-f="text" rows="2">${escapeHtml(ly.text || "")}</textarea></label>
-      <label>Font pt<input data-f="font" type="number" step="0.5" value="${ly.font || 10}"></label>
-      <label>Weight<input data-f="weight" type="number" step="100" value="${ly.weight || 700}"></label>
+      <div class="lp-section span-2">Text</div>
+      <label class="span-2">Content<textarea data-f="text" rows="2">${escapeHtml(ly.text || "")}</textarea></label>
+      <label class="span-2">Font<select data-f="fontFamily">
+        <option value='"Plus Jakarta Sans", system-ui, sans-serif' ${fam.includes("Jakarta") ? "selected" : ""}>Plus Jakarta Sans</option>
+        <option value="Arial, Helvetica, sans-serif" ${fam.includes("Arial") ? "selected" : ""}>Arial</option>
+        <option value="'Courier New', monospace" ${fam.includes("Courier") ? "selected" : ""}>Courier New</option>
+        <option value="Georgia, serif" ${fam.includes("Georgia") ? "selected" : ""}>Georgia</option>
+      </select></label>
+      <label>Size pt<input data-f="font" type="number" min="4" max="72" step="0.5" value="${ly.font || 10}"></label>
+      <label>Weight<select data-f="weight">
+        <option value="400" ${Number(ly.weight) === 400 ? "selected" : ""}>Regular</option>
+        <option value="600" ${Number(ly.weight) === 600 ? "selected" : ""}>Semi-bold</option>
+        <option value="700" ${Number(ly.weight) === 700 ? "selected" : ""}>Bold</option>
+        <option value="800" ${Number(ly.weight) === 800 ? "selected" : ""}>Extra-bold</option>
+        <option value="900" ${Number(ly.weight) === 900 ? "selected" : ""}>Black</option>
+      </select></label>
       <label>Align<select data-f="align">
-        <option value="left" ${ly.align === "left" ? "selected" : ""}>left</option>
-        <option value="center" ${ly.align === "center" ? "selected" : ""}>center</option>
-        <option value="right" ${ly.align === "right" ? "selected" : ""}>right</option>
+        <option value="left" ${ly.align === "left" || !ly.align ? "selected" : ""}>Left</option>
+        <option value="center" ${ly.align === "center" ? "selected" : ""}>Center</option>
+        <option value="right" ${ly.align === "right" ? "selected" : ""}>Right</option>
       </select></label>
       <label>Color<input data-f="color" type="color" value="${escapeAttr(ly.color || "#0f172a")}"></label>
       <label>Role<select data-f="role">
@@ -782,16 +868,34 @@ function typeFieldsHtml(ly) {
         <option value="brand" ${ly.role === "brand" ? "selected" : ""}>brand</option>
         <option value="code" ${ly.role === "code" ? "selected" : ""}>code</option>
         <option value="desc" ${ly.role === "desc" ? "selected" : ""}>desc</option>
+        <option value="footer" ${ly.role === "footer" ? "selected" : ""}>footer</option>
       </select></label>`;
+  }
+  if (ly.type === "barcode") {
+    return `
+      <div class="lp-section span-2">Barcode</div>
+      <label class="span-2">Value<input data-f="text" value="${escapeAttr(ly.text || "")}"></label>
+      <label>Format<select data-f="format">
+        <option value="CODE128" ${ly.format !== "EAN13" ? "selected" : ""}>Code128</option>
+        <option value="EAN13" ${ly.format === "EAN13" ? "selected" : ""}>EAN-13</option>
+      </select></label>
+      <label>Show text<select data-f="displayValue">
+        <option value="true" ${ly.displayValue !== false ? "selected" : ""}>Yes</option>
+        <option value="false" ${ly.displayValue === false ? "selected" : ""}>No</option>
+      </select></label>
+      <label>Color<input data-f="color" type="color" value="${escapeAttr(ly.color || "#0f172a")}"></label>
+      <label>BG<input data-f="bg" type="color" value="${escapeAttr(ly.bg || "#ffffff")}"></label>`;
   }
   if (ly.type === "qr") {
     return `
+      <div class="lp-section span-2">QR</div>
       <label>Style<select data-f="style">
-        <option value="square" ${ly.style === "square" ? "selected" : ""}>square</option>
+        <option value="square" ${ly.style === "square" || !ly.style ? "selected" : ""}>square</option>
         <option value="rounded" ${ly.style === "rounded" ? "selected" : ""}>rounded</option>
         <option value="dots" ${ly.style === "dots" ? "selected" : ""}>dots</option>
       </select></label>
-      <label>Color<input data-f="color" type="color" value="${escapeAttr(ly.color || "#0f172a")}"></label>
+      <label>Ink<input data-f="color" type="color" value="${escapeAttr(ly.color || "#0f172a")}"></label>
+      <label>Corners<input data-f="cornerColor" type="color" value="${escapeAttr(ly.cornerColor || ly.color || "#0f172a")}"></label>
       <label>BG<input data-f="bg" type="color" value="${escapeAttr(ly.bg || "#ffffff")}"></label>
       <label>ECC<select data-f="errorCorrection">
         ${["L", "M", "Q", "H"]
@@ -849,7 +953,19 @@ function studioMarkup() {
         <div class="le-head-brand">
           <div class="le-head-kicker">AbouAmjad Labels</div>
           <h3>${escapeHtml(title)}</h3>
-          <div class="meta" data-meta>50×30 mm</div>
+          <div class="le-size-row">
+            <select data-size-preset title="Label size preset">
+              <option value="50x30">50×30 mm</option>
+              <option value="51x25">51×25 mm</option>
+              <option value="40x30">40×30 mm</option>
+              <option value="60x40">60×40 mm</option>
+              <option value="100x50">100×50 mm</option>
+              <option value="custom">Custom…</option>
+            </select>
+            <label>W<input data-size="labelW" type="number" min="15" max="300" step="0.5" value="50"></label>
+            <label>H<input data-size="labelH" type="number" min="10" max="300" step="0.5" value="30"></label>
+            <span class="meta" data-meta>50×30 mm</span>
+          </div>
         </div>
         <div class="le-head-actions">
           <button type="button" class="le-btn le-btn-save" data-save title="${escapeAttr(save)} (Ctrl+S)">
@@ -864,45 +980,48 @@ function studioMarkup() {
       </header>
       <div class="lt-toolbar">
         <div class="lt-group">
-          <button type="button" data-tool="select" class="is-active" title="Select"><i class="bi bi-cursor"></i> Select</button>
-          <button type="button" data-tool="hand" title="Pan"><i class="bi bi-hand-index"></i> Hand</button>
+          <button type="button" data-tool="select" class="is-active" title="Select"><i class="bi bi-cursor"></i></button>
+          <button type="button" data-tool="hand" title="Pan"><i class="bi bi-hand-index"></i></button>
         </div>
         <div class="lt-group">
-          <button type="button" data-tool="qr"><i class="bi bi-qr-code"></i> QR</button>
-          <button type="button" data-tool="text"><i class="bi bi-type"></i> Text</button>
-          <button type="button" data-tool="image"><i class="bi bi-image"></i> Image</button>
-          <button type="button" data-tool="shape"><i class="bi bi-square"></i> Shape</button>
-          <button type="button" data-tool="line"><i class="bi bi-slash-lg"></i> Line</button>
+          <button type="button" data-tool="qr" title="QR Code"><i class="bi bi-qr-code"></i> QR</button>
+          <button type="button" data-tool="barcode" title="Barcode Code128 / EAN-13"><i class="bi bi-upc"></i> Barcode</button>
+          <button type="button" data-tool="text" title="Text"><i class="bi bi-type"></i> Text</button>
+          <button type="button" data-tool="image" title="Image"><i class="bi bi-image"></i></button>
+          <button type="button" data-tool="shape" title="Shape"><i class="bi bi-square"></i></button>
+          <button type="button" data-tool="line" title="Line"><i class="bi bi-slash-lg"></i></button>
         </div>
         <div class="lt-group">
           <button type="button" data-tool="duplicate" title="Duplicate (Ctrl+D)"><i class="bi bi-copy"></i></button>
           <button type="button" data-tool="delete" title="Delete (Del)"><i class="bi bi-trash"></i></button>
+          <button type="button" data-tool="group" title="Group (Ctrl+G)">Group</button>
+          <button type="button" data-tool="ungroup" title="Ungroup">Ungroup</button>
           <button type="button" data-tool="undo" title="Undo"><i class="bi bi-arrow-counterclockwise"></i></button>
           <button type="button" data-tool="redo" title="Redo"><i class="bi bi-arrow-clockwise"></i></button>
         </div>
+        <div class="lt-group lt-align">
+          <button type="button" data-tool="align-left" title="Align left">⫷</button>
+          <button type="button" data-tool="align-h" title="Center H">☰</button>
+          <button type="button" data-tool="align-right" title="Align right">⫸</button>
+          <button type="button" data-tool="align-top" title="Align top">⮭</button>
+          <button type="button" data-tool="align-v" title="Middle">☰</button>
+          <button type="button" data-tool="align-bottom" title="Align bottom">﹀</button>
+          <button type="button" data-tool="dist-h" title="Distribute H">↔</button>
+          <button type="button" data-tool="dist-v" title="Distribute V">↕</button>
+          <button type="button" data-tool="align-label-h" title="Center on label H">⌖H</button>
+          <button type="button" data-tool="align-label-v" title="Center on label V">⌖V</button>
+        </div>
         <div class="lt-group">
-          <select data-align aria-label="Align">
-            <option value="">Align…</option>
-            <option value="align-left">Left</option>
-            <option value="align-h">Center H</option>
-            <option value="align-right">Right</option>
-            <option value="align-top">Top</option>
-            <option value="align-v">Middle</option>
-            <option value="align-bottom">Bottom</option>
-            <option value="dist-h">Distribute H</option>
-            <option value="dist-v">Distribute V</option>
-            <option value="align-label-h">Center on label H</option>
-            <option value="align-label-v">Center on label V</option>
-          </select>
-          <select data-preset aria-label="Presets">
-            <option value="">Preset…</option>
+          <select data-preset aria-label="Layout presets">
+            <option value="">Layout…</option>
             <option value="thermal">Thermal</option>
             <option value="stacked">Stacked</option>
             <option value="qrOnly">QR only</option>
+            <option value="barcode">Barcode</option>
           </select>
         </div>
         <div class="lt-group lt-group-end">
-          <button type="button" data-tool="grid">Grid</button>
+          <button type="button" data-tool="grid" title="Grid (edit only)">Grid</button>
           <button type="button" data-tool="snap">Snap</button>
           <button type="button" data-tool="zoom-out">−</button>
           <span data-zoom>100%</span>

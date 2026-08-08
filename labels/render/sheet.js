@@ -47,7 +47,7 @@ export async function renderSheet(docOrPartial, items, options = {}) {
     ].join(";");
   }
 
-  const list = items?.length ? items : [{ code: "SAMPLE", name: "Preview" }];
+  const list = items?.length ? items : [{ code: "I1001", name: "Product name" }];
   for (let i = 0; i < list.length; i++) {
     let flipped = false;
     if (flip) {
