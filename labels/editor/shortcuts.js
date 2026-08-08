@@ -38,6 +38,11 @@ export function bindShortcuts(handlers, { isEnabled } = {}) {
       map[key.toLowerCase()]();
       return;
     }
+    if (mod && key.toLowerCase() === "s") {
+      e.preventDefault();
+      handlers.save?.();
+      return;
+    }
     if (mod && key.toLowerCase() === "g") {
       e.preventDefault();
       if (shift) handlers.ungroup?.();

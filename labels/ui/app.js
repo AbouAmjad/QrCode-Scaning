@@ -44,6 +44,9 @@ export async function bootLabelApp() {
     onChange: (doc) => {
       documentModel = createDocument(doc);
       syncSizeFields();
+    },
+    onSave: async () => {
+      await saveTpl(false);
     }
   });
 

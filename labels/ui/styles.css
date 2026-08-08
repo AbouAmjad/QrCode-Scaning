@@ -138,7 +138,7 @@
 }
 .le-head h3 { margin: 0; font-size: 1rem; font-weight: 800; }
 .le-head .meta { font-size: .75rem; color: #94a3b8; }
-.le-head-actions { display: flex; gap: .5rem; }
+.le-head-actions { display: flex; flex-wrap: wrap; gap: .5rem; justify-content: flex-end; }
 .le-body {
   flex: 1;
   min-height: 0;
@@ -165,7 +165,7 @@
 }
 .le-layer {
   display: grid;
-  grid-template-columns: auto auto 1fr auto auto;
+  grid-template-columns: auto auto 1fr auto auto auto;
   gap: .25rem;
   align-items: center;
   padding: .35rem .4rem;
@@ -181,6 +181,8 @@
   cursor: pointer;
   padding: 0 .15rem;
 }
+.le-layer button[data-act="del"] { color: #fca5a5; }
+.le-layer button[data-act="del"]:disabled { opacity: .35; cursor: not-allowed; }
 .le-layer .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .le-canvas-col { display: flex; flex-direction: column; min-width: 0; min-height: 0; background: #1e293b; }

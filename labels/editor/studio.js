@@ -21,12 +21,13 @@ const HANDLES = ["nw", "n", "ne", "e", "se", "s", "sw", "w"];
 
 /**
  * @param {HTMLElement} root  #editorHost
- * @param {{ onChange?: (doc: object) => void }} [opts]
+ * @param {{ onChange?: (doc: object) => void, onSave?: (doc: object) => void|Promise<void> }} [opts]
  */
 export class LabelStudio {
-  constructor(root, { onChange } = {}) {
+  constructor(root, { onChange, onSave } = {}) {
     this.root = root;
     this.onChange = onChange;
+    this.onSave = onSave;
     this.store = new DocumentStore();
     this.selection = new SelectionModel();
     this.viewport = new Viewport({ zoom: getStudioZoom() });
@@ -91,7 +92,9 @@ export class LabelStudio {
           }, "nudge");
         },
         zoom: (dir) => this.nudgeZoom(dir),
-        save: () => this.close(true)
+        save: () => {
+          void this.save();
+        }
       },
       { isEnabled: () => this._open }
     );
@@ -138,6 +141,15 @@ export class LabelStudio {
     this._open = false;
     this.el.studio.hidden = true;
     this.el.studio.classList.remove("open");
+  }
+
+  /** Persist current document via host `onSave` (does not close the studio). */
+  async save() {
+    if (!this._open) return;
+    const doc = cloneDocument(this.doc);
+    this.onChange?.(doc);
+    if (!this.onSave) return;
+    await this.onSave(doc);
   }
 
   undo() {
@@ -238,7 +250,8 @@ export class LabelStudio {
         <button type="button" data-act="lock" title="Lock">${ly.locked ? "🔒" : "🔓"}</button>
         <span class="name">${escapeHtml(ly.name || ly.type)}</span>
         <button type="button" data-act="up" title="Bring forward">↑</button>
-        <button type="button" data-act="down" title="Send backward">↓</button>`;
+        <button type="button" data-act="down" title="Send backward">↓</button>
+        <button type="button" data-act="del" title="Delete layer" ${ly.locked ? "disabled" : ""}>✕</button>`;
       row.addEventListener("click", (e) => {
         const act = e.target?.dataset?.act;
         if (act === "vis") {
@@ -259,6 +272,12 @@ export class LabelStudio {
           this.store.update((d) => {
             d.layers = this.selection.reorder(d.layers, ly.id, act);
           }, "reorder");
+          return;
+        }
+        if (act === "del") {
+          if (ly.locked) return;
+          this.selection.set([ly.id]);
+          this.deleteSelected();
           return;
         }
         this.selection.toggle(ly.id, e.shiftKey);
@@ -437,7 +456,11 @@ export class LabelStudio {
   }
 
   _wireChrome() {
+    this.root.querySelector("[data-back]")?.addEventListener("click", () => this.close(true));
     this.root.querySelector("[data-done]")?.addEventListener("click", () => this.close(true));
+    this.root.querySelector("[data-save]")?.addEventListener("click", () => {
+      void this.save();
+    });
     this.root.querySelector("[data-reset]")?.addEventListener("click", () => {
       this.store.update((d) => {
         d.layers = layoutPresets().thermal();
@@ -475,6 +498,10 @@ export class LabelStudio {
   }
 
   _onTool(tool) {
+    if (tool === "delete") {
+      this.deleteSelected();
+      return;
+    }
     if (tool === "select" || tool === "hand") {
       this.viewport.tool = tool;
       this.root.querySelectorAll("[data-tool=select],[data-tool=hand]").forEach((b) => {
@@ -754,14 +781,17 @@ function studioMarkup() {
           <div class="meta" data-meta>50×30 mm</div>
         </div>
         <div class="le-head-actions">
+          <button type="button" class="tc-btn" data-back title="Back to templates">← Back</button>
           <button type="button" class="tc-btn" data-reset>Reset</button>
-          <button type="button" class="tc-btn tc-btn-primary" data-done id="leDone">Done</button>
+          <button type="button" class="tc-btn tc-btn-primary" data-save title="Save template (Ctrl+S)">Save</button>
+          <button type="button" class="tc-btn" data-done id="leDone">Done</button>
         </div>
       </header>
       <div class="lt-toolbar">
         <div class="lt-group">
           <button type="button" data-tool="select" class="is-active" title="Select (V)">Select</button>
           <button type="button" data-tool="hand" title="Hand (H)">Hand</button>
+          <button type="button" data-tool="delete" title="Delete selected (Del)">Delete</button>
         </div>
         <div class="lt-group">
           <button type="button" data-tool="qr">+ QR</button>
