@@ -929,6 +929,14 @@ function studioMarkup() {
           <div data-inspector></div>
         </aside>
       </div>
+      <div class="le-exit-bar">
+        <button type="button" class="le-btn le-btn-exit" data-back title="${escapeAttr(back)}">
+          ${escapeHtml(back)}
+        </button>
+        <button type="button" class="le-btn le-btn-done" data-done title="${escapeAttr(done)}">
+          <i class="bi bi-check2-circle"></i> ${escapeHtml(done)}
+        </button>
+      </div>
     </div>`;
 }
 

@@ -116,6 +116,7 @@
 }
 
 #editorHost { pointer-events: none; }
+#editorHost.studio-open,
 #editorHost .le-studio.open { pointer-events: auto; }
 .le-studio {
   position: fixed;
@@ -188,6 +189,37 @@
   background: transparent;
   border-color: rgba(148,163,184,.35);
 }
+.le-studio .le-btn-exit {
+  background: #1e293b;
+  border-color: #38bdf8;
+  color: #e0f2fe;
+  font-size: .9rem;
+  padding: .55rem 1rem;
+}
+.le-studio .le-btn-exit:hover {
+  background: #0c4a6e;
+  border-color: #7dd3fc;
+  color: #fff;
+}
+.le-studio .le-btn-done {
+  background: #2563eb;
+  border-color: #60a5fa;
+  color: #fff;
+  font-size: .9rem;
+  padding: .55rem 1.15rem;
+}
+.le-studio .le-btn-done:hover { filter: brightness(1.08); }
+.le-exit-bar {
+  display: flex;
+  gap: .65rem;
+  justify-content: space-between;
+  align-items: center;
+  padding: .65rem 1rem;
+  border-top: 1px solid rgba(148,163,184,.25);
+  background: #0f172a;
+  flex-shrink: 0;
+}
+.le-exit-bar .le-btn { flex: 1; max-width: 240px; }
 .le-body {
   flex: 1;
   min-height: 0;
