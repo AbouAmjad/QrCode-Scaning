@@ -32,7 +32,7 @@ export class GuidesPainter {
 
     // Grid stays inside the label page only (never outside the stage).
     if (doc.showGuides !== false && gridMm > 0) {
-      ctx.strokeStyle = "rgba(15,23,42,0.07)";
+      ctx.strokeStyle = "rgba(15,23,42,0.045)";
       ctx.lineWidth = 1;
       for (let x = 0; x <= doc.labelW + 0.001; x += gridMm) {
         const px = x * pxPerMm;

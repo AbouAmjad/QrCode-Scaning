@@ -155,10 +155,16 @@ export class LabelStudio {
     if (!this._open) return;
     if (save) this.onChange?.(cloneDocument(this.doc));
     this._open = false;
+    this._closeMoreMenu();
     this.el.studio.hidden = true;
     this.el.studio.classList.remove("open");
     this.root.classList.remove("studio-open");
     document.body.classList.remove("le-studio-open");
+  }
+
+  _closeMoreMenu() {
+    const menu = this.root.querySelector("[data-more-menu]");
+    if (menu) menu.hidden = true;
   }
 
   /** Persist current document via host callbacks (does not close the studio). */
@@ -301,19 +307,40 @@ export class LabelStudio {
   paintLayers() {
     const doc = this.doc;
     const sorted = [...doc.layers].sort((a, b) => (b.z || 0) - (a.z || 0));
-    this.el.layers.innerHTML = `<div class="rail-ttl">Layers</div>`;
+    this.el.layers.innerHTML = `
+      <div class="rail-ttl">Layers</div>
+      <p class="rail-sub">Select a layer to edit it in Inspector.</p>`;
     for (const ly of sorted) {
       const row = document.createElement("div");
       row.className = "le-layer" + (this.selection.has(ly.id) ? " active" : "");
+      const typeIcon =
+        ly.type === "qr"
+          ? "bi-qr-code"
+          : ly.type === "barcode"
+            ? "bi-upc"
+            : ly.type === "image"
+              ? "bi-image"
+              : ly.type === "line"
+                ? "bi-slash-lg"
+                : ly.type === "shape"
+                  ? "bi-square"
+                  : "bi-type";
       row.innerHTML = `
-        <button type="button" data-act="vis" title="Visibility">${ly.visible === false ? "○" : "●"}</button>
-        <button type="button" data-act="lock" title="Lock">${ly.locked ? "🔒" : "🔓"}</button>
+        <button type="button" class="le-layer-ico" data-act="vis" title="Visibility" aria-label="Visibility">
+          <i class="bi ${ly.visible === false ? "bi-eye-slash" : "bi-eye"}"></i>
+        </button>
+        <button type="button" class="le-layer-ico" data-act="lock" title="Lock" aria-label="Lock">
+          <i class="bi ${ly.locked ? "bi-lock-fill" : "bi-unlock"}"></i>
+        </button>
+        <span class="le-layer-type"><i class="bi ${typeIcon}"></i></span>
         <span class="name">${escapeHtml(ly.name || ly.type)}</span>
-        <button type="button" data-act="up" title="Bring forward">↑</button>
-        <button type="button" data-act="down" title="Send backward">↓</button>
-        <button type="button" data-act="del" title="Delete layer" ${ly.locked ? "disabled" : ""}>✕</button>`;
+        <div class="le-layer-ops">
+          <button type="button" data-act="up" title="Bring forward" aria-label="Bring forward"><i class="bi bi-chevron-up"></i></button>
+          <button type="button" data-act="down" title="Send backward" aria-label="Send backward"><i class="bi bi-chevron-down"></i></button>
+          <button type="button" class="danger" data-act="del" title="Delete layer" aria-label="Delete" ${ly.locked ? "disabled" : ""}><i class="bi bi-trash3"></i></button>
+        </div>`;
       row.addEventListener("click", (e) => {
-        const act = e.target?.dataset?.act;
+        const act = e.target?.closest?.("[data-act]")?.dataset?.act;
         if (act === "vis") {
           this.store.update((d) => {
             const t = d.layers.find((x) => x.id === ly.id);
@@ -680,12 +707,26 @@ export class LabelStudio {
     });
     this.root.querySelector("[data-save-as]")?.addEventListener("click", () => {
       void this.save(true);
+      this._closeMoreMenu();
     });
     this.root.querySelector("[data-calibrate]")?.addEventListener("click", () => {
       this.onCalibrate?.();
+      this._closeMoreMenu();
     });
     this.root.querySelector("[data-pick-items]")?.addEventListener("click", () => {
       this.onPickItems?.();
+      this._closeMoreMenu();
+    });
+    this.root.querySelector("[data-more-toggle]")?.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const menu = this.root.querySelector("[data-more-menu]");
+      if (!menu) return;
+      menu.hidden = !menu.hidden;
+    });
+    document.addEventListener("click", (e) => {
+      if (!this._open) return;
+      if (e.target?.closest?.(".le-more")) return;
+      this._closeMoreMenu();
     });
 
     this.root.querySelectorAll("[data-tool]").forEach((btn) => {
@@ -1004,16 +1045,13 @@ function pageFrameInspectorHtml(doc, compact = false) {
   const dash = pf.dash !== false;
   const sw = Number(pf.strokeWidth) || 0.4;
   const color = pf.color || "#2C2C2A";
-  const hint = compact
-    ? ""
-    : `<p class="lp-empty span-2" style="margin:0 0 .35rem">Edge guide for ${doc.labelW}×${doc.labelH} mm. Auto-updates with label size. Off in print unless enabled below.</p>`;
   return `
     <div class="lp-fields">
       <div class="lp-section span-2">Page frame</div>
-      ${hint}
+      ${compact ? "" : `<p class="lp-empty span-2" style="margin:0">Cut-edge guide · ${doc.labelW}×${doc.labelH} mm</p>`}
       <label class="span-2 lp-check"><input data-pf="enabled" type="checkbox" ${enabled ? "checked" : ""}> Show frame</label>
-      <label class="span-2 lp-check"><input data-pf="includeInPrint" type="checkbox" ${include ? "checked" : ""}> Include in print / export</label>
-      <label class="span-2 lp-check"><input data-pf="dash" type="checkbox" ${dash ? "checked" : ""}> Dashed (guide style)</label>
+      <label class="span-2 lp-check"><input data-pf="includeInPrint" type="checkbox" ${include ? "checked" : ""}> Include in print</label>
+      <label class="span-2 lp-check"><input data-pf="dash" type="checkbox" ${dash ? "checked" : ""}> Dashed guide</label>
       <label>Stroke mm<input data-pf="strokeWidth" type="number" min="0.05" max="3" step="0.05" value="${sw}" ${enabled ? "" : "disabled"}></label>
       <label>Color<input data-pf="color" type="color" value="${escapeAttr(color)}" ${enabled ? "" : "disabled"}></label>
     </div>`;
@@ -1145,94 +1183,94 @@ function studioLabel(key, en, ar) {
 }
 
 function studioMarkup() {
-  const back = studioLabel("studioBack", "← Back", "← رجوع");
-  const save = studioLabel("saveDesign", "Save design", "حفظ التصميم");
+  const back = studioLabel("studioBack", "Back", "رجوع");
+  const save = studioLabel("saveDesign", "Save", "حفظ");
   const saveAs = studioLabel("saveAsTemplate", "Save as…", "حفظ باسم…");
   const pickItems = studioLabel("pickItems", "Choose items…", "اختيار عناصر…");
-  const calibrate = studioLabel("calibratePrinter", "Calibrate", "معايرة");
+  const calibrate = studioLabel("calibratePrinter", "Calibrate printer", "معايرة الطابعة");
+  const more = studioLabel("moreActions", "More", "المزيد");
   const done = studioLabel("studioDone", "Done", "تم");
   const title = studioLabel("designStudio", "Design Studio", "استوديو التصميم");
   return `
     <div class="le-studio" hidden>
       <header class="le-head">
-        <button type="button" class="le-btn le-btn-back" data-back>
-          <i class="bi bi-arrow-left"></i>
-          <span>${escapeHtml(back)}</span>
-        </button>
-        <div class="le-head-brand">
-          <div class="le-head-kicker">AbouAmjad Labels</div>
-          <h3>${escapeHtml(title)}</h3>
-          <div class="le-size-row">
-            <select data-size-preset title="Label size preset">
-              <option value="50x30">50×30 mm</option>
-              <option value="51x25">51×25 mm</option>
-              <option value="40x30">40×30 mm</option>
-              <option value="60x40">60×40 mm</option>
-              <option value="100x50">100×50 mm</option>
-              <option value="custom">Custom…</option>
-            </select>
-            <label>W<input data-size="labelW" type="number" min="15" max="300" step="0.5" value="50"></label>
-            <label>H<input data-size="labelH" type="number" min="10" max="300" step="0.5" value="30"></label>
-            <span class="meta" data-meta>50×30 mm</span>
+        <div class="le-head-left">
+          <button type="button" class="le-btn le-btn-back" data-back>
+            <i class="bi bi-arrow-left"></i>
+            <span>${escapeHtml(back)}</span>
+          </button>
+          <div class="le-head-brand">
+            <div class="le-head-kicker">AbouAmjad Labels</div>
+            <h3>${escapeHtml(title)}</h3>
           </div>
         </div>
+        <div class="le-size-row" title="Label size">
+          <select data-size-preset aria-label="Size preset">
+            <option value="50x30">50×30</option>
+            <option value="51x25">51×25</option>
+            <option value="40x30">40×30</option>
+            <option value="60x40">60×40</option>
+            <option value="100x50">100×50</option>
+            <option value="custom">Custom</option>
+          </select>
+          <label>W<input data-size="labelW" type="number" min="15" max="300" step="0.5" value="50"></label>
+          <label>H<input data-size="labelH" type="number" min="10" max="300" step="0.5" value="30"></label>
+          <span class="meta" data-meta>50×30 mm</span>
+        </div>
         <div class="le-head-actions">
-          <button type="button" class="le-btn le-btn-ghost" data-pick-items title="${escapeAttr(pickItems)}">
-            <i class="bi bi-check2-square"></i>
-            <span>${escapeHtml(pickItems)}</span>
-          </button>
-          <button type="button" class="le-btn le-btn-ghost" data-calibrate title="${escapeAttr(calibrate)}">
-            <i class="bi bi-rulers"></i>
-            <span>${escapeHtml(calibrate)}</span>
-          </button>
-          <button type="button" class="le-btn le-btn-ghost" data-save-as title="${escapeAttr(saveAs)}">
-            <i class="bi bi-files"></i>
-            <span>${escapeHtml(saveAs)}</span>
-          </button>
+          <div class="le-more">
+            <button type="button" class="le-btn le-btn-ghost" data-more-toggle aria-haspopup="true">
+              <i class="bi bi-three-dots"></i>
+              <span>${escapeHtml(more)}</span>
+            </button>
+            <div class="le-more-menu" data-more-menu hidden>
+              <button type="button" data-pick-items><i class="bi bi-check2-square"></i> ${escapeHtml(pickItems)}</button>
+              <button type="button" data-calibrate><i class="bi bi-rulers"></i> ${escapeHtml(calibrate)}</button>
+              <button type="button" data-save-as><i class="bi bi-files"></i> ${escapeHtml(saveAs)}</button>
+            </div>
+          </div>
           <button type="button" class="le-btn le-btn-save" data-save title="${escapeAttr(save)} (Ctrl+S)">
             <i class="bi bi-save-fill"></i>
             <span>${escapeHtml(save)}</span>
           </button>
-          <button type="button" class="le-btn le-btn-done" data-done id="leDone">
+          <button type="button" class="le-btn le-btn-done" data-done id="leDone" title="${escapeAttr(done)} — save &amp; close">
             <i class="bi bi-check2"></i>
             <span>${escapeHtml(done)}</span>
           </button>
         </div>
       </header>
       <div class="lt-toolbar">
-        <div class="lt-group">
+        <div class="lt-group" data-label="Navigate">
           <button type="button" data-tool="select" class="is-active" title="Select"><i class="bi bi-cursor"></i></button>
           <button type="button" data-tool="hand" title="Pan"><i class="bi bi-hand-index"></i></button>
         </div>
-        <div class="lt-group">
-          <button type="button" data-tool="qr" title="QR Code"><i class="bi bi-qr-code"></i> QR</button>
-          <button type="button" data-tool="barcode" title="Barcode Code128 / EAN-13"><i class="bi bi-upc"></i> Barcode</button>
-          <button type="button" data-tool="text" title="Text"><i class="bi bi-type"></i> Text</button>
-          <button type="button" data-tool="image" title="Upload image"><i class="bi bi-image"></i> Image</button>
+        <div class="lt-group" data-label="Add">
+          <button type="button" data-tool="qr" title="QR Code"><i class="bi bi-qr-code"></i><span>QR</span></button>
+          <button type="button" data-tool="barcode" title="Barcode"><i class="bi bi-upc"></i><span>Barcode</span></button>
+          <button type="button" data-tool="text" title="Text"><i class="bi bi-type"></i><span>Text</span></button>
+          <button type="button" data-tool="image" title="Image"><i class="bi bi-image"></i><span>Image</span></button>
           <button type="button" data-tool="shape" title="Shape"><i class="bi bi-square"></i></button>
           <button type="button" data-tool="line" title="Line"><i class="bi bi-slash-lg"></i></button>
         </div>
-        <div class="lt-group">
-          <button type="button" data-tool="duplicate" title="Duplicate (Ctrl+D)"><i class="bi bi-copy"></i></button>
-          <button type="button" data-tool="delete" title="Delete (Del)"><i class="bi bi-trash"></i></button>
-          <button type="button" data-tool="group" title="Group (Ctrl+G)">Group</button>
-          <button type="button" data-tool="ungroup" title="Ungroup">Ungroup</button>
+        <div class="lt-group" data-label="Edit">
+          <button type="button" data-tool="duplicate" title="Duplicate"><i class="bi bi-copy"></i></button>
+          <button type="button" data-tool="delete" title="Delete"><i class="bi bi-trash"></i></button>
+          <button type="button" data-tool="group" title="Group"><i class="bi bi-collection"></i></button>
+          <button type="button" data-tool="ungroup" title="Ungroup"><i class="bi bi-collection" style="opacity:.55"></i></button>
           <button type="button" data-tool="undo" title="Undo"><i class="bi bi-arrow-counterclockwise"></i></button>
           <button type="button" data-tool="redo" title="Redo"><i class="bi bi-arrow-clockwise"></i></button>
         </div>
-        <div class="lt-group lt-align">
-          <button type="button" data-tool="align-left" title="Align left">⫷</button>
-          <button type="button" data-tool="align-h" title="Center H">☰</button>
-          <button type="button" data-tool="align-right" title="Align right">⫸</button>
-          <button type="button" data-tool="align-top" title="Align top">⮭</button>
-          <button type="button" data-tool="align-v" title="Middle">☰</button>
-          <button type="button" data-tool="align-bottom" title="Align bottom">﹀</button>
-          <button type="button" data-tool="dist-h" title="Distribute H">↔</button>
-          <button type="button" data-tool="dist-v" title="Distribute V">↕</button>
-          <button type="button" data-tool="align-label-h" title="Center on label H">⌖H</button>
-          <button type="button" data-tool="align-label-v" title="Center on label V">⌖V</button>
+        <div class="lt-group lt-align" data-label="Align">
+          <button type="button" data-tool="align-left" title="Align left"><i class="bi bi-align-start"></i></button>
+          <button type="button" data-tool="align-h" title="Center horizontal"><i class="bi bi-align-center"></i></button>
+          <button type="button" data-tool="align-right" title="Align right"><i class="bi bi-align-end"></i></button>
+          <button type="button" data-tool="align-top" title="Align top"><i class="bi bi-align-top"></i></button>
+          <button type="button" data-tool="align-v" title="Middle"><i class="bi bi-align-middle"></i></button>
+          <button type="button" data-tool="align-bottom" title="Align bottom"><i class="bi bi-align-bottom"></i></button>
+          <button type="button" data-tool="align-label-h" title="Center on label H"><i class="bi bi-arrows-collapse-vertical"></i></button>
+          <button type="button" data-tool="align-label-v" title="Center on label V"><i class="bi bi-arrows-collapse"></i></button>
         </div>
-        <div class="lt-group">
+        <div class="lt-group" data-label="Layout">
           <select data-preset aria-label="Layout presets">
             <option value="">Layout…</option>
             <option value="thermal">Thermal</option>
@@ -1241,14 +1279,16 @@ function studioMarkup() {
             <option value="barcode">Barcode</option>
           </select>
         </div>
-        <div class="lt-group lt-group-end">
-          <button type="button" data-tool="page-frame" title="Toggle page frame">Frame</button>
-          <button type="button" data-tool="grid" title="Grid (edit only)">Grid</button>
-          <button type="button" data-tool="snap">Snap</button>
-          <button type="button" data-tool="zoom-out">−</button>
-          <span data-zoom>100%</span>
-          <button type="button" data-tool="zoom-in">+</button>
-          <button type="button" data-tool="zoom-fit">Fit</button>
+        <div class="lt-group lt-group-end" data-label="View">
+          <button type="button" data-tool="page-frame" title="Page frame">Frame</button>
+          <button type="button" data-tool="grid" title="Grid">Grid</button>
+          <button type="button" data-tool="snap" title="Snap">Snap</button>
+          <span class="lt-zoom">
+            <button type="button" data-tool="zoom-out" title="Zoom out">−</button>
+            <span data-zoom>100%</span>
+            <button type="button" data-tool="zoom-in" title="Zoom in">+</button>
+            <button type="button" data-tool="zoom-fit" title="Fit">Fit</button>
+          </span>
         </div>
       </div>
       <div class="le-body">
@@ -1269,6 +1309,7 @@ function studioMarkup() {
         </div>
         <aside class="le-props">
           <div class="rail-ttl">Inspector</div>
+          <p class="rail-sub">Properties for the selected layer.</p>
           <div data-inspector></div>
         </aside>
       </div>
