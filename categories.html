@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AbouAmjad Store System | Categories</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="app.css?v=live">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f766e">
+  <script src="config.js?v=live"></script>
+  <script src="i18n.js?v=live"></script>
+  <script src="ui.js?v=live"></script>
+  <style>
+    .cat-page .cat-toolbar {
+      display: flex; flex-wrap: wrap; gap: .65rem; align-items: center;
+      margin-bottom: 1rem;
+    }
+    .cat-page .cat-toolbar .tc-search { flex: 1; min-width: 160px; max-width: 280px; }
+    .cat-page .cat-crumb {
+      display: flex; flex-wrap: wrap; align-items: center; gap: .35rem;
+      font-size: .82rem; color: var(--tc-muted); margin-bottom: .85rem; min-height: 1.4rem;
+    }
+    .cat-page .cat-crumb button {
+      border: 0; background: transparent; color: var(--tc-accent-2);
+      font-weight: 700; padding: 0; cursor: pointer;
+    }
+    .cat-page .cat-crumb button:hover { text-decoration: underline; }
+    .cat-page .cat-crumb .here { color: var(--tc-text); font-weight: 800; }
+    .cat-page .cat-crumb .sep { opacity: .45; }
+
+    .cat-page .cat-layout {
+      display: grid; gap: 1rem; align-items: start;
+    }
+    @media (min-width: 1000px) {
+      .cat-page .cat-layout { grid-template-columns: 1fr 1fr 1fr; }
+    }
+
+    .cat-page .cat-col {
+      background: var(--tc-surface); border: 1px solid var(--tc-border);
+      border-radius: 18px; box-shadow: 0 14px 36px -24px rgba(20,32,51,.4);
+      overflow: hidden; display: flex; flex-direction: column; min-height: 320px;
+    }
+    .cat-page .cat-col.dimmed { opacity: .55; }
+    .cat-page .cat-col-head {
+      display: flex; align-items: center; justify-content: space-between; gap: .5rem;
+      flex-wrap: wrap; padding: .85rem 1rem;
+      background: var(--tc-head-grad); border-bottom: 1px solid var(--tc-border);
+    }
+    .cat-page .cat-col-head h2 {
+      margin: 0; font-size: .92rem; font-weight: 800;
+      display: flex; align-items: center; gap: .4rem;
+    }
+    .cat-page .cat-col-head h2 i { color: var(--tc-accent); }
+    .cat-page .cat-count {
+      font-size: .72rem; font-weight: 800; padding: .18rem .5rem;
+      border-radius: 999px; background: var(--tc-accent-soft); color: var(--tc-accent-2);
+    }
+    .cat-page .cat-col-body { padding: .85rem; flex: 1; }
+    .cat-page .cat-context {
+      font-size: .78rem; color: var(--tc-muted); margin-bottom: .65rem;
+      padding: .45rem .65rem; border-radius: 10px; background: var(--tc-surface-2);
+      border: 1px solid var(--tc-border); display: none;
+    }
+    .cat-page .cat-context.show { display: block; }
+    .cat-page .cat-context strong { color: var(--tc-text); }
+
+    .cat-page .cat-composer {
+      display: flex; gap: .45rem; align-items: stretch; margin-bottom: .75rem;
+    }
+    .cat-page .cat-composer input {
+      flex: 1; min-width: 0;
+    }
+    .cat-page .cat-composer .tc-btn { flex-shrink: 0; white-space: nowrap; }
+
+    .cat-page .cat-bulk {
+      display: none; align-items: center; justify-content: space-between;
+      gap: .5rem; flex-wrap: wrap; padding: .55rem .7rem; margin-bottom: .65rem;
+      border-radius: 10px; background: rgba(15,118,110,.08);
+      border: 1px solid rgba(15,118,110,.2);
+    }
+    .cat-page .cat-bulk.show { display: flex; }
+
+    .cat-page .cat-list { display: flex; flex-direction: column; gap: .4rem; max-height: 52vh; overflow: auto; }
+    .cat-page .cat-row {
+      display: grid; grid-template-columns: auto 1fr auto; gap: .55rem; align-items: center;
+      padding: .7rem .8rem; border: 1px solid var(--tc-border); border-radius: 12px;
+      background: var(--tc-surface); cursor: pointer; transition: .15s; text-align: start;
+      width: 100%;
+    }
+    .cat-page .cat-row:hover { border-color: rgba(15,118,110,.28); }
+    .cat-page .cat-row.active {
+      border-color: rgba(15,118,110,.5);
+      background: linear-gradient(90deg, rgba(15,118,110,.09), var(--tc-surface) 55%);
+      box-shadow: inset 3px 0 0 var(--tc-accent);
+    }
+    .cat-page .cat-row .check { width: 16px; height: 16px; accent-color: var(--tc-accent); cursor: pointer; }
+    .cat-page .cat-row .title { font-weight: 800; font-size: .9rem; line-height: 1.2; }
+    .cat-page .cat-row .meta { font-size: .72rem; color: var(--tc-muted); margin-top: .15rem; }
+    .cat-page .cat-row .ops { display: flex; gap: .25rem; }
+    .cat-page .cat-row .ops .tc-btn {
+      width: 32px; height: 32px; padding: 0; display: grid; place-items: center; border-radius: 9px;
+    }
+
+    .cat-page .cat-empty {
+      text-align: center; padding: 1.75rem 1rem; color: var(--tc-muted); font-size: .88rem;
+    }
+    .cat-page .cat-empty i {
+      font-size: 1.6rem; color: var(--tc-accent); opacity: .45; display: block; margin-bottom: .35rem;
+    }
+
+    .cat-page .cat-back-btn { display: none; }
+    /* Mobile: show one pane at a time via step */
+    @media (max-width: 999px) {
+      .cat-page .cat-layout { grid-template-columns: 1fr; }
+      .cat-page .cat-col { min-height: 0; }
+      .cat-page .cat-col[data-pane] { display: none; }
+      .cat-page[data-mobile-pane="cats"] .cat-col[data-pane="cats"],
+      .cat-page[data-mobile-pane="subs"] .cat-col[data-pane="subs"],
+      .cat-page[data-mobile-pane="items"] .cat-col[data-pane="items"] { display: flex; }
+      .cat-page .cat-list { max-height: none; }
+      .cat-page .cat-back-btn { display: inline-flex; }
+    }
+  </style>
+</head>
+<body class="tc-page cat-page" data-mobile-pane="cats">
+  <div class="tc-wrap">
+    <div class="tc-shell">
+      <div id="app-header"></div>
+
+      <div class="cat-toolbar">
+        <input id="searchBox" class="form-control tc-search" type="search" autocomplete="off"
+               data-i18n-placeholder="searchCategories" placeholder="Search categories, subs, items…">
+        <a class="tc-btn" href="products.html"><i class="bi bi-arrow-left"></i> <span data-i18n="backToProducts">Back to products</span></a>
+        <a class="tc-btn tc-btn-primary" href="product-form.html"><i class="bi bi-plus-lg"></i> <span data-i18n="addProductBtn">Add product</span></a>
+        <button type="button" class="tc-btn" id="btnRefresh" title="Refresh"><i class="bi bi-arrow-clockwise"></i></button>
+      </div>
+
+      <nav class="cat-crumb" id="crumb" aria-label="Breadcrumb"></nav>
+
+      <div class="cat-layout">
+        <!-- Categories -->
+        <section class="cat-col" data-pane="cats">
+          <div class="cat-col-head">
+            <h2><i class="bi bi-folder2-open"></i> <span data-i18n="categoriesTab">Categories</span>
+              <span class="cat-count" id="countCats">0</span>
+            </h2>
+          </div>
+          <div class="cat-col-body">
+            <div class="cat-composer">
+              <input id="newCatName" class="form-control" autocomplete="off"
+                     data-i18n-placeholder="categoryName" placeholder="Category name">
+              <button type="button" class="tc-btn tc-btn-primary" id="btnAddCat">
+                <i class="bi bi-plus-lg"></i> <span data-i18n="saveCategory">Save</span>
+              </button>
+            </div>
+            <div class="cat-bulk" id="bulkCat">
+              <strong id="bulkCatLabel">0</strong>
+              <button type="button" class="tc-btn tc-btn-danger tc-btn-sm" id="btnDelCats">
+                <i class="bi bi-trash"></i> <span data-i18n="deleteSelected">Delete selected</span>
+              </button>
+            </div>
+            <div class="cat-list" id="catList"></div>
+          </div>
+        </section>
+
+        <!-- Subcategories -->
+        <section class="cat-col" data-pane="subs" id="subCol">
+          <div class="cat-col-head">
+            <h2><i class="bi bi-diagram-3"></i> <span data-i18n="subcategory">Subcategories</span>
+              <span class="cat-count" id="countSubs">0</span>
+            </h2>
+            <button type="button" class="tc-btn tc-btn-sm cat-back-btn" id="btnBackCats">
+              <i class="bi bi-chevron-left"></i> <span data-i18n="categoriesTab">Categories</span>
+            </button>
+          </div>
+          <div class="cat-col-body">
+            <div class="cat-context" id="subContext"></div>
+            <div class="cat-composer" id="subComposer">
+              <input id="newSubName" class="form-control" autocomplete="off"
+                     data-i18n-placeholder="subcategoryName" placeholder="Subcategory name" disabled>
+              <button type="button" class="tc-btn tc-btn-primary" id="btnAddSub" disabled>
+                <i class="bi bi-plus-lg"></i> <span data-i18n="saveSubcategory">Save</span>
+              </button>
+            </div>
+            <div class="cat-bulk" id="bulkSub">
+              <strong id="bulkSubLabel">0</strong>
+              <button type="button" class="tc-btn tc-btn-danger tc-btn-sm" id="btnDelSubs">
+                <i class="bi bi-trash"></i> <span data-i18n="deleteSelected">Delete selected</span>
+              </button>
+            </div>
+            <div class="cat-list" id="subList"></div>
+          </div>
+        </section>
+
+        <!-- Items -->
+        <section class="cat-col" data-pane="items" id="itemCol">
+          <div class="cat-col-head">
+            <h2><i class="bi bi-box-seam"></i> <span data-i18n="itemsTab">Items</span>
+              <span class="cat-count" id="countItems">0</span>
+            </h2>
+            <button type="button" class="tc-btn tc-btn-sm cat-back-btn" id="btnBackSubs">
+              <i class="bi bi-chevron-left"></i> <span data-i18n="subcategory">Subcategories</span>
+            </button>
+          </div>
+          <div class="cat-col-body">
+            <div class="cat-context" id="itemContext"></div>
+            <div class="cat-composer" id="itemComposer">
+              <input id="newItemName" class="form-control" autocomplete="off"
+                     data-i18n-placeholder="itemName" placeholder="Item name" disabled>
+              <button type="button" class="tc-btn tc-btn-primary" id="btnAddItem" disabled>
+                <i class="bi bi-plus-lg"></i> <span data-i18n="saveItem">Save item</span>
+              </button>
+            </div>
+            <div class="cat-bulk" id="bulkItem">
+              <strong id="bulkItemLabel">0</strong>
+              <button type="button" class="tc-btn tc-btn-danger tc-btn-sm" id="btnDelItems">
+                <i class="bi bi-trash"></i> <span data-i18n="deleteSelected">Delete selected</span>
+              </button>
+            </div>
+            <div class="cat-list" id="itemList"></div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let catMaster = [];
+    let subMaster = [];
+    let itemMaster = [];
+    let selectedCatId = null;
+    let selectedSubId = null;
+    let searchQ = "";
+    const selCats = new Set();
+    const selSubs = new Set();
+    const selItems = new Set();
+
+    document.addEventListener("DOMContentLoaded", () => TCUI.bootPage(() => {
+      TCUI.mountHeader("app-header", {
+        active: "categories",
+        titleKey: "categoriesTab",
+        subtitleKey: "categoriesSub",
+        icon: "bi-tags"
+      });
+      document.getElementById("btnRefresh").onclick = load;
+      document.getElementById("btnAddCat").onclick = addCategory;
+      document.getElementById("btnAddSub").onclick = addSubcategory;
+      document.getElementById("btnAddItem").onclick = addItem;
+      document.getElementById("btnDelCats").onclick = deleteSelectedCats;
+      document.getElementById("btnDelSubs").onclick = deleteSelectedSubs;
+      document.getElementById("btnDelItems").onclick = deleteSelectedItems;
+      document.getElementById("btnBackCats").onclick = () => setMobilePane("cats");
+      document.getElementById("btnBackSubs").onclick = () => setMobilePane("subs");
+      document.getElementById("searchBox").oninput = (e) => {
+        searchQ = String(e.target.value || "").trim().toLowerCase();
+        render();
+      };
+      document.getElementById("newCatName").onkeydown = (e) => { if (e.key === "Enter") addCategory(); };
+      document.getElementById("newSubName").onkeydown = (e) => { if (e.key === "Enter") addSubcategory(); };
+      document.getElementById("newItemName").onkeydown = (e) => { if (e.key === "Enter") addItem(); };
+
+      if (location.hash === "#itemsPanel") setMobilePane("items");
+      load();
+    }, { pageId: "categories" }));
+
+    function setMobilePane(pane) {
+      document.body.setAttribute("data-mobile-pane", pane || "cats");
+    }
+
+    function matchQ(name) {
+      if (!searchQ) return true;
+      return String(name || "").toLowerCase().includes(searchQ);
+    }
+
+    /** Category visible if it or any of its subs/items match the search. */
+    function categoryMatchesSearch(c) {
+      if (!searchQ) return true;
+      if (matchQ(c.name)) return true;
+      const catId = String(c.id);
+      if (subMaster.some((s) => String(s.categoryId) === catId && matchQ(s.name))) return true;
+      if (itemMaster.some((i) => String(i.categoryId) === catId && matchQ(i.name))) return true;
+      return false;
+    }
+
+    /** Sub visible under selected cat if it or any of its items match. */
+    function subcategoryMatchesSearch(s) {
+      if (!searchQ) return true;
+      if (matchQ(s.name)) return true;
+      return itemMaster.some((i) => String(i.subcategoryId) === String(s.id) && matchQ(i.name));
+    }
+
+    function syncBulk() {
+      document.getElementById("bulkCat").classList.toggle("show", selCats.size > 0);
+      document.getElementById("bulkSub").classList.toggle("show", selSubs.size > 0);
+      document.getElementById("bulkItem").classList.toggle("show", selItems.size > 0);
+      document.getElementById("bulkCatLabel").textContent = t("selectedCountN", { n: selCats.size });
+      document.getElementById("bulkSubLabel").textContent = t("selectedCountN", { n: selSubs.size });
+      document.getElementById("bulkItemLabel").textContent = t("selectedCountN", { n: selItems.size });
+    }
+
+    function renderCrumb() {
+      const el = document.getElementById("crumb");
+      const cat = catMaster.find((c) => String(c.id) === String(selectedCatId));
+      const sub = subMaster.find((s) => String(s.id) === String(selectedSubId));
+      const parts = [];
+      parts.push(`<button type="button" data-goto="cats">${escHtml(t("categoriesTab"))}</button>`);
+      if (cat) {
+        parts.push(`<span class="sep">›</span>`);
+        parts.push(sub
+          ? `<button type="button" data-goto="subs">${escHtml(cat.name)}</button>`
+          : `<span class="here">${escHtml(cat.name)}</span>`);
+      }
+      if (sub) {
+        parts.push(`<span class="sep">›</span>`);
+        parts.push(`<span class="here">${escHtml(sub.name)}</span>`);
+      }
+      el.innerHTML = parts.join(" ");
+      el.querySelectorAll("[data-goto]").forEach((btn) => {
+        btn.onclick = () => {
+          const g = btn.getAttribute("data-goto");
+          if (g === "cats") {
+            selectedSubId = null;
+            setMobilePane("cats");
+          } else if (g === "subs") {
+            setMobilePane("subs");
+          }
+          render();
+        };
+      });
+    }
+
+    async function load() {
+      try {
+        const data = await apiGet({ action: "listCategories" });
+        if (data && data.error) throw new Error(data.error);
+        catMaster = (data && data.categories) || [];
+        subMaster = (data && data.subcategories) || [];
+        itemMaster = (data && data.items) || [];
+
+        if (selectedCatId && !catMaster.some((c) => String(c.id) === String(selectedCatId))) {
+          selectedCatId = null;
+          selectedSubId = null;
+        }
+        if (selectedSubId && !subMaster.some((s) => String(s.id) === String(selectedSubId))) {
+          selectedSubId = null;
+        }
+        // Keep selection if still valid; auto-pick first category when empty selection and data exists
+        if (!selectedCatId && catMaster.length === 1) {
+          selectedCatId = catMaster[0].id;
+        }
+        if (selectedCatId && !selectedSubId) {
+          const firstSub = subMaster.find((s) => String(s.categoryId) === String(selectedCatId));
+          if (firstSub) selectedSubId = firstSub.id;
+        }
+
+        [...selCats].forEach((id) => { if (!catMaster.some((c) => String(c.id) === String(id))) selCats.delete(id); });
+        [...selSubs].forEach((id) => { if (!subMaster.some((s) => String(s.id) === String(id))) selSubs.delete(id); });
+        [...selItems].forEach((id) => { if (!itemMaster.some((i) => String(i.id) === String(id))) selItems.delete(id); });
+
+        render();
+      } catch (e) {
+        document.getElementById("catList").innerHTML =
+          `<div class="cat-empty text-danger">${escHtml(e.message || "Error")}</div>`;
+      }
+    }
+
+    function selectCategory(id, opts = {}) {
+      selectedCatId = id;
+      selectedSubId = null;
+      const firstSub = subMaster.find((s) => String(s.categoryId) === String(id));
+      if (firstSub) selectedSubId = firstSub.id;
+      if (opts.goMobile !== false) setMobilePane("subs");
+      render();
+    }
+
+    function selectSubcategory(id, opts = {}) {
+      selectedSubId = id;
+      const sub = subMaster.find((s) => String(s.id) === String(id));
+      if (sub) selectedCatId = sub.categoryId;
+      if (opts.goMobile !== false) setMobilePane("items");
+      render();
+    }
+
+    function render() {
+      renderCrumb();
+
+      const cat = catMaster.find((c) => String(c.id) === String(selectedCatId));
+      const sub = subMaster.find((s) => String(s.id) === String(selectedSubId));
+
+      // Context banners + enable composers
+      const subCtx = document.getElementById("subContext");
+      const itemCtx = document.getElementById("itemContext");
+      const newSub = document.getElementById("newSubName");
+      const btnSub = document.getElementById("btnAddSub");
+      const newItem = document.getElementById("newItemName");
+      const btnItem = document.getElementById("btnAddItem");
+
+      if (cat) {
+        subCtx.classList.add("show");
+        subCtx.innerHTML = `${escHtml(t("addingUnder") || "Under")}: <strong>${escHtml(cat.name)}</strong>`;
+        newSub.disabled = false;
+        btnSub.disabled = false;
+      } else {
+        subCtx.classList.remove("show");
+        subCtx.innerHTML = "";
+        newSub.disabled = true;
+        btnSub.disabled = true;
+      }
+
+      if (sub) {
+        itemCtx.classList.add("show");
+        itemCtx.innerHTML = `${escHtml(t("addingUnder") || "Under")}: <strong>${escHtml(cat ? cat.name : "")} › ${escHtml(sub.name)}</strong>`;
+        newItem.disabled = false;
+        btnItem.disabled = false;
+      } else {
+        itemCtx.classList.remove("show");
+        itemCtx.innerHTML = "";
+        newItem.disabled = true;
+        btnItem.disabled = true;
+      }
+
+      document.getElementById("subCol").classList.toggle("dimmed", !cat);
+      document.getElementById("itemCol").classList.toggle("dimmed", !sub);
+
+      // --- Categories ---
+      const cats = catMaster.filter(categoryMatchesSearch);
+      document.getElementById("countCats").textContent = String(catMaster.length);
+      const catList = document.getElementById("catList");
+      if (!catMaster.length) {
+        catList.innerHTML = `<div class="cat-empty"><i class="bi bi-folder"></i>${escHtml(t("noRows"))}</div>`;
+      } else if (!cats.length) {
+        catList.innerHTML = `<div class="cat-empty"><i class="bi bi-search"></i>${escHtml(t("noSearchResults") || "No matches")}</div>`;
+      } else {
+        catList.innerHTML = cats.map((c) => {
+          const subCount = subMaster.filter((s) => String(s.categoryId) === String(c.id)).length;
+          const itemCount = itemMaster.filter((i) => String(i.categoryId) === String(c.id)).length;
+          const active = String(c.id) === String(selectedCatId);
+          const checked = selCats.has(String(c.id));
+          return `<div class="cat-row${active ? " active" : ""}" data-pick-cat="${c.id}">
+            <input type="checkbox" class="check" data-cat="${c.id}" ${checked ? "checked" : ""} onclick="event.stopPropagation()">
+            <div>
+              <div class="title">${escHtml(c.name)}</div>
+              <div class="meta">${subCount} ${escHtml(t("subcategory"))} · ${itemCount} ${escHtml(t("itemsTab"))}</div>
+            </div>
+            <div class="ops">
+              <button type="button" class="tc-btn text-danger" data-del-cat="${c.id}" title="Delete"><i class="bi bi-trash"></i></button>
+            </div>
+          </div>`;
+        }).join("");
+        catList.querySelectorAll("[data-pick-cat]").forEach((row) => {
+          row.onclick = (e) => {
+            if (e.target.closest("[data-del-cat]") || e.target.closest(".check")) return;
+            selectCategory(row.getAttribute("data-pick-cat"));
+          };
+        });
+        catList.querySelectorAll("[data-cat]").forEach((chk) => {
+          chk.onchange = () => {
+            const id = String(chk.getAttribute("data-cat"));
+            if (chk.checked) selCats.add(id); else selCats.delete(id);
+            syncBulk();
+            render();
+          };
+        });
+        catList.querySelectorAll("[data-del-cat]").forEach((btn) => {
+          btn.onclick = async (e) => {
+            e.stopPropagation();
+            if (!confirm(t("deleteCategoryConfirm"))) return;
+            await apiGet({ action: "deleteCategory", id: btn.getAttribute("data-del-cat") });
+            selCats.delete(String(btn.getAttribute("data-del-cat")));
+            if (String(selectedCatId) === String(btn.getAttribute("data-del-cat"))) {
+              selectedCatId = null;
+              selectedSubId = null;
+            }
+            load();
+          };
+        });
+      }
+
+      // --- Subcategories (filtered by selected category) ---
+      const subsAll = selectedCatId
+        ? subMaster.filter((s) => String(s.categoryId) === String(selectedCatId))
+        : [];
+      const subs = subsAll.filter(subcategoryMatchesSearch);
+      document.getElementById("countSubs").textContent = String(subsAll.length);
+      const subList = document.getElementById("subList");
+      if (!selectedCatId) {
+        subList.innerHTML = `<div class="cat-empty"><i class="bi bi-hand-index"></i>${escHtml(t("pickCategoryHint") || "Select a category")}</div>`;
+      } else if (!subsAll.length) {
+        subList.innerHTML = `<div class="cat-empty"><i class="bi bi-tag"></i>${escHtml(t("noSubcategoriesYet") || "No subcategories yet — add one above")}</div>`;
+      } else if (!subs.length) {
+        subList.innerHTML = `<div class="cat-empty"><i class="bi bi-search"></i>${escHtml(t("noSearchResults") || "No matches")}</div>`;
+      } else {
+        subList.innerHTML = subs.map((s) => {
+          const itemCount = itemMaster.filter((i) => String(i.subcategoryId) === String(s.id)).length;
+          const active = String(s.id) === String(selectedSubId);
+          const checked = selSubs.has(String(s.id));
+          return `<div class="cat-row${active ? " active" : ""}" data-pick-sub="${s.id}">
+            <input type="checkbox" class="check" data-sub="${s.id}" ${checked ? "checked" : ""} onclick="event.stopPropagation()">
+            <div>
+              <div class="title">${escHtml(s.name)}</div>
+              <div class="meta">${itemCount} ${escHtml(t("itemsTab"))}</div>
+            </div>
+            <div class="ops">
+              <button type="button" class="tc-btn text-danger" data-del-sub="${s.id}" title="Delete"><i class="bi bi-trash"></i></button>
+            </div>
+          </div>`;
+        }).join("");
+        subList.querySelectorAll("[data-pick-sub]").forEach((row) => {
+          row.onclick = (e) => {
+            if (e.target.closest("[data-del-sub]") || e.target.closest(".check")) return;
+            selectSubcategory(row.getAttribute("data-pick-sub"));
+          };
+        });
+        subList.querySelectorAll("[data-sub]").forEach((chk) => {
+          chk.onchange = () => {
+            const id = String(chk.getAttribute("data-sub"));
+            if (chk.checked) selSubs.add(id); else selSubs.delete(id);
+            syncBulk();
+            render();
+          };
+        });
+        subList.querySelectorAll("[data-del-sub]").forEach((btn) => {
+          btn.onclick = async (e) => {
+            e.stopPropagation();
+            if (!confirm(t("deleteSubcategoryConfirm"))) return;
+            await apiGet({ action: "deleteSubcategory", id: btn.getAttribute("data-del-sub") });
+            selSubs.delete(String(btn.getAttribute("data-del-sub")));
+            if (String(selectedSubId) === String(btn.getAttribute("data-del-sub"))) selectedSubId = null;
+            load();
+          };
+        });
+      }
+
+      // --- Items (filtered by selected subcategory) ---
+      const itemsAll = selectedSubId
+        ? itemMaster.filter((i) => String(i.subcategoryId) === String(selectedSubId))
+        : [];
+      const items = itemsAll.filter((i) => matchQ(i.name));
+      document.getElementById("countItems").textContent = String(itemsAll.length);
+      const itemList = document.getElementById("itemList");
+      if (!selectedSubId) {
+        itemList.innerHTML = `<div class="cat-empty"><i class="bi bi-hand-index"></i>${escHtml(t("pickSubcategoryHint") || "Select a subcategory")}</div>`;
+      } else if (!itemsAll.length) {
+        itemList.innerHTML = `<div class="cat-empty"><i class="bi bi-box-seam"></i>${escHtml(t("noItemsYet") || "No items yet — add one above")}</div>`;
+      } else if (!items.length) {
+        itemList.innerHTML = `<div class="cat-empty"><i class="bi bi-search"></i>${escHtml(t("noSearchResults") || "No matches")}</div>`;
+      } else {
+        itemList.innerHTML = items.map((it) => {
+          const checked = selItems.has(String(it.id));
+          return `<div class="cat-row" data-item-row="${it.id}">
+            <input type="checkbox" class="check" data-item="${it.id}" ${checked ? "checked" : ""} onclick="event.stopPropagation()">
+            <div>
+              <div class="title">${escHtml(it.name)}</div>
+            </div>
+            <div class="ops">
+              <button type="button" class="tc-btn text-danger" data-del-item="${it.id}" title="Delete"><i class="bi bi-trash"></i></button>
+            </div>
+          </div>`;
+        }).join("");
+        itemList.querySelectorAll("[data-item]").forEach((chk) => {
+          chk.onchange = () => {
+            const id = String(chk.getAttribute("data-item"));
+            if (chk.checked) selItems.add(id); else selItems.delete(id);
+            syncBulk();
+            render();
+          };
+        });
+        itemList.querySelectorAll("[data-del-item]").forEach((btn) => {
+          btn.onclick = async (e) => {
+            e.stopPropagation();
+            if (!confirm(t("deleteItemConfirm") || "Delete this item?")) return;
+            const res = await apiGet({ action: "deleteCatalogItem", id: btn.getAttribute("data-del-item") });
+            if (res && res.error === "ITEM_IN_USE") return TCUI.toast(t("itemInUse") || "Used by products", "err");
+            selItems.delete(String(btn.getAttribute("data-del-item")));
+            load();
+          };
+        });
+      }
+
+      syncBulk();
+    }
+
+    async function addCategory() {
+      const name = document.getElementById("newCatName").value.trim();
+      if (!name) return TCUI.toast(t("categoryNameRequired"), "err");
+      const res = await apiGet({ action: "upsertCategory", name });
+      if (!res || res.error || res.success === false) return TCUI.toast((res && res.error) || "Error", "err");
+      document.getElementById("newCatName").value = "";
+      TCUI.toast(t("categorySaved"), "ok");
+      await load();
+      if (res.id) selectCategory(res.id, { goMobile: false });
+      else {
+        const found = catMaster.find((c) => String(c.name).toLowerCase() === name.toLowerCase());
+        if (found) selectCategory(found.id, { goMobile: false });
+      }
+    }
+
+    async function addSubcategory() {
+      if (!selectedCatId) return TCUI.toast(t("selectCategoryFirst"), "err");
+      const name = document.getElementById("newSubName").value.trim();
+      if (!name) return TCUI.toast(t("subcategoryNameRequired"), "err");
+      const res = await apiGet({ action: "upsertSubcategory", name, categoryId: selectedCatId });
+      if (!res || res.error || res.success === false) return TCUI.toast((res && res.error) || "Error", "err");
+      document.getElementById("newSubName").value = "";
+      TCUI.toast(t("subcategorySaved"), "ok");
+      await load();
+      if (res.id) selectSubcategory(res.id, { goMobile: false });
+      else {
+        const found = subMaster.find((s) =>
+          String(s.categoryId) === String(selectedCatId) &&
+          String(s.name).toLowerCase() === name.toLowerCase()
+        );
+        if (found) selectSubcategory(found.id, { goMobile: false });
+      }
+    }
+
+    async function addItem() {
+      if (!selectedSubId) return TCUI.toast(t("selectSubcategoryFirst") || "Select a subcategory first", "err");
+      const name = document.getElementById("newItemName").value.trim();
+      if (!name) return TCUI.toast(t("itemNameRequired") || "Item name required", "err");
+      const res = await apiGet({ action: "upsertCatalogItem", name, subcategoryId: selectedSubId });
+      if (!res || res.error || res.success === false) return TCUI.toast((res && res.error) || "Error", "err");
+      document.getElementById("newItemName").value = "";
+      TCUI.toast(t("itemSaved") || "Item saved", "ok");
+      load();
+    }
+
+    async function deleteSelectedCats() {
+      const ids = [...selCats];
+      if (!ids.length) return;
+      if (!confirm(t("deleteSelectedCategoriesConfirm", { n: ids.length }))) return;
+      for (const id of ids) {
+        await apiGet({ action: "deleteCategory", id });
+        selCats.delete(id);
+        if (String(selectedCatId) === String(id)) {
+          selectedCatId = null;
+          selectedSubId = null;
+        }
+      }
+      TCUI.toast(t("bulkDeleteDone", { n: ids.length }), "ok");
+      load();
+    }
+
+    async function deleteSelectedSubs() {
+      const ids = [...selSubs];
+      if (!ids.length) return;
+      if (!confirm(t("deleteSelectedSubcategoriesConfirm", { n: ids.length }))) return;
+      for (const id of ids) {
+        await apiGet({ action: "deleteSubcategory", id });
+        selSubs.delete(id);
+        if (String(selectedSubId) === String(id)) selectedSubId = null;
+      }
+      TCUI.toast(t("bulkDeleteDone", { n: ids.length }), "ok");
+      load();
+    }
+
+    async function deleteSelectedItems() {
+      const ids = [...selItems];
+      if (!ids.length) return;
+      if (!confirm(t("deleteSelectedItemsConfirm", { n: ids.length }) || `Delete ${ids.length} items?`)) return;
+      for (const id of ids) {
+        const res = await apiGet({ action: "deleteCatalogItem", id });
+        if (res && res.error === "ITEM_IN_USE") {
+          TCUI.toast(t("itemInUse") || "Some items in use", "err");
+          continue;
+        }
+        selItems.delete(id);
+      }
+      TCUI.toast(t("bulkDeleteDone", { n: ids.length }), "ok");
+      load();
+    }
+  </script>
+</body>
+</html>

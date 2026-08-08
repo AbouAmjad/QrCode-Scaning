@@ -3,17 +3,53 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ToolCustody | Dashboard</title>
+  <title>AbouAmjad Store System | Inventory Dashboard</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="app.css">
+  <link rel="stylesheet" href="app.css?v=live">
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#1e3a5f">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <link rel="apple-touch-icon" href="icons/icon.svg">
-  <script src="config.js"></script>
-  <script src="ui.js"></script>
+  <meta name="theme-color" content="#0f766e">
+  <script src="config.js?v=live"></script>
+  <script src="i18n.js?v=live"></script>
+  <script src="ui.js?v=live"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    .dash-filters { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:1rem; }
+    .dash-filters .tc-select, .dash-filters .tc-search { min-width:140px; }
+    .dash-kpi-grid {
+      display:grid; gap:12px;
+      grid-template-columns: repeat(2, 1fr);
+      margin-bottom: 1.25rem;
+    }
+    @media (min-width: 700px) { .dash-kpi-grid { grid-template-columns: repeat(3, 1fr); } }
+    @media (min-width: 1100px) { .dash-kpi-grid { grid-template-columns: repeat(6, 1fr); } }
+    .dash-chart-wrap { position:relative; height:260px; }
+    .dash-chart-wrap.sm { height:220px; }
+    .dash-alert-list { display:flex; flex-direction:column; gap:8px; max-height:280px; overflow:auto; }
+    .dash-alert-item {
+      display:flex; justify-content:space-between; gap:10px; align-items:flex-start;
+      padding:10px 12px; border-radius:12px;
+      background: color-mix(in srgb, var(--tc-warning, #d97706) 10%, var(--tc-surface, #fff));
+      border:1px solid color-mix(in srgb, var(--tc-warning, #d97706) 28%, transparent);
+      font-size:.88rem;
+    }
+    .dash-alert-item.out {
+      background: color-mix(in srgb, var(--tc-danger, #dc2626) 10%, var(--tc-surface, #fff));
+      border-color: color-mix(in srgb, var(--tc-danger, #dc2626) 28%, transparent);
+    }
+    .dash-alert-item.ok {
+      background: color-mix(in srgb, var(--tc-success, #059669) 10%, var(--tc-surface, #fff));
+      border-color: color-mix(in srgb, var(--tc-success, #059669) 28%, transparent);
+    }
+    .dash-table-wrap { max-height:320px; overflow:auto; }
+    .status-pill {
+      display:inline-block; padding:.15rem .5rem; border-radius:999px; font-size:.72rem; font-weight:700;
+    }
+    .status-pill.low { background:#ffedd5; color:#c2410c; }
+    .status-pill.out { background:#fee2e2; color:#b91c1c; }
+    html.theme-dark .status-pill.low { background:rgba(234,88,12,.2); color:#fdba74; }
+    html.theme-dark .status-pill.out { background:rgba(220,38,38,.2); color:#fca5a5; }
+  </style>
 </head>
 <body class="tc-page">
   <div class="tc-wrap">
@@ -22,48 +58,7 @@
 
       <div id="loadingState" class="text-center py-5">
         <div class="tc-spinner mb-3"></div>
-        <div class="tc-text-muted">Loading dashboard…</div>
-      </div>
-
-      <div id="mainContent" style="display:none">
-        <div class="tc-kpi-grid mb-4">
-          <div class="tc-kpi red"><div class="label">Checked out</div><div class="value" id="kpiOut">0</div></div>
-          <div class="tc-kpi green"><div class="label">Workers today</div><div class="value" id="kpiWorkers">0</div></div>
-          <div class="tc-kpi orange"><div class="label">Warnings</div><div class="value" id="kpiWarn">0</div></div>
-          <div class="tc-kpi purple"><div class="label">Overdue tools</div><div class="value" id="kpiOverdue">0</div></div>
-        </div>
-
-        <div class="row g-4">
-          <div class="col-lg-7">
-            <div class="tc-card mb-4">
-              <span class="tc-section-badge"><i class="bi bi-exclamation-triangle"></i> Alerts</span>
-              <div id="alertsBox" class="mt-2"></div>
-            </div>
-            <div class="tc-card">
-              <span class="tc-section-badge"><i class="bi bi-search"></i> Quick lookup</span>
-              <input type="text" id="quickSearch" class="tc-search mt-2" placeholder="Tool code (I/E/C/B) or worker (P)…">
-              <div id="searchResult"></div>
-            </div>
-          </div>
-          <div class="col-lg-5">
-            <div class="tc-card mb-4">
-              <span class="tc-section-badge"><i class="bi bi-bar-chart"></i> Snapshot chart</span>
-              <canvas id="dashChart" height="120" class="mt-2 w-100"></canvas>
-            </div>
-            <div class="tc-card mb-4">
-              <span class="tc-section-badge"><i class="bi bi-trophy"></i> Top holders</span>
-              <div id="topHolders" class="mt-2"></div>
-            </div>
-            <div class="tc-card">
-              <span class="tc-section-badge"><i class="bi bi-lightning"></i> Actions</span>
-              <div class="d-grid gap-2 mt-2">
-                <button class="tc-btn tc-btn-primary" id="btnExport"><i class="bi bi-download"></i> Export CSV</button>
-                <a href="results.html" class="tc-btn text-center" id="linkResults"><i class="bi bi-box-seam"></i> Full inventory</a>
-                <a href="damage.html" class="tc-btn text-center" id="linkDamage"><i class="bi bi-exclamation-octagon"></i> Damage <span id="damageBadge" class="badge bg-danger ms-1">0</span></a>
-              </div>
-            </div>
-          </div>
-        </div>
+        <div class="tc-text-muted" data-i18n="dashLoading">Loading inventory dashboard…</div>
       </div>
 
       <div id="errorState" class="text-center py-5 text-danger" style="display:none">
@@ -71,162 +66,414 @@
         <div class="mt-2" id="errorMsg">Failed to load</div>
       </div>
 
+      <div id="mainContent" style="display:none">
+        <div class="dash-filters">
+          <select id="fDays" class="tc-select" title="Period">
+            <option value="7">7 days</option>
+            <option value="30" selected>30 days</option>
+          </select>
+          <select id="fCat" class="tc-select">
+            <option value="" data-i18n="dashAllCategories">All categories</option>
+          </select>
+          <button type="button" class="tc-btn tc-btn-primary" id="btnRefresh">
+            <i class="bi bi-arrow-clockwise"></i> <span data-i18n="refresh">Refresh</span>
+          </button>
+          <a class="tc-btn" href="requests.html"><i class="bi bi-cart3"></i> <span data-i18n="requests">Requests</span></a>
+          <a class="tc-btn" href="receiving.html"><i class="bi bi-box-arrow-in-down"></i> <span data-i18n="receiving">Receiving</span></a>
+        </div>
+
+        <div class="dash-kpi-grid">
+          <div class="tc-kpi blue"><div class="label" data-i18n="dashTotalProducts">Total products</div><div class="value" id="kTotal">0</div></div>
+          <div class="tc-kpi green"><div class="label" data-i18n="dashInStock">In stock</div><div class="value" id="kIn">0</div></div>
+          <div class="tc-kpi warn"><div class="label" data-i18n="dashLowStock">Low stock</div><div class="value" id="kLow">0</div></div>
+          <div class="tc-kpi red"><div class="label" data-i18n="dashOutOfStock">Out of stock</div><div class="value" id="kOut">0</div></div>
+          <div class="tc-kpi purple"><div class="label" data-i18n="dashInventoryValue">Inventory value</div><div class="value" id="kValue" style="font-size:1.35rem">0</div></div>
+          <div class="tc-kpi slate"><div class="label" data-i18n="dashSuppliers">Suppliers</div><div class="value" id="kSup">0</div><div class="sub"><span data-i18n="dashOrdersToday">Orders today</span>: <span id="kOrders">0</span></div></div>
+        </div>
+
+        <div class="tc-card mb-4">
+          <span class="tc-section-badge"><i class="bi bi-graph-up"></i> <span data-i18n="dashStockInOut">Stock In vs Stock Out</span></span>
+          <div class="dash-chart-wrap mt-2"><canvas id="chartMovement"></canvas></div>
+        </div>
+
+        <div class="row g-4 mb-4">
+          <div class="col-lg-6">
+            <div class="tc-card h-100">
+              <span class="tc-section-badge"><i class="bi bi-pie-chart"></i> <span data-i18n="dashByCategory">Products by category</span></span>
+              <div class="dash-chart-wrap sm mt-2"><canvas id="chartCategory"></canvas></div>
+            </div>
+          </div>
+          <div class="col-lg-6">
+            <div class="tc-card h-100">
+              <span class="tc-section-badge"><i class="bi bi-fire"></i> <span data-i18n="dashTopConsumed">Top consumed / used</span></span>
+              <div class="dash-chart-wrap sm mt-2"><canvas id="chartTop"></canvas></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tc-card mb-4">
+          <span class="tc-section-badge"><i class="bi bi-bar-chart"></i> <span data-i18n="dashMonthlyCompare">Monthly In vs Out</span></span>
+          <div class="dash-chart-wrap mt-2"><canvas id="chartMonthly"></canvas></div>
+        </div>
+
+        <div class="row g-4 mb-4">
+          <div class="col-lg-6">
+            <div class="tc-card h-100">
+              <span class="tc-section-badge"><i class="bi bi-exclamation-triangle"></i> <span data-i18n="dashAlerts">Alerts</span></span>
+              <div id="alertsBox" class="dash-alert-list mt-2"></div>
+            </div>
+          </div>
+          <div class="col-lg-6">
+            <div class="tc-card h-100">
+              <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+                <span class="tc-section-badge"><i class="bi bi-arrow-repeat"></i> <span data-i18n="dashReorder">Reorder / low stock</span></span>
+                <a class="tc-btn tc-btn-sm" href="requests.html?from=lowstock"><i class="bi bi-cart-plus"></i></a>
+              </div>
+              <div class="dash-table-wrap table-responsive">
+                <table class="table tc-table mb-0">
+                  <thead>
+                    <tr>
+                      <th data-i18n="code">Code</th>
+                      <th data-i18n="description">Product</th>
+                      <th data-i18n="qtyAvailable">Qty</th>
+                      <th data-i18n="minStock">Min</th>
+                      <th data-i18n="status">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="reorderBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-4 mb-4">
+          <div class="col-lg-6">
+            <div class="tc-card h-100">
+              <span class="tc-section-badge"><i class="bi bi-plus-square"></i> <span data-i18n="dashRecentProducts">Recently added / updated</span></span>
+              <div class="dash-table-wrap table-responsive mt-2">
+                <table class="table tc-table mb-0">
+                  <thead><tr><th data-i18n="code">Code</th><th data-i18n="description">Product</th><th data-i18n="qtyAvailable">Avail</th><th data-i18n="category">Cat</th></tr></thead>
+                  <tbody id="recentProductsBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-6">
+            <div class="tc-card h-100">
+              <span class="tc-section-badge"><i class="bi bi-clock-history"></i> <span data-i18n="dashRecentActivity">Recent inventory activities</span></span>
+              <div class="dash-table-wrap table-responsive mt-2">
+                <table class="table tc-table mb-0">
+                  <thead><tr><th data-i18n="when">Date</th><th data-i18n="code">Product</th><th data-i18n="action">Action</th><th data-i18n="qty">Qty</th></tr></thead>
+                  <tbody id="activityBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-4 mb-2">
+          <div class="col-lg-6">
+            <div class="tc-card h-100">
+              <span class="tc-section-badge"><i class="bi bi-box-arrow-in-down"></i> <span data-i18n="dashRecentReceiving">Latest receiving</span></span>
+              <div class="dash-table-wrap table-responsive mt-2">
+                <table class="table tc-table mb-0">
+                  <thead><tr><th data-i18n="when">Date</th><th data-i18n="code">Code</th><th data-i18n="qty">Qty</th><th data-i18n="supplier">Supplier</th></tr></thead>
+                  <tbody id="recvBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-6">
+            <div class="tc-card h-100">
+              <span class="tc-section-badge"><i class="bi bi-cart3"></i> <span data-i18n="dashPendingRequests">Pending requests</span></span>
+              <div class="dash-table-wrap table-responsive mt-2">
+                <table class="table tc-table mb-0">
+                  <thead><tr><th>#</th><th data-i18n="by">By</th><th data-i18n="status">Status</th><th data-i18n="note">Note</th></tr></thead>
+                  <tbody id="reqBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="tc-footer">
-        <span><span class="tc-live-dot"></span> Auto-refresh every 30s</span>
-        <span>Updated: <strong id="lastUpdate">—</strong></span>
+        <span><span class="tc-live-dot"></span> <span data-i18n="dashAutoRefresh">Auto-refresh every 60s</span></span>
+        <span><span data-i18n="updated">Updated</span>: <strong id="lastUpdate">—</strong></span>
       </div>
     </div>
   </div>
 
-  <script src="parser.js"></script>
   <script>
-    let activeDate = "", lastRows = [], lastOverview = null, refreshTimer = null;
+    let charts = {};
+    let refreshTimer = null;
+    let lastPayload = null;
 
     document.addEventListener("DOMContentLoaded", () => TCUI.bootPage(() => {
       TCUI.mountHeader("app-header", {
         active: "dashboard",
-        title: "Dashboard",
-        subtitle: "Live operations center",
-        icon: "bi-speedometer2",
-        toolbar: `
-          <select id="dateSelect" class="tc-select" style="min-width:200px"></select>
-          <button class="tc-btn tc-btn-primary" id="btnRefresh"><i class="bi bi-arrow-clockwise"></i> Refresh</button>
-        `
+        titleKey: "dashboard",
+        subtitleKey: "dashboardSub",
+        icon: "bi-speedometer2"
       });
-      init();
+      document.getElementById("btnRefresh").onclick = () => load(true);
+      document.getElementById("fDays").onchange = () => load(true);
+      document.getElementById("fCat").onchange = () => load(true);
+      load(true);
+      refreshTimer = setInterval(() => load(false), 60000);
     }, { pageId: "dashboard" }));
 
-    async function loadDashboard(date) {
-      activeDate = date;
-      document.getElementById("loadingState").style.display = "block";
-      document.getElementById("mainContent").style.display = "none";
-      document.getElementById("errorState").style.display = "none";
-
+    function money(n) {
+      const v = Number(n) || 0;
       try {
-        const data = await apiGet({ action: "getData", date });
-        if (data && data.error) throw new Error(data.error);
-        lastRows = data;
-        const dash = CustodyParser.parseDashboard(data, date);
-        lastOverview = dash;
-
-        document.getElementById("kpiOut").textContent = dash.totalOut;
-        document.getElementById("kpiWorkers").textContent = dash.totalWorkers;
-        document.getElementById("kpiWarn").textContent = dash.warnings;
-        document.getElementById("kpiOverdue").textContent = dash.overdueCount;
-
-        const canvas = document.getElementById("dashChart");
-        if (canvas && canvas.getContext) {
-          const ctx = canvas.getContext("2d");
-          const w = canvas.width = canvas.clientWidth || 320;
-          const h = canvas.height = 120;
-          ctx.clearRect(0, 0, w, h);
-          const vals = [
-            { label: "Out", v: dash.totalOut || 0, c: "#dc2626" },
-            { label: "Workers", v: dash.totalWorkers || 0, c: "#16a34a" },
-            { label: "Warn", v: dash.warnings || 0, c: "#ea580c" },
-            { label: "Overdue", v: dash.overdueCount || 0, c: "#7c3aed" }
-          ];
-          const max = Math.max(1, ...vals.map(x => x.v));
-          const barW = w / (vals.length * 2);
-          vals.forEach((x, i) => {
-            const bh = (x.v / max) * (h - 28);
-            const x0 = barW + i * barW * 2;
-            ctx.fillStyle = x.c;
-            ctx.fillRect(x0, h - 18 - bh, barW, bh);
-            ctx.fillStyle = "#64748b";
-            ctx.font = "11px sans-serif";
-            ctx.fillText(x.label, x0, h - 4);
-          });
-        }
-
-        const alertsBox = document.getElementById("alertsBox");
-        if (dash.allClear) {
-          alertsBox.innerHTML = `<div class="tc-alert ok"><i class="bi bi-check-circle-fill"></i><span>All clear — every tool is back in store.</span></div>`;
-        } else if (!dash.alerts.length) {
-          alertsBox.innerHTML = `<div class="tc-alert ok"><i class="bi bi-info-circle"></i><span>${dash.totalOut} tool(s) out — no critical warnings.</span></div>`;
-        } else {
-          alertsBox.innerHTML = dash.alerts.map(a => {
-            const cls = a.type === "overdue" ? "overdue" : a.type === "error" ? "error" : "warn";
-            const icon = a.type === "overdue" ? "bi-clock-history" : "bi-exclamation-triangle-fill";
-            return `<div class="tc-alert ${cls}"><i class="bi ${icon}"></i><span>${escHtml(a.text)}</span></div>`;
-          }).join("");
-        }
-
-        const topDiv = document.getElementById("topHolders");
-        if (!dash.topHolders.length) {
-          topDiv.innerHTML = `<div class="tc-text-muted small">No tools currently held</div>`;
-        } else {
-          topDiv.innerHTML = dash.topHolders.map((h, i) => `
-            <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
-              <span><strong>#${i + 1}</strong> ${escHtml(h.name)}</span>
-              <span class="badge bg-danger">${h.qty} tool(s)</span>
-            </div>`).join("");
-        }
-
-        try {
-          const dmg = await apiGet({ action: "getDamage", date });
-          const items = (dmg && dmg.items) ? dmg.items : [];
-          const badge = document.getElementById("damageBadge");
-          if (badge) badge.textContent = items.length;
-        } catch { /* optional */ }
-
-        document.getElementById("lastUpdate").textContent = new Date().toLocaleTimeString();
-        document.getElementById("loadingState").style.display = "none";
-        document.getElementById("mainContent").style.display = "block";
-      } catch (e) {
-        document.getElementById("loadingState").style.display = "none";
-        document.getElementById("errorState").style.display = "block";
-        document.getElementById("errorMsg").textContent = e.message;
+        return new Intl.NumberFormat(undefined, { maximumFractionDigits: 0 }).format(v);
+      } catch (_) {
+        return String(Math.round(v));
       }
     }
 
-    document.getElementById("quickSearch").addEventListener("input", e => {
-      const q = e.target.value.trim();
-      const box = document.getElementById("searchResult");
-      if (!q || !lastRows.length) { box.innerHTML = ""; return; }
-      const hit = CustodyParser.lookupTool(lastRows, q);
-      if (!hit) {
-        box.innerHTML = `<div class="tc-card mt-2 tc-text-muted small"><i class="bi bi-search"></i> No match for "${escHtml(q.toUpperCase())}"</div>`;
+    function statusPill(st) {
+      if (st === "out") return `<span class="status-pill out">${escHtml(t("dashOutOfStock") || "Out")}</span>`;
+      return `<span class="status-pill low">${escHtml(t("dashLowStock") || "Low")}</span>`;
+    }
+
+    function chartColors() {
+      const dark = document.documentElement.classList.contains("theme-dark");
+      return {
+        grid: dark ? "rgba(148,163,184,.2)" : "rgba(100,116,139,.2)",
+        text: dark ? "#cbd5e1" : "#475569",
+        in: "#059669",
+        out: "#dc2626",
+        palette: ["#0f766e", "#2563eb", "#d97706", "#7c3aed", "#db2777", "#0891b2", "#65a30d", "#ea580c"]
+      };
+    }
+
+    function destroyChart(key) {
+      if (charts[key]) {
+        charts[key].destroy();
+        charts[key] = null;
+      }
+    }
+
+    function renderCharts(data) {
+      if (typeof Chart === "undefined") return;
+      const c = chartColors();
+      const commonOpts = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { labels: { color: c.text } } },
+        scales: {
+          x: { ticks: { color: c.text, maxRotation: 0 }, grid: { color: c.grid } },
+          y: { beginAtZero: true, ticks: { color: c.text }, grid: { color: c.grid } }
+        }
+      };
+
+      destroyChart("movement");
+      charts.movement = new Chart(document.getElementById("chartMovement"), {
+        type: "line",
+        data: {
+          labels: (data.movement || []).map((x) => String(x.date).slice(5)),
+          datasets: [
+            { label: t("dashStockIn") || "Stock In", data: (data.movement || []).map((x) => x.stockIn), borderColor: c.in, backgroundColor: "rgba(5,150,105,.15)", tension: .3, fill: true },
+            { label: t("dashStockOut") || "Stock Out", data: (data.movement || []).map((x) => x.stockOut), borderColor: c.out, backgroundColor: "rgba(220,38,38,.12)", tension: .3, fill: true }
+          ]
+        },
+        options: commonOpts
+      });
+
+      destroyChart("monthly");
+      charts.monthly = new Chart(document.getElementById("chartMonthly"), {
+        type: "bar",
+        data: {
+          labels: (data.monthly || []).map((x) => x.month),
+          datasets: [
+            { label: t("dashStockIn") || "Stock In", data: (data.monthly || []).map((x) => x.stockIn), backgroundColor: c.in },
+            { label: t("dashStockOut") || "Stock Out", data: (data.monthly || []).map((x) => x.stockOut), backgroundColor: c.out }
+          ]
+        },
+        options: commonOpts
+      });
+
+      destroyChart("category");
+      const cats = (data.byCategory || []).slice(0, 8);
+      charts.category = new Chart(document.getElementById("chartCategory"), {
+        type: "doughnut",
+        data: {
+          labels: cats.map((x) => x.category),
+          datasets: [{
+            data: cats.map((x) => x.products),
+            backgroundColor: cats.map((_, i) => c.palette[i % c.palette.length])
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: "right", labels: { color: c.text, boxWidth: 12 } } }
+        }
+      });
+
+      destroyChart("top");
+      const top = (data.topConsumed || []).slice(0, 8);
+      charts.top = new Chart(document.getElementById("chartTop"), {
+        type: "bar",
+        data: {
+          labels: top.map((x) => x.code),
+          datasets: [{
+            label: t("dashUsedQty") || "Used qty",
+            data: top.map((x) => x.qty),
+            backgroundColor: "#7c3aed"
+          }]
+        },
+        options: {
+          ...commonOpts,
+          indexAxis: "y",
+          plugins: { legend: { display: false } }
+        }
+      });
+    }
+
+    function renderAlerts(data) {
+      const box = document.getElementById("alertsBox");
+      const parts = [];
+      const reorder = (data.alerts && data.alerts.reorder) || [];
+      const pending = (data.alerts && data.alerts.pendingRequests) || [];
+      const stagnant = (data.alerts && data.alerts.stagnant) || [];
+      const expiring = (data.alerts && data.alerts.expiring) || [];
+
+      reorder.slice(0, 6).forEach((i) => {
+        parts.push(`<div class="dash-alert-item ${i.status === "out" ? "out" : ""}">
+          <div><strong>${escHtml(i.code)}</strong> · ${escHtml(i.description || "")}
+            <div class="small tc-text-muted">${escHtml(t("qtyAvailable") || "Avail")} ${escHtml(i.available)} / ${escHtml(t("minStock") || "Min")} ${escHtml(i.minStock)}</div>
+          </div>${statusPill(i.status)}</div>`);
+      });
+      pending.slice(0, 4).forEach((r) => {
+        parts.push(`<div class="dash-alert-item">
+          <div><strong>#${escHtml(r.id)}</strong> · ${escHtml(r.byUser || "")}
+            <div class="small tc-text-muted">${escHtml(r.note || r.status || "")}</div>
+          </div><a class="tc-btn tc-btn-sm" href="requests.html">→</a></div>`);
+      });
+      stagnant.slice(0, 4).forEach((i) => {
+        parts.push(`<div class="dash-alert-item">
+          <div><strong>${escHtml(i.code)}</strong> · ${escHtml(i.description || "")}
+            <div class="small tc-text-muted">${escHtml(t("dashNoMovement") || "No movement 90+ days")} · qty ${escHtml(i.available)}</div>
+          </div></div>`);
+      });
+      expiring.slice(0, 4).forEach((i) => {
+        parts.push(`<div class="dash-alert-item ${i.daysLeft < 0 ? "out" : ""}">
+          <div><strong>${escHtml(i.code)}</strong> · ${escHtml(i.description || "")}
+            <div class="small tc-text-muted">${escHtml(t("dashCalibrationDue") || "Calibration due")} · ${escHtml(i.daysLeft)}d</div>
+          </div></div>`);
+      });
+
+      if (!parts.length) {
+        box.innerHTML = `<div class="dash-alert-item ok"><i class="bi bi-check-circle"></i> <span>${escHtml(t("dashAllClear") || "All clear — no critical inventory alerts.")}</span></div>`;
         return;
       }
-      if (hit.type === "tool") {
-        box.innerHTML = `<div class="tc-card mt-2">
-          <div class="fw-bold">${escHtml(hit.code)} — ${escHtml(hit.description)}</div>
-          <div class="small tc-text-muted mt-1">${hit.qty > 0 ? "OUT · " + hit.holderNames.join(", ") : "In store"}</div>
-          <a href="tool.html?code=${encodeURIComponent(hit.code)}&date=${encodeURIComponent(activeDate)}" class="tc-btn tc-btn-primary tc-btn-sm mt-2">View history</a>
-        </div>`;
-      } else {
-        const cnt = hit.toolsHeld.reduce((s, t) => s + t.qty, 0);
-        box.innerHTML = `<div class="tc-card mt-2">
-          <div class="fw-bold">${escHtml(hit.name)} (${escHtml(hit.code)})</div>
-          <div class="small tc-text-muted mt-1">${cnt} tool(s) held</div>
-          <a href="worker.html?code=${encodeURIComponent(hit.code)}&date=${encodeURIComponent(activeDate)}" class="tc-btn tc-btn-primary tc-btn-sm mt-2">View profile</a>
-        </div>`;
+      box.innerHTML = parts.join("");
+    }
+
+    function emptyRow(cols, msg) {
+      return `<tr><td colspan="${cols}" class="tc-text-muted text-center">${escHtml(msg || t("noRows") || "No data")}</td></tr>`;
+    }
+
+    function renderTables(data) {
+      const reorder = (data.tables && data.tables.reorderList) || [];
+      document.getElementById("reorderBody").innerHTML = reorder.length
+        ? reorder.slice(0, 25).map((i) => `<tr>
+            <td><strong>${escHtml(i.code)}</strong></td>
+            <td>${escHtml(i.description || "")}</td>
+            <td>${escHtml(i.available)}</td>
+            <td>${escHtml(i.minStock)}</td>
+            <td>${statusPill(i.status)}</td>
+          </tr>`).join("")
+        : emptyRow(5, t("lowStockEmpty"));
+
+      const products = (data.tables && data.tables.recentProducts) || [];
+      document.getElementById("recentProductsBody").innerHTML = products.length
+        ? products.map((i) => `<tr>
+            <td><strong>${escHtml(i.code)}</strong></td>
+            <td>${escHtml(i.description || "")}</td>
+            <td>${escHtml(i.available)}</td>
+            <td>${escHtml(i.category || "—")}</td>
+          </tr>`).join("")
+        : emptyRow(4);
+
+      const acts = (data.tables && data.tables.recentActivities) || [];
+      document.getElementById("activityBody").innerHTML = acts.length
+        ? acts.map((a) => `<tr>
+            <td><small>${escHtml(formatDisplayDateTime(a.date))}</small></td>
+            <td><strong>${escHtml(a.code || "")}</strong></td>
+            <td>${escHtml(a.action || "")}</td>
+            <td>${escHtml(a.qty != null ? a.qty : 1)}</td>
+          </tr>`).join("")
+        : emptyRow(4);
+
+      const recv = (data.tables && data.tables.recentReceiving) || [];
+      document.getElementById("recvBody").innerHTML = recv.length
+        ? recv.map((r) => `<tr>
+            <td><small>${escHtml(formatDisplayDateTime(r.date))}</small></td>
+            <td><strong>${escHtml(r.code || "")}</strong></td>
+            <td>${escHtml(r.qty)}</td>
+            <td>${escHtml(r.supplier || "—")}</td>
+          </tr>`).join("")
+        : emptyRow(4);
+
+      const reqs = (data.tables && data.tables.recentRequests) || [];
+      document.getElementById("reqBody").innerHTML = reqs.length
+        ? reqs.map((r) => `<tr>
+            <td><a href="requests.html">#${escHtml(r.id)}</a></td>
+            <td>${escHtml(r.byUser || "")}</td>
+            <td>${escHtml(r.status || "")}</td>
+            <td>${escHtml(r.note || "—")}</td>
+          </tr>`).join("")
+        : emptyRow(4, t("noRequestsYet") || "No pending requests");
+    }
+
+    async function load(showLoading) {
+      const days = document.getElementById("fDays").value || 30;
+      const category = document.getElementById("fCat").value || "";
+      if (showLoading) {
+        document.getElementById("loadingState").style.display = "block";
+        document.getElementById("mainContent").style.display = "none";
+        document.getElementById("errorState").style.display = "none";
       }
-    });
+      try {
+        const data = await apiGet({ action: "getInventoryDashboard", days, category });
+        if (!data || data.error) throw new Error((data && data.error) || "Failed");
+        lastPayload = data;
 
-    document.getElementById("btnExport").addEventListener("click", () => {
-      if (lastOverview) CustodyParser.exportCsv(lastOverview.tools, activeDate);
-    });
+        const sel = document.getElementById("fCat");
+        const cur = sel.value;
+        const cats = data.categories || [];
+        sel.innerHTML = `<option value="">${escHtml(t("dashAllCategories") || "All categories")}</option>` +
+          cats.map((c) => `<option value="${escHtml(c)}">${escHtml(c)}</option>`).join("");
+        if (cats.includes(cur)) sel.value = cur;
 
-    document.getElementById("btnRefresh").addEventListener("click", () => {
-      const d = document.getElementById("dateSelect").value;
-      if (d) loadDashboard(d);
-    });
+        const k = data.kpis || {};
+        document.getElementById("kTotal").textContent = String(k.totalProducts || 0);
+        document.getElementById("kIn").textContent = String(k.inStock || 0);
+        document.getElementById("kLow").textContent = String(k.lowStock || 0);
+        document.getElementById("kOut").textContent = String(k.outOfStock || 0);
+        document.getElementById("kValue").textContent = money(k.inventoryValue || 0);
+        document.getElementById("kSup").textContent = String(k.suppliers || 0);
+        document.getElementById("kOrders").textContent = String(k.ordersToday || 0);
 
-    async function init() {
-      const dates = await loadDateOptions(document.getElementById("dateSelect"));
-      if (dates.length) {
-        document.getElementById("dateSelect").value = dates[0];
-        await loadDashboard(dates[0]);
+        renderCharts(data);
+        renderAlerts(data);
+        renderTables(data);
+
+        document.getElementById("lastUpdate").textContent = new Date().toLocaleTimeString();
+        document.getElementById("loadingState").style.display = "none";
+        document.getElementById("errorState").style.display = "none";
+        document.getElementById("mainContent").style.display = "block";
+        if (typeof TCI18N !== "undefined") TCI18N.applyDocumentLang();
+      } catch (e) {
+        document.getElementById("loadingState").style.display = "none";
+        document.getElementById("mainContent").style.display = "none";
+        document.getElementById("errorState").style.display = "block";
+        document.getElementById("errorMsg").textContent = e.message || String(e);
       }
-      document.getElementById("dateSelect").addEventListener("change", e => {
-        if (e.target.value) loadDashboard(e.target.value);
-      });
-      refreshTimer = setInterval(() => {
-        const d = document.getElementById("dateSelect").value;
-        if (d) loadDashboard(d);
-      }, AppConfig.DASHBOARD_REFRESH_MS);
     }
   </script>
 </body>

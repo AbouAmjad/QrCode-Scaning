@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AbouAmjad Store System | QC / Calibration</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="app.css?v=live">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f766e">
+  <script src="config.js?v=live"></script>
+  <script src="i18n.js?v=live"></script>
+  <script src="ui.js?v=live"></script>
+  <style>
+    .qc-kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:.75rem;margin-bottom:1rem}
+    @media(min-width:800px){.qc-kpis{grid-template-columns:repeat(4,1fr)}}
+    .qc-kpi{
+      background:var(--tc-surface);border:1px solid var(--tc-border);border-radius:14px;
+      padding:.9rem 1rem;position:relative;overflow:hidden;
+    }
+    .qc-kpi::before{content:"";position:absolute;inset:0 auto 0 0;width:4px;background:var(--tc-accent)}
+    .qc-kpi.overdue::before{background:#dc2626}
+    .qc-kpi.due::before{background:#d97706}
+    .qc-kpi.ok::before{background:#16a34a}
+    .qc-kpi .k{font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--tc-muted)}
+    .qc-kpi .v{font-size:1.65rem;font-weight:800;line-height:1.15;margin-top:.15rem}
+    .qc-filters{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.85rem}
+    .qc-filters button{
+      border:1px solid var(--tc-border);background:var(--tc-surface-2);color:var(--tc-muted);
+      font-weight:700;font-size:.75rem;padding:.4rem .75rem;border-radius:999px;cursor:pointer;
+    }
+    .qc-filters button.active{background:var(--tc-accent);color:#fff;border-color:transparent}
+    .qc-status{
+      display:inline-flex;align-items:center;gap:.3rem;font-size:.72rem;font-weight:800;
+      padding:.2rem .55rem;border-radius:999px;text-transform:uppercase;letter-spacing:.04em;
+    }
+    .qc-status.overdue{background:#fee2e2;color:#991b1b}
+    .qc-status.dueSoon{background:#ffedd5;color:#9a3412}
+    .qc-status.ok{background:#dcfce7;color:#166534}
+    .qc-status.missingDue{background:#e2e8f0;color:#475569}
+    .qc-modal{
+      position:fixed;inset:0;z-index:80;display:none;align-items:center;justify-content:center;
+      padding:1rem;background:rgba(15,23,42,.55);
+    }
+    .qc-modal.open{display:flex}
+    .qc-modal-box{
+      width:min(420px,100%);background:var(--tc-surface);border:1px solid var(--tc-border);
+      border-radius:16px;padding:1.1rem 1.15rem;box-shadow:0 24px 60px -28px rgba(0,0,0,.5);
+    }
+    .qc-modal-box h3{margin:0 0 .85rem;font-size:1rem;font-weight:800}
+    .qc-table td,.qc-table th{vertical-align:middle}
+    .qc-alert-banner{
+      display:none;align-items:center;gap:.65rem;flex-wrap:wrap;
+      padding:.7rem .9rem;margin-bottom:1rem;border-radius:12px;
+      background:color-mix(in srgb,#dc2626 12%,var(--tc-surface));
+      border:1px solid color-mix(in srgb,#dc2626 35%,var(--tc-border));
+      font-size:.85rem;font-weight:600;
+    }
+    .qc-alert-banner.show{display:flex}
+  </style>
+</head>
+<body class="tc-page">
+  <div class="tc-wrap">
+    <div class="tc-shell">
+      <div id="app-header"></div>
+
+      <div class="qc-alert-banner" id="alertBanner">
+        <i class="bi bi-exclamation-triangle-fill" style="color:#dc2626"></i>
+        <span id="alertText"></span>
+      </div>
+
+      <div class="qc-kpis">
+        <div class="qc-kpi overdue"><div class="k" data-i18n="qcOverdue">Overdue</div><div class="v" id="kOverdue">0</div></div>
+        <div class="qc-kpi due"><div class="k" data-i18n="qcDueSoon">Due soon</div><div class="v" id="kDue">0</div></div>
+        <div class="qc-kpi ok"><div class="k" data-i18n="qcOk">OK</div><div class="v" id="kOk">0</div></div>
+        <div class="qc-kpi"><div class="k" data-i18n="qcTotal">Calibration tools</div><div class="v" id="kTotal">0</div></div>
+      </div>
+
+      <div class="tc-card">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+          <span class="tc-section-badge"><i class="bi bi-clipboard2-pulse"></i> <span data-i18n="qcPage">Quality Control</span></span>
+          <button type="button" class="tc-btn tc-btn-sm" id="btnRefresh"><i class="bi bi-arrow-clockwise"></i></button>
+        </div>
+        <div class="qc-filters" id="filters">
+          <button type="button" class="active" data-filter="all" data-i18n="all">All</button>
+          <button type="button" data-filter="overdue" data-i18n="qcOverdue">Overdue</button>
+          <button type="button" data-filter="dueSoon" data-i18n="qcDueSoon">Due soon</button>
+          <button type="button" data-filter="ok" data-i18n="qcOk">OK</button>
+        </div>
+        <div class="table-responsive">
+          <table class="tc-table qc-table mb-0">
+            <thead>
+              <tr>
+                <th data-i18n="code">Code</th>
+                <th data-i18n="description">Description</th>
+                <th data-i18n="qcLastDone">Last done</th>
+                <th data-i18n="qcNextDueDate">Next due</th>
+                <th data-i18n="qcDaysLeft">Days left</th>
+                <th data-i18n="status">Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="listBody">
+              <tr><td colspan="7" class="tc-text-muted text-center py-3" data-i18n="loading">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="qc-modal" id="calModal" aria-hidden="true">
+    <div class="qc-modal-box">
+      <h3 data-i18n="qcRecordCal">Record calibration</h3>
+      <div class="small tc-text-muted mb-2" id="calCodeLabel"></div>
+      <div class="tc-field">
+        <label data-i18n="qcLastDone">Last done</label>
+        <input type="date" id="calLastDone" class="form-control">
+      </div>
+      <div class="tc-field">
+        <label data-i18n="qcNextDueDate">Next due date</label>
+        <input type="date" id="calNextDue" class="form-control" required>
+      </div>
+      <div class="tc-field">
+        <label data-i18n="note">Note</label>
+        <input type="text" id="calNotes" class="form-control" data-i18n-placeholder="qcNotesPh" placeholder="Certificate / lab / remarks">
+      </div>
+      <div class="d-flex gap-2 mt-3">
+        <button type="button" class="tc-btn tc-btn-primary flex-grow-1" id="btnSaveCal">
+          <i class="bi bi-check2"></i> <span data-i18n="save">Save</span>
+        </button>
+        <button type="button" class="tc-btn" id="btnCloseCal" data-i18n="close">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => TCUI.bootPage(async () => {
+      TCUI.mountHeader("app-header", {
+        active: "qc",
+        titleKey: "qcPage",
+        subtitleKey: "qcPageSub",
+        icon: "bi-clipboard2-pulse"
+      });
+
+      const t = (k, fb) => (typeof TCI18N !== "undefined" ? TCI18N.t(k) : (fb || k));
+      const canManage = typeof can === "function" ? can("qc.manage") : true;
+      let filter = "all";
+      let editingCode = "";
+
+      function todayISO() {
+        return new Date().toISOString().slice(0, 10);
+      }
+
+      function addMonths(iso, months) {
+        const d = new Date(iso + "T12:00:00");
+        d.setMonth(d.getMonth() + months);
+        return d.toISOString().slice(0, 10);
+      }
+
+      function statusBadge(status) {
+        const map = {
+          overdue: t("qcOverdue", "Overdue"),
+          dueSoon: t("qcDueSoon", "Due soon"),
+          ok: t("qcOk", "OK"),
+          missingDue: t("qcMissingDue", "No due date")
+        };
+        return `<span class="qc-status ${status}">${map[status] || status}</span>`;
+      }
+
+      function daysLabel(n) {
+        if (n == null) return "—";
+        if (n < 0) return String(n);
+        return String(n);
+      }
+
+      async function load() {
+        const data = await apiGet({ action: "listQcItems", status: filter });
+        const summary = (data && data.summary) || {};
+        document.getElementById("kOverdue").textContent = String(summary.overdue || 0);
+        document.getElementById("kDue").textContent = String(summary.dueSoon || 0);
+        document.getElementById("kOk").textContent = String(summary.ok || 0);
+        document.getElementById("kTotal").textContent = String(summary.total || 0);
+
+        const alerts = (summary.overdue || 0) + (summary.dueSoon || 0);
+        const banner = document.getElementById("alertBanner");
+        if (alerts > 0) {
+          banner.classList.add("show");
+          document.getElementById("alertText").textContent =
+            t("qcAlertBanner", "{n} tool(s) need calibration attention").replace("{n}", String(alerts));
+        } else {
+          banner.classList.remove("show");
+        }
+
+        if (typeof TCUI.refreshQcBadge === "function") TCUI.refreshQcBadge(summary);
+
+        const items = (data && data.items) || [];
+        const body = document.getElementById("listBody");
+        if (!items.length) {
+          body.innerHTML = `<tr><td colspan="7" class="tc-text-muted text-center py-3">${t("qcEmpty", "No calibration tools in this filter.")}</td></tr>`;
+          return;
+        }
+        body.innerHTML = items.map((row) => {
+          const action = canManage
+            ? `<button type="button" class="tc-btn tc-btn-sm" data-cal="${escHtml(row.code)}"><i class="bi bi-clipboard-check"></i> ${t("qcRecordCal", "Record")}</button>`
+            : "";
+          return `<tr>
+            <td><strong>${escHtml(row.code)}</strong></td>
+            <td>${escHtml(row.description)}</td>
+            <td>${escHtml(row.calibrationLastDone || "—")}</td>
+            <td>${escHtml(row.calibrationNextDue || "—")}</td>
+            <td>${daysLabel(row.daysLeft)}</td>
+            <td>${statusBadge(row.status)}</td>
+            <td class="text-end">${action}</td>
+          </tr>`;
+        }).join("");
+
+        body.querySelectorAll("[data-cal]").forEach((btn) => {
+          btn.addEventListener("click", () => openModal(btn.getAttribute("data-cal"), items));
+        });
+      }
+
+      function openModal(code, items) {
+        const row = (items || []).find((i) => i.code === code) || { code };
+        editingCode = code;
+        document.getElementById("calCodeLabel").textContent =
+          `${row.code} — ${row.description || ""}`;
+        document.getElementById("calLastDone").value = todayISO();
+        document.getElementById("calNextDue").value = addMonths(todayISO(), 12);
+        document.getElementById("calNotes").value = row.calibrationNotes || "";
+        document.getElementById("calModal").classList.add("open");
+        document.getElementById("calModal").setAttribute("aria-hidden", "false");
+      }
+
+      function closeModal() {
+        document.getElementById("calModal").classList.remove("open");
+        document.getElementById("calModal").setAttribute("aria-hidden", "true");
+        editingCode = "";
+      }
+
+      async function saveCal() {
+        const nextDue = document.getElementById("calNextDue").value;
+        const lastDone = document.getElementById("calLastDone").value || todayISO();
+        const notes = document.getElementById("calNotes").value.trim();
+        if (!editingCode || !nextDue) {
+          TCUI.toast(t("qcDueRequired", "Next due date is required"), "err");
+          return;
+        }
+        const btn = document.getElementById("btnSaveCal");
+        btn.disabled = true;
+        try {
+          const data = await apiGet({
+            action: "recordCalibration",
+            code: editingCode,
+            calibrationLastDone: lastDone,
+            calibrationNextDue: nextDue,
+            notes
+          });
+          if (!data || !data.success) throw new Error((data && data.error) || "FAILED");
+          TCUI.toast(t("qcSaved", "Calibration recorded"), "ok");
+          closeModal();
+          await load();
+        } catch (e) {
+          TCUI.toast(t("error", "Error") + ": " + (e.message || e), "err");
+        } finally {
+          btn.disabled = false;
+        }
+      }
+
+      document.querySelectorAll("#filters button").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          filter = btn.getAttribute("data-filter") || "all";
+          document.querySelectorAll("#filters button").forEach((b) => b.classList.toggle("active", b === btn));
+          load().catch(() => {});
+        });
+      });
+      document.getElementById("btnRefresh").onclick = () => load().catch(() => {});
+      document.getElementById("btnCloseCal").onclick = closeModal;
+      document.getElementById("btnSaveCal").onclick = saveCal;
+      document.getElementById("calModal").addEventListener("click", (e) => {
+        if (e.target.id === "calModal") closeModal();
+      });
+
+      await load();
+    }, { pageId: "qc", permission: "qc.view" }));
+  </script>
+</body>
+</html>

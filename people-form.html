@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>AbouAmjad Store System | Add Person</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="app.css?v=live">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f766e">
+  <script src="config.js?v=live"></script>
+  <script src="i18n.js?v=live"></script>
+  <script src="ui.js?v=live"></script>
+  <style>
+    .pf-page { font-family: "Plus Jakarta Sans", system-ui, sans-serif; }
+    .pf-page .pf-wrap { max-width: 720px; margin: 0 auto; }
+    .pf-page .pp-panel {
+      background: var(--tc-surface); border: 1px solid var(--tc-border); border-radius: 18px;
+      box-shadow: 0 14px 36px -24px rgba(20,32,51,.4); overflow: hidden;
+    }
+    .pf-page .pp-panel-head {
+      display: flex; align-items: center; justify-content: space-between; gap: .75rem; flex-wrap: wrap;
+      padding: 1rem 1.15rem; background: var(--tc-head-grad); border-bottom: 1px solid var(--tc-border);
+    }
+    .pf-page .pp-panel-head h2 {
+      margin: 0; font-size: 1rem; font-weight: 800; display: flex; align-items: center; gap: .45rem;
+    }
+    .pf-page .pp-panel-head h2 i { color: var(--tc-accent); }
+    .pf-page .pp-panel-body { padding: 1.25rem; }
+    .pf-page .pp-mode {
+      font-size: .72rem; font-weight: 700; padding: .28rem .65rem; border-radius: 999px;
+      background: var(--tc-accent-soft); color: var(--tc-accent-2);
+    }
+    .pf-page .pp-mode.edit { background: var(--tc-warn-bg); color: #c2410c; }
+    .pf-page .pp-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: .85rem; }
+    @media (max-width: 640px) { .pf-page .pp-grid-2 { grid-template-columns: 1fr; } }
+    .pf-page .pp-hint { font-size: .75rem; color: var(--tc-muted); margin: .35rem 0 0; }
+    .pf-page .pp-actions { display: grid; gap: .55rem; margin-top: .5rem; }
+
+    .pf-page .photo-card {
+      border-radius: 16px; overflow: hidden; margin-bottom: 1.15rem;
+      border: 1px solid var(--tc-border);
+      background:
+        radial-gradient(120% 90% at 0% 0%, rgba(15, 118, 110, .12), transparent 55%),
+        var(--tc-surface-2);
+      padding: 1rem 1.05rem 1.05rem;
+    }
+    .pf-page .photo-card-top {
+      display: flex; align-items: center; justify-content: space-between; gap: .5rem; margin-bottom: .85rem;
+    }
+    .pf-page .photo-card-top h3 {
+      margin: 0; font-size: .9rem; font-weight: 800; display: flex; align-items: center; gap: .4rem;
+    }
+    .pf-page .photo-card-top h3 i { color: var(--tc-accent); }
+    .pf-page .photo-badge {
+      font-size: .65rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase;
+      padding: .22rem .55rem; border-radius: 999px; background: var(--tc-accent-soft); color: var(--tc-accent-2);
+    }
+    .pf-page .photo-badge.has { background: #dcfce7; color: #166534; }
+    .pf-page .photo-body {
+      display: grid; grid-template-columns: 112px 1fr; gap: .9rem; align-items: center;
+    }
+    @media (max-width: 480px) {
+      .pf-page .photo-body { grid-template-columns: 1fr; justify-items: center; text-align: center; }
+    }
+    .pf-page .photo-frame {
+      width: 112px; height: 140px; border-radius: 14px; overflow: hidden;
+      background: #0f172a; border: 1px solid var(--tc-border);
+      display: grid; place-items: center; position: relative;
+    }
+    .pf-page .photo-frame img {
+      width: 100%; height: 100%; object-fit: cover; display: none;
+    }
+    .pf-page .photo-frame img.show { display: block; }
+    .pf-page .photo-frame .empty {
+      color: #94a3b8; text-align: center; font-size: .72rem; font-weight: 600; padding: .35rem;
+    }
+    .pf-page .photo-frame .empty i { display: block; font-size: 1.6rem; margin-bottom: .25rem; }
+    .pf-page .photo-actions {
+      display: flex; flex-wrap: wrap; gap: .45rem;
+    }
+    .pf-page .photo-actions .tc-btn { min-height: 42px; }
+    .pf-page .photo-hint {
+      margin: .55rem 0 0; font-size: .75rem; color: var(--tc-muted); line-height: 1.4;
+    }
+  </style>
+</head>
+<body class="tc-page pf-page">
+  <div class="tc-wrap">
+    <div class="tc-shell">
+      <div id="app-header"></div>
+      <div class="pf-wrap">
+        <section class="pp-panel">
+          <div class="pp-panel-head">
+            <h2><i class="bi bi-person-plus"></i> <span id="formTitle" data-i18n="addPersonBtn">Add person</span></h2>
+            <div class="d-flex align-items-center gap-2">
+              <span class="pp-mode" id="formMode" data-i18n="modeNew">New</span>
+              <a class="tc-btn" href="people.html"><i class="bi bi-arrow-left"></i> <span data-i18n="backToPeople">Back</span></a>
+            </div>
+          </div>
+          <div class="pp-panel-body">
+            <div class="photo-card" id="photoCard">
+              <div class="photo-card-top">
+                <h3><i class="bi bi-person-bounding-box"></i> <span data-i18n="personPhoto">Person photo</span></h3>
+                <span class="photo-badge" id="photoBadge" data-i18n="optional">Optional</span>
+              </div>
+              <div class="photo-body">
+                <div class="photo-frame" id="photoFrame">
+                  <img id="personPhotoImg" alt="">
+                  <div class="empty" id="personPhotoEmpty"><i class="bi bi-person"></i><span data-i18n="noPhoto">No photo</span></div>
+                </div>
+                <div>
+                  <div class="photo-actions">
+                    <label class="tc-btn tc-btn-primary mb-0" style="cursor:pointer">
+                      <i class="bi bi-camera-fill"></i> <span data-i18n="takePhoto">Take photo</span>
+                      <input id="photoCamera" type="file" accept="image/*" capture="user" hidden>
+                    </label>
+                    <label class="tc-btn mb-0" style="cursor:pointer">
+                      <i class="bi bi-image"></i> <span data-i18n="uploadPhoto">Gallery</span>
+                      <input id="photoGallery" type="file" accept="image/*" hidden>
+                    </label>
+                    <button type="button" class="tc-btn" id="btnClearPhoto">
+                      <i class="bi bi-x-lg"></i> <span data-i18n="clear">Clear</span>
+                    </button>
+                  </div>
+                  <p class="photo-hint" data-i18n="personPhotoHint">Add a clear photo of the person. No ID scan or automatic reading.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="pp-grid-2">
+              <div class="tc-field mb-2">
+                <label data-i18n="personCode">Person code</label>
+                <input id="code" class="form-control" placeholder="P101" autocomplete="off">
+                <p class="pp-hint" data-i18n="personCodeHint">Leave empty to auto-assign next P code</p>
+              </div>
+              <div class="tc-field mb-2">
+                <label data-i18n="phone">Phone</label>
+                <input id="phone" class="form-control" inputmode="tel" autocomplete="off">
+              </div>
+            </div>
+            <div class="tc-field">
+              <label data-i18n="personName">Full name</label>
+              <input id="name" class="form-control" autocomplete="off">
+            </div>
+            <div class="tc-field">
+              <label data-i18n="residenceNo">Residence / Iqama no.</label>
+              <input id="residenceNo" class="form-control" autocomplete="off" inputmode="numeric">
+            </div>
+            <div class="tc-field">
+              <label data-i18n="supervisorForeman">Foreman / Supervisor</label>
+              <input id="supervisorName" class="form-control" autocomplete="off" placeholder="Responsible foreman / supervisor">
+              <p class="pp-hint" data-i18n="supervisorForemanHint">Who is responsible for this worker on site</p>
+            </div>
+            <div class="tc-field">
+              <label data-i18n="supplier">Supplier</label>
+              <select id="supplierId" class="tc-select w-100"><option value="">—</option></select>
+            </div>
+            <div class="tc-field">
+              <label data-i18n="orNewSupplier">Or new supplier name</label>
+              <input id="supplierName" class="form-control" autocomplete="off">
+            </div>
+            <div class="pp-actions">
+              <button type="button" class="tc-btn tc-btn-primary" id="btnSave">
+                <i class="bi bi-check2"></i> <span data-i18n="savePerson">Save person</span>
+              </button>
+              <button type="button" class="tc-btn tc-btn-danger" id="btnDelete" style="display:none">
+                <i class="bi bi-trash"></i> <span data-i18n="deletePerson">Delete person</span>
+              </button>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let editing = "";
+    let photoDataUrl = "";
+    let existingPhotoUrl = "";
+    let photoCleared = false;
+
+    function t(k, vars) {
+      return typeof TCI18N !== "undefined" ? TCI18N.t(k, vars) : k;
+    }
+
+    document.addEventListener("DOMContentLoaded", () => TCUI.bootPage(async () => {
+      const params = new URLSearchParams(location.search);
+      const codeParam = (params.get("code") || "").trim().toUpperCase();
+      TCUI.mountHeader("app-header", {
+        active: "people",
+        titleKey: codeParam ? "modeEdit" : "addPersonBtn",
+        subtitleKey: "peopleSub",
+        icon: "bi-person-plus",
+        toolbar: `<a class="tc-btn" href="people.html"><i class="bi bi-arrow-left"></i> <span data-i18n="backToPeople">Back to people</span></a>`
+      });
+
+      document.getElementById("btnSave").onclick = savePerson;
+      document.getElementById("btnDelete").onclick = () => deletePerson(editing);
+      document.getElementById("code").addEventListener("blur", checkPersonCodeAvailable);
+      document.getElementById("residenceNo").addEventListener("blur", checkDuplicateIqama);
+      document.getElementById("btnClearPhoto").onclick = clearPhoto;
+      document.getElementById("photoCamera").onchange = (e) => onPhotoPick(e.target);
+      document.getElementById("photoGallery").onchange = (e) => onPhotoPick(e.target);
+
+      await loadSuppliers();
+      if (codeParam) await loadPerson(codeParam);
+      else setMode(false);
+    }, { pageId: "people" }));
+
+    function setMode(isEdit) {
+      const mode = document.getElementById("formMode");
+      mode.classList.toggle("edit", !!isEdit);
+      mode.textContent = isEdit ? t("modeEdit") : t("modeNew");
+      document.getElementById("formTitle").textContent = isEdit ? t("modeEdit") : t("addPersonBtn");
+    }
+
+    function updatePhotoUi() {
+      const url = photoDataUrl || existingPhotoUrl;
+      const img = document.getElementById("personPhotoImg");
+      const empty = document.getElementById("personPhotoEmpty");
+      const badge = document.getElementById("photoBadge");
+      if (url) {
+        img.src = url;
+        img.classList.add("show");
+        empty.style.display = "none";
+        badge.classList.add("has");
+        badge.textContent = t("ready") || "Ready";
+      } else {
+        img.removeAttribute("src");
+        img.classList.remove("show");
+        empty.style.display = "";
+        badge.classList.remove("has");
+        badge.textContent = t("optional") || "Optional";
+      }
+    }
+
+    function clearPhoto() {
+      if (existingPhotoUrl || photoDataUrl) photoCleared = true;
+      photoDataUrl = "";
+      existingPhotoUrl = "";
+      updatePhotoUi();
+    }
+
+    function fileToDataUrl(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result || ""));
+        reader.onerror = () => reject(new Error("READ_FAILED"));
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function onPhotoPick(input) {
+      const file = input.files && input.files[0];
+      input.value = "";
+      if (!file) return;
+      if (!String(file.type || "").startsWith("image/")) {
+        TCUI.toast(t("error") || "Invalid image", "err");
+        return;
+      }
+      try {
+        const dataUrl = await fileToDataUrl(file);
+        if (!dataUrl.startsWith("data:image/")) {
+          TCUI.toast(t("error") || "Invalid image", "err");
+          return;
+        }
+        photoDataUrl = dataUrl;
+        existingPhotoUrl = "";
+        photoCleared = false;
+        updatePhotoUi();
+      } catch (_) {
+        TCUI.toast(t("error") || "Could not load photo", "err");
+      }
+    }
+
+    function escHtml(s) {
+      return String(s || "").replace(/[&<>"']/g, (c) => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+      })[c]);
+    }
+
+    async function loadSuppliers() {
+      const sData = await apiGet({ action: "listSuppliers" });
+      const suppliers = (sData && sData.items) || [];
+      const sel = document.getElementById("supplierId");
+      sel.innerHTML = `<option value="">—</option>` +
+        suppliers.map((s) => `<option value="${s.id}">${escHtml(s.name)}</option>`).join("");
+    }
+
+    async function loadPerson(code) {
+      const data = await apiGet({ action: "listPeople" });
+      const person = ((data && data.items) || []).find((p) => p.code === code);
+      if (!person) {
+        TCUI.toast(t("error"), "err");
+        return;
+      }
+      editing = person.code;
+      document.getElementById("code").value = person.code;
+      document.getElementById("code").disabled = false;
+      document.getElementById("code").readOnly = false;
+      const codeHint = document.querySelector('[data-i18n="personCodeHint"]');
+      if (codeHint) codeHint.textContent = t("personCodeEditHint");
+      document.getElementById("name").value = person.name || "";
+      document.getElementById("residenceNo").value = person.residenceNo || "";
+      document.getElementById("phone").value = person.phone || "";
+      document.getElementById("supervisorName").value = person.supervisorName || "";
+      document.getElementById("supplierId").value = person.supplierId || "";
+      document.getElementById("btnDelete").style.display = can("worker.delete") ? "" : "none";
+      setMode(true);
+      existingPhotoUrl = person.imageUrl || "";
+      photoDataUrl = "";
+      photoCleared = false;
+      updatePhotoUi();
+    }
+
+    async function findPersonByIqama(iqama) {
+      const digits = String(iqama || "").replace(/\D/g, "");
+      if (!digits) return null;
+      try {
+        const data = await apiGet({ action: "listPeople" });
+        const items = (data && data.items) || [];
+        return items.find((p) => String(p.residenceNo || "").replace(/\D/g, "") === digits) || null;
+      } catch (_) {
+        return null;
+      }
+    }
+
+    async function checkDuplicateIqama() {
+      const iqama = document.getElementById("residenceNo").value.trim().replace(/\D/g, "");
+      if (!iqama || iqama.length < 8) return;
+      const dup = await findPersonByIqama(iqama);
+      if (dup && dup.code && dup.code !== editing) {
+        TCUI.toast(t("idDuplicateIqama", { code: dup.code, name: dup.name || "" }), "err");
+      }
+    }
+
+    async function checkPersonCodeAvailable() {
+      let code = document.getElementById("code").value.trim().toUpperCase();
+      if (!code) return;
+      if (!code.startsWith("P")) code = "P" + code.replace(/^P/i, "");
+      document.getElementById("code").value = code;
+      if (editing && code === editing) return;
+      try {
+        const res = await apiGet({ action: "checkCatalogCode", code, intendedKind: "person", isEdit: "0" });
+        if (res && res.available === false) {
+          const err = res.error || "CODE_EXISTS";
+          TCUI.toast(
+            err === "CODE_USED_BY_PRODUCT" ? t("CODE_USED_BY_PRODUCT")
+            : err === "CODE_USED_BY_PERSON" ? t("CODE_USED_BY_PERSON")
+            : t("CODE_EXISTS"),
+            "err"
+          );
+        }
+      } catch (_) {}
+    }
+
+    async function savePerson() {
+      const name = document.getElementById("name").value.trim();
+      if (!name) return TCUI.toast(t("personNameRequired"), "err");
+      let code = document.getElementById("code").value.trim().toUpperCase();
+      if (code && !code.startsWith("P")) code = "P" + code.replace(/^P/i, "");
+      if (code) document.getElementById("code").value = code;
+      if (editing && !code) return TCUI.toast(t("personCodeRequired"), "err");
+      if (editing && code !== editing) {
+        if (!confirm(t("personCodeRenameConfirm", { from: editing, to: code }))) return;
+      }
+      const residenceNo = document.getElementById("residenceNo").value.trim().replace(/\D/g, "");
+      if (residenceNo) {
+        const dup = await findPersonByIqama(residenceNo);
+        if (dup && dup.code && dup.code !== editing) {
+          if (!confirm(t("idDuplicateIqamaConfirm", { code: dup.code, name: dup.name || "" }))) return;
+        }
+      }
+      const btn = document.getElementById("btnSave");
+      btn.disabled = true;
+      try {
+        const res = await apiGet({
+          action: "upsertPerson",
+          code,
+          originalCode: editing || "",
+          name,
+          residenceNo: document.getElementById("residenceNo").value.trim(),
+          phone: document.getElementById("phone").value.trim(),
+          supervisorName: document.getElementById("supervisorName").value.trim(),
+          supplierId: document.getElementById("supplierId").value,
+          supplierName: document.getElementById("supplierName").value.trim(),
+          isEdit: editing ? "1" : "0"
+        });
+        if (!res || res.success === false || res.error) {
+          const err = (res && res.error) || "Failed";
+          TCUI.toast(
+            err === "CODE_EXISTS" ? t("CODE_EXISTS")
+            : err === "CODE_USED_BY_PERSON" ? t("CODE_USED_BY_PERSON")
+            : err === "CODE_USED_BY_PRODUCT" ? t("CODE_USED_BY_PRODUCT")
+            : err === "RENAME_FAILED" ? (t("personCodeRenameFailed") + (res.message ? " · " + res.message : ""))
+            : err,
+            "err"
+          );
+          return;
+        }
+        const savedCode = res.code || code;
+        if (photoDataUrl && photoDataUrl.startsWith("data:")) {
+          await setProductImage(savedCode, photoDataUrl);
+        } else if (photoCleared) {
+          if (typeof clearProductImage === "function") {
+            await clearProductImage(savedCode);
+          }
+          // Also remove any leftover ID-card file from older scans
+          try {
+            await apiGet({ action: "clearPersonIdImage", code: savedCode });
+          } catch (_) {}
+        }
+        TCUI.toast(
+          (res.renamedFrom ? t("personCodeRenamed", { from: res.renamedFrom, to: savedCode }) : t("personSaved"))
+            + " · " + savedCode,
+          "ok"
+        );
+        location.href = "people.html";
+      } catch (e) {
+        TCUI.toast(e.message || "Error", "err");
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    async function deletePerson(code) {
+      code = String(code || "").trim().toUpperCase();
+      if (!code) return;
+      if (!confirm(t("deletePersonConfirm", { code }))) return;
+      try {
+        let res = await apiGet({ action: "deletePerson", code });
+        if (res && res.error === "HAS_TOOLS" && res.needConfirm) {
+          const tools = (res.toolsHeld || []).map((x) => `${x.code}×${x.qty}`).join(", ");
+          if (!confirm(t("deletePersonHasTools", { code, n: res.toolsHeldCount, tools: tools || "—" }))) return;
+          res = await apiGet({ action: "deletePerson", code, force: "1" });
+        }
+        if (!res || res.success === false || res.error) {
+          TCUI.toast((res && (res.message || res.error)) || "Failed", "err");
+          return;
+        }
+        TCUI.toast(t("personDeleted"), "ok");
+        location.href = "people.html";
+      } catch (e) {
+        TCUI.toast(e.message || "Error", "err");
+      }
+    }
+  </script>
+</body>
+</html>

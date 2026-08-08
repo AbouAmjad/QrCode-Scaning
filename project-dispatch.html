@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AbouAmjad Store System | Project dispatch</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="app.css?v=live">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f766e">
+  <script src="config.js?v=live"></script>
+  <script src="i18n.js?v=live"></script>
+  <script src="ui.js?v=live"></script>
+  <script src="export-utils.js?v=live"></script>
+  <style>
+    .dx-layout{display:grid;grid-template-columns:1fr;gap:1.1rem}
+    @media(min-width:960px){.dx-layout{grid-template-columns:1.1fr .9fr}}
+    .dx-card{background:var(--tc-surface);border:1px solid var(--tc-border);border-radius:18px;padding:1.15rem;box-shadow:0 14px 36px -24px rgba(20,32,51,.4)}
+    .dx-card h2{font-size:.92rem;font-weight:800;margin:0 0 .85rem;display:flex;align-items:center;gap:.4rem}
+    .dx-card h2 i{color:var(--tc-accent)}
+    .dx-lines{display:flex;flex-direction:column;gap:.45rem;max-height:42vh;overflow:auto;margin-top:.75rem}
+    .dx-line{
+      display:grid;grid-template-columns:1fr 72px 88px 36px;gap:.45rem;align-items:center;
+      padding:.55rem .65rem;border:1px solid var(--tc-border);border-radius:12px;background:var(--tc-surface-2);
+    }
+    .dx-line .c{font-weight:800;font-size:.82rem;color:var(--tc-accent-2)}
+    .dx-line .d{font-size:.75rem;color:var(--tc-muted);font-weight:600}
+    .dx-pick{max-height:min(62vh,520px);overflow:auto;border:1px solid var(--tc-border);border-radius:12px;margin-top:.5rem}
+    .dx-pick-row{
+      display:grid;grid-template-columns:1fr auto;gap:.5rem;align-items:center;
+      padding:.5rem .7rem;border-bottom:1px solid var(--tc-border);cursor:pointer;font-size:.82rem;
+    }
+    .dx-pick-row:hover{background:var(--tc-accent-soft)}
+    .dx-pick-row.zero{opacity:.55;cursor:not-allowed}
+    .dx-pick-row.zero:hover{background:transparent}
+    .dx-pick-row .av{font-size:.72rem;font-weight:700;color:var(--tc-muted)}
+    .dx-pick-row .av.ok{color:var(--tc-accent-2)}
+    .dx-pick-meta{font-size:.72rem;font-weight:700;color:var(--tc-muted);margin-top:.35rem}
+    .dx-mode{display:flex;gap:.4rem;margin-bottom:1rem}
+    .dx-mode button{
+      flex:1;border:1px solid var(--tc-border);background:var(--tc-surface-2);border-radius:12px;
+      padding:.65rem;font-weight:800;font-size:.82rem;cursor:pointer;color:var(--tc-muted);
+    }
+    .dx-mode button.active{background:var(--tc-accent-soft);color:var(--tc-accent-2);border-color:color-mix(in srgb,var(--tc-accent) 45%,transparent)}
+    .dx-photos{margin-top:1rem;padding-top:.85rem;border-top:1px solid var(--tc-border)}
+    .dx-photos-hint{font-size:.78rem;color:var(--tc-muted);margin:.35rem 0 .65rem;line-height:1.4}
+    .dx-photo-grid{display:flex;flex-wrap:wrap;gap:.55rem}
+    .dx-recipient{
+      margin:.35rem 0 1rem;padding:.85rem .9rem;border:1px solid var(--tc-border);
+      border-radius:14px;background:var(--tc-surface-2);
+    }
+    .dx-recipient-title{
+      display:flex;align-items:center;gap:.4rem;font-size:.82rem;font-weight:800;
+      margin:0 0 .75rem;color:var(--tc-accent-2);
+    }
+    .dx-recipient-list{display:grid;gap:.55rem}
+    .dx-recipient-list .tc-field{margin:0}
+    .dx-recipient-list label{
+      display:flex;align-items:center;gap:.35rem;font-size:.72rem;font-weight:800;
+      color:var(--tc-muted);text-transform:uppercase;letter-spacing:.03em;margin-bottom:.28rem;
+    }
+    .dx-recipient-list label i{color:var(--tc-accent);font-size:.85rem}
+    .dx-recipient-list .form-control{border-radius:11px;min-height:42px;font-weight:700}
+    .dx-photo-thumb{
+      width:88px;height:88px;border-radius:12px;overflow:hidden;position:relative;
+      border:1px solid var(--tc-border);background:var(--tc-surface-2);
+    }
+    .dx-photo-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+    .dx-photo-thumb button{
+      position:absolute;top:4px;inset-inline-end:4px;border:0;border-radius:999px;
+      width:22px;height:22px;background:rgba(15,23,42,.75);color:#fff;font-size:.7rem;cursor:pointer;line-height:1;
+    }
+  </style>
+</head>
+<body class="tc-page">
+  <div class="tc-wrap">
+    <div class="tc-shell">
+      <div id="app-header"></div>
+
+      <div class="dx-mode" id="modeTabs">
+        <button type="button" class="active" data-mode="out"><i class="bi bi-box-arrow-up"></i> <span data-i18n="prjNewDispatch">Dispatch tools</span></button>
+        <button type="button" data-mode="return"><i class="bi bi-box-arrow-in-down"></i> <span data-i18n="prjReturnTools">Record return</span></button>
+      </div>
+
+      <div class="dx-layout">
+        <div class="dx-card">
+          <h2><i class="bi bi-clipboard-check"></i> <span data-i18n="prjDispatchForm">Dispatch form</span></h2>
+          <div class="tc-field"><label data-i18n="projects">Project</label>
+            <select id="projectId" class="form-select"></select>
+          </div>
+          <div class="dx-recipient">
+            <div class="dx-recipient-title"><i class="bi bi-person-badge"></i> <span data-i18n="prjRecipient">Recipient</span></div>
+            <div class="dx-recipient-list">
+              <div class="tc-field">
+                <label><i class="bi bi-person"></i> <span data-i18n="prjRecipient">Recipient name</span></label>
+                <input id="recipientName" class="form-control" autocomplete="name">
+              </div>
+              <div class="tc-field">
+                <label><i class="bi bi-telephone"></i> <span data-i18n="prjPhone">Phone</span></label>
+                <input id="recipientPhone" class="form-control" autocomplete="tel">
+              </div>
+              <div class="tc-field">
+                <label><i class="bi bi-card-text"></i> <span data-i18n="prjRecipientResidence">Recipient Iqama / residence no.</span></label>
+                <input id="recipientResidence" class="form-control" autocomplete="off">
+              </div>
+              <div class="tc-field">
+                <label><i class="bi bi-truck"></i> <span data-i18n="prjVehiclePlate">Transport vehicle plate</span></label>
+                <input id="vehiclePlate" class="form-control" autocomplete="off" placeholder="ABC 1234">
+              </div>
+            </div>
+          </div>
+
+          <div class="dx-photos">
+            <h2 style="margin:0 0 .65rem"><i class="bi bi-images"></i> <span data-i18n="prjPrintPhotos">Photos for print</span></h2>
+            <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
+              <label class="tc-btn tc-btn-sm mb-0" style="cursor:pointer">
+                <i class="bi bi-upload"></i> <span data-i18n="prjAddPhotos">Add photos</span>
+                <input id="photoFiles" type="file" accept="image/*" multiple hidden>
+              </label>
+              <button type="button" class="tc-btn tc-btn-sm" id="btnClearPhotos" style="display:none">
+                <i class="bi bi-x-lg"></i> <span data-i18n="prjClearPhotos">Clear photos</span>
+              </button>
+              <span class="tc-text-muted small" id="photoMeta"></span>
+            </div>
+            <div class="dx-photo-grid" id="photoGrid"></div>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center mt-2">
+            <strong data-i18n="prjLines">Lines</strong>
+            <span class="tc-text-muted small" id="linesMeta">0</span>
+          </div>
+          <div class="dx-lines" id="lines"></div>
+
+          <div class="d-flex flex-wrap gap-2 mt-3">
+            <a class="tc-btn" href="warehouses.html#projects" data-i18n="cancel" id="btnCancel">Cancel</a>
+            <button type="button" class="tc-btn tc-btn-danger" id="btnDeleteInvoice" style="display:none">
+              <i class="bi bi-trash"></i> <span data-i18n="prjDeleteInvoice">Delete invoice</span>
+            </button>
+            <button type="button" class="tc-btn tc-btn-primary" id="btnSave">
+              <i class="bi bi-printer"></i> <span id="btnSaveLbl" data-i18n="prjSavePrint">Save &amp; print</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="dx-card">
+          <h2><i class="bi bi-search"></i> <span id="pickerTitle" data-i18n="prjAddFromStock">Add from stock</span></h2>
+          <input id="pickQ" class="tc-search w-100" data-i18n-placeholder="searchPlaceholder" placeholder="Search…">
+          <div class="dx-pick-meta" id="pickMeta"></div>
+          <div class="dx-pick" id="picker"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let mode = "out";
+    let projects = [];
+    let catalog = [];
+    let holdings = [];
+    let lines = [];
+    let printPhotos = []; /* data URLs — print only, never uploaded */
+    let editId = 0;
+    let editFormNo = "";
+    let editLocked = false;
+
+    function qs(name) {
+      return new URLSearchParams(location.search).get(name);
+    }
+
+    function escHtml(s) {
+      return String(s == null ? "" : s)
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+
+    function renderPhotos() {
+      const grid = document.getElementById("photoGrid");
+      const meta = document.getElementById("photoMeta");
+      const clearBtn = document.getElementById("btnClearPhotos");
+      if (!grid) return;
+      if (clearBtn) clearBtn.style.display = printPhotos.length ? "" : "none";
+      if (meta) {
+        meta.textContent = printPhotos.length
+          ? (t("prjPhotosCount", { n: printPhotos.length }) || (printPhotos.length + " photo(s) · print only"))
+          : "";
+      }
+      grid.innerHTML = printPhotos.map((src, idx) => `
+        <div class="dx-photo-thumb">
+          <img src="${src}" alt="Photo ${idx + 1}">
+          <button type="button" data-rm-photo="${idx}" title="Remove">×</button>
+        </div>`).join("");
+      grid.querySelectorAll("[data-rm-photo]").forEach((btn) => {
+        btn.onclick = () => {
+          printPhotos.splice(Number(btn.getAttribute("data-rm-photo")), 1);
+          renderPhotos();
+        };
+      });
+    }
+
+    async function onPhotosPicked(ev) {
+      const files = Array.from((ev.target && ev.target.files) || []);
+      ev.target.value = "";
+      if (!files.length) return;
+      const max = 12;
+      for (const file of files) {
+        if (printPhotos.length >= max) {
+          TCUI.toast(t("prjPhotosLimit", { n: max }) || ("Max " + max + " photos"), "err");
+          break;
+        }
+        try {
+          const dataUrl = typeof compressImageFile === "function"
+            ? await compressImageFile(file, 1400, 0.72)
+            : await new Promise((resolve, reject) => {
+                const r = new FileReader();
+                r.onload = () => resolve(r.result);
+                r.onerror = reject;
+                r.readAsDataURL(file);
+              });
+          if (dataUrl) printPhotos.push(String(dataUrl));
+        } catch (_) {
+          TCUI.toast(t("error") || "Photo failed", "err");
+        }
+      }
+      renderPhotos();
+    }
+
+    document.addEventListener("DOMContentLoaded", () => TCUI.bootPage(async () => {
+      const canWrite =
+        (typeof can === "function" && (can("projects.dispatch") || can("projects.return") || can("projects.manage")))
+        || (typeof getRole === "function" && getRole() === "admin");
+      if (!canWrite) {
+        TCUI.toast(t("FORBIDDEN") || "FORBIDDEN", "err");
+        location.replace("warehouses.html#projects");
+        return;
+      }
+      const canOut = (typeof can === "function" && (can("projects.dispatch") || can("projects.manage")))
+        || (typeof getRole === "function" && getRole() === "admin");
+      const canRet = (typeof can === "function" && (can("projects.return") || can("projects.dispatch") || can("projects.manage")))
+        || (typeof getRole === "function" && getRole() === "admin");
+
+      TCUI.mountHeader("app-header", {
+        active: "projects",
+        titleKey: "projects",
+        subtitleKey: "prjDispatchForm",
+        icon: "bi-building",
+        toolbar: `<a class="tc-btn" id="btnBackProjects" href="warehouses.html#projects"><i class="bi bi-arrow-left"></i> <span data-i18n="back">Back</span></a>`
+      });
+      const pidEarly = qs("projectId");
+      if (pidEarly) {
+        const back = document.getElementById("btnBackProjects");
+        if (back) back.href = "project.html?id=" + encodeURIComponent(pidEarly);
+      }
+      editId = Number(qs("edit") || 0) || 0;
+      const m = qs("mode");
+      if (m === "return" || m === "out") mode = m;
+      if (!canOut && canRet) mode = "return";
+      if (canOut && !canRet) mode = "out";
+      document.querySelectorAll('#modeTabs button[data-mode="out"]').forEach((b) => { b.style.display = canOut ? "" : "none"; });
+      document.querySelectorAll('#modeTabs button[data-mode="return"]').forEach((b) => { b.style.display = canRet ? "" : "none"; });
+      syncModeUi();
+      document.querySelectorAll("#modeTabs button").forEach((btn) => {
+        btn.onclick = () => {
+          if (editLocked) return;
+          mode = btn.getAttribute("data-mode") || "out";
+          lines = [];
+          syncModeUi();
+          renderLines();
+          renderPicker();
+          if (mode === "return") loadHoldings();
+        };
+      });
+      document.getElementById("projectId").onchange = () => {
+        if (editLocked) return;
+        lines = [];
+        renderLines();
+        if (mode === "return") loadHoldings();
+        else renderPicker();
+      };
+      document.getElementById("pickQ").oninput = renderPicker;
+      document.getElementById("btnSave").onclick = save;
+      document.getElementById("photoFiles").onchange = onPhotosPicked;
+      document.getElementById("btnClearPhotos").onclick = () => { printPhotos = []; renderPhotos(); };
+      renderPhotos();
+      await Promise.all([loadProjects(), loadCatalog()]);
+      if (editId) {
+        await loadEditDispatch(editId);
+      } else {
+        const pid = qs("projectId");
+        if (pid) document.getElementById("projectId").value = pid;
+        if (mode === "return") await loadHoldings();
+        else renderPicker();
+        renderLines();
+      }
+    }, { pageId: "projects" }));
+
+    async function loadEditDispatch(id) {
+      const data = await apiGet({ action: "getProjectDispatch", id });
+      if (!data || !data.success || !data.dispatch) {
+        TCUI.toast((data && data.error) || t("error"), "err");
+        return;
+      }
+      const d = data.dispatch;
+      editLocked = true;
+      editFormNo = d.formNo || "";
+      mode = d.type === "return" ? "return" : "out";
+      syncModeUi();
+      document.getElementById("modeTabs").style.opacity = "0.55";
+      document.getElementById("modeTabs").style.pointerEvents = "none";
+      document.getElementById("projectId").value = String(d.projectId || "");
+      document.getElementById("projectId").disabled = true;
+      document.getElementById("recipientName").value = d.recipientName || "";
+      document.getElementById("recipientPhone").value = d.recipientPhone || "";
+      document.getElementById("recipientResidence").value = d.recipientResidenceNo || "";
+      document.getElementById("vehiclePlate").value = d.vehiclePlate || "";
+      lines = (d.lines || []).map((l) => ({
+        id: l.id,
+        code: l.code,
+        description: l.description || "",
+        qty: l.qty != null ? l.qty : l.qtySent,
+        condition: l.condition || l.notes || "Good",
+        editOnly: true,
+      }));
+      const pickerCard = document.querySelector(".dx-layout .dx-card:last-child");
+      if (pickerCard) pickerCard.style.display = "none";
+      document.getElementById("btnSaveLbl").textContent = t("prjSaveEditPrint") || "Save changes & print";
+      const delBtn = document.getElementById("btnDeleteInvoice");
+      if (delBtn) {
+        delBtn.style.display = "";
+        delBtn.onclick = deleteCurrentInvoice;
+      }
+      const cancel = document.getElementById("btnCancel");
+      if (cancel) cancel.href = "project.html?id=" + encodeURIComponent(d.projectId || "");
+      TCUI.mountHeader("app-header", {
+        active: "projects",
+        titleKey: "projects",
+        subtitleKey: "prjEditInvoice",
+        icon: "bi-pencil-square",
+        toolbar: `<a class="tc-btn" href="project.html?id=${encodeURIComponent(d.projectId || "")}"><i class="bi bi-arrow-left"></i> <span data-i18n="back">Back</span></a>`
+      });
+      renderLines();
+    }
+
+    async function deleteCurrentInvoice() {
+      if (!editId) return;
+      if (!can("projects.dispatch") && !can("projects.manage")) return TCUI.toast("FORBIDDEN", "err");
+      const label = editFormNo || editId;
+      if (!confirm(
+        t("prjDeleteInvoiceConfirm", { form: label })
+        || `Delete invoice ${label}? Stock will be restored according to this form.`
+      )) return;
+      try {
+        const data = await apiPostPlain({ action: "deleteProjectDispatch", id: editId });
+        if (!data || !data.success) {
+          if (data && data.error === "DISPATCH_HAS_RETURNS") {
+            throw new Error(
+              t("prjDeleteInvoiceBlocked")
+              || `Cannot delete: some tools were already returned (${data.code || ""}).`
+            );
+          }
+          throw new Error((data && data.error) || t("error"));
+        }
+        TCUI.toast(t("prjInvoiceDeleted") || "Invoice deleted", "ok");
+        location.href = "project.html?id=" + encodeURIComponent(data.projectId || document.getElementById("projectId").value);
+      } catch (e) {
+        TCUI.toast(e.message || t("error"), "err");
+      }
+    }
+
+    function syncModeUi() {
+      document.querySelectorAll("#modeTabs button").forEach((b) =>
+        b.classList.toggle("active", b.getAttribute("data-mode") === mode)
+      );
+      document.getElementById("pickerTitle").textContent = mode === "return"
+        ? (t("prjAddFromProject") || "Add from project stock")
+        : (t("prjAddFromStock") || "Add from stock");
+      document.getElementById("btnSaveLbl").textContent = t("prjSavePrint") || "Save & print";
+    }
+
+    async function loadProjects() {
+      const data = await apiGet({ action: "listProjects", status: "active" });
+      projects = (data && data.items) || [];
+      const sel = document.getElementById("projectId");
+      sel.innerHTML = `<option value="">${t("prjSelectProject") || "Select project…"}</option>` +
+        projects.map((p) => `<option value="${p.id}">${escHtml(p.code)} — ${escHtml(p.name)}</option>`).join("");
+    }
+
+    async function loadCatalog() {
+      const data = await apiGet({ action: "getCatalogStock" });
+      catalog = ((data && data.items) || []).filter((i) => i.kind !== "person");
+    }
+
+    async function loadHoldings() {
+      const id = document.getElementById("projectId").value;
+      holdings = [];
+      if (!id) { renderPicker(); return; }
+      try {
+        const data = await apiGet({ action: "getProject", id });
+        holdings = (data && data.holdings) || [];
+      } catch (_) { holdings = []; }
+      renderPicker();
+    }
+
+    function renderLines() {
+      const host = document.getElementById("lines");
+      document.getElementById("linesMeta").textContent = String(lines.length);
+      if (!lines.length) {
+        host.innerHTML = `<div class="tc-text-muted small py-3 text-center">${t("prjNoLinesYet") || "Add tools from the list on the right."}</div>`;
+        return;
+      }
+      host.innerHTML = lines.map((l, idx) => `<div class="dx-line">
+        <div><div class="c">${escHtml(l.code)}</div><div class="d">${escHtml(l.description)}</div></div>
+        <input type="number" class="form-control form-control-sm" min="1" step="1" value="${l.qty}" data-qty="${idx}" ${editLocked ? "readonly" : ""}>
+        <select class="form-select form-select-sm" data-cond="${idx}">
+          ${["Good", "Fair", "Damaged"].map((c) =>
+            `<option value="${c}"${(l.condition || "Good") === c ? " selected" : ""}>${c}</option>`
+          ).join("")}
+        </select>
+        ${editLocked
+          ? `<span class="tc-text-muted small text-center">#${escHtml(l.id || "")}</span>`
+          : `<button type="button" class="tc-btn tc-btn-sm" data-rm="${idx}" title="Remove"><i class="bi bi-x-lg"></i></button>`}
+      </div>`).join("");
+      host.querySelectorAll("[data-qty]").forEach((inp) => {
+        if (editLocked) return;
+        inp.onchange = () => {
+          const i = Number(inp.getAttribute("data-qty"));
+          lines[i].qty = Math.max(1, Number(inp.value) || 1);
+        };
+      });
+      host.querySelectorAll("[data-cond]").forEach((sel) => {
+        sel.onchange = () => {
+          const i = Number(sel.getAttribute("data-cond"));
+          lines[i].condition = sel.value;
+        };
+      });
+      host.querySelectorAll("[data-rm]").forEach((btn) => {
+        btn.onclick = () => {
+          lines.splice(Number(btn.getAttribute("data-rm")), 1);
+          renderLines();
+        };
+      });
+    }
+
+    function renderPicker() {
+      const q = document.getElementById("pickQ").value.trim().toLowerCase();
+      const host = document.getElementById("picker");
+      const meta = document.getElementById("pickMeta");
+      let pool;
+      if (mode === "return") {
+        pool = holdings.map((h) => ({
+          code: h.code,
+          description: h.description,
+          available: h.qty,
+        }));
+      } else {
+        pool = catalog.map((i) => ({
+          code: i.code,
+          description: i.description,
+          available: Number(i.available) || 0,
+          category: i.category || "",
+        }));
+        pool.sort((a, b) => {
+          if (b.available !== a.available) return b.available - a.available;
+          return String(a.code).localeCompare(String(b.code));
+        });
+      }
+      const total = pool.length;
+      if (q) {
+        pool = pool.filter((i) =>
+          (i.code + " " + i.description + " " + (i.category || "")).toLowerCase().includes(q)
+        );
+      }
+      if (meta) {
+        meta.textContent = mode === "return"
+          ? (pool.length ? `${pool.length} ${t("prjOnSite") || "on site"}` : "")
+          : (t("prjPickerCount", { shown: pool.length, total }) || `${pool.length} / ${total} products`);
+      }
+      if (!pool.length) {
+        host.innerHTML = `<div class="tc-text-muted small p-3 text-center">${t("noRows") || "No rows"}</div>`;
+        return;
+      }
+      host.innerHTML = pool.map((i) => {
+        const zero = !(i.available > 0);
+        return `<div class="dx-pick-row${zero ? " zero" : ""}" data-code="${escHtml(i.code)}" data-zero="${zero ? "1" : "0"}">
+        <div><strong>${escHtml(i.code)}</strong><div class="tc-text-muted" style="font-size:.75rem">${escHtml(i.description)}</div></div>
+        <div class="av${zero ? "" : " ok"}">${i.available} ${t("available") || "avail"}</div>
+      </div>`;
+      }).join("");
+      host.querySelectorAll(".dx-pick-row").forEach((row) => {
+        row.onclick = () => {
+          if (row.getAttribute("data-zero") === "1") {
+            TCUI.toast(t("prjNoStock") || "No available quantity", "err");
+            return;
+          }
+          addLine(row.getAttribute("data-code"));
+        };
+      });
+    }
+
+    function addLine(code) {
+      code = String(code || "").toUpperCase();
+      let src;
+      if (mode === "return") src = holdings.find((h) => h.code === code);
+      else src = catalog.find((i) => i.code === code);
+      if (!src) return;
+      const max = mode === "return" ? src.qty : src.available;
+      if (!max || max <= 0) return TCUI.toast(t("prjNoStock") || "No available quantity", "err");
+      const existing = lines.find((l) => l.code === code);
+      if (existing) {
+        if (existing.qty + 1 > max) return TCUI.toast(t("prjExceedsStock") || "Exceeds available qty", "err");
+        existing.qty += 1;
+      } else {
+        lines.push({
+          code,
+          description: src.description || code,
+          qty: 1,
+          max,
+          condition: "Good"
+        });
+      }
+      renderLines();
+    }
+
+    async function save() {
+      const projectId = document.getElementById("projectId").value;
+      const recipientName = document.getElementById("recipientName").value.trim();
+      if (!projectId) return TCUI.toast(t("prjSelectProject") || "Select a project", "err");
+      if (!recipientName) return TCUI.toast(t("prjRecipientRequired") || "Recipient name required", "err");
+      if (!lines.length) return TCUI.toast(t("prjLinesRequired") || "Add at least one tool", "err");
+
+      if (editId) {
+        if (!can("projects.dispatch") && !can("projects.return") && !can("projects.manage")) {
+          return TCUI.toast("FORBIDDEN", "err");
+        }
+      } else {
+        if (mode === "out" && !can("projects.dispatch")) return TCUI.toast("FORBIDDEN", "err");
+        if (mode === "return" && !can("projects.return") && !can("projects.dispatch")) return TCUI.toast("FORBIDDEN", "err");
+      }
+
+      const payload = {
+        action: editId
+          ? "updateProjectDispatch"
+          : (mode === "return" ? "returnProjectTools" : "createProjectDispatch"),
+        projectId,
+        recipientName,
+        recipientPhone: document.getElementById("recipientPhone").value.trim(),
+        recipientResidenceNo: document.getElementById("recipientResidence").value.trim(),
+        vehiclePlate: document.getElementById("vehiclePlate").value.trim(),
+        expectedReturnDate: "",
+        logisticsName: "Suheil Murad",
+        storeManagerName: "MAHMOUD ISKANDAR",
+        notes: "",
+        lines: lines.map((l) => ({
+          id: l.id,
+          code: l.code,
+          description: l.description,
+          qty: l.qty,
+          condition: l.condition || "Good",
+          notes: l.condition || "Good"
+        }))
+      };
+      if (editId) payload.id = editId;
+
+      try {
+        const data = await apiPostPlain(payload);
+        if (!data || !data.success) {
+          const err = (data && data.error) || t("error");
+          if (err === "INSUFFICIENT_STOCK") {
+            throw new Error(`${t("prjInsufficient") || "Insufficient stock"}: ${data.code} (avail ${data.available})`);
+          }
+          if (err === "EXCEEDS_PROJECT_STOCK") {
+            throw new Error(`${t("prjExceedsProject") || "Exceeds project stock"}: ${data.code}`);
+          }
+          throw new Error(err);
+        }
+        TCUI.toast(
+          editId
+            ? (t("prjInvoiceUpdated") || "Invoice updated — printing")
+            : (t("prjDispatchSaved") || "Saved — printing form"),
+          "ok"
+        );
+        const printPayload = Object.assign({}, data.dispatch || {}, {
+          printPhotos: printPhotos.slice()
+        });
+        try { TCExport.printProjectHandover(printPayload); } catch (_) {}
+        setTimeout(() => {
+          location.href = "project.html?id=" + encodeURIComponent(projectId);
+        }, 400);
+      } catch (e) {
+        TCUI.toast(e.message || t("error"), "err");
+      }
+    }
+  </script>
+</body>
+</html>

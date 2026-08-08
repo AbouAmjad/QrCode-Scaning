@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AbouAmjad Store System | Equipment Damage Form</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+Arabic:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="app.css?v=live">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f766e">
+  <script src="config.js?v=live"></script>
+  <script src="i18n.js?v=live"></script>
+  <script src="ui.js?v=live"></script>
+  <style>
+    /* ── toolbar ── */
+    .ed-toolbar {
+      display: flex; flex-wrap: wrap; gap: .5rem; align-items: center;
+      max-width: 216mm; margin: 0 auto 1rem;
+    }
+    .ed-toolbar .sp { flex: 1; }
+
+    /* ── A4 sheet ── */
+    .ed-sheet {
+      width: 210mm;
+      max-width: 100%;
+      margin: 0 auto 3rem;
+      background: #fff;
+      color: #111;
+      font-family: "Inter", "Segoe UI", sans-serif;
+      font-size: 11px;
+      border: 1px solid #ccc;
+      box-shadow: 0 8px 40px -16px rgba(0,0,0,.35);
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .ed-sheet * { box-sizing: border-box; }
+
+    /* ── header ── */
+    .ed-header {
+      display: grid;
+      grid-template-columns: 80px 1fr 136px;
+      gap: 0;
+      border-bottom: 3px solid #14532d;
+    }
+    .ed-header .logo-cell {
+      display: flex; align-items: center; justify-content: center;
+      padding: 10px 8px;
+      border-right: 1px solid #d1d5db;
+    }
+    .ed-header .logo-cell img { width: 62px; height: 62px; object-fit: contain; }
+    .ed-header .logo-cell .fallback {
+      width: 62px; height: 62px; background: #14532d; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-weight: 900; font-size: 18px; letter-spacing: .04em;
+    }
+    .ed-header .co-cell {
+      padding: 10px 12px; display: flex; flex-direction: column; justify-content: center;
+    }
+    .ed-header .co-en {
+      font-size: 14px; font-weight: 800; color: #14532d;
+      text-transform: uppercase; letter-spacing: .03em; line-height: 1.2;
+    }
+    .ed-header .co-ar {
+      font-family: "Noto Sans Arabic", "Segoe UI", sans-serif;
+      font-size: 13px; font-weight: 700; color: #374151;
+      direction: rtl; margin-top: 3px;
+    }
+    .ed-header .co-sub {
+      margin-top: 5px; font-size: 9px; color: #6b7280; line-height: 1.4;
+    }
+    .ed-header .docref-cell {
+      border-left: 1px solid #d1d5db; padding: 0;
+      display: flex; flex-direction: column;
+    }
+    .ed-header .docref-cell .drtitle {
+      background: #14532d; color: #fff;
+      font-size: 8.5px; font-weight: 800; letter-spacing: .12em;
+      text-transform: uppercase; padding: 5px 10px; text-align: center;
+    }
+    .ed-header .docref-cell .drrow {
+      display: grid; grid-template-columns: 44px 1fr;
+      border-top: 1px solid #e5e7eb; flex: 1;
+    }
+    .ed-header .docref-cell .drrow:first-of-type { border-top: none; }
+    .ed-header .docref-cell .drrow .drlbl {
+      padding: 4px 6px; font-size: 8px; font-weight: 700;
+      text-transform: uppercase; color: #6b7280; background: #f9fafb;
+      border-right: 1px solid #e5e7eb; display: flex; align-items: center;
+    }
+    .ed-header .docref-cell .drrow .drval {
+      padding: 4px 7px; font-size: 9px; font-weight: 700;
+      display: flex; align-items: center; color: #111;
+    }
+
+    /* ── title banner ── */
+    .ed-banner {
+      background: #14532d;
+      color: #fff;
+      padding: 11px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .ed-banner .ban-en {
+      font-size: 15px; font-weight: 900;
+      letter-spacing: .1em; text-transform: uppercase;
+    }
+    .ed-banner .ban-sub {
+      font-size: 9.5px; font-weight: 500; opacity: .88; margin-top: 2px;
+      letter-spacing: .04em;
+    }
+    .ed-banner .ban-ar {
+      font-family: "Noto Sans Arabic", "Segoe UI", sans-serif;
+      font-size: 13px; font-weight: 700; direction: rtl; opacity: .95;
+    }
+
+    /* ── body ── */
+    .ed-body { padding: 10px 12px 14px; }
+
+    /* section headings */
+    .ed-sec {
+      display: flex; align-items: center; gap: 0;
+      margin: 13px 0 6px;
+    }
+    .ed-sec .sec-num {
+      background: #14532d; color: #fff;
+      font-size: 9px; font-weight: 900; letter-spacing: .08em;
+      padding: 3px 8px; text-transform: uppercase;
+    }
+    .ed-sec .sec-lbl {
+      background: #ecfdf5; color: #14532d;
+      font-size: 9px; font-weight: 800; letter-spacing: .1em;
+      text-transform: uppercase; padding: 3px 10px;
+      border: 1px solid #86efac; border-left: 0; flex: 1;
+    }
+
+    /* form grid */
+    .ed-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      border: 1px solid #9ca3af;
+      border-bottom: none;
+    }
+    .ed-grid.cols2 { grid-template-columns: repeat(2, 1fr); }
+    .ed-grid.cols3 { grid-template-columns: repeat(3, 1fr); }
+    .ed-grid.cols6 { grid-template-columns: repeat(6, 1fr); }
+
+    .ed-cell {
+      border-right: 1px solid #9ca3af;
+      border-bottom: 1px solid #9ca3af;
+      min-height: 34px;
+      display: flex; flex-direction: column;
+    }
+    .ed-cell:last-child { border-right: none; }
+    .ed-cell.span2 { grid-column: span 2; }
+    .ed-cell.span3 { grid-column: span 3; }
+    .ed-cell.span4 { grid-column: span 4; }
+    .ed-cell.span6 { grid-column: span 6; }
+    .ed-cell.tall { min-height: 56px; }
+    .ed-cell.xtall { min-height: 72px; }
+
+    .ed-cell .lbl {
+      font-size: 7.5px; font-weight: 800;
+      letter-spacing: .07em; text-transform: uppercase;
+      color: #6b7280; background: #f9fafb;
+      padding: 3px 7px; border-bottom: 1px solid #e5e7eb;
+      line-height: 1;
+    }
+    .ed-cell .lbl.green {
+      background: #14532d; color: #fff; border-bottom-color: #14532d;
+    }
+    .ed-cell .field {
+      flex: 1; display: flex; align-items: center; padding: 0;
+    }
+    .ed-cell .field input,
+    .ed-cell .field select,
+    .ed-cell .field textarea {
+      width: 100%; height: 100%; border: 0; outline: none;
+      background: transparent; font: inherit; font-weight: 600;
+      color: #111; padding: 5px 7px;
+    }
+    .ed-cell .field input[type="date"],
+    .ed-cell .field input[type="time"] {
+      cursor: pointer; color-scheme: light;
+    }
+    .ed-cell .field select { cursor: pointer; appearance: auto; }
+    .ed-cell .field textarea {
+      resize: none; padding-top: 5px; padding-bottom: 5px;
+      line-height: 1.4; align-self: stretch;
+    }
+    .ed-cell .field input:focus,
+    .ed-cell .field select:focus,
+    .ed-cell .field textarea:focus {
+      background: #f0fdf4;
+    }
+    .ed-cell .name-input { font-size: 13px; font-weight: 700; }
+
+    /* ── check chips ── */
+    .ed-chips-wrap {
+      border: 1px solid #9ca3af; border-top: none;
+      background: #f9fafb; padding: 7px 8px;
+      display: flex; flex-wrap: wrap; gap: 4px 6px;
+    }
+    .ed-chip {
+      display: inline-flex; align-items: center; gap: 5px;
+      border: 1px solid #d1d5db; background: #fff;
+      padding: 3px 9px 3px 7px; cursor: pointer;
+      font-size: 10px; font-weight: 600; color: #374151;
+      user-select: none;
+      transition: border-color .12s, background .12s;
+    }
+    .ed-chip:hover { border-color: #6ee7b7; background: #f0fdf4; }
+    .ed-chip input {
+      position: absolute; opacity: 0; width: 1px; height: 1px;
+    }
+    .ed-chip .cb {
+      width: 12px; height: 12px; border: 1.5px solid #6b7280;
+      flex-shrink: 0; position: relative; background: #fff;
+    }
+    .ed-chip input[type="radio"] + .cb { border-radius: 50%; }
+    .ed-chip input[type="checkbox"] + .cb { border-radius: 2px; }
+    .ed-chip input:checked + .cb {
+      background: #14532d; border-color: #14532d;
+    }
+    .ed-chip input[type="checkbox"]:checked + .cb::after {
+      content: ""; position: absolute;
+      left: 2px; top: -1px;
+      width: 4px; height: 8px;
+      border: 2px solid #fff; border-top: 0; border-left: 0;
+      transform: rotate(45deg);
+    }
+    .ed-chip input[type="radio"]:checked + .cb::after {
+      content: ""; position: absolute;
+      left: 3px; top: 3px;
+      width: 4px; height: 4px;
+      border-radius: 50%; background: #fff;
+    }
+    .ed-chip:has(input:checked) {
+      background: #ecfdf5; border-color: #14532d; color: #14532d; font-weight: 700;
+    }
+
+    /* ── cost table ── */
+    .ed-cost {
+      width: 100%; border-collapse: collapse;
+      border: 1px solid #9ca3af;
+    }
+    .ed-cost th {
+      background: #14532d; color: #fff;
+      font-size: 8.5px; font-weight: 800;
+      letter-spacing: .08em; text-transform: uppercase;
+      padding: 6px 9px; text-align: left;
+    }
+    .ed-cost th.right { text-align: right; }
+    .ed-cost td {
+      border-top: 1px solid #e5e7eb;
+      font-size: 11px; padding: 0; vertical-align: middle;
+    }
+    .ed-cost td.item { padding: 6px 9px; font-weight: 600; color: #374151; background: #f9fafb; }
+    .ed-cost td.amt { width: 120px; }
+    .ed-cost td.amt input {
+      width: 100%; border: 0; outline: none; background: transparent;
+      font: inherit; font-weight: 700; text-align: right; padding: 6px 9px;
+      font-variant-numeric: tabular-nums;
+    }
+    .ed-cost td.amt input:focus { background: #f0fdf4; }
+    .ed-cost tr.total td.item {
+      background: #14532d; color: #fff; font-weight: 800;
+    }
+    .ed-cost tr.total td.amt { background: #ecfdf5; }
+    .ed-cost tr.total td.amt input {
+      font-size: 13px; font-weight: 800; color: #14532d; background: transparent;
+    }
+
+    /* ── words ── */
+    .ed-words {
+      border: 1px solid #9ca3af; border-top: none;
+      padding: 6px 9px; background: #f9fafb;
+      display: flex; gap: 8px; align-items: baseline;
+    }
+    .ed-words .wlbl {
+      font-size: 8px; font-weight: 800; text-transform: uppercase;
+      letter-spacing: .08em; color: #6b7280; white-space: nowrap;
+    }
+    .ed-words .wval {
+      font-size: 11.5px; font-weight: 700; color: #111;
+    }
+
+    /* ── photo boxes ── */
+    .ed-photos {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 0;
+      border: 1px solid #9ca3af; border-top: none;
+    }
+    .ed-photo {
+      min-height: 70px;
+      border-right: 1px solid #9ca3af;
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; gap: 4px;
+      background: #fafafa; color: #9ca3af;
+      padding: 6px 4px; text-align: center;
+    }
+    .ed-photo:last-child { border-right: none; }
+    .ed-photo i { font-size: 1.2rem; }
+    .ed-photo span { font-size: 8.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
+
+    /* ── declaration ── */
+    .ed-decl {
+      border: 1px solid #9ca3af; border-top: none;
+      padding: 7px 10px;
+      font-size: 9.5px; line-height: 1.5; color: #374151;
+      background: #f9fafb; border-left: 4px solid #14532d;
+    }
+    .ed-decl strong { color: #14532d; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; }
+
+    /* ── signatures ── */
+    .ed-signs {
+      display: grid; grid-template-columns: repeat(5, 1fr);
+      border: 1px solid #9ca3af; border-top: none;
+    }
+    .ed-sign {
+      border-right: 1px solid #9ca3af;
+      min-height: 96px;
+      display: flex; flex-direction: column;
+      padding: 6px 7px;
+    }
+    .ed-sign:last-child { border-right: none; }
+    .ed-sign .stitle {
+      font-size: 8px; font-weight: 900; text-transform: uppercase;
+      letter-spacing: .08em; color: #14532d;
+      border-bottom: 1px solid #e5e7eb; padding-bottom: 4px; margin-bottom: 5px;
+      text-align: center;
+    }
+    .ed-sign .sspace { flex: 1; min-height: 36px; }
+    .ed-sign input {
+      width: 100%; border: 0; border-top: 1px dashed #9ca3af;
+      outline: none; background: transparent;
+      font-size: 9.5px; font-weight: 600; padding: 4px 0 0;
+      font-family: inherit; text-align: center;
+    }
+    .ed-sign .shint {
+      margin-top: 2px; font-size: 7.5px; color: #9ca3af;
+      text-align: center; text-transform: uppercase; letter-spacing: .04em;
+    }
+
+    /* ── footer ── */
+    .ed-foot {
+      border-top: 2px solid #14532d;
+      padding: 6px 12px;
+      display: flex; justify-content: space-between; gap: 10px;
+      font-size: 8px; color: #6b7280;
+    }
+    .ed-foot strong { color: #14532d; font-weight: 800; }
+    .ed-foot .fr { text-align: right; }
+
+    /* ══ PRINT ══ */
+    @media print {
+      @page { size: A4 portrait; margin: 5mm 7mm; }
+      html, body {
+        background: #fff !important;
+        height: auto !important;
+        overflow: visible !important;
+      }
+      .no-print,
+      .ed-toolbar,
+      .tc-topbar, .tc-sidebar, .tc-sidebar-backdrop,
+      .tc-menu-btn, #app-header, #tc-topbar, #tc-sidebar, #tc-sidebar-backdrop {
+        display: none !important;
+      }
+      .tc-wrap, .tc-shell, #tc-app-layout, .tc-app-layout {
+        display: block !important; margin: 0 !important; padding: 0 !important;
+        max-width: none !important; width: 100% !important;
+        height: auto !important; overflow: visible !important; position: static !important;
+      }
+      .ed-sheet {
+        width: 100% !important; max-width: none !important;
+        border: none !important; box-shadow: none !important;
+        margin: 0 !important; position: static !important;
+      }
+      .ed-cell .field input, .ed-cell .field select, .ed-cell .field textarea,
+      .ed-cost td.amt input, .ed-sign input {
+        border: none !important; background: transparent !important;
+        -webkit-print-color-adjust: exact; print-color-adjust: exact;
+      }
+      .ed-sign input { border-top: 1px dashed #9ca3af !important; }
+      .ed-cell .field textarea { resize: none !important; }
+      .ed-banner, .ed-header .docref-cell .drtitle, .ed-sec .sec-num, .ed-sec .sec-lbl,
+      .ed-cost th, .ed-cost tr.total td.item,
+      .ed-chip:has(input:checked),
+      .ed-chip input:checked + .cb {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+    }
+  </style>
+</head>
+<body class="tc-page">
+  <div class="tc-wrap">
+    <div class="tc-shell">
+      <div id="app-header"></div>
+
+      <div class="ed-toolbar no-print">
+        <a href="forms.html" class="tc-btn"><i class="bi bi-arrow-left"></i> Back to forms</a>
+        <span class="sp"></span>
+        <button type="button" class="tc-btn" id="btnClear"><i class="bi bi-eraser"></i> Clear</button>
+        <button type="button" class="tc-btn tc-btn-primary" id="btnPrint"><i class="bi bi-printer"></i> Print</button>
+      </div>
+
+      <div class="ed-sheet" id="edSheet">
+
+        <!-- HEADER -->
+        <div class="ed-header">
+          <div class="logo-cell">
+            <img src="aics-logo.png" alt="AICS" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+            <div class="fallback" style="display:none">AICS</div>
+          </div>
+          <div class="co-cell">
+            <div class="co-en">Arabian Integrated Construction Services</div>
+            <div class="co-ar">الشركة العربية المتكاملة لخدمات الإنشاءات</div>
+            <div class="co-sub">Kingdom of Saudi Arabia · Fleet / Store / HSE · Official controlled document</div>
+          </div>
+          <div class="docref-cell">
+            <div class="drtitle">Document</div>
+            <div class="drrow"><span class="drlbl">Code</span><span class="drval">AICS-ED</span></div>
+            <div class="drrow"><span class="drlbl">Rev.</span><span class="drval">01</span></div>
+            <div class="drrow"><span class="drlbl">Page</span><span class="drval">1 / 1</span></div>
+          </div>
+        </div>
+
+        <!-- BANNER -->
+        <div class="ed-banner">
+          <div>
+            <div class="ban-en">Equipment / Vehicle Damage Report</div>
+            <div class="ban-sub">Manlift · Scissor Lift · Boom · Telehandler · Forklift · Truck · Generator · Plant</div>
+          </div>
+          <div class="ban-ar">تقرير ضرر معدة / مركبة</div>
+        </div>
+
+        <!-- BODY -->
+        <div class="ed-body">
+
+          <!-- General info -->
+          <div class="ed-grid cols4">
+            <div class="ed-cell">
+              <div class="lbl">Form No.</div>
+              <div class="field"><input id="formNo" type="text" placeholder="ED-YYYYMMDD-HHMM" autocomplete="off"></div>
+            </div>
+            <div class="ed-cell">
+              <div class="lbl">Report Date</div>
+              <div class="field"><input id="formDate" type="date"></div>
+            </div>
+            <div class="ed-cell">
+              <div class="lbl">Shift</div>
+              <div class="field">
+                <select id="shift">
+                  <option value="">— Select —</option>
+                  <option>Day</option>
+                  <option>Night</option>
+                  <option>Ramadan / Special</option>
+                </select>
+              </div>
+            </div>
+            <div class="ed-cell">
+              <div class="lbl">Weather</div>
+              <div class="field">
+                <select id="weather">
+                  <option value="">— Select —</option>
+                  <option>Clear</option>
+                  <option>Hot / Dusty</option>
+                  <option>Rain / Wet</option>
+                  <option>Wind / Sandstorm</option>
+                  <option>Night / Low Visibility</option>
+                </select>
+              </div>
+            </div>
+            <div class="ed-cell span2">
+              <div class="lbl">Project</div>
+              <div class="field"><input id="project" type="text" placeholder="Project name / code" autocomplete="off"></div>
+            </div>
+            <div class="ed-cell span2">
+              <div class="lbl">Site / Area</div>
+              <div class="field"><input id="site" type="text" placeholder="Zone / building / level" autocomplete="off"></div>
+            </div>
+          </div>
+
+          <!-- Equipment type -->
+          <div class="ed-sec">
+            <span class="sec-num">① Equipment Type</span>
+            <span class="sec-lbl">tick all that apply</span>
+          </div>
+          <div class="ed-chips-wrap" id="equipTypes">
+            <label class="ed-chip"><input type="checkbox"><span class="cb"></span>Manlift</label>
+            <label class="ed-chip"><input type="checkbox"><span class="cb"></span>Scissor Lift</label>
+            <label class="ed-chip"><input type="checkbox"><span class="cb"></span>Boom Lift</label>
+            <label class="ed-chip"><input type="checkbox"><span class="cb"></span>Telehandler</label>
+            <label class="ed-chip"><input type="checkbox"><span class="cb"></span>Forklift</label>
+            <label class="ed-chip"><input type="checkbox"><span class="cb"></span>Truck / Pickup</label>
+            <label class="ed-chip"><input type="checkbox"><span class="cb"></span>Excavator / Loader</label>
+            <label class="ed-chip"><input type="checkbox"><span class="cb"></span>Generator / Plant</label>
+            <label class="ed-chip"><input type="checkbox"><span class="cb"></span>Other</label>
+          </div>
+
+          <!-- Equipment ID -->
+          <div class="ed-sec">
+            <span class="sec-num">② Equipment ID</span>
+            <span class="sec-lbl">identification details</span>
+          </div>
+          <div class="ed-grid cols4">
+            <div class="ed-cell">
+              <div class="lbl">Asset / Fleet No.</div>
+              <div class="field"><input id="assetNo" type="text" placeholder="Internal / QR" autocomplete="off"></div>
+            </div>
+            <div class="ed-cell">
+              <div class="lbl">Plate No.</div>
+              <div class="field"><input id="plateNo" type="text" placeholder="Vehicle plate" autocomplete="off"></div>
+            </div>
+            <div class="ed-cell">
+              <div class="lbl">Make / Model</div>
+              <div class="field"><input id="makeModel" type="text" placeholder="e.g. JLG 1930ES" autocomplete="off"></div>
+            </div>
+            <div class="ed-cell">
+              <div class="lbl">Serial No.</div>
+              <div class="field"><input id="serialNo" type="text" placeholder="Manufacturer serial" autocomplete="off"></div>
+            </div>
+            <div class="ed-cell">
+              <div class="lbl">Hour Meter</div>
+              <div class="field"><input id="hourMeter" type="text" placeholder="Hours reading" autocomplete="off"></div>
+            </div>
+            <div class="ed-cell">
+              <div class="lbl">Odometer (km)</div>
+              <div class="field"><input id="odometer" type="text" placeholder="If vehicle" autocomplete="off"></div>
+            </div>
+            <div class="ed-cell span2">
+              <div class="lbl">Owner / Supplier</div>
+              <div class="field"><input id="owner" type="text" placeholder="Company owned / rental company" autocomplete="off"></div>
+            </div>
+          </div>
+
+          <!-- Operator -->
+          <div class="ed-sec">
+            <span class="sec-num">③ Operator</span>
+            <span class="sec-lbl">responsible person</span>
+          </div>
+          <div class="ed-grid cols4">
+            <div class="ed-cell span4">
+              <div class="lbl green">Full Name (as on Iqama / ID)</div>
+              <div class="field"><input id="personName" class="name-input" type="text" placeholder="Write full name clearly" autocomplete="off"></div>
+            </div>
+            <div class="ed-cell">
+              <div class="lbl">Person Code</div>
+              <div class="field"><input id="personCode" type="text" placeholder="P…" autocomplete="off"></div>
+            </div>
+            <div class="ed-cell">
+              <div class="lbl">Iqama / ID No.</div>
+              <div class="field"><input id="iqama" type="text" placeholder="Residence / ID" autocomplete="off"></div>
+            </div>
+            <div class="ed-cell">
+              <div class="lbl">Company / Sub</div>
+              <div class="field"><input id="company" type="text" placeholder="Employer" autocomplete="off"></div>
+            </div>
+            <div class="ed-cell">
+              <div class="lbl">Phone</div>
+              <div class="field"><input id="phone" type="text" placeholder="Mobile" autocomplete="off"></div>
+            </div>
+            <div class="ed-cell span2">
+              <div class="lbl">License / Permit No.</div>
+              <div class="field"><input id="license" type="text" placeholder="Operator license number" autocomplete="off"></div>
+            </div>
+            <div class="ed-cell span2">
+              <div class="lbl">License Valid?</div>
+              <div class="field">
+                <select id="licenseValid">
+                  <option value="">— Select —</option>
+                  <option>Yes</option>
+                  <option>No / Expired</option>
+                  <option>Not Required</option>
+                  <option>Unknown</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Incident -->
+          <div class="ed-sec">
+            <span class="sec-num">④ Incident</span>
+            <span class="sec-lbl">when &amp; where it happened</span>
+          </div>
+          <div class="ed-grid cols4">
+            <div class="ed-cell">
+              <div class="lbl">Incident Date</div>
+              <div class="field"><input id="incidentDate" type="date"></div>
+            </div>
+            <div class="ed-cell">
+              <div class="lbl">Incident Time</div>
+              <div class="field"><input id="incidentTime" type="time"></div>
+            </div>
+            <div class="ed-cell span2">
+              <div class="lbl">Exact Location on Site</div>
+              <div class="field"><input id="incidentLoc" type="text" placeholder="Floor / axis / area / machine position" autocomplete="off"></div>
+            </div>
+          </div>
+
+          <!-- Severity -->
+          <div class="ed-sec" style="margin-top:11px">
+            <span class="sec-num">Severity</span>
+            <span class="sec-lbl">select one</span>
+          </div>
+          <div class="ed-chips-wrap" id="severity">
+            <label class="ed-chip"><input type="radio" name="sev"><span class="cb"></span>Minor (cosmetic)</label>
+            <label class="ed-chip"><input type="radio" name="sev"><span class="cb"></span>Moderate (repairable)</label>
+            <label class="ed-chip"><input type="radio" name="sev"><span class="cb"></span>Major (heavy repair)</label>
+            <label class="ed-chip"><input type="radio" name="sev"><span class="cb"></span>Total Loss / Write-off</label>
+            <label class="ed-chip"><input type="radio" name="sev"><span class="cb"></span>⚠ Unsafe — Stop Use</label>
+          </div>
+
+          <!-- Cause -->
+          <div class="ed-sec" style="margin-top:11px">
+            <span class="sec-num">Likely Cause</span>
+            <span class="sec-lbl">tick all that apply</span>
+          </div>
+          <div class="ed-chips-wrap" id="causes">
+            <label class="ed-chip"><input type="checkbox"><span class="cb"></span>Operator Error</label>
+            <label class="ed-chip"><input type="checkbox"><span class="cb"></span>Collision / Impact</label>
+            <label class="ed-chip"><input type="checkbox"><span class="cb"></span>Overload</label>
+            <label class="ed-chip"><input type="checkbox"><span class="cb"></span>Unstable Ground</label>
+            <label class="ed-chip"><input type="checkbox"><span class="cb"></span>Mechanical Failure</label>
+            <label class="ed-chip"><input type="checkbox"><span class="cb"></span>Lack of Maintenance</label>
+            <label class="ed-chip"><input type="checkbox"><span class="cb"></span>Site Condition</label>
+            <label class="ed-chip"><input type="checkbox"><span class="cb"></span>Weather</label>
+            <label class="ed-chip"><input type="checkbox"><span class="cb"></span>Third Party</label>
+            <label class="ed-chip"><input type="checkbox"><span class="cb"></span>Under Investigation</label>
+          </div>
+
+          <!-- Damage desc -->
+          <div class="ed-grid cols4" style="margin-top:11px">
+            <div class="ed-cell span4 xtall">
+              <div class="lbl">Damage Description — describe all damaged parts clearly</div>
+              <div class="field"><textarea id="damageDesc" placeholder="Basket · mast · hydraulics · tires · glass · body · controls · outriggers · cylinder…"></textarea></div>
+            </div>
+            <div class="ed-cell span2">
+              <div class="lbl">Still Operable?</div>
+              <div class="field">
+                <select id="operable">
+                  <option value="">— Select —</option>
+                  <option>Yes — Safe to Use</option>
+                  <option>Restricted Use Only</option>
+                  <option>No — Quarantine / Tag Out</option>
+                </select>
+              </div>
+            </div>
+            <div class="ed-cell span2">
+              <div class="lbl">Injury / Near Miss?</div>
+              <div class="field">
+                <select id="injury">
+                  <option value="">— Select —</option>
+                  <option>No Injury</option>
+                  <option>Near Miss</option>
+                  <option>First Aid</option>
+                  <option>Medical Treatment</option>
+                  <option>Serious Injury</option>
+                </select>
+              </div>
+            </div>
+            <div class="ed-cell span4">
+              <div class="lbl">Immediate Action Taken</div>
+              <div class="field"><input id="immediateAction" type="text" placeholder="Tag out · move to yard · call workshop · isolate area…" autocomplete="off"></div>
+            </div>
+            <div class="ed-cell span4">
+              <div class="lbl">Witnesses (names / P codes)</div>
+              <div class="field"><input id="witnesses" type="text" placeholder="Optional" autocomplete="off"></div>
+            </div>
+          </div>
+
+          <!-- Cost -->
+          <div class="ed-sec">
+            <span class="sec-num">⑤ Maintenance &amp; Cost (SAR)</span>
+            <span class="sec-lbl">estimate all related expenses</span>
+          </div>
+          <table class="ed-cost">
+            <thead>
+              <tr>
+                <th>Cost Item</th>
+                <th class="right" style="width:130px">Amount (SAR)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td class="item">Spare parts / materials</td><td class="amt"><input id="costParts" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></td></tr>
+              <tr><td class="item">Workshop labor / technician</td><td class="amt"><input id="costLabor" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></td></tr>
+              <tr><td class="item">Recovery / transport / crane</td><td class="amt"><input id="costTransport" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></td></tr>
+              <tr><td class="item">External workshop / OEM service</td><td class="amt"><input id="costExternal" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></td></tr>
+              <tr><td class="item">Downtime / rental loss (days × daily rate)</td><td class="amt"><input id="costDowntime" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></td></tr>
+              <tr><td class="item">Other (insurance excess, fines, towing…)</td><td class="amt"><input id="costOther" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></td></tr>
+              <tr class="total">
+                <td class="item">Total Estimated / Actual (SAR)</td>
+                <td class="amt"><input id="costTotal" type="text" readonly tabindex="-1" value="0.00"></td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="ed-words">
+            <span class="wlbl">Amount in words —</span>
+            <span class="wval" id="amountWords">Zero Saudi Riyals only</span>
+          </div>
+
+          <!-- Follow-up -->
+          <div class="ed-grid cols4" style="margin-top:11px">
+            <div class="ed-cell">
+              <div class="lbl">Downtime (days)</div>
+              <div class="field"><input id="downDays" type="number" min="0" step="0.5" placeholder="0" autocomplete="off"></div>
+            </div>
+            <div class="ed-cell">
+              <div class="lbl">Est. Return to Service</div>
+              <div class="field"><input id="returnDate" type="date"></div>
+            </div>
+            <div class="ed-cell span2">
+              <div class="lbl">Workshop / Vendor</div>
+              <div class="field"><input id="workshop" type="text" placeholder="Internal workshop or external garage" autocomplete="off"></div>
+            </div>
+            <div class="ed-cell span2">
+              <div class="lbl">Quotation / Invoice No.</div>
+              <div class="field"><input id="quoteNo" type="text" placeholder="Optional" autocomplete="off"></div>
+            </div>
+            <div class="ed-cell span2">
+              <div class="lbl">Insurance Claim No.</div>
+              <div class="field"><input id="insuranceNo" type="text" placeholder="Claim no. if applicable" autocomplete="off"></div>
+            </div>
+          </div>
+
+          <!-- Charge -->
+          <div class="ed-sec">
+            <span class="sec-num">⑥ Charge / Responsibility</span>
+            <span class="sec-lbl">tick all that apply</span>
+          </div>
+          <div class="ed-chips-wrap" id="chargeTo">
+            <label class="ed-chip"><input type="checkbox"><span class="cb"></span>Charge Worker</label>
+            <label class="ed-chip"><input type="checkbox"><span class="cb"></span>Charge Subcontractor</label>
+            <label class="ed-chip"><input type="checkbox"><span class="cb"></span>Company Absorbs</label>
+            <label class="ed-chip"><input type="checkbox"><span class="cb"></span>Insurance</label>
+            <label class="ed-chip"><input type="checkbox"><span class="cb"></span>Shared %</label>
+            <label class="ed-chip"><input type="checkbox"><span class="cb"></span>Pending Investigation</label>
+          </div>
+          <div class="ed-grid cols4" style="margin-top:0">
+            <div class="ed-cell span2">
+              <div class="lbl">Amount to Charge (SAR)</div>
+              <div class="field"><input id="chargeAmount" type="number" min="0" step="0.01" placeholder="May equal total or partial" inputmode="decimal"></div>
+            </div>
+            <div class="ed-cell span2">
+              <div class="lbl">Salary Deduction?</div>
+              <div class="field">
+                <select id="salaryDeduct">
+                  <option value="">— Select —</option>
+                  <option>No</option>
+                  <option>Yes — Full</option>
+                  <option>Yes — Installments</option>
+                </select>
+              </div>
+            </div>
+            <div class="ed-cell span4">
+              <div class="lbl">Charge Remarks / Backcharge Ref.</div>
+              <div class="field"><input id="chargeRemark" type="text" placeholder="Agreement · HR note · backcharge document reference" autocomplete="off"></div>
+            </div>
+          </div>
+
+          <!-- Photos -->
+          <div class="ed-sec">
+            <span class="sec-num">⑦ Photo Evidence</span>
+            <span class="sec-lbl">attach / staple to this form</span>
+          </div>
+          <div class="ed-photos">
+            <div class="ed-photo"><i class="bi bi-camera-fill"></i><span>Overall unit</span></div>
+            <div class="ed-photo"><i class="bi bi-zoom-in"></i><span>Damage close-up</span></div>
+            <div class="ed-photo"><i class="bi bi-upc-scan"></i><span>Plate / serial</span></div>
+            <div class="ed-photo"><i class="bi bi-speedometer2"></i><span>Site / hour meter</span></div>
+          </div>
+
+          <!-- Declaration -->
+          <div class="ed-decl" style="margin-top:11px">
+            <strong>Declaration — </strong>
+            I confirm the particulars above are true and correct to the best of my knowledge.
+            The operator / responsible person acknowledges the damage description and the proposed cost / charge arrangement.
+            Equipment marked <strong>Unsafe</strong> must not be operated until formally released by a competent authority.
+            This form is an official part of the project HSE and commercial record.
+          </div>
+
+        </div><!-- /body -->
+
+        <!-- SIGNATURES -->
+        <div class="ed-sec" style="margin: 0 12px 5px">
+          <span class="sec-num">⑧ Authorizations</span>
+          <span class="sec-lbl">all parties must sign</span>
+        </div>
+        <div class="ed-signs">
+          <div class="ed-sign"><div class="stitle">Operator</div><div class="sspace"></div><input type="text" placeholder="Name" autocomplete="off"><div class="shint">Signature &amp; date</div></div>
+          <div class="ed-sign"><div class="stitle">Supervisor</div><div class="sspace"></div><input type="text" placeholder="Name" autocomplete="off"><div class="shint">Signature &amp; date</div></div>
+          <div class="ed-sign"><div class="stitle">Store / Fleet</div><div class="sspace"></div><input type="text" placeholder="Name" autocomplete="off"><div class="shint">Signature &amp; date</div></div>
+          <div class="ed-sign"><div class="stitle">HSE Officer</div><div class="sspace"></div><input type="text" placeholder="Name" autocomplete="off"><div class="shint">Signature &amp; date</div></div>
+          <div class="ed-sign"><div class="stitle">Management</div><div class="sspace"></div><input type="text" placeholder="Name" autocomplete="off"><div class="shint">Approval</div></div>
+        </div>
+
+        <!-- FOOTER -->
+        <div class="ed-foot">
+          <div><strong>AICS</strong> · Arabian Integrated Construction Services · Controlled document — do not alter after approval · Retain with project file</div>
+          <div class="fr">System by Mahmoud Iskandar · +966 56 005 4242</div>
+        </div>
+
+      </div><!-- /sheet -->
+    </div>
+  </div>
+
+  <script>
+    const ONES = ["","One","Two","Three","Four","Five","Six","Seven","Eight","Nine",
+      "Ten","Eleven","Twelve","Thirteen","Fourteen","Fifteen","Sixteen","Seventeen","Eighteen","Nineteen"];
+    const TENS = ["","","Twenty","Thirty","Forty","Fifty","Sixty","Seventy","Eighty","Ninety"];
+    const COST_IDS = ["costParts","costLabor","costTransport","costExternal","costDowntime","costOther"];
+    const TEXT_IDS = [
+      "formNo","project","site","shift","weather","assetNo","plateNo","makeModel","serialNo",
+      "hourMeter","odometer","owner","personName","personCode","iqama","company","phone",
+      "license","licenseValid","incidentLoc","damageDesc","operable","injury","immediateAction",
+      "witnesses","workshop","quoteNo","insuranceNo","chargeAmount","salaryDeduct","chargeRemark","downDays"
+    ];
+    const DATE_IDS = ["formDate","incidentDate","returnDate"];
+    const CHECK_ROOTS = ["equipTypes","severity","causes","chargeTo"];
+
+    function chunkW(n){
+      if(n<20)return ONES[n];
+      if(n<100)return(TENS[Math.floor(n/10)]+(n%10?"-"+ONES[n%10]:"")).trim();
+      return(ONES[Math.floor(n/100)]+" Hundred"+(n%100?" "+chunkW(n%100):"")).trim();
+    }
+    function n2w(num){
+      let n=Math.floor(Math.abs(Number(num)||0));
+      if(!n)return"Zero";
+      const sc=[{v:1e9,w:"Billion"},{v:1e6,w:"Million"},{v:1e3,w:"Thousand"}];
+      const p=[];
+      for(const s of sc){if(n>=s.v){p.push(chunkW(Math.floor(n/s.v))+" "+s.w);n%=s.v;}}
+      if(n>0)p.push(chunkW(n));
+      return p.join(" ");
+    }
+    function inWords(t){
+      const v=Math.round((Number(t)||0)*100)/100;
+      const r=Math.floor(v), h=Math.round((v-r)*100);
+      let s=n2w(r)+" Saudi Riyal"+(r===1?"":"s");
+      if(h>0)s+=" and "+n2w(h)+" Halala"+(h===1?"":"s");
+      return s+" only";
+    }
+    function money(n){
+      const v=Number(n);
+      return Number.isFinite(v)?v.toLocaleString("en-SA",{minimumFractionDigits:2,maximumFractionDigits:2}):"0.00";
+    }
+    function recalc(){
+      let total=0;
+      COST_IDS.forEach(id=>{total+=Number(document.getElementById(id)?.value)||0;});
+      const te=document.getElementById("costTotal");
+      if(te)te.value=money(total);
+      const we=document.getElementById("amountWords");
+      if(we)we.textContent=inWords(total);
+    }
+    function suggestFormNo(){
+      const d=new Date();
+      return "ED-"+d.getFullYear()+String(d.getMonth()+1).padStart(2,"0")+String(d.getDate()).padStart(2,"0")
+        +"-"+String(d.getHours()).padStart(2,"0")+String(d.getMinutes()).padStart(2,"0");
+    }
+    function todayIso(){return new Date().toISOString().slice(0,10);}
+    function nowTime(){const d=new Date();return String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");}
+
+    function clearForm(){
+      TEXT_IDS.forEach(id=>{const e=document.getElementById(id);if(e)e.value="";});
+      DATE_IDS.forEach(id=>{const e=document.getElementById(id);if(e)e.value="";});
+      COST_IDS.forEach(id=>{const e=document.getElementById(id);if(e)e.value="";});
+      const ti=document.getElementById("incidentTime");if(ti)ti.value="";
+      CHECK_ROOTS.forEach(id=>{
+        document.querySelectorAll("#"+id+" input").forEach(el=>{el.checked=false;});
+      });
+      document.querySelectorAll(".ed-sign input").forEach(el=>{el.value="";});
+      // Auto-fill
+      const fn=document.getElementById("formNo");if(fn)fn.value=suggestFormNo();
+      const fd=document.getElementById("formDate");if(fd)fd.value=todayIso();
+      const id2=document.getElementById("incidentDate");if(id2)id2.value=todayIso();
+      if(ti)ti.value=nowTime();
+      recalc();
+    }
+
+    TCUI.bootPage(()=>{
+      TCUI.mountHeader("app-header",{active:"forms",titleKey:"formEquipDamage",subtitleKey:"formEquipDamageSub"});
+      if(typeof TCI18N!=="undefined"){
+        if(typeof TCI18N.applyDocumentLang==="function")TCI18N.applyDocumentLang();
+        else if(typeof TCI18N.apply==="function")TCI18N.apply(document);
+      }
+      clearForm();
+      COST_IDS.forEach(id=>{
+        const e=document.getElementById(id);
+        if(e)e.addEventListener("input",recalc);
+      });
+      document.getElementById("btnClear")?.addEventListener("click",()=>{
+        if(confirm("Clear all fields?"))clearForm();
+      });
+      document.getElementById("btnPrint")?.addEventListener("click",e=>{
+        e.preventDefault();try{window.print();}catch(_){}
+      });
+    },{pageId:"forms"});
+  </script>
+</body>
+</html>
