@@ -107,7 +107,8 @@ function defImage() {
   return baseLayer("image", {
     name: "Picture",
     src: "",
-    fit: "contain"
+    fit: "contain",
+    keepCentered: false
   });
 }
 

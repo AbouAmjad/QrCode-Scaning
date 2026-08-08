@@ -439,20 +439,7 @@ export class LabelStudio {
       }, "clear image");
     });
     root.querySelector("[data-img-center]")?.addEventListener("click", () => {
-      this.centerLayer(ly.id, { keep: false });
-    });
-    root.querySelector('[data-f="keepCentered"]')?.addEventListener("change", (e) => {
-      const on = !!e.target.checked;
-      this.store.update((d) => {
-        const t = d.layers.find((x) => x.id === ly.id);
-        if (!t) return;
-        t.keepCentered = on;
-        if (on) {
-          const c = centerLayerOnLabel(t, contentBox(d));
-          t.x = c.x;
-          t.y = c.y;
-        }
-      }, on ? "keep centered" : "unlock center");
+      this.centerLayer(ly.id, { keep: true });
     });
   }
 
