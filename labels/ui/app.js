@@ -47,6 +47,9 @@ export async function bootLabelApp() {
     },
     onSave: async () => {
       await saveTpl(false);
+    },
+    onSaveAs: async () => {
+      await saveTpl(true);
     }
   });
 

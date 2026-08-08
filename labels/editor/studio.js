@@ -21,13 +21,18 @@ const HANDLES = ["nw", "n", "ne", "e", "se", "s", "sw", "w"];
 
 /**
  * @param {HTMLElement} root  #editorHost
- * @param {{ onChange?: (doc: object) => void, onSave?: (doc: object) => void|Promise<void> }} [opts]
+ * @param {{
+ *   onChange?: (doc: object) => void,
+ *   onSave?: (doc: object) => void|Promise<void>,
+ *   onSaveAs?: (doc: object) => void|Promise<void>
+ * }} [opts]
  */
 export class LabelStudio {
-  constructor(root, { onChange, onSave } = {}) {
+  constructor(root, { onChange, onSave, onSaveAs } = {}) {
     this.root = root;
     this.onChange = onChange;
     this.onSave = onSave;
+    this.onSaveAs = onSaveAs;
     this.store = new DocumentStore();
     this.selection = new SelectionModel();
     this.viewport = new Viewport({ zoom: getStudioZoom() });
@@ -143,13 +148,14 @@ export class LabelStudio {
     this.el.studio.classList.remove("open");
   }
 
-  /** Persist current document via host `onSave` (does not close the studio). */
-  async save() {
+  /** Persist current document via host callbacks (does not close the studio). */
+  async save(forceNew = false) {
     if (!this._open) return;
     const doc = cloneDocument(this.doc);
     this.onChange?.(doc);
-    if (!this.onSave) return;
-    await this.onSave(doc);
+    const fn = forceNew ? this.onSaveAs || this.onSave : this.onSave;
+    if (!fn) return;
+    await fn(doc);
   }
 
   undo() {
@@ -459,7 +465,10 @@ export class LabelStudio {
     this.root.querySelector("[data-back]")?.addEventListener("click", () => this.close(true));
     this.root.querySelector("[data-done]")?.addEventListener("click", () => this.close(true));
     this.root.querySelector("[data-save]")?.addEventListener("click", () => {
-      void this.save();
+      void this.save(false);
+    });
+    this.root.querySelector("[data-save-as]")?.addEventListener("click", () => {
+      void this.save(true);
     });
     this.root.querySelector("[data-reset]")?.addEventListener("click", () => {
       this.store.update((d) => {
@@ -500,6 +509,22 @@ export class LabelStudio {
   _onTool(tool) {
     if (tool === "delete") {
       this.deleteSelected();
+      return;
+    }
+    if (tool === "copy") return this.copy();
+    if (tool === "cut") return this.cut();
+    if (tool === "paste") return this.paste();
+    if (tool === "duplicate") return this.duplicate();
+    if (tool === "group") {
+      this.store.update((d) => {
+        d.layers = this.selection.group(d.layers);
+      }, "group");
+      return;
+    }
+    if (tool === "ungroup") {
+      this.store.update((d) => {
+        d.layers = this.selection.ungroup(d.layers);
+      }, "ungroup");
       return;
     }
     if (tool === "select" || tool === "hand") {
@@ -772,26 +797,55 @@ function typeFieldsHtml(ly) {
   return "";
 }
 
+function studioLabel(key, fallback) {
+  try {
+    if (typeof TCI18N !== "undefined" && TCI18N.t) {
+      const v = TCI18N.t(key);
+      if (v && v !== key) return v;
+    }
+  } catch {
+    /* ignore */
+  }
+  return fallback;
+}
+
 function studioMarkup() {
+  const back = studioLabel("studioBack", "رجوع");
+  const reset = studioLabel("studioReset", "إعادة ضبط");
+  const save = studioLabel("saveTemplate", "حفظ القالب");
+  const saveAs = studioLabel("saveAsTemplate", "حفظ باسم…");
+  const done = studioLabel("studioDone", "تم");
   return `
     <div class="le-studio" hidden>
       <header class="le-head">
-        <div>
-          <h3>Design Studio</h3>
-          <div class="meta" data-meta>50×30 mm</div>
+        <div class="le-head-title">
+          <button type="button" class="le-btn le-btn-ghost" data-back title="${escapeAttr(back)}">
+            <i class="bi bi-arrow-right"></i> ${escapeHtml(back)}
+          </button>
+          <div>
+            <h3>${escapeHtml(studioLabel("openDesignStudio", "Design Studio"))}</h3>
+            <div class="meta" data-meta>50×30 mm</div>
+          </div>
         </div>
         <div class="le-head-actions">
-          <button type="button" class="tc-btn" data-back title="Back to templates">← Back</button>
-          <button type="button" class="tc-btn" data-reset>Reset</button>
-          <button type="button" class="tc-btn tc-btn-primary" data-save title="Save template (Ctrl+S)">Save</button>
-          <button type="button" class="tc-btn" data-done id="leDone">Done</button>
+          <button type="button" class="le-btn" data-reset title="${escapeAttr(reset)}">
+            <i class="bi bi-arrow-counterclockwise"></i> ${escapeHtml(reset)}
+          </button>
+          <button type="button" class="le-btn" data-save-as title="${escapeAttr(saveAs)}">
+            <i class="bi bi-files"></i> ${escapeHtml(saveAs)}
+          </button>
+          <button type="button" class="le-btn le-btn-primary" data-save title="${escapeAttr(save)} (Ctrl+S)">
+            <i class="bi bi-save"></i> ${escapeHtml(save)}
+          </button>
+          <button type="button" class="le-btn le-btn-accent" data-done id="leDone" title="${escapeAttr(done)}">
+            <i class="bi bi-check2"></i> ${escapeHtml(done)}
+          </button>
         </div>
       </header>
       <div class="lt-toolbar">
         <div class="lt-group">
           <button type="button" data-tool="select" class="is-active" title="Select (V)">Select</button>
           <button type="button" data-tool="hand" title="Hand (H)">Hand</button>
-          <button type="button" data-tool="delete" title="Delete selected (Del)">Delete</button>
         </div>
         <div class="lt-group">
           <button type="button" data-tool="qr">+ QR</button>
@@ -799,6 +853,15 @@ function studioMarkup() {
           <button type="button" data-tool="image">+ Image</button>
           <button type="button" data-tool="shape">+ Shape</button>
           <button type="button" data-tool="line">+ Line</button>
+        </div>
+        <div class="lt-group">
+          <button type="button" data-tool="copy" title="Copy (Ctrl+C)">Copy</button>
+          <button type="button" data-tool="cut" title="Cut (Ctrl+X)">Cut</button>
+          <button type="button" data-tool="paste" title="Paste (Ctrl+V)">Paste</button>
+          <button type="button" data-tool="duplicate" title="Duplicate (Ctrl+D)">Duplicate</button>
+          <button type="button" data-tool="delete" title="Delete (Del)">Delete</button>
+          <button type="button" data-tool="group" title="Group (Ctrl+G)">Group</button>
+          <button type="button" data-tool="ungroup" title="Ungroup (Ctrl+Shift+G)">Ungroup</button>
         </div>
         <div class="lt-group">
           <button type="button" data-tool="align-left" title="Align left">⫷</button>
