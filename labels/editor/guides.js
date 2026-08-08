@@ -1,6 +1,9 @@
 /**
- * editor/guides.js — rulers, grid, printable/safe areas, smart guides.
+ * editor/guides.js — rulers, optional in-label grid, smart guides.
  * Overlay painting only — never mutates document geometry.
+ *
+ * Permanent center crosshairs are intentionally omitted.
+ * Alignment lines appear only while dragging (smartGuides).
  */
 import { contentBox } from "../layout/index.js";
 
@@ -27,8 +30,9 @@ export class GuidesPainter {
     const box = contentBox(doc);
     const gridMm = doc.gridMm || 1;
 
+    // Grid stays inside the label page only (never outside the stage).
     if (doc.showGuides !== false && gridMm > 0) {
-      ctx.strokeStyle = "rgba(15,23,42,0.08)";
+      ctx.strokeStyle = "rgba(15,23,42,0.07)";
       ctx.lineWidth = 1;
       for (let x = 0; x <= doc.labelW + 0.001; x += gridMm) {
         const px = x * pxPerMm;
@@ -46,23 +50,23 @@ export class GuidesPainter {
       }
     }
 
-    // Printable / content area (inner margin)
-    ctx.strokeStyle = "rgba(14,116,144,0.35)";
-    ctx.setLineDash([4, 3]);
-    ctx.strokeRect(
-      box.ox * pxPerMm,
-      box.oy * pxPerMm,
-      box.usableW * pxPerMm,
-      box.usableH * pxPerMm
-    );
-    ctx.setLineDash([]);
+    // Optional printable inset — only with Grid on (keeps the page clean by default).
+    if (doc.showGuides !== false && (box.ox > 0 || box.oy > 0)) {
+      ctx.strokeStyle = "rgba(14,116,144,0.28)";
+      ctx.setLineDash([4, 3]);
+      ctx.strokeRect(
+        box.ox * pxPerMm,
+        box.oy * pxPerMm,
+        box.usableW * pxPerMm,
+        box.usableH * pxPerMm
+      );
+      ctx.setLineDash([]);
+    }
 
-    // Page frame is painted by renderLabel (label geometry), not the guides overlay.
-
-    // Safe area
-    if (doc.showSafeArea !== false && doc.safeMm > 0) {
+    // Optional safe-area inset (off by default in document defaults going forward).
+    if (doc.showSafeArea === true && doc.safeMm > 0) {
       const s = doc.safeMm;
-      ctx.strokeStyle = "rgba(220,38,38,0.35)";
+      ctx.strokeStyle = "rgba(220,38,38,0.3)";
       ctx.setLineDash([2, 2]);
       ctx.strokeRect(
         (box.ox + s) * pxPerMm,
@@ -73,42 +77,28 @@ export class GuidesPainter {
       ctx.setLineDash([]);
     }
 
-    // Bleed outline (outside label edge hint)
-    if (doc.bleedMm > 0) {
-      const b = doc.bleedMm;
-      ctx.strokeStyle = "rgba(234,179,8,0.4)";
-      ctx.setLineDash([3, 3]);
-      ctx.strokeRect(-b * pxPerMm, -b * pxPerMm, (doc.labelW + 2 * b) * pxPerMm, (doc.labelH + 2 * b) * pxPerMm);
-      ctx.setLineDash([]);
-    }
-
-    // Center lines
-    ctx.strokeStyle = "rgba(15,118,110,0.45)";
-    ctx.setLineDash([6, 4]);
-    const cx = (box.ox + box.usableW / 2) * pxPerMm;
-    const cy = (box.oy + box.usableH / 2) * pxPerMm;
-    ctx.beginPath();
-    ctx.moveTo(cx, 0);
-    ctx.lineTo(cx, h);
-    ctx.moveTo(0, cy);
-    ctx.lineTo(w, cy);
-    ctx.stroke();
-    ctx.setLineDash([]);
-
+    // Temporary smart alignment guides (drag only).
+    const seen = new Set();
     for (const g of this.smartGuides) {
-      ctx.strokeStyle = "rgba(236,72,153,0.85)";
+      const key = `${g.axis}:${g.value}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      ctx.save();
+      ctx.strokeStyle = "rgba(219,39,119,0.92)";
       ctx.lineWidth = 1.25;
+      ctx.setLineDash([]);
       ctx.beginPath();
       if (g.axis === "x") {
         const px = (box.ox + g.value) * pxPerMm;
-        ctx.moveTo(px, 0);
-        ctx.lineTo(px, h);
+        ctx.moveTo(px + 0.5, 0);
+        ctx.lineTo(px + 0.5, h);
       } else {
         const py = (box.oy + g.value) * pxPerMm;
-        ctx.moveTo(0, py);
-        ctx.lineTo(w, py);
+        ctx.moveTo(0, py + 0.5);
+        ctx.lineTo(w, py + 0.5);
       }
       ctx.stroke();
+      ctx.restore();
     }
   }
 
@@ -125,18 +115,18 @@ export class GuidesPainter {
     vc.height = Math.ceil(doc.labelH * pxPerMm) + 40;
     const hctx = hc.getContext("2d");
     const vctx = vc.getContext("2d");
-    hctx.fillStyle = "#0f172a";
+    hctx.fillStyle = "#e2e8f0";
     hctx.fillRect(0, 0, hc.width, 20);
-    vctx.fillStyle = "#0f172a";
+    vctx.fillStyle = "#e2e8f0";
     vctx.fillRect(0, 0, 20, vc.height);
-    hctx.fillStyle = vctx.fillStyle = "#94a3b8";
+    hctx.fillStyle = vctx.fillStyle = "#64748b";
     hctx.font = vctx.font = "10px system-ui";
     for (let mm = 0; mm <= doc.labelW; mm += step) {
       const x = mm * pxPerMm;
       hctx.beginPath();
       hctx.moveTo(x, mm % 10 === 0 ? 8 : 12);
       hctx.lineTo(x, 20);
-      hctx.strokeStyle = "#64748b";
+      hctx.strokeStyle = "#94a3b8";
       hctx.stroke();
       if (mm % 10 === 0) hctx.fillText(String(mm), x + 2, 10);
     }
@@ -145,7 +135,7 @@ export class GuidesPainter {
       vctx.beginPath();
       vctx.moveTo(mm % 10 === 0 ? 8 : 12, y);
       vctx.lineTo(20, y);
-      vctx.strokeStyle = "#64748b";
+      vctx.strokeStyle = "#94a3b8";
       vctx.stroke();
     }
     hHost.appendChild(hc);

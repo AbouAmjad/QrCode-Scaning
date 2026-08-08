@@ -58,7 +58,8 @@ export class Viewport {
   /**
    * Fit label (mm) into stage (px) with padding.
    */
-  fit(stageW, stageH, labelWMm, labelHMm, pad = 48) {
+  fit(stageW, stageH, labelWMm, labelHMm, pad = 28) {
+    // Tight pad so Fit fills the viewport with the label page, not empty workspace.
     const availW = Math.max(40, stageW - pad * 2);
     const availH = Math.max(40, stageH - pad * 2);
     const cssFactor = cssMmToPxFactor(96);

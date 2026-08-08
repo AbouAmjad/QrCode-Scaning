@@ -80,7 +80,8 @@ export function createDocument(partial = {}) {
     snapToGrid: partial.snapToGrid !== false,
     snapToObjects: partial.snapToObjects !== false,
     showGuides: partial.showGuides !== false,
-    showSafeArea: partial.showSafeArea !== false,
+    // Safe-area overlay is opt-in — keeps the canvas free of permanent red guides.
+    showSafeArea: partial.showSafeArea === true,
     safeMm: Math.max(0, Number(partial.safeMm) || 1),
     bleedMm: Math.max(0, Number(partial.bleedMm) || 0)
   };

@@ -854,8 +854,12 @@ export class LabelStudio {
     const kind = this._drag.kind;
     this._drag = null;
     this.guides.clearSmartGuides();
-    if (kind === "pan") return;
+    if (kind === "pan") {
+      this.schedulePaint(false);
+      return;
+    }
     this.store.commit(this.store.get(), kind);
+    this.schedulePaint(false);
   }
 
   destroy() {

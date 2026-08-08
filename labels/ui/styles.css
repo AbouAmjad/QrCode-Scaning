@@ -323,24 +323,29 @@ body.le-studio-open .tc-nav-drawer {
 .le-ruler-v { width: 18px; background: #f1f5f9; overflow: hidden; border-right: 1px solid var(--le-line); }
 .le-canvas-wrap {
   flex: 1;
-  overflow: auto;
+  overflow: hidden; /* pan/zoom via stage transform — no dotted workspace scroll */
   display: grid;
   place-items: center;
-  padding: 1.5rem;
-  background:
-    radial-gradient(circle at 1px 1px, rgba(100,116,139,.22) 1px, transparent 0) 0 0 / 18px 18px,
-    linear-gradient(180deg, #f8fafc, #eef2f6);
+  padding: 1.25rem;
+  /* Calm surround only — never a dotted canvas outside the label page */
+  background: #dce3ea;
 }
 .le-stage {
   position: relative;
-  box-shadow: 0 18px 40px -24px rgba(15,23,42,.45);
+  overflow: hidden; /* clip everything to the label page bounds */
+  box-shadow:
+    0 0 0 1px rgba(15, 23, 42, 0.14),
+    0 16px 36px -22px rgba(15, 23, 42, 0.4);
   background: #fff;
-  outline: 1px solid rgba(15,23,42,.08);
+  outline: none;
+  transform-origin: center center;
+  will-change: transform;
 }
 .le-guides, .le-handles {
   position: absolute;
   inset: 0;
   pointer-events: none;
+  overflow: hidden;
 }
 .le-handles { pointer-events: none; }
 .le-sel-box {
