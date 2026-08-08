@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AbouAmjad Store System | Scan Log</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="app.css?v=live">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f766e">
+  
+  <script src="config.js?v=live"></script>
+  <script src="i18n.js?v=live"></script>
+  <script src="ui.js?v=live"></script>
+</head>
+<body class="tc-page">
+  <div class="tc-wrap">
+    <div class="tc-shell">
+      <div id="app-header"></div>
+
+      <div class="tc-card mb-3">
+        <p class="tc-text-muted mb-2" data-i18n="logsHint">
+          All IN / OUT / person / tool scans — same ledger that used to live in Google Sheets.
+        </p>
+        <div class="d-flex flex-wrap gap-2 align-items-center">
+          <select id="dateSelect" class="tc-select"><option value="" data-i18n="allDates">All dates</option></select>
+          <input type="text" id="q" class="tc-search" style="max-width:220px" data-i18n-placeholder="filterCode" placeholder="Filter code…">
+          <button type="button" class="tc-btn tc-btn-primary" id="btnLoad"><i class="bi bi-cloud-arrow-down"></i> <span data-i18n="load">Load</span>/button>
+          <button type="button" class="tc-btn" id="btnCsv"><i class="bi bi-download"></i> <span data-i18n="exportCsv">CSV</span>/button>
+          <span class="tc-text-muted small" id="countLabel"></span>
+        </div>
+      </div>
+
+      <div class="tc-table-wrap">
+        <div class="table-responsive">
+          <table class="tc-table mb-0">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th data-i18n="when">When</th>
+                <th data-i18n="date">Date</th>
+                <th data-i18n="type">Type</th>
+                <th data-i18n="code">Code</th>
+                <th data-i18n="description">Description</th>
+                <th data-i18n="by">By</th>
+              </tr>
+            </thead>
+            <tbody id="logBody">
+              <tr><td colspan="7" class="tc-text-muted text-center py-4">Select date (optional) and Load</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let rows = [];
+
+    document.addEventListener("DOMContentLoaded", () => TCUI.bootPage(() => {
+      const t = (k) => (typeof TCI18N !== "undefined" ? TCI18N.t(k) : k);
+      TCUI.mountHeader("app-header", {
+        active: "logs",
+        titleKey: "logs",
+        subtitleKey: "logsSub",
+        
+        
+        icon: "bi-journal-richtext"
+      });
+      document.getElementById("btnLoad").onclick = loadLog;
+      document.getElementById("btnCsv").onclick = exportCsv;
+      document.getElementById("q").oninput = render;
+      loadDates().then(() => loadLog());
+    }, { pageId: "logs" }));
+
+    async function loadDates() {
+      const sel = document.getElementById("dateSelect");
+      try {
+        const dates = await apiGet({ action: "getDates" });
+        const list = Array.isArray(dates) ? dates.slice().reverse() : [];
+        sel.innerHTML = `<option value="" data-i18n="allDates">All dates</option>` +
+          list.map((d) => `<option value="${escHtml(d)}">${escHtml(d)}</option>`).join("");
+        if (list[0]) sel.value = list[0];
+      } catch (_) { /* ignore */ }
+    }
+
+    function typeBadge(type, code) {
+      if (type === "direction") {
+        const out = code === "OUT";
+        return `<span class="tc-dir-badge ${out ? "tc-dir-out" : "tc-dir-in"}">${escHtml(code)}</span>`;
+      }
+      if (type === "person") return `<span class="tc-section-badge">Person</span>`;
+      if (type === "consumable") return `<span class="tc-section-badge">Consumable</span>`;
+      return `<span class="tc-section-badge">Tool</span>`;
+    }
+
+    function render() {
+      const q = document.getElementById("q").value.trim().toUpperCase();
+      const filtered = !q ? rows : rows.filter((r) =>
+        String(r.code || "").toUpperCase().includes(q) ||
+        String(r.description || "").toUpperCase().includes(q) ||
+        String(r.createdBy || "").toUpperCase().includes(q)
+      );
+      document.getElementById("countLabel").textContent = (typeof t === "function" ? t("rowsCount", { n: filtered.length }) : filtered.length + " rows");
+      const body = document.getElementById("logBody");
+      if (!filtered.length) {
+        body.innerHTML = `<tr><td colspan="7" class="tc-text-muted text-center py-4">${t("noRows")}</td></tr>`;
+        return;
+      }
+      body.innerHTML = filtered.map((r, i) => {
+        const when = formatDisplayDateTime(r.timestamp);
+        const day = formatDisplayDate(r.rowDate);
+        return `<tr>
+          <td class="tc-text-muted">${escHtml(String(r.id || i + 1))}</td>
+          <td><small>${escHtml(when)}</small></td>
+          <td><small>${escHtml(day)}</small></td>
+          <td>${typeBadge(r.type, r.code)}</td>
+          <td class="fw-bold">${escHtml(r.code || "")}</td>
+          <td>${escHtml(r.description || "")}</td>
+          <td><small>${escHtml(r.createdBy || "")}</small></td>
+        </tr>`;
+      }).join("");
+    }
+
+    async function loadLog() {
+      const body = document.getElementById("logBody");
+      body.innerHTML = `<tr><td colspan="7" class="tc-text-muted text-center py-4">Loading…</td></tr>`;
+      const date = document.getElementById("dateSelect").value;
+      try {
+        const data = await apiGet({ action: "getScanLog", date, limit: 3000 });
+        rows = (data && data.items) || [];
+        render();
+      } catch (e) {
+        body.innerHTML = `<tr><td colspan="7" class="text-danger text-center">${escHtml(e.message || "Error")}</td></tr>`;
+      }
+    }
+
+    function exportCsv() {
+      const q = document.getElementById("q").value.trim().toUpperCase();
+      const filtered = !q ? rows : rows.filter((r) => String(r.code || "").toUpperCase().includes(q));
+      const lines = [["id", "timestamp", "rowDate", "type", "code", "description", "createdBy"].join(",")];
+      filtered.forEach((r) => {
+        lines.push([
+          r.id,
+          r.timestamp || "",
+          r.rowDate || "",
+          r.type || "",
+          r.code || "",
+          `"${String(r.description || "").replace(/"/g, '""')}"`,
+          r.createdBy || ""
+        ].join(","));
+      });
+      const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "scan-log.csv";
+      a.click();
+    }
+  </script>
+</body>
+</html>

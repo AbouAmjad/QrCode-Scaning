@@ -9,8 +9,11 @@ async function main() {
   const sql = fs.readFileSync(path.join(__dirname, "..", "sql", "schema.sql"), "utf8");
   await pool.query(sql);
 
-  const adminUser = process.env.ADMIN_USER || "abouamjad";
-  const adminPass = process.env.ADMIN_PASS || "Lallas123!";
+  const adminUser = process.env.ADMIN_USER;
+  const adminPass = process.env.ADMIN_PASS;
+  if (!adminUser || !adminPass) {
+    throw new Error("Set ADMIN_USER and ADMIN_PASS environment variables before running migrate.js");
+  }
   const adminToken = process.env.ADMIN_TOKEN || randomUUID().replace(/-/g, "") + randomUUID().replace(/-/g, "");
 
   const existing = await query("SELECT id FROM users WHERE username = $1", [adminUser]);

@@ -2,80 +2,129 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>ToolCustody | Scan Terminal</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+  <title>AbouAmjad Store System | Scan Terminal</title>
+  <script>
+    /* Block terminal paint when logged out (runs before CSS/body) */
+    try {
+      if (!localStorage.getItem("token")) {
+        document.documentElement.classList.add("tc-auth-redirect");
+        location.replace("login.html");
+      }
+    } catch (e) {}
+  </script>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="app.css">
+  <link rel="stylesheet" href="app.css?v=term-ui">
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#1e3a5f">
+  <meta name="theme-color" content="#0f766e">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <link rel="apple-touch-icon" href="icons/icon.svg">
-  <script src="config.js"></script>
-  <script src="scan.js"></script>
-  <script src="ui.js"></script>
+  
+  <script src="config.js?v=live"></script>
+  <script src="i18n.js?v=live"></script>
+  <script src="scan.js?v=live"></script>
+  <script src="ui.js?v=live"></script>
 </head>
 <body class="tc-page tc-terminal">
   <div class="tc-wrap">
     <div class="tc-shell" id="mainContainer">
       <div id="app-header"></div>
 
-      <div class="d-flex gap-2 flex-wrap mb-3">
-        <div id="status" class="tc-status-pill online">Online · sync active</div>
+      <div class="tm-status-row">
+        <div id="status" class="tc-status-pill online" data-i18n="online">Online · sync active</div>
         <div id="counterShell" class="tc-status-pill online">0 pending</div>
       </div>
+      <div id="tabLockBanner" class="tc-warning-panel mb-3" style="display:none">
+        <div class="fw-bold text-danger mb-1" id="tabLockTitle" data-i18n="tabLockTitle">Another Terminal tab is open</div>
+        <p class="small mb-0" data-i18n="tabLockBody">
+          Close the other tab and keep only one Terminal open on this device to avoid mixed scans.
+        </p>
+        <div class="mt-2">
+          <button type="button" class="tc-btn tc-btn-sm" id="btnResetTerminalSession" style="display:none">Reset terminal session</button>
+        </div>
+      </div>
 
-      <div class="tc-grid-2">
-        <div class="tc-card">
-          <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-            <h3 class="fw-bold mb-0">Live Scan</h3>
-            <span class="tc-text-muted small">Person → IN/OUT → tools</span>
+      <div class="tc-grid-2 tm-layout">
+        <div class="tc-card tm-scan-card">
+          <div class="tm-card-head">
+            <div>
+              <div class="tm-kicker"><i class="bi bi-broadcast-pin"></i> Terminal</div>
+              <h3 class="tm-title mb-0" data-i18n="liveScan">Live Scan</h3>
+            </div>
+            <span class="tm-flow-hint" data-i18n="flowHint">Person → IN/OUT → tools</span>
           </div>
 
           <div class="tc-person-strip">
-            <div>
-              <div class="tc-text-muted small fw-semibold">Operative</div>
-              <div class="fw-bold" id="activePersonName">Standing by</div>
+            <div class="tc-person-strip-photo-wrap">
+              <div class="tc-person-strip-photo" id="activePersonPhoto" aria-hidden="true">
+                <div class="tc-product-thumb placeholder" style="width:56px;height:56px"><i class="bi bi-person"></i></div>
+              </div>
+              <span class="tc-live-count-badge idle" id="activeToolCount">0</span>
+            </div>
+            <div class="tm-person-meta">
+              <div class="tc-text-muted small fw-semibold" data-i18n="operative">Operative</div>
+              <div class="fw-bold tm-person-name" id="activePersonName">Standing by</div>
             </div>
             <span class="tc-dir-badge tc-dir-none" id="dirBadge">No vector</span>
           </div>
 
+          <div class="tc-held-panel" id="heldPanel" hidden>
+            <div class="tc-held-head">
+              <span class="tc-held-title"><i class="bi bi-box-seam"></i> <span data-i18n="itemsOnHand">Items on hand</span></span>
+              <span class="tc-held-total" id="heldPanelCount">0</span>
+            </div>
+            <div class="tc-held-hint" data-i18n="tapHeldToReturn">Tap an item to set IN and return it</div>
+            <div class="tc-held-list" id="heldPanelList"></div>
+            <div class="tc-held-empty" id="heldPanelEmpty" hidden data-i18n="noToolsHeldNow">No tools held now</div>
+          </div>
+
           <div class="tc-scan-steps" id="scanSteps">
-            <div class="tc-step" data-step="person"><span class="tc-step-num">1</span>Person</div>
-            <div class="tc-step" data-step="direction"><span class="tc-step-num">2</span>IN / OUT</div>
-            <div class="tc-step" data-step="tools"><span class="tc-step-num">3</span>Tools</div>
+            <div class="tc-step" data-step="person"><span class="tc-step-num">1</span><span data-i18n="stepPerson">Person</span></div>
+            <div class="tc-step" data-step="direction"><span class="tc-step-num">2</span><span data-i18n="stepDirection">IN / OUT</span></div>
+            <div class="tc-step" data-step="tools"><span class="tc-step-num">3</span><span data-i18n="stepTools">Tools</span></div>
           </div>
           <p class="tc-scan-step-hint" id="scanStepHint">Step 1 — Scan worker code (P…)</p>
 
           <div class="tc-warning-panel" id="warningPanel">
-            <div class="fw-bold text-danger mb-1">Direction required</div>
+            <div class="fw-bold text-danger mb-1" data-i18n="dirRequired">Direction required</div>
             <div class="fw-800 fs-5 mb-2" id="warnCode">ERR-00</div>
-            <p class="small mb-3">
-              Tool scanned without direction under <strong id="warnPerson">—</strong>.
-              Select IN or OUT and scan again.
+            <p class="small mb-3" data-i18n="dirRequiredBody">
+              Tool scanned without direction. Select IN or OUT and scan again.
             </p>
             <div class="tc-dir-btns">
-              <button type="button" class="tc-dir-btn out" onclick="setDirection('OUT')">OUT<small>Leave / Exfil</small></button>
-              <button type="button" class="tc-dir-btn in" onclick="setDirection('IN')">IN<small>Return / Storage</small></button>
+              <button type="button" class="tc-dir-btn out" onclick="setDirection('OUT')">OUT<small data-i18n="outExfil">Leave</small></button>
+              <button type="button" class="tc-dir-btn in" onclick="setDirection('IN')">IN<small data-i18n="inReturn">Return</small></button>
             </div>
           </div>
 
-          <div class="tc-scan-area">
-            <input type="text" id="scanInput" class="tc-scan-input" placeholder="Ready for tool / person code" autocomplete="off">
-            <span class="tc-counter-badge" id="counter">0</span>
-          </div>
+          <div class="tm-dock">
+            <div class="tc-scan-area">
+              <label class="tm-scan-label" for="scanInput"><i class="bi bi-qr-code-scan"></i> Scan</label>
+              <input type="text" id="scanInput" class="tc-scan-input" data-i18n-placeholder="scanPlaceholder" placeholder="Ready for tool / person code" autocomplete="off" enterkeyhint="done" inputmode="text">
+              <span class="tc-counter-badge" id="counter">0</span>
+            </div>
 
-          <div class="d-flex gap-2">
-            <button type="button" class="tc-btn flex-fill" onclick="setDirection('OUT')">OUT</button>
-            <button type="button" class="tc-btn tc-btn-primary flex-fill" onclick="setDirection('IN')">IN</button>
+            <div class="tm-dir-actions">
+              <button type="button" class="tm-action-btn out" onclick="setDirection('OUT')">
+                <span class="tm-action-ico"><i class="bi bi-box-arrow-up-right"></i></span>
+                <span class="tm-action-txt">OUT<small data-i18n="outExfil">Leave</small></span>
+              </button>
+              <button type="button" class="tm-action-btn in" onclick="setDirection('IN')">
+                <span class="tm-action-ico"><i class="bi bi-box-arrow-in-down-left"></i></span>
+                <span class="tm-action-txt">IN<small data-i18n="inReturn">Return</small></span>
+              </button>
+            </div>
           </div>
         </div>
 
-        <div class="tc-card">
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <h3 class="fw-bold mb-0">Activity Log</h3>
-            <span class="tc-text-muted small">Newest first</span>
+        <div class="tc-card tm-log-card">
+          <div class="tm-card-head">
+            <div>
+              <div class="tm-kicker"><i class="bi bi-activity"></i> Feed</div>
+              <h3 class="tm-title mb-0" data-i18n="activityLog">Activity Log</h3>
+            </div>
+            <span class="tm-flow-hint" data-i18n="newestFirst">Newest first</span>
           </div>
           <div class="tc-log" id="log"></div>
         </div>
@@ -87,8 +136,8 @@
     <div class="tc-modal">
       <div class="tc-modal-head">
         <div>
-          <div class="fw-bold fs-5">Direction conflict</div>
-          <div class="tc-text-muted small">IN and OUT both scanned — choose one</div>
+          <div class="fw-bold fs-5" data-i18n="conflictTitle">Direction conflict</div>
+          <div class="tc-text-muted small" data-i18n="conflictSub">IN and OUT both scanned — choose one</div>
         </div>
       </div>
       <div class="tc-modal-body">
@@ -100,6 +149,35 @@
         <div class="tc-dir-btns">
           <button type="button" class="tc-dir-btn out" onclick="resolveDirectionConflict('OUT')">OUT<small>Check out tools</small></button>
           <button type="button" class="tc-dir-btn in" onclick="resolveDirectionConflict('IN')">IN<small>Return tools</small></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="ppeCooldownoldownModal" class="tc-modal-backdrop" style="display:none">
+    <div class="tc-modal" style="max-width:460px;border:2px solid #c2410c">
+      <div class="tc-modal-head" style="background:linear-gradient(135deg,#fef2f2,#fff7ed)">
+        <div>
+          <div class="fw-bold fs-5 text-danger"><i class="bi bi-exclamation-octagon-fill"></i> <span data-i18n="ppeWarnTitle">PPE re-issue warning</span></div>
+          <div class="tc-text-muted small" data-i18n="ppeWarnSub">Less than 7 days since last issue</div>
+        </div>
+      </div>
+      <div class="tc-modal-body">
+        <p class="mb-2 fw-bold" id="ppeWarnLead">—</p>
+        <div class="p-3 mb-3 rounded-3" style="background:#fff7ed;border:1px solid #fed7aa">
+          <div class="small text-muted mb-1" data-i18n="ppeLastIssue">Last issued</div>
+          <div class="fw-800" id="ppeLastWhen">—</div>
+          <div class="small mt-1" id="ppeLastItem">—</div>
+          <div class="small text-danger fw-bold mt-2" id="ppeDaysLeft">—</div>
+        </div>
+        <p class="small tc-text-muted mb-3" data-i18n="ppeWarnAsk">Issue again anyway, or cancel this scan?</p>
+        <div class="d-grid gap-2">
+          <button type="button" class="tc-btn tc-btn-danger" id="btnPpeForceIssue" style="min-height:48px;font-weight:800">
+            <i class="bi bi-check2-circle"></i> <span data-i18n="ppeForceIssue">Yes — issue anyway</span>
+          </button>
+          <button type="button" class="tc-btn" id="btnPpeCancelIssue" style="min-height:48px;font-weight:800">
+            <i class="bi bi-x-lg"></i> <span data-i18n="ppeCancelIssue">No — cancel</span>
+          </button>
         </div>
       </div>
     </div>
@@ -133,13 +211,13 @@
           <label class="tc-setting-row"><span class="fw-semibold">Sound</span><input type="checkbox" id="sd_soundEnabled"></label>
           <label class="tc-setting-row"><span class="fw-semibold">Hotkeys (I/O)</span><input type="checkbox" id="sd_hotkeysEnabled"></label>
           <div class="tc-setting-row flex-column align-items-stretch">
-            <span class="fw-semibold mb-2">Offline queue limit</span>
-            <input type="number" id="sd_offlineQueueLimit" class="tc-input" min="10" step="10">
+            <span class="fw-semibold mb-1">Strict mode</span>
+            <span class="tc-text-muted small">Offline disabled · server confirmation required</span>
           </div>
         </div>
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-3">
-          <span class="tc-text-muted small">Undo removes only unsynced scans</span>
-          <button type="button" class="tc-btn" onclick="undoLastScan()" id="undoBtn"><i class="bi bi-arrow-counterclockwise"></i> Undo last</button>
+          <span class="tc-text-muted small">Undo disabled in strict online mode</span>
+          <button type="button" class="tc-btn" onclick="undoLastScan()" id="undoBtn" disabled><i class="bi bi-arrow-counterclockwise"></i> Undo last</button>
         </div>
         <div class="text-end mt-3">
           <button type="button" class="tc-btn tc-btn-primary" onclick="saveSettingsFromUI()"><i class="bi bi-check-lg"></i> Save</button>
@@ -148,45 +226,316 @@
     </div>
   </div>
 
-  <script>
-    let isProcessing = false;
-    let scanSeq = Number(localStorage.getItem("scanSeq") || 1);
+<script>
+    let scanSeq = Number(sessionStorage.getItem("tcStrictScanSeq") || 1);
     let lastPerson = null;
     let lastDirection = null;
     let scannerLocked = false;
+    let sessionBlocked = false;
+    let sessionBlockReason = "";
+    let currentHeldQty = 0;
+    let currentHeldTools = [];
+    let heldFlashCode = "";
+    let heldFlashTimer = null;
     let settings = (typeof getSettings === "function") ? getSettings() : {};
     const descCache = {};
+    const imageCache = Object.create(null);
+    const heldQtyCache = Object.create(null);
+    const heldToolsCache = Object.create(null);
+    const catalogCache = Object.create(null); // code -> { ok, description, kind, serialized, at }
+    const intakeQueue = [];
+    let intakeBusy = false;
+    let leaseHeartbeatTimer = null;
+    const STRICT_SCANS_KEY = "tcTerminalRecentScans";
+    let heldPanelBound = false;
+
+    function overdueThresholdDays() {
+      return typeof getOverdueDays === "function" ? Math.max(1, Number(getOverdueDays()) || 1) : 1;
+    }
 
     function syncSessionUi() {
       const s = ScanEngine.getSession();
       lastPerson = s.personLabel || s.personCode;
       lastDirection = s.direction;
       updateDirBadge();
+      const countEl = document.getElementById("activeToolCount");
+      if (countEl) {
+        const dir = s.direction === "OUT" ? "out" : s.direction === "IN" ? "in" : "idle";
+        countEl.className = `tc-live-count-badge ${dir}`;
+        countEl.textContent = String(Math.max(0, Number(currentHeldQty) || 0));
+      }
       const el = document.getElementById("activePersonName");
-      if (el) el.textContent = lastPerson || "Standing by";
+      if (el) el.textContent = lastPerson || t("standingBy");
+      if (!s.personCode) {
+        currentHeldQty = 0;
+        currentHeldTools = [];
+        heldFlashCode = "";
+        setActivePersonPhoto("", "");
+        renderHeldPanel(false);
+      } else {
+        const pCode = String(s.personCode || "").toUpperCase();
+        if (Array.isArray(heldToolsCache[pCode])) {
+          currentHeldTools = heldToolsCache[pCode].slice();
+          currentHeldQty = Number(heldQtyCache[pCode]) || currentHeldTools.reduce((sum, t) => sum + (Number(t.qty) || 1), 0);
+        }
+        renderHeldPanel(true);
+        if (Object.prototype.hasOwnProperty.call(imageCache, pCode)) {
+          setActivePersonPhoto(imageCache[pCode], pCode);
+          if (!Object.prototype.hasOwnProperty.call(heldToolsCache, pCode)) {
+            fetchScanMeta(pCode, { force: true }).then((meta) => {
+              const cur = ScanEngine.getSession();
+              if (String(cur.personCode || "").toUpperCase() === pCode) {
+                currentHeldQty = Number(meta.toolsHeldQty) || 0;
+                currentHeldTools = Array.isArray(meta.toolsHeld) ? meta.toolsHeld.slice() : [];
+                setActivePersonPhoto(meta.imageUrl, pCode);
+                syncSessionUi();
+              }
+            });
+          }
+        } else {
+          fetchScanMeta(pCode, { force: true }).then((meta) => {
+            const cur = ScanEngine.getSession();
+            if (String(cur.personCode || "").toUpperCase() === pCode) {
+              currentHeldQty = Number(meta.toolsHeldQty) || 0;
+              currentHeldTools = Array.isArray(meta.toolsHeld) ? meta.toolsHeld.slice() : [];
+              setActivePersonPhoto(meta.imageUrl, pCode);
+              syncSessionUi();
+            }
+          });
+        }
+      }
+    }
+
+    function normalizeHeldTools(list) {
+      const threshold = overdueThresholdDays();
+      return (Array.isArray(list) ? list : [])
+        .map((t) => {
+          const daysOut = Math.max(0, Number(t.daysOut) || 0);
+          const overdue = t.overdue != null ? !!t.overdue : daysOut >= threshold;
+          return {
+            code: String(t.code || "").toUpperCase(),
+            qty: Math.max(1, Number(t.qty) || 1),
+            description: String(t.description || t.code || "").trim(),
+            imageUrl: String(t.imageUrl || "").trim(),
+            daysOut,
+            overdue,
+            takenAt: t.takenAt || null,
+          };
+        })
+        .filter((t) => t.code)
+        .sort((a, b) => (Number(b.overdue) - Number(a.overdue)) || (b.daysOut - a.daysOut) || a.code.localeCompare(b.code));
+    }
+
+    function setHeldForPerson(personCode, tools) {
+      const code = String(personCode || "").toUpperCase();
+      if (!code) return;
+      const list = normalizeHeldTools(tools);
+      heldToolsCache[code] = list;
+      heldQtyCache[code] = list.reduce((sum, t) => sum + (Number(t.qty) || 1), 0);
+      if (String(ScanEngine.getSession().personCode || "").toUpperCase() === code) {
+        currentHeldTools = list.slice();
+        currentHeldQty = heldQtyCache[code];
+      }
+    }
+
+    function applyHeldDelta(personCode, toolCode, dir, description, imageUrl) {
+      const p = String(personCode || "").toUpperCase();
+      const c = String(toolCode || "").toUpperCase();
+      if (!p || !c) return;
+      const list = normalizeHeldTools(heldToolsCache[p] || currentHeldTools || []);
+      const idx = list.findIndex((t) => t.code === c);
+      if (dir === "OUT") {
+        if (idx >= 0) list[idx].qty += 1;
+        else {
+          list.push({
+            code: c,
+            qty: 1,
+            description: String(description || descCache[c] || c).trim(),
+            imageUrl: String(imageUrl || imageCache[c] || "").trim(),
+            daysOut: 0,
+            overdue: false,
+            takenAt: new Date().toISOString(),
+          });
+        }
+      } else {
+        if (idx >= 0) {
+          list[idx].qty -= 1;
+          if (list[idx].qty <= 0) list.splice(idx, 1);
+        }
+      }
+      setHeldForPerson(p, list);
+      flashHeldCode(c);
+    }
+
+    function flashHeldCode(code) {
+      heldFlashCode = String(code || "").toUpperCase();
+      if (heldFlashTimer) clearTimeout(heldFlashTimer);
+      heldFlashTimer = setTimeout(() => {
+        heldFlashCode = "";
+        heldFlashTimer = null;
+        const s = ScanEngine.getSession();
+        if (s.personCode) renderHeldPanel(true);
+      }, 1800);
+      const s = ScanEngine.getSession();
+      if (s.personCode) renderHeldPanel(true);
+    }
+
+    function daysLabel(daysOut, overdue) {
+      const n = Math.max(0, Number(daysOut) || 0);
+      if (overdue) {
+        const msg = t("overdueHolding", { n });
+        return msg && msg !== "overdueHolding" ? msg : `Overdue · ${n}d`;
+      }
+      const msg = t("daysOutShort", { n });
+      return msg && msg !== "daysOutShort" ? msg : `${n}d`;
+    }
+
+    function renderHeldPanel(visible) {
+      bindHeldPanelOnce();
+      const panel = document.getElementById("heldPanel");
+      const listEl = document.getElementById("heldPanelList");
+      const emptyEl = document.getElementById("heldPanelEmpty");
+      const countEl = document.getElementById("heldPanelCount");
+      const hintEl = panel ? panel.querySelector(".tc-held-hint") : null;
+      if (!panel || !listEl || !emptyEl || !countEl) return;
+      if (!visible) {
+        panel.hidden = true;
+        listEl.innerHTML = "";
+        emptyEl.hidden = true;
+        countEl.textContent = "0";
+        if (hintEl) hintEl.hidden = true;
+        return;
+      }
+      panel.hidden = false;
+      const tools = normalizeHeldTools(currentHeldTools);
+      const total = tools.reduce((sum, t) => sum + (Number(t.qty) || 1), 0);
+      countEl.textContent = String(total);
+      if (!tools.length) {
+        listEl.innerHTML = "";
+        emptyEl.hidden = false;
+        if (hintEl) hintEl.hidden = true;
+        return;
+      }
+      emptyEl.hidden = true;
+      if (hintEl) hintEl.hidden = false;
+      listEl.innerHTML = tools.map((item) => {
+        const thumb = typeof productThumbHtml === "function"
+          ? productThumbHtml(item.imageUrl, item.code, 36)
+          : (item.imageUrl
+            ? `<img class="tc-product-thumb" src="${escHtml(item.imageUrl)}" alt="" width="36" height="36" loading="lazy">`
+            : `<div class="tc-product-thumb placeholder" style="width:36px;height:36px"><i class="bi bi-box"></i></div>`);
+        const flash = heldFlashCode && heldFlashCode === item.code ? " flash" : "";
+        const overdueCls = item.overdue ? " overdue" : "";
+        const title = (typeof t === "function" ? t("tapHeldToReturn") : "") || "Tap an item to set IN and return it";
+        return `<div class="tc-held-row${overdueCls}${flash}" data-code="${escHtml(item.code)}" role="button" tabindex="0" title="${escHtml(title)}">
+          ${thumb}
+          <div class="tc-held-meta">
+            <div class="tc-held-code">${escHtml(item.code)}</div>
+            <div class="tc-held-desc">${escHtml(item.description || item.code)}</div>
+          </div>
+          <div class="tc-held-side">
+            <span class="tc-held-qty">×${escHtml(String(item.qty))}</span>
+            <span class="tc-held-days${item.overdue ? " overdue" : ""}">${escHtml(daysLabel(item.daysOut, item.overdue))}</span>
+          </div>
+        </div>`;
+      }).join("");
+      if (heldFlashCode) {
+        const flashRow = Array.from(listEl.querySelectorAll(".tc-held-row"))
+          .find((row) => String(row.getAttribute("data-code") || "").toUpperCase() === heldFlashCode);
+        if (flashRow && typeof flashRow.scrollIntoView === "function") {
+          flashRow.scrollIntoView({ block: "nearest" });
+        }
+      }
+    }
+
+    function bindHeldPanelOnce() {
+      if (heldPanelBound) return;
+      const listEl = document.getElementById("heldPanelList");
+      if (!listEl) return;
+      heldPanelBound = true;
+      listEl.addEventListener("click", (e) => {
+        const row = e.target.closest(".tc-held-row");
+        if (!row) return;
+        quickReturnFromHeld(row.getAttribute("data-code"));
+      });
+      listEl.addEventListener("keydown", (e) => {
+        if (e.key !== "Enter" && e.key !== " ") return;
+        const row = e.target.closest(".tc-held-row");
+        if (!row) return;
+        e.preventDefault();
+        quickReturnFromHeld(row.getAttribute("data-code"));
+      });
+    }
+
+    function quickReturnFromHeld(toolCode) {
+      const code = String(toolCode || "").trim().toUpperCase();
+      if (!code) return;
+      if (sessionBlocked || scannerLocked) return;
+      const session = ScanEngine.getSession();
+      if (!session.personCode) {
+        addLog(code, t("stepPerson") || "Scan person first", true);
+        playDanger();
+        return;
+      }
+      if (session.awaitingDirectionChoice) {
+        addLog(code, t("chooseInOutFirst") || "Choose IN or OUT in the dialog first", true);
+        playDanger();
+        return;
+      }
+      const held = normalizeHeldTools(currentHeldTools).find((x) => x.code === code);
+      if (!held || held.qty < 1) {
+        addLog(code, t("noToolsHeldNow") || "No tools held now", true);
+        playDanger();
+        return;
+      }
+      const queuedSame = intakeQueue.filter((c) => String(c || "").trim().toUpperCase() === code).length;
+      if (queuedSame >= held.qty) {
+        addLog(code, t("quickReturnAlreadyQueued") || "Return already queued for this item", true);
+        return;
+      }
+      // Cannot flip OUT→IN after tools were already issued in this batch.
+      if (session.direction === "OUT" && Number(session.toolCount) > 0) {
+        addLog(
+          code,
+          t("quickReturnNeedNewPerson") || "Finish this OUT first — scan a new person (P) before returning from the list",
+          true
+        );
+        playDanger();
+        return;
+      }
+      // If OUT was selected but no tools yet, clear direction so IN can sync cleanly
+      // (avoids conflict modal AND accidental OUT of the tapped item).
+      if (session.direction && session.direction !== "IN") {
+        if (typeof ScanEngine.resetDirection === "function") {
+          if (!ScanEngine.resetDirection()) {
+            addLog(code, t("quickReturnNeedNewPerson") || "Cannot switch to IN during an active OUT batch", true);
+            playDanger();
+            return;
+          }
+        } else {
+          addLog(code, t("quickReturnNeedNewPerson") || "Cannot switch to IN during an active OUT batch", true);
+          playDanger();
+          return;
+        }
+      }
+      // Reuses existing Terminal IN path — no new permissions / roles.
+      flashHeldCode(code);
+      if (ScanEngine.getSession().direction !== "IN") enqueueIntake("IN");
+      enqueueIntake(code);
+      const input = document.getElementById("scanInput");
+      if (input) {
+        input.value = "";
+        input.focus();
+      }
     }
 
     function rebuildSessionFromUnsynced() {
-      ScanEngine.rebuildFromQueue(loadScans());
       const s = ScanEngine.getSession();
       if (s.personCode && descCache[s.personCode]) ScanEngine.setPersonLabel(s.personCode, descCache[s.personCode]);
       syncSessionUi();
     }
 
-    function removeLastUnsyncedScanMatching(codes) {
-      const scans = loadScans();
-      for (let i = scans.length - 1; i >= 0; i--) {
-        const c = String(scans[i].code || "").toUpperCase();
-        if (!scans[i].sent && codes.includes(c)) {
-          const removed = scans.splice(i, 1)[0];
-          document.getElementById(removed.logId)?.remove();
-          saveScans(scans);
-          updateCounter();
-          refreshSettingsUI();
-          rebuildSessionFromUnsynced();
-          return removed;
-        }
-      }
+    function removeLastUnsyncedScanMatching() {
       return null;
     }
 
@@ -203,17 +552,319 @@
       if (!ScanEngine.getSession().awaitingDirectionChoice) unlockScanner();
     }
 
-    function queueScan(code, logDesc) {
-      const logId = addLog(code, logDesc);
-      const ok = pushWithLimit({ code, seq: scanSeq++, sent: false, logId, timestamp: Date.now() });
-      if (!ok) {
-        document.getElementById(logId)?.remove();
-        addLog(code, "Queue full — sync pending items first", true);
+    function nextStrictSeq() {
+      const seq = scanSeq++;
+      sessionStorage.setItem("tcStrictScanSeq", String(scanSeq));
+      return seq;
+    }
+
+    function loadScans() {
+      try {
+        return JSON.parse(sessionStorage.getItem(STRICT_SCANS_KEY) || "[]");
+      } catch (_) {
+        return [];
       }
+    }
+
+    function saveScans(scans) {
+      sessionStorage.setItem(STRICT_SCANS_KEY, JSON.stringify(scans || []));
+      sessionStorage.setItem("tcStrictScanSeq", String(scanSeq));
+    }
+
+    function recordAcceptedScan(entry) {
+      const scans = loadScans();
+      scans.push(entry);
+      while (scans.length > 300) scans.shift();
+      saveScans(scans);
+    }
+
+    let pendingPpeResult = null;
+
+    function closePpeCooldownModal(unlock = true) {
+      document.getElementById("ppeCooldownoldownModal").style.display = "none";
+      pendingPpeResult = null;
+      if (unlock && !ScanEngine.getSession().awaitingDirectionChoice) unlockScanner();
+    }
+
+    function showPpeCooldownModal(info, result) {
+      pendingPpeResult = result;
+      const person = ScanEngine.getSession().personLabel || info.personCode || "—";
+      const family = info.familyLabel || info.family || "PPE";
+      document.getElementById("ppeWarnLead").textContent =
+        `${person} already received ${family} less than ${info.cooldownDays || 7} days ago.`;
+      document.getElementById("ppeLastWhen").textContent =
+        info.lastIssuedLabel || info.lastIssuedAt || "—";
+      document.getElementById("ppeLastItem").textContent =
+        `${info.lastCode || "—"} · ${info.lastDescription || family}`;
+      const daysLeft = info.daysLeft != null ? info.daysLeft : "?";
+      const daysAgo = info.daysAgo != null ? info.daysAgo : "?";
+      document.getElementById("ppeDaysLeft").textContent =
+        `Taken ${daysAgo} day(s) ago · ${daysLeft} day(s) left in cooldown`;
+      document.getElementById("ppeCooldownoldownModal").style.display = "block";
+      lockScanner();
+      playDanger();
+    }
+
+    function findLocalPpeIssue(personCode, familyId) {
+      if (typeof matchPpeFamily !== "function" || !familyId) return null;
+      const cooldownDays = typeof getPpeCooldownDays === "function" ? getPpeCooldownDays() : 7;
+      const cutoff = Date.now() - cooldownDays * 24 * 60 * 60 * 1000;
+      const scans = loadScans().slice().sort((a, b) => (a.seq || 0) - (b.seq || 0));
+      let lastPerson = null;
+      let lastDir = null;
+      let hit = null;
+      for (const s of scans) {
+        const code = String(s.code || "").toUpperCase();
+        if (!code) continue;
+        if (code.startsWith("P")) {
+          lastPerson = code;
+          lastDir = null;
+          continue;
+        }
+        if (code === "IN" || code === "OUT") {
+          lastDir = code;
+          continue;
+        }
+        if (lastPerson !== personCode || lastDir !== "OUT") continue;
+        const desc = descCache[code] || code;
+        const fam = matchPpeFamily(`${code} ${desc}`);
+        if (!fam || fam.id !== familyId) continue;
+        const ts = Number(s.timestamp) || Date.now();
+        if (ts >= cutoff) {
+          hit = {
+            code,
+            description: desc,
+            at: ts,
+            lastIssuedLabel: new Date(ts).toLocaleString(),
+            daysAgo: Math.floor((Date.now() - ts) / (24 * 60 * 60 * 1000)),
+          };
+        }
+      }
+      return hit;
+    }
+
+    function freezeTerminalSession(reason, extra = "") {
+      sessionBlocked = true;
+      sessionBlockReason = reason || "Session blocked";
+      lockScanner();
+      const banner = document.getElementById("tabLockBanner");
+      const title = document.getElementById("tabLockTitle");
+      const body = banner ? banner.querySelector("p") : null;
+      const resetBtn = document.getElementById("btnResetTerminalSession");
+      if (title) title.textContent = "Terminal session blocked";
+      if (body) body.textContent = extra || sessionBlockReason;
+      if (banner) banner.style.display = "block";
+      if (resetBtn) resetBtn.style.display = "";
+      updateOnlineStatus();
+    }
+
+    function clearTerminalBlockUi() {
+      sessionBlocked = false;
+      sessionBlockReason = "";
+      const banner = document.getElementById("tabLockBanner");
+      const title = document.getElementById("tabLockTitle");
+      const body = banner ? banner.querySelector("p") : null;
+      const resetBtn = document.getElementById("btnResetTerminalSession");
+      if (title) title.textContent = "Another Terminal tab is open";
+      if (body) body.textContent = "Close the other tab and keep only one Terminal open on this device to avoid mixed scans.";
+      if (banner && !window.__tcTabBlocked) banner.style.display = "none";
+      if (resetBtn) resetBtn.style.display = "none";
+      updateOnlineStatus();
+    }
+
+    async function syncAcceptedScan(code, logDesc, opts = {}) {
+      if (!navigator.onLine) throw new Error("Offline is blocked in strict mode");
+      const seq = nextStrictSeq();
+      const timestamp = Date.now();
+      const result = await syncScan(code, {
+        seq,
+        timestamp,
+        deviceId: typeof getDeviceId === "function" ? getDeviceId() : "",
+        sessionId: typeof getScanSessionId === "function" ? getScanSessionId() : "",
+        ppeOverride: opts.ppeOverride === true,
+      });
+      if (!result.ok) {
+        if (result.error === "TERMINAL_SESSION_BLOCKED") {
+          freezeTerminalSession("Terminal session blocked", "Ambiguous or unsafe return detected. Reset the session and rescan.");
+        } else if (result.error === "TERMINAL_SESSION_CONFLICT") {
+          freezeTerminalSession("Terminal session conflict", "Another active Terminal session is using this device/login.");
+        }
+        throw new Error(catalogBlockMessage(result.error, code));
+      }
+      const logId = addLog(code, logDesc);
+      markSynced(logId);
+      recordAcceptedScan({
+        code,
+        seq,
+        sent: true,
+        timestamp,
+        deviceId: typeof getDeviceId === "function" ? getDeviceId() : "",
+        sessionId: typeof getScanSessionId === "function" ? getScanSessionId() : "",
+      });
+      if (opts.enrich !== false) enrichLog(logId, code, opts.dirLabel || logDesc);
+      updateCounter();
       return logId;
     }
 
-    function handleScanResult(result) {
+    async function finalizeToolQueue(result) {
+      if (result.needsCommit && typeof ScanEngine.commitTool === "function") {
+        ScanEngine.commitTool(result.code);
+      }
+      try {
+        const session = ScanEngine.getSession();
+        const personCode = String(session.personCode || "").toUpperCase();
+        const dir = session.direction === "IN" ? "IN" : "OUT";
+        playSuccess();
+        await syncAcceptedScan(result.code, result.logDesc, {
+          dirLabel: result.dirLabel || result.logDesc,
+          ppeOverride: result.ppeOverride === true,
+        });
+        if (personCode) {
+          const toolCode = String(result.code || "").toUpperCase();
+          applyHeldDelta(
+            personCode,
+            toolCode,
+            dir,
+            descCache[toolCode] || result.logDesc || toolCode,
+            imageCache[toolCode] || ""
+          );
+          syncSessionUi();
+        }
+        if (result.crossPersonHint) addLog(result.code, result.crossPersonHint, false);
+      } catch (e) {
+        if (result.needsCommit && typeof ScanEngine.uncommitTool === "function") {
+          ScanEngine.uncommitTool(result.code);
+        }
+        if (typeof ScanEngine.clearSession === "function") ScanEngine.clearSession();
+        syncSessionUi();
+        addLog(result.code, e.message || "Server rejected scan", true);
+        playDanger();
+      }
+    }
+
+    async function annotateCrossPersonReturn(result) {
+      const session = ScanEngine.getSession();
+      if (!session || session.direction !== "IN" || !result || !result.code) return result;
+      if (typeof isConsumable === "function" && isConsumable(result.code)) return result;
+      const code = String(result.code || "").toUpperCase();
+      const cached = catalogCache[code];
+      // Quantity items (no serial): never block the wedge for holder lookup
+      if (cached && cached.serialized === false) return result;
+      // Unknown cache: skip network on critical path (server enforces serialized rules on sync)
+      if (!cached || cached.serialized !== true) return result;
+      try {
+        const data = await apiGet({
+          action: "lookupToolHolder",
+          code,
+          personCode: session.personCode || "",
+        });
+        if (!data || data.error || !data.held) return result;
+        if (data.clearsFromSelf) return result;
+        if (data.ambiguous) {
+          const names = (data.holders || [])
+            .map((h) => `${h.personName || h.personCode} (${h.personCode})`)
+            .join(", ");
+          result.blockAmbiguous = true;
+          result.crossPersonHint = typeof t === "function"
+            ? t("returnAmbiguous", { code, people: names })
+            : `Blocked — unique/serial ${code} held by: ${names}. Scan the real holder’s P code first.`;
+          return result;
+        }
+        if (!data.holder) return result;
+        const holderCode = data.holder.personCode || "";
+        const holderName = data.holder.personName || holderCode;
+        const hint = typeof t === "function"
+          ? t("returnClearsFrom", { name: holderName, code: holderCode })
+          : `Clears from ${holderName} (${holderCode}) — not the scanned person`;
+        const who = session.personLabel || session.personCode || "";
+        result.crossPersonHint = hint;
+        result.logDesc = `IN · via ${who} → ${holderCode}`;
+        result.dirLabel = result.logDesc;
+      } catch (_) {}
+      return result;
+    }
+
+    async function checkPpeBeforeQueue(result) {
+      const session = ScanEngine.getSession();
+      const personCode = session.personCode;
+      const itemCode = result.code;
+      if (!personCode || !itemCode || session.direction !== "OUT") {
+        await annotateCrossPersonReturn(result);
+        if (result.blockAmbiguous) {
+          if (result.needsCommit && typeof ScanEngine.uncommitTool === "function") {
+            // not committed yet
+          }
+          freezeTerminalSession("Terminal session blocked", result.crossPersonHint || "Ambiguous return blocked");
+          addLog(result.code, result.crossPersonHint || "Ambiguous return blocked", true);
+          playDanger();
+          return;
+        }
+        await finalizeToolQueue(result);
+        return;
+      }
+
+      // Fast path: skip PPE API when cached description is clearly not PPE
+      const desc = descCache[itemCode] || (catalogCache[itemCode] && catalogCache[itemCode].description) || "";
+      const famLocal = (typeof matchPpeFamily === "function")
+        ? matchPpeFamily(`${itemCode} ${desc}`)
+        : null;
+      if (desc && !famLocal) {
+        await finalizeToolQueue(result);
+        return;
+      }
+
+      let info = null;
+      try {
+        info = await apiGet({
+          action: "checkPpeCooldownoldown",
+          personCode,
+          itemCode
+        });
+        if (info && info.error) info = null;
+      } catch (_) {
+        info = null;
+      }
+
+      // Fallback / reinforce with local pending queue
+      if (info && info.applies && info.family) {
+        const local = findLocalPpeIssue(personCode, info.family);
+        if (local && (!info.restricted || (local.at && (!info.lastIssuedAt || local.at > new Date(info.lastIssuedAt).getTime())))) {
+          info.restricted = true;
+          info.lastCode = local.code;
+          info.lastDescription = local.description;
+          info.lastIssuedLabel = local.lastIssuedLabel;
+          info.daysAgo = local.daysAgo;
+          info.daysLeft = Math.max(0, (info.cooldownDays || 7) - (local.daysAgo || 0));
+        }
+      } else if ((!info || !info.applies) && famLocal) {
+        const local = findLocalPpeIssue(personCode, famLocal.id);
+        if (local) {
+          info = {
+            applies: true,
+            restricted: true,
+            family: famLocal.id,
+            familyLabel: famLocal.label,
+            cooldownDays: typeof getPpeCooldownDays === "function" ? getPpeCooldownDays() : 7,
+            personCode,
+            itemCode,
+            lastCode: local.code,
+            lastDescription: local.description,
+            lastIssuedLabel: local.lastIssuedLabel,
+            daysAgo: local.daysAgo,
+            daysLeft: Math.max(0, 7 - (local.daysAgo || 0)),
+          };
+        }
+      }
+
+      if (info && info.applies && info.restricted) {
+        showPpeCooldownModal(info, result);
+        return;
+      }
+
+      await finalizeToolQueue(result);
+    }
+
+    async function handleScanResult(result) {
       if (!result || result.type === "empty") return;
 
       if (!result.ok) {
@@ -230,38 +881,81 @@
       if (result.type === "direction") {
         if (settings?.autoHideWarning) document.getElementById("warningPanel")?.classList.remove("visible");
         hideWarning();
-        playDirSet();
-        queueScan(result.code, result.logDesc);
+        try {
+          playDirSet();
+          await syncAcceptedScan(result.code, result.logDesc, { enrich: false });
+        } catch (e) {
+          if (typeof ScanEngine.clearSession === "function") ScanEngine.clearSession();
+          syncSessionUi();
+          addLog(result.code, e.message || "Server rejected direction", true);
+          playDanger();
+        }
         return;
       }
 
       if (result.type === "person") {
         closeDirectionConflictModal();
-        const logId = queueScan(result.code, result.logDesc);
-        fetchDescription(result.code).then(name => {
-          descCache[result.code] = name;
+        closePpeCooldownModal(false);
+        const catalog = await ensureCatalogBeforeQueue(result.code, "person");
+        if (!catalog.ok) {
+          if (typeof ScanEngine.clearSession === "function") ScanEngine.clearSession();
+          syncSessionUi();
+          addLog(result.code, catalog.message, true);
+          playDanger();
+          return;
+        }
+        const name = catalog.description || result.code;
+        descCache[result.code] = name;
+        try {
+          await syncAcceptedScan(result.code, result.logDesc, { enrich: false });
           ScanEngine.setPersonLabel(result.code, name);
           syncSessionUi();
-          const d = document.getElementById("desc_" + logId);
+          const first = document.getElementById("log")?.firstElementChild;
+          const d = first ? first.querySelector(".tc-log-desc") : null;
           if (d) d.textContent = `${name} — select IN or OUT, then scan tools`;
-        });
+          fetchScanMeta(result.code, { force: true }).then((meta) => {
+            const thumb = first ? first.querySelector(".tc-log-thumb") : null;
+            if (thumb) thumb.innerHTML = logThumbHtml(result.code, meta.imageUrl);
+            currentHeldQty = Number(meta.toolsHeldQty) || 0;
+            currentHeldTools = Array.isArray(meta.toolsHeld) ? meta.toolsHeld.slice() : [];
+            setActivePersonPhoto(meta.imageUrl, result.code);
+            syncSessionUi();
+          });
+        } catch (e) {
+          if (typeof ScanEngine.clearSession === "function") ScanEngine.clearSession();
+          syncSessionUi();
+          addLog(result.code, e.message || "Server rejected person", true);
+          playDanger();
+        }
         return;
       }
 
       if (result.type === "tool") {
-        playSuccess();
-        const logId = queueScan(result.code, result.logDesc);
-        enrichLog(logId, result.code, result.dirLabel);
+        const catalog = await ensureCatalogBeforeQueue(result.code, "item");
+        if (!catalog.ok) {
+          addLog(result.code, catalog.message, true);
+          playDanger();
+          return;
+        }
+        if (catalog.description) descCache[result.code] = catalog.description;
+        await checkPpeBeforeQueue(result);
       }
     }
 
-    function resolveDirectionConflict(dir) {
+    async function resolveDirectionConflict(dir) {
       closeDirectionConflictModal();
       const result = ScanEngine.resolveConflict(dir);
       if (!result || !result.ok) return;
-      playDirSet();
-      queueScan(result.code, result.logDesc);
-      unlockScanner();
+      try {
+        playDirSet();
+        await syncAcceptedScan(result.code, result.logDesc, { enrich: false });
+        unlockScanner();
+      } catch (e) {
+        if (typeof ScanEngine.clearSession === "function") ScanEngine.clearSession();
+        syncSessionUi();
+        addLog(result.code, e.message || "Server rejected direction", true);
+        playDanger();
+      }
     }
 
     function refreshSettingsUI() {
@@ -276,10 +970,8 @@
       if (se) se.checked = !!s.soundEnabled;
       const hk = document.getElementById("sd_hotkeysEnabled");
       if (hk) hk.checked = !!s.hotkeysEnabled;
-      const ql = document.getElementById("sd_offlineQueueLimit");
-      if (ql) ql.value = Number(s.offlineQueueLimit || 300);
       const undoBtn = document.getElementById("undoBtn");
-      if (undoBtn) undoBtn.disabled = !getLastUnsyncedQueueItem();
+      if (undoBtn) undoBtn.disabled = true;
     }
 
     function openSettings() {
@@ -301,8 +993,6 @@
       next.autoHideWarning = !!document.getElementById("sd_autoHideWarning")?.checked;
       next.soundEnabled = !!document.getElementById("sd_soundEnabled")?.checked;
       next.hotkeysEnabled = !!document.getElementById("sd_hotkeysEnabled")?.checked;
-      const val = Number(document.getElementById("sd_offlineQueueLimit")?.value);
-      next.offlineQueueLimit = Number.isFinite(val) ? Math.max(10, Math.floor(val / 10) * 10) : 300;
       settings = (typeof setSettings === "function") ? setSettings(next) : { ...settings, ...next };
       closeSettings();
       refreshSettingsUI();
@@ -312,49 +1002,39 @@
       }
     }
 
-    function loadScans() { return JSON.parse(localStorage.getItem("offlineScans") || "[]"); }
-    function saveScans(scans) {
-      localStorage.setItem("offlineScans", JSON.stringify(scans));
-      localStorage.setItem("scanSeq", scanSeq);
-    }
-
     function updateCounter() {
       const el = document.getElementById("counter");
-      if (el) el.innerText = loadScans().filter(s => !s.sent).length;
+      if (el) el.innerText = String((ScanEngine.getSession().toolsInBatch || []).length || 0);
     }
 
     function updateOnlineStatus() {
       const el = document.getElementById("status");
       const shell = document.getElementById("counterShell");
-      const pending = loadScans().filter(s => !s.sent).length;
       if (navigator.onLine) {
-        if (el) { el.className = "tc-status-pill online"; el.innerText = "Online · sync active"; }
+        if (el) { el.className = "tc-status-pill online"; el.innerText = t("online"); }
       } else {
-        if (el) { el.className = "tc-status-pill offline"; el.innerText = "Offline · local queue"; }
+        if (el) { el.className = "tc-status-pill offline"; el.innerText = "Offline blocked"; }
       }
-      if (shell) shell.innerText = `${pending} pending`;
+      if (shell) shell.innerText = sessionBlocked
+        ? "Session blocked"
+        : "Strict online mode";
     }
 
     window.addEventListener("online", updateOnlineStatus);
     window.addEventListener("offline", updateOnlineStatus);
+    window.addEventListener("tc:langchange", () => {
+      updateOnlineStatus();
+      if (typeof ScanEngine !== "undefined") ScanEngine.updateStepUi();
+      if (typeof syncSessionUi === "function") syncSessionUi();
+      if (typeof TCI18N !== "undefined") TCI18N.applyDocumentLang();
+    });
 
     function getLastUnsyncedQueueItem() {
-      const scans = loadScans();
-      for (let i = scans.length - 1; i >= 0; i--) if (!scans[i].sent) return scans[i];
       return null;
     }
 
     function undoLastScan() {
-      const last = getLastUnsyncedQueueItem();
-      if (!last) return;
-      document.getElementById(last.logId)?.remove();
-      const scans = loadScans();
-      const idx = scans.findIndex(s => s.seq === last.seq);
-      if (idx !== -1) scans.splice(idx, 1);
-      saveScans(scans);
-      updateCounter();
-      rebuildSessionFromUnsynced();
-      refreshSettingsUI();
+      addLog("UNDO", "Undo disabled in strict online mode", true);
     }
 
     let audioCtx = null;
@@ -400,9 +1080,9 @@
     function lockScanner() {
       scannerLocked = true;
       const i = document.getElementById("scanInput");
-      i.disabled = true;
+      if (i) i.disabled = true;
       i.classList.add("locked");
-      i.placeholder = "Locked — select direction first";
+      i.placeholder = "Locked — resolve the prompt before scanning";
       document.body.classList.add("danger-mode");
     }
 
@@ -413,7 +1093,7 @@
       i.classList.remove("locked");
       i.placeholder = "Ready for tool / person code";
       document.body.classList.remove("danger-mode");
-      setTimeout(() => i.focus(), 50);
+      setTimeout(() => i.focus(), 20);
     }
 
     function showWarning(blockedCode) {
@@ -432,9 +1112,24 @@
     function updateDirBadge() {
       const b = document.getElementById("dirBadge");
       if (!b) return;
-      if (lastDirection === "OUT") { b.className = "tc-dir-badge tc-dir-out"; b.textContent = "OUT · Exfil"; }
-      else if (lastDirection === "IN") { b.className = "tc-dir-badge tc-dir-in"; b.textContent = "IN · Return"; }
-      else { b.className = "tc-dir-badge tc-dir-none"; b.textContent = "No vector"; }
+      if (lastDirection === "OUT") { b.className = "tc-dir-badge tc-dir-out"; b.textContent = t("outExfil"); }
+      else if (lastDirection === "IN") { b.className = "tc-dir-badge tc-dir-in"; b.textContent = t("inReturn"); }
+      else { b.className = "tc-dir-badge tc-dir-none"; b.textContent = t("noVector"); }
+    }
+
+    function logThumbHtml(code, imageUrl) {
+      const c = String(code || "").toUpperCase();
+      if (c === "IN" || c === "OUT") {
+        const icon = c === "IN" ? "bi-box-arrow-in-down" : "bi-box-arrow-up";
+        return `<div class="tc-product-thumb placeholder" style="width:48px;height:48px"><i class="bi ${icon}"></i></div>`;
+      }
+      if (typeof productThumbHtml === "function") {
+        return productThumbHtml(imageUrl || "", c, 48);
+      }
+      if (imageUrl) {
+        return `<img class="tc-product-thumb" src="${escHtml(imageUrl)}" alt="" width="48" height="48" loading="lazy">`;
+      }
+      return `<div class="tc-product-thumb placeholder" style="width:48px;height:48px"><i class="bi bi-image"></i></div>`;
     }
 
     function addLog(code, description = "Sync pending…", isWarn = false) {
@@ -442,13 +1137,17 @@
       const div = document.createElement("div");
       div.className = "tc-log-item" + (isWarn ? " warn-log" : "");
       div.id = id;
+      const cachedImg = (typeof imageCache !== "undefined" && imageCache[code]) || "";
       div.innerHTML = `
-        <div class="tc-log-header">
-          <div class="tc-log-code">${escHtml(String(code).toUpperCase())}</div>
-          <span class="${isWarn ? "tc-sync-warn" : "tc-sync-pending"}" id="st_${id}">${isWarn ? "Blocked" : "Pending"}</span>
-        </div>
-        <div class="tc-log-desc" id="desc_${id}">${escHtml(String(description))}</div>
-        <div class="tc-log-time">${new Date().toLocaleTimeString()}</div>`;
+        <div class="tc-log-thumb" id="thumb_${id}">${logThumbHtml(code, cachedImg)}</div>
+        <div class="tc-log-body">
+          <div class="tc-log-header">
+            <div class="tc-log-code">${escHtml(String(code).toUpperCase())}</div>
+            <span class="${isWarn ? "tc-sync-warn" : "tc-sync-pending"}" id="st_${id}">${isWarn ? "Blocked" : "Pending"}</span>
+          </div>
+          <div class="tc-log-desc" id="desc_${id}">${escHtml(String(description))}</div>
+          <div class="tc-log-time">${new Date().toLocaleTimeString()}</div>
+        </div>`;
       document.getElementById("log").prepend(div);
       return id;
     }
@@ -456,85 +1155,285 @@
     function markSynced(id) {
       document.getElementById(id)?.classList.add("synced");
       const st = document.getElementById("st_" + id);
-      if (st) { st.textContent = "Synced"; st.className = "tc-sync-ok"; }
+      if (st) { st.textContent = t("synced"); st.className = "tc-sync-ok"; }
     }
 
     function fetchDescription(code) {
-      if (descCache[code]) return Promise.resolve(descCache[code]);
-      return apiGet({ action: "getDesc", code }).then(d => {
-        const name = (d && !d.error && d.description) ? d.description : code;
-        descCache[code] = name;
-        return name;
-      }).catch(() => code);
+      return fetchScanMeta(code).then((meta) => meta.name || "");
     }
 
-    function enrichLog(logId, code, dirLabel) {
-      fetchDescription(code).then(name => {
-        const d = document.getElementById("desc_" + logId);
-        if (d) d.textContent = `${name} · ${dirLabel}`;
+    function fetchScanMeta(code, opts) {
+      const c = String(code || "").toUpperCase();
+      const force = !!(opts && opts.force);
+      if (!c || c === "IN" || c === "OUT") {
+        return Promise.resolve({ name: "", imageUrl: "", toolsHeldQty: 0, toolsHeld: [] });
+      }
+      if (!force && Object.prototype.hasOwnProperty.call(imageCache, c)) {
+        const name = descCache[c] && descCache[c] !== "DESCRIPTION NOT FOUND" ? descCache[c] : "";
+        const toolsHeld = Array.isArray(heldToolsCache[c]) ? heldToolsCache[c] : [];
+        return Promise.resolve({
+          name,
+          imageUrl: imageCache[c] || "",
+          toolsHeldQty: Number(heldQtyCache[c]) || toolsHeld.reduce((s, t) => s + (Number(t.qty) || 1), 0),
+          toolsHeld,
+        });
+      }
+      return apiGet({
+        action: "getDesc",
+        code: c,
+        overdueDays: overdueThresholdDays(),
+      }).then((d) => {
+        if (!d || d.error) {
+          imageCache[c] = "";
+          heldToolsCache[c] = [];
+          heldQtyCache[c] = 0;
+          return { name: "", imageUrl: "", toolsHeldQty: 0, toolsHeld: [] };
+        }
+        const img = String(d.imageUrl || "").trim();
+        imageCache[c] = img;
+        let name = "";
+        if (d.found !== false && d.hasDescription !== false) {
+          const raw = String(d.description || "").trim();
+          if (raw && raw !== "DESCRIPTION NOT FOUND" && raw.toUpperCase() !== c) {
+            descCache[c] = raw;
+            name = raw;
+          }
+        }
+        const toolsHeld = normalizeHeldTools(d.toolsHeld || []);
+        heldToolsCache[c] = toolsHeld;
+        heldQtyCache[c] = Number(d.toolsHeldQty) || toolsHeld.reduce((s, t) => s + (Number(t.qty) || 1), 0);
+        return {
+          name,
+          imageUrl: img,
+          toolsHeldQty: heldQtyCache[c],
+          toolsHeld,
+        };
+      }).catch(() => {
+        imageCache[c] = "";
+        return { name: "", imageUrl: "", toolsHeldQty: 0, toolsHeld: [] };
       });
     }
 
-    function pushWithLimit(payload) {
-      const limit = Number(settings?.offlineQueueLimit || 300) || 300;
-      const scans = loadScans();
-      const unsentCount = scans.filter(s => !s.sent).length;
-      if (unsentCount >= limit) {
-        return false;
+    function setActivePersonPhoto(imageUrl, code) {
+      const host = document.getElementById("activePersonPhoto");
+      if (!host) return;
+      if (imageUrl && typeof productThumbHtml === "function") {
+        host.innerHTML = productThumbHtml(imageUrl, code || "", 56);
+      } else if (imageUrl) {
+        host.innerHTML = `<img class="tc-product-thumb" src="${escHtml(imageUrl)}" alt="" width="56" height="56" loading="lazy">`;
+      } else {
+        host.innerHTML = `<div class="tc-product-thumb placeholder" style="width:56px;height:56px"><i class="bi bi-person"></i></div>`;
       }
-      // Trim oldest SENT rows only if total grows past soft cap
-      if (scans.length >= limit) {
-        for (let i = 0; i < scans.length && scans.length >= limit; i++) {
-          if (scans[i].sent) { scans.splice(i, 1); i--; }
+    }
+
+    function catalogBlockMessage(error, code) {
+      const key = String(error || "UNKNOWN_CODE");
+      if (typeof t === "function") {
+        const msg = t(key);
+        if (msg && msg !== key) return msg;
+      }
+      if (key === "PPE_COOLDOWN") return "PPE cooldown active — confirm override or wait";
+      if (key === "OFFLINE_DISABLED") return "Offline is blocked in strict mode";
+      if (key === "TERMINAL_SESSION_REQUIRED") return "Terminal session missing — reload this page";
+      if (key === "TERMINAL_SESSION_CONFLICT") return "Another active Terminal session is using this device/login";
+      if (key === "TERMINAL_SESSION_BLOCKED") return "Session blocked by a safety rule — reset and rescan";
+      if (key === "NO_DESCRIPTION") return "Code has no description — complete the product in Products";
+      if (key === "NOT_A_PERSON") return "This code is a product, not a person";
+      if (key === "NOT_A_PRODUCT") return "This code is a person, not a product";
+      return `Code ${code || ""} not found in system — add the product first`.trim();
+    }
+
+    async function ensureCatalogBeforeQueue(code, expectKind) {
+      const c = String(code || "").trim().toUpperCase();
+      if (!c) return { ok: false, error: "NO CODE", message: catalogBlockMessage("UNKNOWN_CODE", c) };
+
+      const hit = catalogCache[c];
+      if (hit && hit.ok && (Date.now() - (hit.at || 0)) < 15 * 60 * 1000) {
+        if (expectKind === "person" && hit.kind && hit.kind !== "person") {
+          return { ok: false, error: "NOT_A_PERSON", message: catalogBlockMessage("NOT_A_PERSON", c) };
         }
+        if (expectKind === "item" && hit.kind === "person") {
+          return { ok: false, error: "NOT_A_PRODUCT", message: catalogBlockMessage("NOT_A_PRODUCT", c) };
+        }
+        if (hit.description) descCache[c] = hit.description;
+        return {
+          ok: true,
+          description: hit.description || "",
+          kind: hit.kind || "",
+          serialized: !!hit.serialized,
+          cached: true,
+        };
       }
-      scans.push(payload);
-      saveScans(scans);
-      updateCounter();
-      processQueue();
-      return true;
+
+      if (!navigator.onLine) {
+        return { ok: false, error: "OFFLINE_DISABLED", message: "Offline is blocked in strict mode" };
+      }
+      try {
+        const info = await apiGet({
+          action: "checkScanCode",
+          code: c,
+          expectKind: expectKind || ""
+        });
+        if (!info || info.error === "UNAUTHORIZED" || info.error === "FORBIDDEN") {
+          if (info && (info.error === "UNAUTHORIZED" || info.error === "FORBIDDEN")) {
+            return { ok: false, error: info.error, message: catalogBlockMessage("UNKNOWN_CODE", c) };
+          }
+          // Fail closed in Terminal strict mode when catalog validation returns nothing.
+          return { ok: false, error: "NETWORK", message: "Server validation failed — try again online" };
+        }
+        if (info.ok || info.found) {
+          if (info.description) descCache[c] = info.description;
+          catalogCache[c] = {
+            ok: true,
+            description: info.description || "",
+            kind: info.kind || "",
+            serialized: !!info.serialized,
+            at: Date.now(),
+          };
+          return {
+            ok: true,
+            description: info.description || "",
+            kind: info.kind || "",
+            serialized: !!info.serialized,
+          };
+        }
+        const err = info.error || "UNKNOWN_CODE";
+        catalogCache[c] = { ok: false, error: err, at: Date.now() };
+        return { ok: false, error: err, message: catalogBlockMessage(err, c) };
+      } catch (_) {
+        return { ok: false, error: "NETWORK", message: "Server validation failed — try again online" };
+      }
+    }
+
+    function enrichLog(logId, code, dirLabel) {
+      fetchScanMeta(code).then((meta) => {
+        const d = document.getElementById("desc_" + logId);
+        if (d) d.textContent = meta.name ? `${meta.name} · ${dirLabel}` : dirLabel;
+        const thumb = document.getElementById("thumb_" + logId);
+        if (thumb) thumb.innerHTML = logThumbHtml(code, meta.imageUrl);
+      });
     }
 
     function applyDirection(dir) {
-      handleScanResult(ScanEngine.process(dir));
+      enqueueIntake(dir);
     }
 
     function setDirection(dir) {
       applyDirection(dir);
     }
 
+    function enqueueIntake(code) {
+      const c = String(code || "").trim();
+      if (!c) return;
+      intakeQueue.push(c);
+      drainIntake();
+    }
+
+    /** Warm / refresh catalog cache so rapid wedge bursts skip network on the critical path. */
+    function warmCatalogCache() {
+      if (!navigator.onLine || typeof apiGet !== "function") return;
+      apiGet({ action: "getCatalogStock" }).then((data) => {
+        const items = (data && (data.items || data.rows || data.catalog)) || [];
+        if (!Array.isArray(items) || !items.length) return;
+        const now = Date.now();
+        for (const row of items) {
+          const c = String(row.code || "").trim().toUpperCase();
+          if (!c) continue;
+          const description = String(row.description || "").trim();
+          catalogCache[c] = {
+            ok: true,
+            description,
+            kind: String(row.kind || "").toLowerCase(),
+            serialized: !!row.serialized,
+            at: now,
+          };
+          if (description) descCache[c] = description;
+        }
+      }).catch(() => {});
+    }
+
+    /** Prefetch catalog for everything currently buffered so N scans ≈ 1 round-trip. */
+    async function prefetchCatalogForCodes(codes) {
+      if (!navigator.onLine || !codes || !codes.length) return;
+      const need = [];
+      const seen = Object.create(null);
+      for (const raw of codes) {
+        const c = String(raw || "").trim().toUpperCase();
+        if (!c || c === "IN" || c === "OUT" || seen[c]) continue;
+        seen[c] = true;
+        const hit = catalogCache[c];
+        if (hit && (Date.now() - (hit.at || 0)) < 15 * 60 * 1000) continue;
+        need.push(c);
+      }
+      if (!need.length) return;
+      await Promise.all(
+        need.map((c) => ensureCatalogBeforeQueue(c, c.startsWith("P") ? "person" : "item"))
+      );
+    }
+
+    async function drainIntake() {
+      if (intakeBusy) return;
+      intakeBusy = true;
+      try {
+        while (intakeQueue.length) {
+          if (scannerLocked) break; // buffer until modal resolved
+          // Snapshot + prefetch so a 2–3 code burst shares one parallel catalog round-trip
+          const burst = intakeQueue.slice();
+          await prefetchCatalogForCodes(burst);
+          while (intakeQueue.length) {
+            if (scannerLocked) break;
+            const code = intakeQueue.shift();
+            try {
+              await handleScanResult(ScanEngine.process(code));
+            } catch (_) {}
+          }
+        }
+      } finally {
+        intakeBusy = false;
+        if (intakeQueue.length && !scannerLocked) {
+          drainIntake();
+        }
+      }
+    }
+
     function submitScan() {
+      if (window.__tcTabBlocked) {
+        addLog("TAB", typeof t === "function" ? t("tabLockBody") : "Close the other Terminal tab first", true);
+        playDanger();
+        return;
+      }
+      if (scannerLocked) {
+        addLog("LOCK", "Scanner locked — resolve the current prompt first", true);
+        playDanger();
+        return;
+      }
+      if (!navigator.onLine) {
+        addLog("NET", "Offline is blocked in strict mode", true);
+        playDanger();
+        return;
+      }
+      if (sessionBlocked) {
+        addLog("SAFE", sessionBlockReason || "Session blocked", true);
+        playDanger();
+        return;
+      }
       const input = document.getElementById("scanInput");
       const code = input.value.trim();
       if (!code) return;
       input.value = "";
       input.focus();
-      handleScanResult(ScanEngine.process(code));
+      enqueueIntake(code);
     }
 
-    async function processQueue() {
-      if (isProcessing || !navigator.onLine) { updateOnlineStatus(); return; }
-      isProcessing = true;
-      try {
-        const scans = loadScans().sort((a, b) => a.seq - b.seq);
-        for (const scan of scans) {
-          if (scan.sent) continue;
-          try {
-            const result = await syncScan(scan.code);
-            if (result.ok) {
-              markSynced(scan.logId);
-              saveScans(loadScans().map(s => s.seq === scan.seq ? { ...s, sent: true } : s));
-              updateCounter();
-            } else break;
-            await new Promise(r => setTimeout(r, 200));
-          } catch (e) { console.error("Sync break:", scan.seq, e); break; }
-        }
-      } finally { isProcessing = false; updateOnlineStatus(); }
-    }
 
     document.addEventListener("keydown", e => {
       if (!settings?.hotkeysEnabled) return;
       if (e.key === "Escape") {
+        const ppe = document.getElementById("ppeCooldownoldownModal");
+        if (ppe?.style.display === "block") {
+          closePpeCooldownModal(true);
+          return;
+        }
         const cm = document.getElementById("directionConflictModal");
         if (cm?.style.display === "block") return;
         const m = document.getElementById("settingsModal");
@@ -545,31 +1444,91 @@
       if (e.key.toLowerCase() === "o") setDirection("OUT");
     });
 
-    document.addEventListener("DOMContentLoaded", () => TCUI.bootPage(() => {
+    document.addEventListener("DOMContentLoaded", () => TCUI.bootPage(async () => {
       TCUI.mountHeader("app-header", {
         active: "terminal",
-        title: "Scan Terminal",
-        subtitle: "Person → IN/OUT → tools · strict mode",
+        titleKey: "terminal",
+        subtitleKey: "terminalSub",
+        
+        
         icon: "bi-terminal",
-        toolbar: `<button type="button" class="tc-btn" onclick="openSettings()"><i class="bi bi-gear"></i> Settings</button>`
+        toolbar: `<button type="button" class="tc-btn" onclick="openSettings()"><i class="bi bi-gear"></i> <span data-i18n="settings">Settings</span></button>`
       });
+
+      window.__tcTabBlocked = false;
+      const resetBtn = document.getElementById("btnResetTerminalSession");
+      if (resetBtn) {
+        resetBtn.onclick = async () => {
+          await releaseTerminalSession();
+          if (typeof rotateScanSessionId === "function") rotateScanSessionId();
+          if (typeof ScanEngine.clearSession === "function") ScanEngine.clearSession();
+          clearTerminalBlockUi();
+          unlockScanner();
+          const acquired = await acquireTerminalSession();
+          if (!acquired.ok) {
+            freezeTerminalSession("Terminal session blocked", "Could not acquire a new clean terminal session.");
+          }
+        };
+      }
+      const acquired = await acquireTerminalSession();
+      if (!acquired.ok) {
+        window.__tcTabBlocked = true;
+        freezeTerminalSession("Terminal session conflict", "Another active Terminal tab/session is already using this device/login.");
+      } else {
+        clearTerminalBlockUi();
+        leaseHeartbeatTimer = setInterval(async () => {
+          const beat = await heartbeatTerminalSession();
+          if (!beat.ok) {
+            window.__tcTabBlocked = true;
+            freezeTerminalSession(
+              beat.error === "TERMINAL_SESSION_BLOCKED" ? "Terminal session blocked" : "Terminal session conflict",
+              beat.error === "TERMINAL_SESSION_BLOCKED"
+                ? "This session was blocked by a safety rule. Reset and rescan."
+                : "Another active Terminal session is already using this device/login."
+            );
+          }
+        }, 5000);
+        window.addEventListener("beforeunload", () => {
+          try {
+            if (leaseHeartbeatTimer) clearInterval(leaseHeartbeatTimer);
+          } catch (_) {}
+          try { releaseTerminalSession(); } catch (_) {}
+        });
+      }
+
       ScanEngine.updateStepUi();
       refreshSettingsUI();
       rebuildSessionFromUnsynced();
+      warmCatalogCache();
       updateOnlineStatus();
       updateCounter();
+      document.getElementById("btnPpeForceIssue").onclick = async () => {
+        const result = pendingPpeResult;
+        closePpeCooldownModal(true);
+        if (!result) return;
+        result.ppeOverride = true;
+        await finalizeToolQueue(result);
+        addLog(result.code, "PPE warning overridden — issued anyway", true);
+      };
+      document.getElementById("btnPpeCancelIssue").onclick = () => {
+        const result = pendingPpeResult;
+        closePpeCooldownModal(true);
+        if (result?.code) {
+          if (typeof ScanEngine.uncommitTool === "function") ScanEngine.uncommitTool(result.code);
+          addLog(result.code, "PPE issue cancelled — cooldown active", true);
+        }
+      };
       const input = document.getElementById("scanInput");
       input.focus();
       input.addEventListener("keydown", e => { if (e.key === "Enter") submitScan(); });
       updateOnlineStatus();
       updateCounter();
-      processQueue();
-      setInterval(processQueue, 5000);
     }, { pageId: "terminal" }));
 
     window.setDirection = setDirection;
     window.submitScan = submitScan;
     window.resolveDirectionConflict = resolveDirectionConflict;
+    window.closePpeCooldownModal = closePpeCooldownModal;
     window.logout = () => TCUI.logout();
     window.openSettings = openSettings;
     window.closeSettings = closeSettings;

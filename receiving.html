@@ -3,45 +3,80 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ToolCustody | Receiving</title>
+  <title>AbouAmjad Store System | Receiving</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="app.css">
+  <link rel="stylesheet" href="app.css?v=live">
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#1e3a5f">
-  <script src="config.js"></script>
-  <script src="ui.js"></script>
+  <meta name="theme-color" content="#0f766e">
+  
+  <script src="config.js?v=live"></script>
+  <script src="i18n.js?v=live"></script>
+  <script src="ui.js?v=live"></script>
 </head>
 <body class="tc-page">
   <div class="tc-wrap">
     <div class="tc-shell">
       <div id="app-header"></div>
+      <div id="requestBanner" class="tc-card mb-3" style="display:none;border:1px solid color-mix(in srgb, var(--primary) 35%, var(--border));background:color-mix(in srgb, var(--primary) 8%, var(--surface))">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+          <div>
+            <div class="fw-bold" id="requestBannerTitle">Fulfilling store request</div>
+            <div class="small tc-text-muted mt-1" id="requestBannerMeta"></div>
+          </div>
+          <a class="tc-btn tc-btn-sm" href="requests.html"><i class="bi bi-arrow-left"></i> <span data-i18n="openRequests">Requests</span></a>
+        </div>
+      </div>
       <div class="row g-4">
         <div class="col-lg-5">
           <div class="tc-card">
-            <span class="tc-section-badge"><i class="bi bi-box-arrow-in-down"></i> New intake</span>
-            <div class="tc-field mt-3"><label>Code (P/I/E/C/B…)</label><input id="code" class="form-control" placeholder="I1001"></div>
-            <div class="tc-field"><label>Description</label><input id="description" class="form-control" placeholder="Tool name"></div>
-            <div class="tc-field"><label>Supplier</label><input id="supplier" class="form-control"></div>
-            <div class="tc-field"><label>Invoice</label><input id="invoice" class="form-control"></div>
-            <div class="tc-field"><label>Purchase Order</label><input id="po" class="form-control"></div>
-            <div class="tc-field"><label>Cost</label><input id="cost" class="form-control" type="number" step="0.01"></div>
-            <div class="tc-field"><label>Warranty</label><input id="warranty" class="form-control" placeholder="12 months"></div>
-            <div class="tc-field"><label>Product photo (optional)</label>
+            <span class="tc-section-badge"><i class="bi bi-box-arrow-in-down"></i> <span data-i18n="receivingNewIntake">New intake</span></span>
+            <div class="tc-field mt-3"><label data-i18n="code">Code (P/I/E/C/B…)</label><input id="code" class="form-control" placeholder="I1001"></div>
+            <div class="tc-field"><label data-i18n="description">Description</label><input id="description" class="form-control" placeholder="Tool name"></div>
+            <div class="tc-field"><label data-i18n="category">Category</label><input id="category" class="form-control" list="recvCatList" placeholder="Electrical / Safety…"></div>
+            <datalist id="recvCatList"></datalist>
+            <div class="tc-field"><label data-i18n="subcategory">Subcategory</label><input id="subcategory" class="form-control" list="recvSubList"></div>
+            <datalist id="recvSubList"></datalist>
+            <div class="tc-field"><label data-i18n="qty">Quantity</label><input id="qty" type="number" min="0.001" step="any" class="form-control" value="1"></div>
+            <div class="tc-field"><label data-i18n="supplier">Supplier</label>
+              <select id="supplierId" class="tc-select w-100">
+                <option value="">—</option>
+              </select>
+            </div>
+            <div class="tc-field"><label data-i18n="supplierNewOptional">New supplier (optional)</label>
+              <input id="supplier" class="form-control" data-i18n-placeholder="supplierNamePh" placeholder="Type to create new">
+            </div>
+            <div class="tc-field">
+              <label data-i18n="invoiceOrDn">Invoice / Delivery note</label>
+              <input id="invoice" class="form-control" data-i18n-placeholder="invoiceOrDnPh" placeholder="Invoice or DN number">
+              <div class="small tc-text-muted mt-1" id="invoiceHint" style="display:none" data-i18n="invoiceOrDnRequired">Required when receiving against a store request</div>
+            </div>
+            <div class="tc-field"><label data-i18n="po">Purchase Order</label><input id="po" class="form-control"></div>
+            <div class="tc-field"><label data-i18n="cost">Cost</label><input id="cost" class="form-control" type="number" step="0.01"></div>
+            <div class="tc-field"><label data-i18n="warranty">Warranty</label><input id="warranty" class="form-control" placeholder="12 months"></div>
+            <div class="tc-field"><label data-i18n="photoOptional">Product photo (optional)</label>
               <input id="photo" type="file" accept="image/*" capture="environment" class="form-control">
             </div>
-            <button class="tc-btn tc-btn-primary w-100 mt-2" id="btnSave"><i class="bi bi-check2"></i> Receive &amp; catalog</button>
-            <p class="tc-text-muted small mt-2 mb-0">Creates catalog row + Receiving log + Active lifecycle. Not a checkout (OUT).</p>
+            <button class="tc-btn tc-btn-primary w-100 mt-2" id="btnSave"><i class="bi bi-check2"></i> <span data-i18n="receiveSave">Receive &amp; catalog</span></button>
+            <p class="tc-text-muted small mt-2 mb-0" data-i18n="receivingHint">Creates catalog row + Receiving log + Active lifecycle. Not a checkout (OUT).</p>
           </div>
         </div>
         <div class="col-lg-7">
           <div class="tc-card">
-            <span class="tc-section-badge"><i class="bi bi-clock-history"></i> Recent receiving</span>
+            <span class="tc-section-badge"><i class="bi bi-clock-history"></i> <span data-i18n="receivingRecent">Recent receiving</span></span>
             <div class="table-responsive mt-2">
               <table class="table tc-table mb-0">
-                <thead><tr><th>When</th><th>Code</th><th>Desc</th><th>Supplier</th><th>Cost</th></tr></thead>
-                <tbody id="recvBody"><tr><td colspan="5" class="tc-text-muted text-center">Loading…</td></tr></tbody>
+                <thead><tr>
+                  <th data-i18n="when">When</th>
+                  <th data-i18n="code">Code</th>
+                  <th data-i18n="description">Desc</th>
+                  <th data-i18n="qty">Qty</th>
+                  <th data-i18n="supplier">Supplier</th>
+                  <th data-i18n="invoiceOrDnShort">Inv/DN</th>
+                  <th data-i18n="cost">Cost</th>
+                </tr></thead>
+                <tbody id="recvBody"><tr><td colspan="7" class="tc-text-muted text-center" data-i18n="loading">Loading…</td></tr></tbody>
               </table>
             </div>
           </div>
@@ -50,68 +85,181 @@
     </div>
   </div>
   <script>
+    let linkedRequest = { requestId: 0, lineId: 0, maxQty: 0 };
+
     document.addEventListener("DOMContentLoaded", () => TCUI.bootPage(() => {
       TCUI.mountHeader("app-header", {
-        active: "receiving", title: "Receiving", subtitle: "Supplier · Invoice · PO · Cost · Warranty",
+        active: "receiving",
+        titleKey: "receiving",
+        subtitleKey: "receivingSub",  
         icon: "bi-box-arrow-in-down"
       });
       loadList();
+      loadSuppliers();
       document.getElementById("btnSave").onclick = saveItem;
+      apiGet({ action: "getCatalogStock" }).then((d) => {
+        if (!d || !d.categories) return;
+        document.getElementById("recvCatList").innerHTML = (d.categories || []).map((c) => `<option value="${escHtml(c)}">`).join("");
+        document.getElementById("recvSubList").innerHTML = (d.subcategories || []).map((c) => `<option value="${escHtml(c)}">`).join("");
+      }).catch(() => {});
+      applyRequestQuery().catch(() => {});
     }, { pageId: "receiving" }));
 
+    function qs() {
+      return new URLSearchParams(location.search || "");
+    }
+
+    async function applyRequestQuery() {
+      const p = qs();
+      const requestId = Number(p.get("requestId") || p.get("request_id") || 0) || 0;
+      const lineId = Number(p.get("lineId") || p.get("line_id") || 0) || 0;
+      const code = String(p.get("code") || "").trim().toUpperCase();
+      const qty = Number(p.get("qty") || 0) || 0;
+      const desc = String(p.get("desc") || p.get("description") || "").trim();
+      if (!requestId && !lineId && !code) return;
+
+      linkedRequest = { requestId, lineId, maxQty: qty || 0 };
+
+      if (code) document.getElementById("code").value = code;
+      if (desc) document.getElementById("description").value = desc;
+      if (qty > 0) document.getElementById("qty").value = String(qty);
+
+      const banner = document.getElementById("requestBanner");
+      const hint = document.getElementById("invoiceHint");
+      if (requestId || lineId) {
+        banner.style.display = "";
+        hint.style.display = "";
+        document.getElementById("invoice").required = true;
+        document.getElementById("requestBannerTitle").textContent =
+          t("receivingFromRequest", { id: requestId || "—" }) || ("Fulfilling store request #" + (requestId || "—"));
+        document.getElementById("requestBannerMeta").textContent =
+          [code, desc, qty ? ((t("reqRemaining") || "Left") + ": " + qty) : ""].filter(Boolean).join(" · ");
+      }
+
+      if (code && !document.getElementById("description").value) {
+        try {
+          const stock = await apiGet({ action: "getCatalogStock" });
+          const item = ((stock && stock.items) || []).find((i) => String(i.code || "").toUpperCase() === code);
+          if (item) {
+            document.getElementById("description").value = item.description || code;
+            document.getElementById("category").value = item.category || "";
+            document.getElementById("subcategory").value = item.subcategory || "";
+          }
+        } catch (_) {}
+      } else if (code) {
+        try {
+          const stock = await apiGet({ action: "getCatalogStock" });
+          const item = ((stock && stock.items) || []).find((i) => String(i.code || "").toUpperCase() === code);
+          if (item) {
+            if (!document.getElementById("category").value) document.getElementById("category").value = item.category || "";
+            if (!document.getElementById("subcategory").value) document.getElementById("subcategory").value = item.subcategory || "";
+          }
+        } catch (_) {}
+      }
+    }
+
+    async function loadSuppliers() {
+      try {
+        const sData = await apiGet({ action: "listSuppliers" });
+        const suppliers = (sData && sData.items) || [];
+        const sel = document.getElementById("supplierId");
+        sel.innerHTML = `<option value="">—</option>` +
+          suppliers.map((s) => `<option value="${escHtml(s.name)}">${escHtml(s.name)}</option>`).join("");
+      } catch (_) {}
+    }
     async function loadList() {
       const body = document.getElementById("recvBody");
       try {
         const data = await apiGet({ action: "getReceiving" });
         const items = (data && data.items) || [];
         if (!items.length) {
-          body.innerHTML = `<tr><td colspan="5" class="tc-text-muted text-center">No receiving rows yet</td></tr>`;
+          body.innerHTML = `<tr><td colspan="7" class="tc-text-muted text-center">${t("noRows")}</td></tr>`;
           return;
         }
         body.innerHTML = items.map(i => `<tr>
-          <td>${escHtml(i.timestamp || "")}</td>
+          <td><small>${escHtml(formatDisplayDateTime(i.timestamp))}</small></td>
           <td><strong>${escHtml(i.code || "")}</strong></td>
           <td>${escHtml(i.description || "")}</td>
+          <td>${escHtml(String(i.qty != null ? i.qty : 1))}</td>
           <td>${escHtml(i.supplier || "")}</td>
+          <td>${escHtml(i.invoice || "")}</td>
           <td>${escHtml(i.cost || "")}</td>
         </tr>`).join("");
       } catch (e) {
-        body.innerHTML = `<tr><td colspan="5" class="text-danger text-center">${escHtml(e.message || "Error")}</td></tr>`;
+        body.innerHTML = `<tr><td colspan="7" class="text-danger text-center">${escHtml(e.message || "Error")}</td></tr>`;
       }
     }
 
     async function saveItem() {
       const code = document.getElementById("code").value.trim().toUpperCase();
+      const supplierNew = document.getElementById("supplier").value.trim();
+      const supplierPick = document.getElementById("supplierId").value.trim();
+      const supplierName = supplierNew || supplierPick;
+      const invoice = document.getElementById("invoice").value.trim();
+      if ((linkedRequest.requestId || linkedRequest.lineId) && !invoice) {
+        TCUI.toast(t("INVOICE_OR_DN_REQUIRED") || "Invoice or delivery note number is required", "err");
+        document.getElementById("invoice").focus();
+        return;
+      }
+      if (supplierNew) {
+        try {
+          await apiGet({ action: "upsertSupplier", name: supplierNew });
+        } catch (_) {}
+      }
       const payload = {
         action: "receiveItem",
         code,
         description: document.getElementById("description").value.trim(),
-        supplier: document.getElementById("supplier").value.trim(),
-        invoice: document.getElementById("invoice").value.trim(),
+        category: document.getElementById("category").value.trim(),
+        subcategory: document.getElementById("subcategory").value.trim(),
+        qty: document.getElementById("qty").value || 1,
+        supplier: supplierName,
+        invoice,
         po: document.getElementById("po").value.trim(),
         cost: document.getElementById("cost").value.trim(),
         warranty: document.getElementById("warranty").value.trim(),
         user: getSessionUser(),
         role: getRole()
       };
+      if (linkedRequest.requestId) payload.requestId = linkedRequest.requestId;
+      if (linkedRequest.lineId) payload.requestLineId = linkedRequest.lineId;
+
       try {
         const res = await apiPostForm(payload);
-        if (res.error) { TCUI.toast(res.error, "err"); return; }
+        if (res.error || res.success === false) {
+          const err = res.error || "Failed";
+          TCUI.toast(
+            err === "INVOICE_OR_DN_REQUIRED" ? (t("INVOICE_OR_DN_REQUIRED") || "Invoice or delivery note required")
+            : err === "LINE_ALREADY_DONE" ? (t("LINE_ALREADY_DONE") || "This request line is already fully received")
+            : err,
+            "err"
+          );
+          return;
+        }
         const file = document.getElementById("photo").files && document.getElementById("photo").files[0];
         if (file) {
           try {
             const dataUrl = await compressImageFile(file, 900, 0.7);
             const imgRes = await setProductImage(code, dataUrl);
             if (imgRes.error) TCUI.toast("Received, but photo failed: " + imgRes.error, "err");
-            else TCUI.toast("Received " + code + " + photo", "ok");
+            else TCUI.toast(t("receivedOk") + " " + code, "ok");
           } catch (pe) {
-            TCUI.toast("Received " + code + " (photo failed)", "err");
+            TCUI.toast(t("receivedOk") + " " + code, "ok");
           }
         } else {
-          TCUI.toast("Received " + (res.code || ""), "ok");
+          TCUI.toast(t("receivedOk") + " " + (res.code || ""), "ok");
         }
-        ["code","description","supplier","invoice","po","cost","warranty"].forEach(id => document.getElementById(id).value = "");
+
+        if (linkedRequest.requestId || linkedRequest.lineId) {
+          setTimeout(() => { location.href = "requests.html"; }, 700);
+          return;
+        }
+
+        ["code","description","category","subcategory","supplier","invoice","po","cost","warranty"].forEach(id => document.getElementById(id).value = "");
+        document.getElementById("supplierId").value = "";
+        document.getElementById("qty").value = "1";
         document.getElementById("photo").value = "";
+        loadSuppliers();
         loadList();
       } catch (e) {
         TCUI.toast(e.message || "Failed", "err");

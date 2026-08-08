@@ -3,127 +3,441 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ToolCustody | Worker Profile</title>
+  <title>AbouAmjad Store System | Person report</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="app.css">
+  <link rel="stylesheet" href="app.css?v=live">
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#1e3a5f">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <link rel="apple-touch-icon" href="icons/icon.svg">
-  <script src="config.js"></script>
-  <script src="ui.js"></script>
+  <meta name="theme-color" content="#0f766e">
+  <script src="config.js?v=live"></script>
+  <script src="i18n.js?v=live"></script>
+  <script src="ui.js?v=live"></script>
+  <style>
+    .pr-page .pr-hero {
+      display: grid; gap: 1.1rem; margin-bottom: 1.25rem;
+      padding: 1.15rem 1.2rem; border-radius: 22px;
+      background:
+        radial-gradient(900px 280px at 0% 0%, rgba(15,118,110,.16), transparent 55%),
+        var(--tc-surface);
+      border: 1px solid var(--tc-border);
+    }
+    @media (min-width: 800px) {
+      .pr-page .pr-hero { grid-template-columns: auto 1fr auto; align-items: center; }
+    }
+    .pr-page .pr-photo {
+      width: 92px; height: 92px; border-radius: 22px; object-fit: cover;
+      background: var(--tc-thumb-bg); display: grid; place-items: center;
+      font-size: 1.8rem; font-weight: 800; color: var(--tc-accent-2);
+      border: 2px solid color-mix(in srgb, var(--tc-accent) 25%, transparent);
+    }
+    .pr-page .pr-name { font-size: clamp(1.35rem, 3vw, 1.75rem); font-weight: 800; letter-spacing: -0.03em; margin: 0; }
+    .pr-page .pr-code {
+      display: inline-flex; margin-top: .35rem; font-size: .78rem; font-weight: 700;
+      color: var(--tc-accent-2); background: var(--tc-accent-soft); padding: .18rem .6rem; border-radius: 999px;
+    }
+    .pr-page .pr-meta {
+      display: flex; flex-wrap: wrap; gap: .4rem .9rem; margin-top: .55rem;
+      font-size: .82rem; color: var(--tc-muted);
+    }
+    .pr-page .pr-status {
+      display: inline-flex; align-items: center; gap: .35rem; font-weight: 800; font-size: .8rem;
+      padding: .4rem .75rem; border-radius: 999px; margin-top: .55rem;
+    }
+    .pr-page .pr-status.clear { background: var(--tc-ok-bg); color: var(--tc-success); }
+    .pr-page .pr-status.held { background: var(--tc-warn-bg); color: var(--tc-warning); }
+    .pr-page .pr-status.overdue { background: var(--tc-danger-bg); color: var(--tc-danger); }
+    .pr-page .pr-actions { display: flex; flex-wrap: wrap; gap: .45rem; justify-content: flex-end; }
+
+    .pr-page .pr-kpis {
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: .7rem; margin-bottom: 1.15rem;
+    }
+    @media (min-width: 800px) { .pr-page .pr-kpis { grid-template-columns: repeat(4, 1fr); } }
+    .pr-page .pr-kpi {
+      background: var(--tc-surface); border: 1px solid var(--tc-border); border-radius: 16px;
+      padding: .9rem 1rem;
+    }
+    .pr-page .pr-kpi .k { font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--tc-muted); }
+    .pr-page .pr-kpi .v { font-size: 1.55rem; font-weight: 800; margin-top: .15rem; line-height: 1.1; }
+    .pr-page .pr-kpi .s { font-size: .72rem; color: var(--tc-muted); margin-top: .2rem; }
+
+    .pr-page .pr-grid {
+      display: grid; gap: 1.15rem;
+    }
+    @media (min-width: 1000px) {
+      .pr-page .pr-grid { grid-template-columns: 1.15fr .85fr; align-items: start; }
+    }
+    .pr-page .pr-panel {
+      background: var(--tc-surface); border: 1px solid var(--tc-border); border-radius: 18px; overflow: hidden;
+    }
+    .pr-page .pr-panel-head {
+      display: flex; align-items: center; justify-content: space-between; gap: .75rem; flex-wrap: wrap;
+      padding: .9rem 1.1rem; background: var(--tc-head-grad); border-bottom: 1px solid var(--tc-border);
+    }
+    .pr-page .pr-panel-head h2 {
+      margin: 0; font-size: .95rem; font-weight: 800; display: flex; align-items: center; gap: .4rem;
+    }
+    .pr-page .pr-panel-head h2 i { color: var(--tc-accent); }
+    .pr-page .pr-panel-body { padding: 1rem 1.1rem; }
+
+    .pr-page .pr-tool {
+      display: grid; grid-template-columns: 52px 1fr auto; gap: .55rem; align-items: center;
+      padding: .8rem .85rem; border: 1px solid var(--tc-border); border-radius: 14px;
+      margin-bottom: .55rem; text-decoration: none; color: inherit;
+      transition: border-color .15s, background .15s;
+    }
+    .pr-page .pr-tool .tc-product-thumb {
+      width: 52px; height: 52px; border-radius: 10px;
+      object-fit: cover; flex-shrink: 0;
+    }
+    .pr-page .pr-tool .tc-product-thumb.placeholder {
+      width: 52px; height: 52px;
+    }
+    .pr-page .pr-tool:hover { border-color: color-mix(in srgb, var(--tc-accent) 35%, transparent); background: var(--tc-accent-soft); }
+    .pr-page .pr-tool.overdue { border-color: color-mix(in srgb, var(--tc-danger) 30%, transparent); background: var(--tc-danger-bg); }
+    .pr-page .pr-tool .code { font-weight: 800; }
+    .pr-page .pr-tool .desc { font-size: .78rem; color: var(--tc-muted); }
+    .pr-page .pr-tool .badge-days {
+      font-size: .72rem; font-weight: 800; padding: .28rem .55rem; border-radius: 999px;
+      background: var(--tc-warn-bg); color: var(--tc-warning); white-space: nowrap;
+    }
+    .pr-page .pr-tool.overdue .badge-days { background: var(--tc-danger-bg); color: var(--tc-danger); }
+    .pr-page .pr-lots {
+      margin-top: .4rem; display: grid; gap: .28rem;
+    }
+    .pr-page .pr-lot {
+      display: flex; align-items: center; justify-content: space-between; gap: .5rem;
+      font-size: .74rem; padding: .28rem .5rem; border-radius: 8px;
+      background: var(--tc-surface-2); color: var(--tc-text);
+      border: 1px solid var(--tc-border);
+    }
+    .pr-page .pr-lot .pr-lot-when { display: flex; align-items: center; gap: .3rem; color: var(--tc-muted); }
+    .pr-page .pr-lot .pr-lot-when i { color: var(--tc-accent); }
+    .pr-page .pr-lot .pr-lot-days { font-weight: 800; white-space: nowrap; color: var(--tc-warning); }
+    .pr-page .pr-lot.overdue { border-color: color-mix(in srgb, var(--tc-danger) 35%, transparent); background: var(--tc-danger-bg); }
+    .pr-page .pr-lot.overdue .pr-lot-days { color: var(--tc-danger); }
+
+    .pr-page .pr-event {
+      display: grid; grid-template-columns: 86px 1fr; gap: .7rem; padding: .7rem 0;
+      border-bottom: 1px solid var(--tc-border); align-items: start;
+    }
+    .pr-page .pr-event:last-child { border-bottom: 0; }
+    .pr-page .pr-dot {
+      min-width: 86px; height: auto; border-radius: 10px; display: grid; place-items: center;
+      font-size: .68rem; font-weight: 900; letter-spacing: .04em; text-transform: uppercase;
+      padding: .45rem .35rem; gap: .15rem; text-align: center; line-height: 1.15;
+    }
+    .pr-page .pr-dot i { font-size: 1rem; }
+    .pr-page .pr-dot.out { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+    .pr-page .pr-dot.in { background: #ecfdf5; color: #15803d; border: 1px solid #bbf7d0; }
+    .pr-page .pr-dot.cons { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+    .pr-page .pr-event .title { font-weight: 800; font-size: .95rem; }
+    .pr-page .pr-event .code { font-family: ui-monospace, Consolas, monospace; color: var(--tc-accent-2); }
+    .pr-page .pr-event .meaning {
+      display: inline-flex; margin-top: .2rem; font-size: .72rem; font-weight: 700;
+      color: var(--tc-muted); background: var(--tc-surface-2); padding: .12rem .45rem; border-radius: 999px;
+    }
+    .pr-page .pr-event .sub { font-size: .78rem; color: var(--tc-muted); margin-top: .25rem; }
+    .pr-page .pr-empty { text-align: center; padding: 1.75rem .5rem; color: var(--tc-muted); }
+    .pr-page .pr-empty i { font-size: 1.6rem; display: block; margin-bottom: .4rem; color: var(--tc-accent); opacity: .7; }
+    .pr-page .pr-filter {
+      display: inline-flex; padding: .18rem; background: var(--tc-surface-2); border-radius: 999px; gap: .12rem;
+    }
+    .pr-page .pr-filter button {
+      border: 0; background: transparent; color: var(--tc-muted); font-weight: 700;
+      font-size: .72rem; padding: .35rem .7rem; border-radius: 999px; cursor: pointer;
+    }
+    .pr-page .pr-filter button.active { background: var(--tc-surface); color: var(--tc-accent-2); box-shadow: var(--tc-shadow); }
+  </style>
 </head>
-<body class="tc-page">
-  <div class="tc-wrap narrow">
+<body class="tc-page pr-page">
+  <div class="tc-wrap">
     <div class="tc-shell">
       <div id="app-header"></div>
-      <button class="tc-btn tc-btn-sm mb-3" onclick="history.back()"><i class="bi bi-arrow-left"></i> Back</button>
 
       <div id="loadingState" class="text-center py-5">
         <div class="tc-spinner mb-3"></div>
-        <div class="tc-text-muted">Loading worker profile…</div>
+        <div class="tc-text-muted" data-i18n="loading">Loading…</div>
       </div>
 
       <div id="mainContent" style="display:none">
-        <div class="tc-card mb-4 d-flex align-items-center gap-3 flex-wrap">
-          <div class="tc-avatar lg" id="workerAvatar">—</div>
-          <div class="flex-grow-1">
-            <h2 class="fw-bold mb-1" id="workerName">—</h2>
-            <div class="tc-text-muted small" id="workerCode">—</div>
-            <div class="d-flex gap-2 mt-2 flex-wrap">
-              <span class="tc-badge-present"><i class="bi bi-check-circle-fill"></i> Present</span>
-              <span class="tc-badge-holder" id="workerToolCount">0 tools held</span>
-            </div>
+        <div class="pr-hero">
+          <div id="photoWrap"></div>
+          <div>
+            <h1 class="pr-name" id="personName">—</h1>
+            <div class="pr-code" id="personCode">—</div>
+            <div class="pr-meta" id="personMeta"></div>
+            <div id="statusBadge"></div>
+          </div>
+          <div class="pr-actions">
+            <a class="tc-btn" id="btnBack" href="outstanding.html"><i class="bi bi-arrow-left"></i> <span data-i18n="backToOutstanding">Not returned</span></a>
+            <a class="tc-btn" id="btnPeople" href="people.html"><i class="bi bi-people"></i> <span data-i18n="people">People</span></a>
+            <button type="button" class="tc-btn" id="btnExport"><i class="bi bi-download"></i> <span data-i18n="export">Export</span></button>
+            <a class="tc-btn tc-btn-primary" id="btnEdit" href="#"><i class="bi bi-pencil"></i> <span data-i18n="edit">Edit</span></a>
           </div>
         </div>
 
-        <span class="tc-section-badge"><i class="bi bi-hammer"></i> Currently holding</span>
-        <div id="toolsHeldNow" class="row g-3 mb-4 mt-2"></div>
+        <div class="pr-kpis">
+          <div class="pr-kpi"><div class="k" data-i18n="currentlyHeld">Currently held</div><div class="v" id="kHeld">0</div><div class="s" id="kHeldSub"></div></div>
+          <div class="pr-kpi"><div class="k" data-i18n="totalTaken">Total taken</div><div class="v" id="kTaken">0</div><div class="s" data-i18n="lifetimeOut">Lifetime OUT</div></div>
+          <div class="pr-kpi"><div class="k" data-i18n="totalReturned">Total returned</div><div class="v" id="kReturned">0</div><div class="s" data-i18n="lifetimeIn">Lifetime IN</div></div>
+          <div class="pr-kpi"><div class="k" data-i18n="consumablesIssued">Consumables</div><div class="v" id="kCons">0</div><div class="s" data-i18n="issuedNoReturn">Issued (no return)</div></div>
+        </div>
 
-        <span class="tc-section-badge"><i class="bi bi-calendar3"></i> Activity history</span>
-        <div id="fullHistory" class="mt-2"></div>
+        <div class="pr-grid">
+          <section class="pr-panel">
+            <div class="pr-panel-head">
+              <h2><i class="bi bi-hammer"></i> <span data-i18n="currentlyHolding">Currently holding</span></h2>
+              <span class="tc-text-muted small" id="heldCountLabel"></span>
+            </div>
+            <div class="pr-panel-body" id="heldList"></div>
+          </section>
+
+          <section class="pr-panel">
+            <div class="pr-panel-head">
+              <h2><i class="bi bi-clock-history"></i> <span data-i18n="custodyHistory">Custody history</span></h2>
+              <div class="pr-filter" id="eventFilter">
+                <button type="button" class="active" data-f="all" data-i18n="all">All</button>
+                <button type="button" data-f="out">OUT</button>
+                <button type="button" data-f="in">IN</button>
+                <button type="button" data-f="consumable" data-i18n="consumablesShort">Cons.</button>
+              </div>
+            </div>
+            <div class="pr-panel-body" id="eventList"></div>
+          </section>
+        </div>
       </div>
 
       <div id="errorState" class="text-center py-5 text-danger" style="display:none">
-        <i class="bi bi-exclamation-triangle-fill fs-1"></i>
-        <div class="mt-2" id="errorMsg">Failed to load</div>
+        <i class="bi bi-exclamation-triangle fs-1"></i>
+        <div class="mt-2" id="errorMsg">Failed</div>
+        <a class="tc-btn mt-3" href="outstanding.html" data-i18n="backToOutstanding">Not returned</a>
       </div>
     </div>
   </div>
 
-  <script src="parser.js"></script>
+  <div class="tc-modal-backdrop" id="exportModal">
+    <div class="tc-modal" style="max-width:420px">
+      <div class="tc-modal-head">
+        <div>
+          <h3 class="h5 mb-1" data-i18n="exportPersonReport">Export person report</h3>
+          <p class="tc-text-muted small mb-0" id="exportModalHint" data-i18n="chooseExportFormat">Choose Excel or PDF</p>
+        </div>
+        <button type="button" class="tc-btn tc-btn-sm" id="btnCloseExport"><i class="bi bi-x-lg"></i></button>
+      </div>
+      <div class="tc-modal-body d-grid gap-2">
+        <button type="button" class="tc-btn tc-btn-primary" id="btnExportXlsx"><i class="bi bi-file-earmark-spreadsheet"></i> <span data-i18n="exportExcel">Excel (.xlsx)</span></button>
+        <button type="button" class="tc-btn" id="btnExportPdf"><i class="bi bi-file-earmark-pdf"></i> <span data-i18n="exportPdf">PDF</span></button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="export-utils.js?v=live"></script>
   <script>
     const params = new URLSearchParams(window.location.search);
     const TARGET_CODE = (params.get("code") || "").toUpperCase();
-    const TARGET_DATE = params.get("date") || "";
+    let report = null;
+    let eventFilter = "all";
 
     document.addEventListener("DOMContentLoaded", () => TCUI.bootPage(() => {
       TCUI.mountHeader("app-header", {
-        active: "overview",
-        title: "Worker",
-        subtitle: "Custody profile",
-        icon: "bi-person-badge"
+        active: "people",
+        titleKey: "personReport",
+        subtitleKey: "personReportSub",
+        icon: "bi-person-vcard"
+      });
+      document.querySelectorAll("#eventFilter button").forEach((btn) => {
+        btn.onclick = () => {
+          eventFilter = btn.getAttribute("data-f") || "all";
+          document.querySelectorAll("#eventFilter button").forEach((b) => b.classList.toggle("active", b === btn));
+          renderEvents();
+        };
+      });
+      document.getElementById("btnExport").onclick = openExportModal;
+      document.getElementById("btnCloseExport").onclick = closeExportModal;
+      document.getElementById("btnExportXlsx").onclick = () => doExport("xlsx");
+      document.getElementById("btnExportPdf").onclick = () => doExport("pdf");
+      document.getElementById("exportModal").addEventListener("click", (e) => {
+        if (e.target.id === "exportModal") closeExportModal();
       });
       init();
     }));
 
-    async function init() {
-      if (!TARGET_CODE) { showError("No worker code specified"); return; }
+    function openExportModal() {
+      if (!report) return;
+      const held = (report.toolsHeld || []).length;
+      const events = (report.events || []).length;
+      document.getElementById("exportModalHint").textContent =
+        `${report.code || ""} · ${held} ${t("toolsHeldShort")} · ${events} ${t("custodyHistory").toLowerCase()}`;
+      document.getElementById("exportModal").style.display = "block";
+    }
+
+    function closeExportModal() {
+      document.getElementById("exportModal").style.display = "none";
+    }
+
+    function doExport(format) {
+      closeExportModal();
+      if (!report) return;
       try {
-        const data = await apiGet({ action: "getData", date: TARGET_DATE });
-        if (data && data.error) throw new Error(data.error);
-        const { workerName, toolsHeld, workerDailyLog } = CustodyParser.parseForWorker(data, TARGET_CODE, TARGET_DATE);
+        if (format === "pdf") TCExport.exportPersonPdf(report);
+        else TCExport.exportPersonExcel(report);
+      } catch (e) {
+        alert(e.message || t("error"));
+      }
+    }
 
-        document.getElementById("workerAvatar").textContent = initials(workerName);
-        document.getElementById("workerName").textContent = workerName;
-        document.getElementById("workerCode").textContent = TARGET_CODE + " · " + TARGET_DATE;
-        document.getElementById("workerToolCount").textContent = `${toolsHeld.reduce((s, t) => s + t.qty, 0)} tool(s) held`;
-
-        const toolsDiv = document.getElementById("toolsHeldNow");
-        if (!toolsHeld.length) {
-          toolsDiv.innerHTML = `<div class="col-12"><div class="tc-empty"><i class="bi bi-check-circle-fill text-success"></i> No tools held — all returned</div></div>`;
-        } else {
-          toolsDiv.innerHTML = toolsHeld.map(t => `
-            <div class="col-md-6">
-              <div class="tc-entity-card${t.isToday ? "" : " overdue"}" onclick="location.href='tool.html?code=${encodeURIComponent(t.code)}&date=${encodeURIComponent(TARGET_DATE)}'">
-                <div class="tc-avatar">🔧</div>
-                <div class="flex-grow-1">
-                  <div class="fw-bold">${escHtml(t.code)}</div>
-                  <div class="tc-text-muted small">${escHtml(t.desc)}</div>
-                  <span class="tc-badge-holder mt-1">${t.isToday ? "Taken today" : "Since " + escHtml(t.takenDate)}${t.qty > 1 ? " ×" + t.qty : ""}</span>
-                </div>
-                <i class="bi bi-chevron-right tc-text-muted"></i>
-              </div>
-            </div>`).join("");
-        }
-
-        const histDiv = document.getElementById("fullHistory");
-        const dates = Object.keys(workerDailyLog).sort();
-        if (!dates.length) {
-          histDiv.innerHTML = `<div class="tc-empty"><i class="bi bi-calendar-x"></i> No activity recorded</div>`;
-        } else {
-          histDiv.innerHTML = dates.reverse().map(d => `
-            <div class="tc-day-group">
-              <div class="tc-day-label"><i class="bi bi-calendar3"></i> ${escHtml(d)}${d === TARGET_DATE ? '<span class="tc-chip-today">Selected</span>' : ""}</div>
-              ${workerDailyLog[d].map(a => `
-                <div class="tc-timeline-item">
-                  <div class="tc-timeline-dot ${CustodyParser.dotClass(a.type)}"><i class="bi ${CustodyParser.dotIcon(a.type)}"></i></div>
-                  <div class="small pt-1">${escHtml(a.text)}</div>
-                </div>`).join("")}
-            </div>`).join("");
-        }
-
+    async function init() {
+      if (!TARGET_CODE) { showError(t("noPersonCode")); return; }
+      try {
+        const overdueDays = typeof getOverdueDays === "function" ? getOverdueDays() : 1;
+        const data = await apiGet({ action: "getPersonCustody", code: TARGET_CODE, overdueDays });
+        if (data && data.error) throw new Error(data.error === "NOT_FOUND" ? t("personNotFound") : data.error);
+        report = data;
+        render();
         document.getElementById("loadingState").style.display = "none";
         document.getElementById("mainContent").style.display = "block";
-      } catch (e) { showError(e.message); }
+      } catch (e) {
+        showError(e.message || "Error");
+      }
     }
 
     function showError(msg) {
       document.getElementById("loadingState").style.display = "none";
       document.getElementById("errorState").style.display = "block";
       document.getElementById("errorMsg").textContent = msg;
+    }
+
+    function render() {
+      const p = report;
+      document.title = `${p.name || p.code} · AbouAmjad`;
+      const photo = document.getElementById("photoWrap");
+      if (p.imageUrl) {
+        photo.innerHTML = `<img class="pr-photo" src="${escHtml(p.imageUrl)}" alt="">`;
+      } else {
+        const ini = (typeof initials === "function" ? initials(p.name) : (p.name || "?").slice(0, 2)).toUpperCase();
+        photo.innerHTML = `<div class="pr-photo">${escHtml(ini)}</div>`;
+      }
+      document.getElementById("personName").textContent = p.name || p.code;
+      document.getElementById("personCode").textContent = p.code;
+      const meta = [];
+      if (p.phone) meta.push(`<span><i class="bi bi-telephone"></i> ${escHtml(p.phone)}</span>`);
+      if (p.residenceNo) meta.push(`<span><i class="bi bi-card-text"></i> ${escHtml(p.residenceNo)}</span>`);
+      if (p.supervisorName) meta.push(`<span><i class="bi bi-person-badge"></i> ${escHtml(t("supervisorForeman") || "Foreman")}: ${escHtml(p.supervisorName)}</span>`);
+      if (p.supplierName) meta.push(`<span><i class="bi bi-truck"></i> ${escHtml(p.supplierName)}</span>`);
+      if (p.lastOutAt || p.lastOutDateTime || p.lastOutDate) {
+        const when = p.lastOutAt && typeof formatDisplayDateTime === "function"
+          ? formatDisplayDateTime(p.lastOutAt)
+          : (p.lastOutDateTime || p.lastOutDate);
+        meta.push(`<span><i class="bi bi-clock"></i> ${t("lastOut")}: ${escHtml(when)}</span>`);
+      }
+      document.getElementById("personMeta").innerHTML = meta.join("");
+
+      const badge = document.getElementById("statusBadge");
+      if (!p.toolsHeldQty) {
+        badge.innerHTML = `<div class="pr-status clear"><i class="bi bi-check-circle"></i> ${t("allClearWithPerson")}</div>`;
+      } else if (p.overdue) {
+        badge.innerHTML = `<div class="pr-status overdue"><i class="bi bi-exclamation-triangle"></i> ${t("overdueHolding", { n: p.maxDaysOut })}</div>`;
+      } else {
+        badge.innerHTML = `<div class="pr-status held"><i class="bi bi-hourglass-split"></i> ${t("holdingTools", { n: p.toolsHeldQty })}</div>`;
+      }
+
+      document.getElementById("btnEdit").href = "people-form.html?code=" + encodeURIComponent(p.code);
+      if (document.referrer && document.referrer.includes("people.html")) {
+        document.getElementById("btnBack").href = "people.html";
+        document.getElementById("btnBack").innerHTML = `<i class="bi bi-arrow-left"></i> ${t("people")}`;
+      }
+
+      const stats = p.stats || {};
+      document.getElementById("kHeld").textContent = stats.currentlyHeld || 0;
+      document.getElementById("kHeldSub").textContent = p.maxDaysOut
+        ? t("oldestDaysN", { n: p.maxDaysOut })
+        : t("nothingOut");
+      document.getElementById("kTaken").textContent = stats.totalTaken || 0;
+      document.getElementById("kReturned").textContent = stats.totalReturned || 0;
+      document.getElementById("kCons").textContent = stats.consumablesIssued || 0;
+
+      const held = p.toolsHeld || [];
+      document.getElementById("heldCountLabel").textContent = held.length
+        ? t("toolsHeldShort") + ": " + (stats.currentlyHeld || 0)
+        : "";
+      const heldHost = document.getElementById("heldList");
+      if (!held.length) {
+        heldHost.innerHTML = `<div class="pr-empty"><i class="bi bi-check-circle"></i>${t("noToolsHeldNow")}</div>`;
+      } else {
+        heldHost.innerHTML = held.map((tool) => {
+          const lots = Array.isArray(tool.lots) ? tool.lots : [];
+          const showLots = (tool.qty || 1) > 1 && lots.length > 1;
+          const when = tool.takenAt && typeof formatDisplayDateTime === "function"
+            ? formatDisplayDateTime(tool.takenAt)
+            : (tool.takenDateTime || tool.takenDate || "");
+          const thumb = typeof productThumbHtml === "function"
+            ? productThumbHtml(tool.imageUrl, tool.code, 52)
+            : "";
+          const lotsHtml = showLots
+            ? `<div class="pr-lots" aria-label="${escHtml(typeof t === "function" ? t("eachTake") : "Each take")}">${lots.map((lot) => {
+                const lotWhen = lot.takenAt && typeof formatDisplayDateTime === "function"
+                  ? formatDisplayDateTime(lot.takenAt)
+                  : (lot.takenDateTime || lot.takenDate || "—");
+                return `<div class="pr-lot${lot.overdue ? " overdue" : ""}">
+                  <span class="pr-lot-when"><i class="bi bi-clock"></i> ${escHtml(lotWhen)}</span>
+                  <span class="pr-lot-days">${lot.daysOut} ${t("days")}</span>
+                </div>`;
+              }).join("")}</div>`
+            : "";
+          const singleWhen = !showLots && when
+            ? ` · <i class="bi bi-clock"></i> ${escHtml(when)}`
+            : "";
+          return `
+          <a class="pr-tool ${tool.overdue ? "overdue" : ""}" href="tool.html?code=${encodeURIComponent(tool.code)}">
+            ${thumb}
+            <div>
+              <div class="code">${escHtml(tool.code)}${tool.qty > 1 ? " ×" + tool.qty : ""}</div>
+              <div class="desc">${escHtml(tool.description || "")}${singleWhen}</div>
+              ${lotsHtml}
+            </div>
+            <div class="badge-days">${tool.daysOut} ${t("days")}</div>
+          </a>`;
+        }).join("");
+      }
+      renderEvents();
+    }
+
+    function renderEvents() {
+      if (!report) return;
+      const host = document.getElementById("eventList");
+      let events = report.events || [];
+      if (eventFilter !== "all") events = events.filter((e) => e.type === eventFilter);
+      if (!events.length) {
+        host.innerHTML = `<div class="pr-empty"><i class="bi bi-calendar-x"></i>${t("noCustodyHistory")}</div>`;
+        return;
+      }
+      host.innerHTML = events.map((e) => {
+        const cls = e.type === "in" ? "in" : e.type === "consumable" ? "cons" : "out";
+        const icon = e.type === "in" ? "bi-box-arrow-in-down" : e.type === "consumable" ? "bi-box-seam" : "bi-box-arrow-up";
+        const dirLabel = e.type === "in" ? "Returned" : e.type === "consumable" ? (t("consumablesShort") || "Cons.") : "Taken";
+        const shortCode = e.type === "in" ? "IN" : e.type === "consumable" ? "CONS" : "OUT";
+        const meaning = e.type === "in"
+          ? "Tool returned to store"
+          : e.type === "consumable"
+            ? "Issued · no return"
+            : "Tool taken from store";
+        const when = e.scannedAt && typeof formatDisplayDateTime === "function"
+          ? formatDisplayDateTime(e.scannedAt)
+          : (e.dateTimeLabel || e.dateLabel || "");
+        const broughtBy = e.returnedBy
+          ? ` · ${typeof t === "function" ? t("returnedByHint", { code: e.returnedBy }) : "Brought by " + e.returnedBy}`
+          : "";
+        const trace = [e.createdBy || "", e.deviceId || "", e.sessionId || ""].filter(Boolean).join(" · ");
+        return `<div class="pr-event">
+          <div class="pr-dot ${cls}"><i class="bi ${icon}"></i><span>${dirLabel}</span><span>${shortCode}</span></div>
+          <div>
+            <div class="title"><span class="code">${escHtml(e.code)}</span> · ${escHtml(e.description || "")}</div>
+            <div class="meaning">${escHtml(meaning)}</div>
+            <div class="sub"><i class="bi bi-clock"></i> ${escHtml(when)}${escHtml(broughtBy)}${trace ? " · " + escHtml(trace) : ""}</div>
+          </div>
+        </div>`;
+      }).join("");
     }
   </script>
 </body>
