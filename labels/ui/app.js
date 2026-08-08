@@ -14,7 +14,7 @@ import {
   loadCalibration
 } from "../data/storage.js";
 import { mountCalibrationWizard } from "../print/calibration.js";
-import { parseCodeLines, itemsToText, downloadJson } from "../data/codes.js";
+import { parseCodeLines, itemsToText } from "../data/codes.js";
 import { parseServerTemplate } from "../data/serialize.js";
 import { ensureQrLibrary } from "../render/engine.js";
 
@@ -47,9 +47,6 @@ export async function bootLabelApp() {
     },
     onSave: async () => {
       await saveTpl(false);
-    },
-    onSaveAs: async () => {
-      await saveTpl(true);
     }
   });
 
@@ -204,12 +201,12 @@ export async function bootLabelApp() {
 
   document.getElementById("btnNewTpl")?.addEventListener("click", () => {
     activeId = null;
+    setLastTemplateId(null);
     documentModel = createDocument();
     const nameEl = document.getElementById("activeNameLabel");
     if (nameEl) nameEl.textContent = t("unsavedTemplate", "New unsaved template");
     syncSizeFields();
     renderTemplateList();
-    studio.open(documentModel);
   });
 
   const openStudio = (e) => {
@@ -304,9 +301,7 @@ export async function bootLabelApp() {
   function closePreview() {
     document.getElementById("previewModal")?.classList.remove("open");
   }
-  document.getElementById("btnOpenPreview")?.addEventListener("click", openPreview);
   document.getElementById("btnClosePreview")?.addEventListener("click", closePreview);
-  document.getElementById("btnClosePreview2")?.addEventListener("click", closePreview);
 
   document.getElementById("btnPrint")?.addEventListener("click", async () => {
     if (!lastItems.length) {
@@ -320,14 +315,6 @@ export async function bootLabelApp() {
     } catch (e) {
       toast(e.message || e, "err");
     }
-  });
-
-  document.getElementById("btnDir")?.addEventListener("click", () => {
-    const ta = document.getElementById("codes");
-    if (!ta) return;
-    const extra = "IN | Direction IN\nOUT | Direction OUT";
-    ta.value = ta.value.trim() ? ta.value.trim() + "\n" + extra : extra;
-    updateSelectedBar();
   });
 
   function updateSelectedBar() {
@@ -471,10 +458,6 @@ export async function bootLabelApp() {
   document.getElementById("btnCloseCalib")?.addEventListener("click", () =>
     document.getElementById("calibModal")?.classList.remove("open")
   );
-
-  document.getElementById("btnExportJson")?.addEventListener("click", () => {
-    downloadJson(documentModel, `label-${documentModel.labelW}x${documentModel.labelH}.json`);
-  });
 
   function updateCalibChip(cal) {
     const chip = document.getElementById("calibChip");

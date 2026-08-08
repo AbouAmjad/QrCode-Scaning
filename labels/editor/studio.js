@@ -472,18 +472,20 @@ export class LabelStudio {
     this.root.querySelector("[data-save]")?.addEventListener("click", () => {
       void this.save(false);
     });
-    this.root.querySelector("[data-save-as]")?.addEventListener("click", () => {
-      void this.save(true);
-    });
-    this.root.querySelector("[data-reset]")?.addEventListener("click", () => {
-      this.store.update((d) => {
-        d.layers = layoutPresets().thermal();
-      }, "reset");
-      this.selection.clear();
-    });
 
     this.root.querySelectorAll("[data-tool]").forEach((btn) => {
       btn.addEventListener("click", () => this._onTool(btn.dataset.tool));
+    });
+
+    this.root.querySelector("[data-align]")?.addEventListener("change", (e) => {
+      const v = e.target.value;
+      e.target.value = "";
+      if (v) this._onTool(v);
+    });
+    this.root.querySelector("[data-preset]")?.addEventListener("change", (e) => {
+      const v = e.target.value;
+      e.target.value = "";
+      if (v) this.applyPreset(v);
     });
 
     const wrap = this.el.wrap;
@@ -822,42 +824,32 @@ function studioLabel(key, en, ar) {
 
 function studioMarkup() {
   const back = studioLabel("studioBack", "← Back", "← رجوع");
-  const reset = studioLabel("studioReset", "Reset", "إعادة ضبط");
   const save = studioLabel("saveDesign", "Save design", "حفظ التصميم");
-  const saveAs = studioLabel("saveAsTemplate", "Save as…", "حفظ باسم…");
   const done = studioLabel("studioDone", "Done", "تم");
   const title = studioLabel("designStudio", "Design Studio", "استوديو التصميم");
   return `
     <div class="le-studio" hidden>
       <header class="le-head">
         <div class="le-head-title">
-          <button type="button" class="le-btn le-btn-exit" data-back title="${escapeAttr(back)}">
-            ${escapeHtml(back)}
-          </button>
+          <button type="button" class="le-btn le-btn-ghost" data-back>${escapeHtml(back)}</button>
           <div>
             <h3>${escapeHtml(title)}</h3>
             <div class="meta" data-meta>50×30 mm</div>
           </div>
         </div>
         <div class="le-head-actions">
-          <button type="button" class="le-btn" data-reset title="${escapeAttr(reset)}">
-            <i class="bi bi-arrow-counterclockwise"></i> ${escapeHtml(reset)}
-          </button>
-          <button type="button" class="le-btn" data-save-as title="${escapeAttr(saveAs)}">
-            <i class="bi bi-files"></i> ${escapeHtml(saveAs)}
-          </button>
           <button type="button" class="le-btn le-btn-save" data-save title="${escapeAttr(save)} (Ctrl+S)">
-            <i class="bi bi-save-fill"></i> ${escapeHtml(save)}
+            <i class="bi bi-save"></i> ${escapeHtml(save)}
           </button>
-          <button type="button" class="le-btn le-btn-done" data-done id="leDone" title="${escapeAttr(done)}">
-            <i class="bi bi-check2-circle"></i> ${escapeHtml(done)}
+          <button type="button" class="le-btn le-btn-done" data-done id="leDone">
+            ${escapeHtml(done)}
           </button>
         </div>
       </header>
       <div class="lt-toolbar">
         <div class="lt-group">
-          <button type="button" data-tool="select" class="is-active" title="Select (V)">Select</button>
-          <button type="button" data-tool="hand" title="Hand (H)">Hand</button>
+          <button type="button" data-tool="select" class="is-active" title="Select">Select</button>
+          <button type="button" data-tool="hand" title="Pan">Hand</button>
         </div>
         <div class="lt-group">
           <button type="button" data-tool="qr">+ QR</button>
@@ -867,25 +859,31 @@ function studioMarkup() {
           <button type="button" data-tool="line">+ Line</button>
         </div>
         <div class="lt-group">
-          <button type="button" data-tool="copy" title="Copy (Ctrl+C)">Copy</button>
-          <button type="button" data-tool="cut" title="Cut (Ctrl+X)">Cut</button>
-          <button type="button" data-tool="paste" title="Paste (Ctrl+V)">Paste</button>
           <button type="button" data-tool="duplicate" title="Duplicate (Ctrl+D)">Duplicate</button>
           <button type="button" data-tool="delete" title="Delete (Del)">Delete</button>
-          <button type="button" data-tool="group" title="Group (Ctrl+G)">Group</button>
-          <button type="button" data-tool="ungroup" title="Ungroup (Ctrl+Shift+G)">Ungroup</button>
+          <button type="button" data-tool="undo">Undo</button>
+          <button type="button" data-tool="redo">Redo</button>
         </div>
         <div class="lt-group">
-          <button type="button" data-tool="align-left" title="Align left">⫷</button>
-          <button type="button" data-tool="align-h" title="Align center H">☰</button>
-          <button type="button" data-tool="align-right" title="Align right">⫸</button>
-          <button type="button" data-tool="align-top" title="Align top">⮭</button>
-          <button type="button" data-tool="align-v" title="Align middle">☰</button>
-          <button type="button" data-tool="align-bottom" title="Align bottom">﹀</button>
-          <button type="button" data-tool="dist-h" title="Distribute H">↔</button>
-          <button type="button" data-tool="dist-v" title="Distribute V">↕</button>
-          <button type="button" data-tool="align-label-h" title="Center on label H">⌖H</button>
-          <button type="button" data-tool="align-label-v" title="Center on label V">⌖V</button>
+          <select data-align aria-label="Align">
+            <option value="">Align…</option>
+            <option value="align-left">Left</option>
+            <option value="align-h">Center H</option>
+            <option value="align-right">Right</option>
+            <option value="align-top">Top</option>
+            <option value="align-v">Middle</option>
+            <option value="align-bottom">Bottom</option>
+            <option value="dist-h">Distribute H</option>
+            <option value="dist-v">Distribute V</option>
+            <option value="align-label-h">Center on label H</option>
+            <option value="align-label-v">Center on label V</option>
+          </select>
+          <select data-preset aria-label="Presets">
+            <option value="">Preset…</option>
+            <option value="thermal">Thermal</option>
+            <option value="stacked">Stacked</option>
+            <option value="qrOnly">QR only</option>
+          </select>
         </div>
         <div class="lt-group">
           <button type="button" data-tool="grid">Grid</button>
@@ -894,18 +892,6 @@ function studioMarkup() {
           <span data-zoom>100%</span>
           <button type="button" data-tool="zoom-in">+</button>
           <button type="button" data-tool="zoom-fit">Fit</button>
-        </div>
-        <div class="lt-group">
-          <button type="button" data-tool="undo">Undo</button>
-          <button type="button" data-tool="redo">Redo</button>
-          <button type="button" data-tool="preset-thermal">Preset thermal</button>
-          <button type="button" data-tool="preset-stacked">Preset stacked</button>
-          <button type="button" data-tool="preset-qrOnly">QR only</button>
-        </div>
-        <div class="lt-group lt-group-save">
-          <button type="button" class="lt-save" data-tool="save" title="${escapeAttr(save)} (Ctrl+S)">
-            <i class="bi bi-save-fill"></i> ${escapeHtml(save)}
-          </button>
         </div>
       </div>
       <div class="le-body">
@@ -928,14 +914,6 @@ function studioMarkup() {
           <div class="rail-ttl">Inspector</div>
           <div data-inspector></div>
         </aside>
-      </div>
-      <div class="le-exit-bar">
-        <button type="button" class="le-btn le-btn-exit" data-back title="${escapeAttr(back)}">
-          ${escapeHtml(back)}
-        </button>
-        <button type="button" class="le-btn le-btn-done" data-done title="${escapeAttr(done)}">
-          <i class="bi bi-check2-circle"></i> ${escapeHtml(done)}
-        </button>
       </div>
     </div>`;
 }
