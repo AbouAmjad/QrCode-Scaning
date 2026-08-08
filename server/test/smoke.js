@@ -538,6 +538,15 @@ async function testInventory() {
   ok("getDamageDates", (await call({ action: "getDamageDates" })).length === 1);
   ok("damage removes units from the shelf",
     (await call({ action: "listWarehouseStock", warehouseId: 1 })).items.find((i) => i.code === "I2-A").qty === 8);
+  const outstandingAfterDmg = await call({ action: "getOutstanding" });
+  const p177AfterDmg = (outstandingAfterDmg.items || []).find((p) => p.code === "P177");
+  const stillHoldsI2 = !!(p177AfterDmg && (p177AfterDmg.tools || []).some((t) => t.code === "I2-A"));
+  ok("damage clears tool from Not returned / outstanding", !stillHoldsI2, {
+    custodyCleared: dmg.custodyCleared,
+    p177: p177AfterDmg,
+  });
+  ok("other tools remain outstanding after damage",
+    !!(p177AfterDmg && (p177AfterDmg.tools || []).some((t) => t.code === "B1-A")), p177AfterDmg);
 
   ok("setLifecycle rejects unknown states",
     (await call({ action: "setLifecycle", code: "I2-A", state: "Exploded" })).error === "Invalid state");

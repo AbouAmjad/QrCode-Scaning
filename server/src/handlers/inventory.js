@@ -252,6 +252,31 @@ async function getDamage(ctx) {
   };
 }
 
+/**
+ * Append synthetic custody returns so a damaged tool leaves Not returned.
+ * Tape shape: person → IN → tool × qty (same as a terminal return).
+ * Consumables are skipped — they never create custody holdings.
+ */
+async function clearCustodyOnDamage(query, { personCode, toolCode, qty, username }) {
+  if (!personCode || !toolCode || U.isConsumableCode(toolCode)) {
+    return { cleared: 0, skipped: true };
+  }
+  const n = Math.max(1, U.posInt(qty, 1));
+  const scannedAt = new Date();
+  const scanRowDate = U.rowDateOf(scannedAt);
+  const codes = [personCode, "IN"];
+  for (let i = 0; i < n; i += 1) codes.push(toolCode);
+
+  for (const code of codes) {
+    await query(
+      `INSERT INTO scans (tool_code, scanned_at, row_date, created_by, device_id, session_id, client_seq)
+       VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+      [code, scannedAt, scanRowDate, username || "damage-auto", "damage", null, null]
+    );
+  }
+  return { cleared: n, skipped: false };
+}
+
 async function submitDamage(ctx) {
   ctx.requireAny(["damage.create", "damage.review", "damage.approve"]);
   const { params, query } = ctx;
@@ -285,11 +310,23 @@ async function submitDamage(ctx) {
   const warehouseId = await stock.mainWarehouseId(query);
   await stock.addWarehouseStock(query, warehouseId, toolCode, -qty);
 
+  // Damaged units also leave the person's custody (Not returned / outstanding).
+  const custodyClear = await clearCustodyOnDamage(query, {
+    personCode,
+    toolCode,
+    qty,
+    username: ctx.user && ctx.user.username,
+  });
+
   custody.invalidate();
-  await ctx.audit({ action: "DAMAGE_CREATE", after: JSON.stringify({ code: toolCode, qty }) });
+  await ctx.audit({
+    action: "DAMAGE_CREATE",
+    after: JSON.stringify({ code: toolCode, qty, custodyCleared: custodyClear.cleared }),
+  });
   return {
     success: true,
     row: ins.rows[0].id,
+    custodyCleared: custodyClear.cleared,
     item: {
       date: rowDate,
       code: toolCode,
