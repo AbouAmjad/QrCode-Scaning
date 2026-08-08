@@ -589,13 +589,13 @@
     function showPpeCooldownModal(info, result) {
       pendingPpeResult = result;
       const person = ScanEngine.getSession().personLabel || info.personCode || "—";
-      const family = info.familyLabel || info.family || "PPE";
+      const itemLabel = info.lastDescription || info.lastCode || info.itemCode || info.familyLabel || "PPE";
       document.getElementById("ppeWarnLead").textContent =
-        `${person} already received ${family} less than ${info.cooldownDays || 7} days ago.`;
+        `${person} already received ${itemLabel} less than ${info.cooldownDays || 7} days ago.`;
       document.getElementById("ppeLastWhen").textContent =
         info.lastIssuedLabel || info.lastIssuedAt || "—";
       document.getElementById("ppeLastItem").textContent =
-        `${info.lastCode || "—"} · ${info.lastDescription || family}`;
+        `${info.lastCode || info.itemCode || "—"} · ${info.lastDescription || itemLabel}`;
       const daysLeft = info.daysLeft != null ? info.daysLeft : "?";
       const daysAgo = info.daysAgo != null ? info.daysAgo : "?";
       document.getElementById("ppeDaysLeft").textContent =
@@ -605,8 +605,10 @@
       playDanger();
     }
 
-    function findLocalPpeIssue(personCode, familyId) {
-      if (typeof matchPpeFamily !== "function" || !familyId) return null;
+    /** Local reinforce: same product code only (matches server per-SKU PPE). */
+    function findLocalPpeIssue(personCode, itemCode) {
+      const want = String(itemCode || "").toUpperCase();
+      if (!want) return null;
       const cooldownDays = typeof getPpeCooldownDays === "function" ? getPpeCooldownDays() : 7;
       const cutoff = Date.now() - cooldownDays * 24 * 60 * 60 * 1000;
       const scans = loadScans().slice().sort((a, b) => (a.seq || 0) - (b.seq || 0));
@@ -626,9 +628,8 @@
           continue;
         }
         if (lastPerson !== personCode || lastDir !== "OUT") continue;
+        if (code !== want) continue;
         const desc = descCache[code] || code;
-        const fam = matchPpeFamily(`${code} ${desc}`);
-        if (!fam || fam.id !== familyId) continue;
         const ts = Number(s.timestamp) || Date.now();
         if (ts >= cutoff) {
           hit = {
@@ -825,9 +826,9 @@
         info = null;
       }
 
-      // Fallback / reinforce with local pending queue
-      if (info && info.applies && info.family) {
-        const local = findLocalPpeIssue(personCode, info.family);
+      // Fallback / reinforce with local pending queue (same SKU only)
+      if (info && info.applies) {
+        const local = findLocalPpeIssue(personCode, itemCode);
         if (local && (!info.restricted || (local.at && (!info.lastIssuedAt || local.at > new Date(info.lastIssuedAt).getTime())))) {
           info.restricted = true;
           info.lastCode = local.code;
@@ -837,13 +838,14 @@
           info.daysLeft = Math.max(0, (info.cooldownDays || 7) - (local.daysAgo || 0));
         }
       } else if ((!info || !info.applies) && famLocal) {
-        const local = findLocalPpeIssue(personCode, famLocal.id);
+        const local = findLocalPpeIssue(personCode, itemCode);
         if (local) {
           info = {
             applies: true,
             restricted: true,
             family: famLocal.id,
             familyLabel: famLocal.label,
+            scope: "item",
             cooldownDays: typeof getPpeCooldownDays === "function" ? getPpeCooldownDays() : 7,
             personCode,
             itemCode,
@@ -851,7 +853,7 @@
             lastDescription: local.description,
             lastIssuedLabel: local.lastIssuedLabel,
             daysAgo: local.daysAgo,
-            daysLeft: Math.max(0, 7 - (local.daysAgo || 0)),
+            daysLeft: Math.max(0, (typeof getPpeCooldownDays === "function" ? getPpeCooldownDays() : 7) - (local.daysAgo || 0)),
           };
         }
       }

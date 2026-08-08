@@ -441,16 +441,26 @@ function issuedQtyByCode(ledger) {
   return map;
 }
 
-/** Most recent OUT of any item in `family` for one person (PPE cooldown). */
-function lastPpeIssue(ledger, personCode, family, matcher) {
+/**
+ * Most recent OUT of a PPE item for one person.
+ * When `itemCode` is set (normal path), cooldown is per SKU — so Mechanical
+ * Gloves (C12-B) do not block Welding Gloves (C12-A) and vice versa.
+ * Family-wide lookup remains available when `itemCode` is omitted.
+ */
+function lastPpeIssue(ledger, personCode, family, matcher, itemCode) {
   const code = upper(personCode);
+  const wantItem = itemCode ? upper(itemCode) : "";
   const person = ledger.people.get(code);
   if (!person) return null;
   let best = null;
   for (const ev of person.events) {
     if (ev.type !== "out" && ev.type !== "consumable") continue;
-    const hit = matcher(`${ev.code} ${ev.description || ""}`);
-    if (!hit || hit.id !== family) continue;
+    if (wantItem) {
+      if (upper(ev.code) !== wantItem) continue;
+    } else {
+      const hit = matcher(`${ev.code} ${ev.description || ""}`);
+      if (!hit || hit.id !== family) continue;
+    }
     if (!best || ev.scannedAt > best.scannedAt) best = ev;
   }
   return best;

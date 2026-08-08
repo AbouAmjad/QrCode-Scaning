@@ -90,7 +90,8 @@ async function seed() {
     ["I1-A", "WELDING MASK", "tool", "PPE", "Head", 2, true],
     ["I2-A", "GRINDER FACE SHIELD", "tool", "PPE", "Head", 1, false],
     ["E20-A", "SMALL GRINDER", "tool", "Power Tools", "Grinders", 1, true],
-    ["C12-A", "GLOVES", "consumable", "PPE", "Hands", 10, false],
+    ["C12-A", "WELDING GLOVES (LONG)", "consumable", "PPE", "Hands", 10, false],
+    ["C12-B", "MECHANICAL GLOVES", "consumable", "PPE", "Hands", 10, false],
     ["C13-B", "SAFTEY SUNGLASS", "consumable", "PPE", "Eyes", 10, false],
     ["B1-A", "ANCHOR BOLTS", "tool", "Fixings", "Bolts", 5, false],
   ];
@@ -279,11 +280,18 @@ async function testTerminal() {
   ok("PPE cooldown is restricted inside the window", ppe.restricted === true && ppe.daysLeft > 0, ppe);
   exercised.add("checkPpeCooldown");
 
-  // P177 drew gloves yesterday, so re-issuing to them must trip the cooldown.
+  // Per-SKU: P177 took C12-A yesterday — C12-B (mechanical) must still be allowed.
+  const ppeOtherSku = await call({ action: "checkPpeCooldownoldown", personCode: "P177", itemCode: "C12-B" });
+  ok("PPE cooldown is per product code, not whole gloves family",
+    ppeOtherSku.applies === true && ppeOtherSku.restricted === false, ppeOtherSku);
+
+  // P177 drew C12-A yesterday, so re-issuing the same SKU must trip the cooldown.
   await call({ scanData: "P177", ...keys });
   await call({ scanData: "OUT", ...keys });
   const blocked = await call({ scanData: "C12-A", ...keys });
   ok("PPE re-issue is blocked at scan time", blocked.error === "PPE_COOLDOWN", blocked);
+  const otherSkuOk = await call({ scanData: "C12-B", ...keys });
+  ok("different glove SKU is not blocked by another SKU cooldown", otherSkuOk.status === "OK", otherSkuOk);
   const forced = await call({ scanData: "C12-A", ppeOverride: "1", ...keys });
   ok("PPE override lets it through", forced.status === "OK", forced);
 

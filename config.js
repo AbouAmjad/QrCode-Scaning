@@ -15,7 +15,11 @@ const AppConfig = {
   SESSION_TOKEN: "",
   TOOL_PREFIXES: ["I", "E", "C", "B"],
   OVERDUE_DAYS: 1,
-  /** PPE re-issue cooldown (gloves / safety glasses) */
+  /**
+   * PPE re-issue cooldown (days). Rules detect which items are PPE;
+   * the cooldown itself is enforced per product code (SKU), not per family —
+   * e.g. Mechanical Gloves (C12-B) is independent of Welding Gloves (C12-A).
+   */
   PPE_COOLDOWN_DAYS: 7,
   PPE_RULES: [
     {

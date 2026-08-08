@@ -184,13 +184,15 @@ async function checkPpeCooldown(ctx) {
   if (!family) return { applies: false, personCode, itemCode, cooldownDays };
 
   const ledger = await ctx.ledger();
-  const last = custody.lastPpeIssue(ledger, personCode, family.id, U.matchPpeFamily);
+  // Per-SKU cooldown: same person may take C12-B after C12-A (different products).
+  const last = custody.lastPpeIssue(ledger, personCode, family.id, U.matchPpeFamily, itemCode);
   if (!last) {
     return {
       applies: true,
       restricted: false,
       family: family.id,
       familyLabel: family.label,
+      scope: "item",
       cooldownDays,
       personCode,
       itemCode,
@@ -203,6 +205,7 @@ async function checkPpeCooldown(ctx) {
     restricted: daysAgo < cooldownDays,
     family: family.id,
     familyLabel: family.label,
+    scope: "item",
     cooldownDays,
     personCode,
     itemCode,
