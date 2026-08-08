@@ -26,9 +26,11 @@ export function parseServerTemplate(item) {
       cfg = {};
     }
   }
+  // API may return jsonb already parsed as an object.
+  if (!cfg || typeof cfg !== "object" || Array.isArray(cfg)) cfg = {};
   return {
     id: item?.id ?? null,
     name: item?.name || "Untitled",
-    document: createDocument(cfg || {})
+    document: createDocument(cfg)
   };
 }
