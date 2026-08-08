@@ -31,20 +31,26 @@ export function snapPosition(x, y, w, h, box, others = [], opts = {}) {
       targetsX.push(Number(o.x), Number(o.x) + Number(o.w) / 2, Number(o.x) + Number(o.w));
       targetsY.push(Number(o.y), Number(o.y) + Number(o.h) / 2, Number(o.y) + Number(o.h));
     }
+    let snappedX = false;
+    let snappedY = false;
     for (const c of [nx, nx + w / 2, nx + w]) {
+      if (snappedX) break;
       for (const t of targetsX) {
         if (Math.abs(c - t) <= threshold) {
           nx += t - c;
           guides.push({ axis: "x", value: roundMm(t) });
+          snappedX = true;
           break;
         }
       }
     }
     for (const c of [ny, ny + h / 2, ny + h]) {
+      if (snappedY) break;
       for (const t of targetsY) {
         if (Math.abs(c - t) <= threshold) {
           ny += t - c;
           guides.push({ axis: "y", value: roundMm(t) });
+          snappedY = true;
           break;
         }
       }
