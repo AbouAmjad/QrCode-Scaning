@@ -10,8 +10,9 @@ import {
   listPrinterProfiles,
   setActivePrinter
 } from "../data/storage.js";
+import { computeCalibration } from "./calibration-math.js";
 
-export { computeCalibration } from "./calibration-math.js";
+export { computeCalibration };
 
 function testDocument(labelW = 50, labelH = 30) {
   return createDocument({

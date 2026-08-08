@@ -2,6 +2,9 @@
  * Node unit tests — no browser / DOM required.
  * Run: node labels/tests/run.mjs
  */
+import { readFileSync } from "fs";
+import { fileURLToPath } from "url";
+import { dirname, join } from "path";
 import { mmToPx, pxToMm, roundMm, clamp } from "../core/units.js";
 import { createDocument, bindItem, cloneDocument } from "../core/document.js";
 import { contentBox } from "../layout/box.js";
@@ -13,6 +16,13 @@ import { serializeDocument, deserializeDocument, parseServerTemplate } from "../
 import { computeCalibration } from "../print/calibration-math.js";
 import { createLayer, createDefaultLayers } from "../elements/create.js";
 import { parseCodeLines, itemsToText } from "../data/codes.js";
+import {
+  encodeCode128B,
+  barcodeToSvgDataUrl,
+  contrastRatio,
+  lowContrastWarning
+} from "../render/barcode.js";
+import { TEMPLATE_LIBRARY, buildLibraryTemplate } from "../data/presets.js";
 
 let passed = 0;
 let failed = 0;
@@ -127,6 +137,38 @@ assert(itemsToText(items).includes("A1 | One"), "itemsToText");
 console.log("\n[elements]");
 assert(createDefaultLayers().length >= 4, "default thermal layers");
 assert(createLayer("qr").type === "qr", "createLayer qr");
+assert(createLayer("barcode").type === "barcode", "createLayer barcode");
+
+console.log("\n[barcode]");
+const enc = encodeCode128B("I39-A");
+assert(enc.codes[0] === 104 && enc.codes[enc.codes.length - 1] === 106, "Code128 start/stop");
+const svgUrl = barcodeToSvgDataUrl({ value: "C12-B" });
+assert(svgUrl.startsWith("data:image/svg+xml"), "barcode svg data url");
+assert(contrastRatio("#000000", "#ffffff") > 20, "contrast black/white high");
+assert(lowContrastWarning("#777777", "#888888").ok === false, "low contrast detected");
+
+console.log("\n[presets]");
+assert(TEMPLATE_LIBRARY.length >= 4, "starter library count");
+const personTpl = buildLibraryTemplate("lib-person");
+assert(personTpl.labelW === 51 && personTpl.labelH === 25, "person preset size");
+
+console.log("\n[prod fixture regression]");
+const here = dirname(fileURLToPath(import.meta.url));
+let prod = [];
+try {
+  prod = JSON.parse(readFileSync(join(here, "fixtures/prod-templates.json"), "utf8"));
+} catch {
+  prod = [];
+}
+assert(Array.isArray(prod) && prod.length >= 1, "prod fixture loads");
+for (const row of prod) {
+  const parsed = parseServerTemplate(row);
+  const d = parsed.document;
+  assert(d.labelW > 0 && d.labelH > 0, `prod #${row.id} size`);
+  assert(d.layers.length > 0, `prod #${row.id} layers`);
+  const boundProd = bindItem(d, { code: "P144", name: "Test" });
+  assert(boundProd.some((l) => l.type === "qr" && l.qrValue === "P144"), `prod #${row.id} bind qr`);
+}
 
 console.log(`\n${passed} passed, ${failed} failed\n`);
 process.exit(failed ? 1 : 0);

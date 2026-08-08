@@ -124,12 +124,25 @@ export function bindItem(doc, item) {
   return doc.layers.map((ly) => {
     const copy = { ...ly };
     if (ly.type === "qr") copy.qrValue = code || String(ly.text || "QR");
+    if (ly.type === "barcode") {
+      copy.barcodeValue = code || String(ly.text || "CODE");
+      copy.text = code || ly.text || "CODE";
+    }
     if (ly.type === "text") {
       if (ly.role === "brand") copy.text = doc.brand || ly.text;
       else if (ly.role === "code") copy.text = code || ly.text || "";
       else if (ly.role === "desc") copy.text = name || ly.text || "";
+      // Optional dynamic roles (filled when item provides fields)
+      else if (ly.role === "location") copy.text = item?.location || ly.text || "";
+      else if (ly.role === "owner") copy.text = item?.owner || item?.supervisorName || ly.text || "";
+      else if (ly.role === "purchased") copy.text = item?.purchasedAt || item?.purchaseDate || ly.text || "";
     }
     if (ly.type === "image" && imageUrl) copy.src = imageUrl;
+    // Optional conditional fill from item status
+    if (ly.type === "background" && ly.conditionalFill && item?.status) {
+      const map = ly.conditionalFill || {};
+      if (map[item.status]) copy.fill = map[item.status];
+    }
     return copy;
   });
 }

@@ -126,9 +126,27 @@ function defBackground() {
   });
 }
 
+function defBarcode() {
+  return baseLayer("barcode", {
+    name: "Barcode",
+    x: 2,
+    y: 18,
+    w: 30,
+    h: 10,
+    z: 5,
+    format: "code128",
+    color: "#0f172a",
+    bg: "#ffffff",
+    showText: true,
+    padding: 0.2,
+    text: "CODE"
+  });
+}
+
 /** Register built-in element types once. */
 export function registerBuiltins() {
   registerElement({ type: "qr", label: "QR Code", defaults: defQr });
+  registerElement({ type: "barcode", label: "Barcode 1D", defaults: defBarcode });
   registerElement({
     type: "text",
     label: "Text",

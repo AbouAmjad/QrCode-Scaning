@@ -37,6 +37,8 @@ export class LabelStudio {
     this._raf = 0;
     this._space = false;
     this._unsub = [];
+    this._studioMode = "advanced"; // quick | advanced
+    this._rulerUnit = "mm"; // mm | in
 
     this.root.innerHTML = studioMarkup();
     this.el = {
@@ -138,6 +140,16 @@ export class LabelStudio {
     this._open = false;
     this.el.studio.hidden = true;
     this.el.studio.classList.remove("open");
+  }
+
+  setStudioMode(mode) {
+    this._studioMode = mode === "quick" ? "quick" : "advanced";
+    this.el.studio?.classList.toggle("le-mode-quick", this._studioMode === "quick");
+    this.root.querySelectorAll("[data-studio-mode]").forEach((b) => {
+      const on = b.dataset.studioMode === this._studioMode;
+      b.classList.toggle("is-active", on);
+      b.setAttribute("aria-selected", on ? "true" : "false");
+    });
   }
 
   undo() {
@@ -270,11 +282,23 @@ export class LabelStudio {
   paintInspector() {
     const selected = this.selection.selected(this.doc.layers);
     if (!selected.length) {
-      this.el.inspector.innerHTML = `<p class="lp-empty">Select an element</p>`;
+      const d = this.doc;
+      this.el.inspector.innerHTML = `
+        <div class="lp-summary">
+          <h4>Template summary</h4>
+          <dl>
+            <div><dt>Size</dt><dd>${d.labelW}×${d.labelH} mm</dd></div>
+            <div><dt>Page</dt><dd>${d.page}</dd></div>
+            <div><dt>Grid</dt><dd>${d.cols}×${d.rows}</dd></div>
+            <div><dt>Layers</dt><dd>${d.layers.length}</dd></div>
+            <div><dt>Brand</dt><dd>${escapeHtml(d.brand || "—")}</dd></div>
+          </dl>
+          <p class="lp-empty">Select an element for full properties.</p>
+        </div>`;
       return;
     }
     if (selected.length > 1) {
-      this.el.inspector.innerHTML = `<p class="lp-empty">${selected.length} selected</p>`;
+      this.el.inspector.innerHTML = `<p class="lp-empty">${selected.length} selected · use Align / Distribute</p>`;
       return;
     }
     const ly = selected[0];
@@ -290,15 +314,22 @@ export class LabelStudio {
         ${typeFieldsHtml(ly)}
       </div>`;
     this.el.inspector.querySelectorAll("[data-f]").forEach((input) => {
-      input.addEventListener("change", () => {
+      const apply = () => {
         const key = input.dataset.f;
-        let val = input.type === "number" ? Number(input.value) : input.value;
+        let val =
+          input.type === "number"
+            ? Number(input.value)
+            : input.type === "checkbox"
+              ? input.checked
+              : input.value;
         this.store.update((d) => {
           const t = d.layers.find((x) => x.id === ly.id);
           if (!t) return;
           t[key] = val;
         }, "inspect");
-      });
+      };
+      input.addEventListener("change", apply);
+      if (input.tagName === "TEXTAREA") input.addEventListener("blur", apply);
     });
   }
 
@@ -445,6 +476,10 @@ export class LabelStudio {
       this.selection.clear();
     });
 
+    this.root.querySelectorAll("[data-studio-mode]").forEach((btn) => {
+      btn.addEventListener("click", () => this.setStudioMode(btn.dataset.studioMode));
+    });
+
     this.root.querySelectorAll("[data-tool]").forEach((btn) => {
       btn.addEventListener("click", () => this._onTool(btn.dataset.tool));
     });
@@ -516,6 +551,13 @@ export class LabelStudio {
     }
     if (tool === "undo") return this.undo();
     if (tool === "redo") return this.redo();
+    if (tool === "units") {
+      this._rulerUnit = this._rulerUnit === "mm" ? "in" : "mm";
+      const btn = this.root.querySelector("[data-tool=units]");
+      if (btn) btn.textContent = this._rulerUnit;
+      this.schedulePaint(false);
+      return;
+    }
     if (tool.startsWith("preset-")) return this.applyPreset(tool.slice(7));
   }
 
@@ -701,28 +743,56 @@ function typeFieldsHtml(ly) {
         <option value="center" ${ly.align === "center" ? "selected" : ""}>center</option>
         <option value="right" ${ly.align === "right" ? "selected" : ""}>right</option>
       </select></label>
+      <label>Direction<select data-f="dir">
+        <option value="auto" ${!ly.dir || ly.dir === "auto" ? "selected" : ""}>auto (Bidi)</option>
+        <option value="ltr" ${ly.dir === "ltr" ? "selected" : ""}>LTR</option>
+        <option value="rtl" ${ly.dir === "rtl" ? "selected" : ""}>RTL</option>
+      </select></label>
       <label>Color<input data-f="color" type="color" value="${escapeAttr(ly.color || "#0f172a")}"></label>
       <label>Role<select data-f="role">
         <option value="" ${!ly.role ? "selected" : ""}>—</option>
         <option value="brand" ${ly.role === "brand" ? "selected" : ""}>brand</option>
         <option value="code" ${ly.role === "code" ? "selected" : ""}>code</option>
         <option value="desc" ${ly.role === "desc" ? "selected" : ""}>desc</option>
+        <option value="location" ${ly.role === "location" ? "selected" : ""}>location</option>
+        <option value="owner" ${ly.role === "owner" ? "selected" : ""}>owner</option>
+        <option value="purchased" ${ly.role === "purchased" ? "selected" : ""}>purchased</option>
       </select></label>`;
   }
   if (ly.type === "qr") {
+    const warn = qrContrastNote(ly);
     return `
       <label>Style<select data-f="style">
         <option value="square" ${ly.style === "square" ? "selected" : ""}>square</option>
         <option value="rounded" ${ly.style === "rounded" ? "selected" : ""}>rounded</option>
         <option value="dots" ${ly.style === "dots" ? "selected" : ""}>dots</option>
+        <option value="extra-rounded" ${ly.style === "extra-rounded" ? "selected" : ""}>extra-rounded</option>
+        <option value="classy-rounded" ${ly.style === "classy-rounded" ? "selected" : ""}>classy-rounded</option>
       </select></label>
       <label>Color<input data-f="color" type="color" value="${escapeAttr(ly.color || "#0f172a")}"></label>
+      <label>Corner<input data-f="cornerColor" type="color" value="${escapeAttr(ly.cornerColor || ly.color || "#0f766e")}"></label>
       <label>BG<input data-f="bg" type="color" value="${escapeAttr(ly.bg || "#ffffff")}"></label>
       <label>ECC<select data-f="errorCorrection">
         ${["L", "M", "Q", "H"]
-          .map((v) => `<option value="${v}" ${ly.errorCorrection === v ? "selected" : ""}>${v}</option>`)
+          .map((v) => `<option value="${v}" ${(ly.errorCorrection || "M") === v ? "selected" : ""}>${v}</option>`)
           .join("")}
-      </select></label>`;
+      </select></label>
+      <label class="span-2">Center logo URL<input data-f="logoUrl" value="${escapeAttr(ly.logoUrl || "")}" placeholder="https://… or /uploads/…"></label>
+      <label>Logo size<input data-f="logoSize" type="number" min="0.1" max="0.4" step="0.01" value="${ly.logoSize || 0.28}"></label>
+      ${warn}`;
+  }
+  if (ly.type === "barcode") {
+    const warn = qrContrastNote(ly);
+    return `
+      <label>Format<select data-f="format">
+        <option value="code128" selected>Code128</option>
+      </select></label>
+      <label>Color<input data-f="color" type="color" value="${escapeAttr(ly.color || "#0f172a")}"></label>
+      <label>BG<input data-f="bg" type="color" value="${escapeAttr(ly.bg || "#ffffff")}"></label>
+      <label class="span-2"><span>Show human text</span>
+        <input data-f="showText" type="checkbox" ${ly.showText !== false ? "checked" : ""}>
+      </label>
+      ${warn}`;
   }
   if (ly.type === "shape") {
     return `
@@ -742,35 +812,67 @@ function typeFieldsHtml(ly) {
       <label>Stroke<input data-f="stroke" type="color" value="${escapeAttr(ly.stroke || "#0f172a")}"></label>
       <label>Width mm<input data-f="strokeWidth" type="number" step="0.05" value="${ly.strokeWidth || 0.35}"></label>`;
   }
+  if (ly.type === "background") {
+    return `<label>Fill<input data-f="fill" type="color" value="${escapeAttr(ly.fill || "#ffffff")}"></label>`;
+  }
   return "";
+}
+
+function qrContrastNote(ly) {
+  try {
+    // lazy import avoided — inline relative luminance
+    const ratio = (() => {
+      const L = (hex) => {
+        const h = String(hex || "#000").replace("#", "");
+        const full = h.length === 3 ? h.split("").map((c) => c + c).join("") : h.padEnd(6, "0");
+        const rgb = [0, 2, 4].map((i) => parseInt(full.slice(i, i + 2), 16) / 255);
+        const lin = rgb.map((c) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4));
+        return 0.2126 * lin[0] + 0.7152 * lin[1] + 0.0722 * lin[2];
+      };
+      const a = L(ly.color || "#0f172a");
+      const b = L(ly.bg || "#ffffff");
+      return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+    })();
+    if (ratio < 3) {
+      return `<p class="lp-warn span-2">⚠ Low contrast (${ratio.toFixed(1)}:1) — scanners may fail.</p>`;
+    }
+    return `<p class="lp-ok span-2">Contrast ${ratio.toFixed(1)}:1 · OK</p>`;
+  } catch {
+    return "";
+  }
 }
 
 function studioMarkup() {
   return `
-    <div class="le-studio" hidden>
+    <div class="le-studio" hidden role="dialog" aria-modal="true" aria-label="Design Studio">
       <header class="le-head">
         <div>
           <h3>Design Studio</h3>
           <div class="meta" data-meta>50×30 mm</div>
         </div>
+        <div class="le-mode-toggle" role="tablist" aria-label="Studio mode">
+          <button type="button" data-studio-mode="quick" class="is-active" role="tab" aria-selected="true">Quick</button>
+          <button type="button" data-studio-mode="advanced" role="tab" aria-selected="false">Advanced</button>
+        </div>
         <div class="le-head-actions">
-          <button type="button" class="tc-btn" data-reset>Reset</button>
+          <button type="button" class="tc-btn" data-reset title="Reset layers to thermal preset">Reset</button>
           <button type="button" class="tc-btn tc-btn-primary" data-done id="leDone">Done</button>
         </div>
       </header>
-      <div class="lt-toolbar">
-        <div class="lt-group">
+      <div class="lt-toolbar" role="toolbar" aria-label="Design tools">
+        <div class="lt-group" data-adv>
           <button type="button" data-tool="select" class="is-active" title="Select (V)">Select</button>
-          <button type="button" data-tool="hand" title="Hand (H)">Hand</button>
+          <button type="button" data-tool="hand" title="Hand / pan (H or Space+drag)">Hand</button>
         </div>
-        <div class="lt-group">
-          <button type="button" data-tool="qr">+ QR</button>
-          <button type="button" data-tool="text">+ Text</button>
-          <button type="button" data-tool="image">+ Image</button>
-          <button type="button" data-tool="shape">+ Shape</button>
-          <button type="button" data-tool="line">+ Line</button>
+        <div class="lt-group" aria-label="Insert">
+          <button type="button" data-tool="qr" title="Insert QR code">+ QR</button>
+          <button type="button" data-tool="barcode" title="Insert Code128 barcode">+ Barcode</button>
+          <button type="button" data-tool="text" title="Insert text">+ Text</button>
+          <button type="button" data-tool="image" title="Insert image" data-adv>+ Image</button>
+          <button type="button" data-tool="shape" title="Insert shape" data-adv>+ Shape</button>
+          <button type="button" data-tool="line" title="Insert line" data-adv>+ Line</button>
         </div>
-        <div class="lt-group">
+        <div class="lt-group" data-adv aria-label="Align">
           <button type="button" data-tool="align-left" title="Align left">⫷</button>
           <button type="button" data-tool="align-h" title="Align center H">☰</button>
           <button type="button" data-tool="align-right" title="Align right">⫸</button>
@@ -782,29 +884,33 @@ function studioMarkup() {
           <button type="button" data-tool="align-label-h" title="Center on label H">⌖H</button>
           <button type="button" data-tool="align-label-v" title="Center on label V">⌖V</button>
         </div>
-        <div class="lt-group">
-          <button type="button" data-tool="grid">Grid</button>
-          <button type="button" data-tool="snap">Snap</button>
-          <button type="button" data-tool="zoom-out">−</button>
-          <span data-zoom>100%</span>
-          <button type="button" data-tool="zoom-in">+</button>
-          <button type="button" data-tool="zoom-fit">Fit</button>
+        <div class="lt-group" aria-label="View">
+          <button type="button" data-tool="grid" title="Toggle guides/grid">Grid</button>
+          <button type="button" data-tool="snap" title="Toggle snap" data-adv>Snap</button>
+          <button type="button" data-tool="units" title="Toggle mm / inch rulers" data-adv>mm</button>
+          <button type="button" data-tool="zoom-out" title="Zoom out">−</button>
+          <span data-zoom aria-live="polite">100%</span>
+          <button type="button" data-tool="zoom-in" title="Zoom in">+</button>
+          <button type="button" data-tool="zoom-fit" title="Fit to view">Fit</button>
         </div>
-        <div class="lt-group">
-          <button type="button" data-tool="undo">Undo</button>
-          <button type="button" data-tool="redo">Redo</button>
-          <button type="button" data-tool="preset-thermal">Preset thermal</button>
-          <button type="button" data-tool="preset-stacked">Preset stacked</button>
-          <button type="button" data-tool="preset-qrOnly">QR only</button>
+        <div class="lt-group" aria-label="History & presets">
+          <button type="button" data-tool="undo" title="Undo (Ctrl+Z)">Undo</button>
+          <button type="button" data-tool="redo" title="Redo (Ctrl+Y)">Redo</button>
+          <button type="button" data-tool="preset-thermal" title="Thermal preset">Thermal</button>
+          <button type="button" data-tool="preset-stacked" title="Stacked preset">Stacked</button>
+          <button type="button" data-tool="preset-qrOnly" title="QR only preset">QR only</button>
         </div>
       </div>
       <div class="le-body">
-        <aside class="le-rail" data-layers></aside>
+        <aside class="le-rail" data-adv>
+          <div class="rail-ttl">Layers</div>
+          <div data-layers></div>
+        </aside>
         <div class="le-canvas-col">
-          <div class="le-ruler-h" data-ruler-h></div>
+          <div class="le-ruler-h" data-ruler-h aria-hidden="true"></div>
           <div class="le-canvas-row">
-            <div class="le-ruler-v" data-ruler-v></div>
-            <div class="le-canvas-wrap" data-wrap>
+            <div class="le-ruler-v" data-ruler-v aria-hidden="true"></div>
+            <div class="le-canvas-wrap" data-wrap tabindex="0" aria-label="Label canvas">
               <div class="le-stage" data-stage>
                 <div data-label-host></div>
                 <canvas class="le-guides" data-guides></canvas>

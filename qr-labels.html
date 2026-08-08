@@ -6,9 +6,9 @@
   <title>AbouAmjad Store System | QR Labels</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="app.css?v=live">
-  <link rel="stylesheet" href="labels/ui/styles.css?v=5">
+  <link rel="stylesheet" href="labels/ui/styles.css?v=10">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#0f766e">
   <script src="labels/vendor/qr-code-styling.js" id="qrLibScript"></script>
@@ -21,140 +21,218 @@
     <div class="tc-shell">
       <div id="app-header"></div>
 
-      <div class="ql-grid">
-        <!-- Templates -->
-        <section class="ql-panel">
-          <h2><i class="bi bi-bookmark-star"></i> <span data-i18n="savedTemplates">Saved templates</span></h2>
-          <button type="button" class="tc-btn tc-btn-primary w-100 mb-2" id="btnNewTpl">
-            <i class="bi bi-plus-lg"></i> <span data-i18n="newTemplate">New template</span>
-          </button>
-          <div class="ql-tpl-list" id="tplList"></div>
-          <p class="ql-hint" data-i18n="templatesHint">Saved on the server — open once, then only change codes.</p>
-        </section>
+      <!-- Wizard progress -->
+      <nav class="ql-steps" aria-label="Label workflow">
+        <button type="button" class="ql-step is-active" data-step="1" aria-current="step">
+          <span class="n">1</span><span class="l">Template</span>
+        </button>
+        <button type="button" class="ql-step" data-step="2">
+          <span class="n">2</span><span class="l">Size</span>
+        </button>
+        <button type="button" class="ql-step" data-step="3">
+          <span class="n">3</span><span class="l">Codes</span>
+        </button>
+        <button type="button" class="ql-step" data-step="4">
+          <span class="n">4</span><span class="l">Print</span>
+        </button>
+      </nav>
 
-        <!-- Config + codes -->
-        <div>
-          <section class="ql-panel mb-3">
-            <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
-              <span class="fw-bold" id="activeNameLabel" data-i18n="unsavedTemplate">New unsaved template</span>
-              <span class="ql-mode-chip badge text-bg-secondary" id="activeModeChip">
-                <i class="bi bi-printer"></i> <span id="activeModeChipTxt">Thermal</span>
-              </span>
-              <span class="badge text-bg-light text-dark" id="activeMeta"></span>
-              <span class="badge text-bg-light text-dark" id="calibChip" title="Active printer profile"></span>
+      <div class="ql-layout">
+        <!-- LEFT: templates + library -->
+        <aside class="ql-col ql-col-templates">
+          <section class="ql-card">
+            <header class="ql-card-head">
+              <h2><i class="bi bi-bookmark-star" aria-hidden="true"></i> Saved templates</h2>
+              <button type="button" class="tc-btn tc-btn-sm tc-btn-primary" id="btnNewTpl" title="New blank template">
+                <i class="bi bi-plus-lg"></i> New
+              </button>
+            </header>
+            <label class="ql-search-wrap">
+              <i class="bi bi-search" aria-hidden="true"></i>
+              <input type="search" id="tplSearch" class="form-control" placeholder="Search templates…" autocomplete="off">
+            </label>
+            <div class="ql-tpl-list" id="tplList" role="listbox" aria-label="Saved templates"></div>
+          </section>
+
+          <section class="ql-card">
+            <header class="ql-card-head">
+              <h2><i class="bi bi-collection" aria-hidden="true"></i> Starter library</h2>
+            </header>
+            <div class="ql-lib-grid" id="libGrid"></div>
+          </section>
+        </aside>
+
+        <!-- CENTER: step panels -->
+        <main class="ql-col ql-col-main">
+          <section class="ql-card ql-panel-step" data-panel="1">
+            <header class="ql-card-head">
+              <div>
+                <h2 id="activeNameLabel">New unsaved template</h2>
+                <p class="ql-sub">Pick a saved template or starter, then continue to size.</p>
+              </div>
+              <div class="ql-chips">
+                <span class="ql-chip" id="activeModeChip"><i class="bi bi-printer"></i> <span id="activeModeChipTxt">Thermal</span></span>
+                <span class="ql-chip" id="activeMeta"></span>
+                <span class="ql-chip" id="calibChip" title="Active printer profile"></span>
+              </div>
+            </header>
+            <div class="ql-actions">
+              <button type="button" class="tc-btn tc-btn-primary" id="btnOpenStudio">
+                <i class="bi bi-vector-pen"></i> Open Design Studio
+              </button>
+              <div class="ql-more">
+                <button type="button" class="tc-btn" id="btnSaveTpl"><i class="bi bi-save"></i> Save</button>
+                <button type="button" class="tc-btn" id="btnSaveAsTpl"><i class="bi bi-files"></i> Save as…</button>
+                <button type="button" class="tc-btn" id="btnExportJson"><i class="bi bi-filetype-json"></i> JSON</button>
+                <button type="button" class="tc-btn" id="btnCalibrate"><i class="bi bi-rulers"></i> Calibrate</button>
+              </div>
             </div>
+            <p class="ql-autosave" id="autosaveStatus" aria-live="polite"></p>
+            <div class="ql-step-nav">
+              <span></span>
+              <button type="button" class="tc-btn tc-btn-primary" data-goto="2">Next · Size <i class="bi bi-arrow-right"></i></button>
+            </div>
+          </section>
 
-            <div class="ql-print-mode" id="printMode">
+          <section class="ql-card ql-panel-step" data-panel="2" hidden>
+            <header class="ql-card-head">
+              <h2><i class="bi bi-aspect-ratio"></i> Page &amp; label size</h2>
+            </header>
+            <div class="ql-print-mode" id="printMode" role="radiogroup" aria-label="Print mode">
               <button type="button" class="ql-mode-card" data-mode="a4" id="modeA4">
-                <div class="t"><i class="bi bi-file-earmark"></i> <span data-i18n="modeA4Sheet">A4 sheet</span></div>
-                <div class="s" data-i18n="modeA4SheetHint">Many labels on one page · columns & gaps</div>
+                <div class="ql-mode-visual" aria-hidden="true"><span class="sheet a4"></span></div>
+                <div class="t">A4 sheet</div>
+                <div class="s">210×297 mm · <span data-mode-count="a4">24</span> labels / page</div>
               </button>
               <button type="button" class="ql-mode-card" data-mode="a3" id="modeA3">
-                <div class="t"><i class="bi bi-file-earmark-richtext"></i> <span data-i18n="modeA3Sheet">A3 sheet</span></div>
-                <div class="s" data-i18n="modeA3SheetHint">Larger page · more labels per sheet</div>
+                <div class="ql-mode-visual" aria-hidden="true"><span class="sheet a3"></span></div>
+                <div class="t">A3 sheet</div>
+                <div class="s">297×420 mm · <span data-mode-count="a3">40</span> labels / page</div>
               </button>
               <button type="button" class="ql-mode-card active" data-mode="thermal" id="modeThermal">
-                <div class="t"><i class="bi bi-receipt"></i> <span data-i18n="modeThermalRoll">Thermal roll</span></div>
-                <div class="s" data-i18n="modeThermalRollHint">One sticker per page · like ITPP130</div>
+                <div class="ql-mode-visual" aria-hidden="true"><span class="sheet thermal"></span></div>
+                <div class="t">Thermal roll</div>
+                <div class="s">One sticker / page · ITPP-class</div>
               </button>
             </div>
-
-            <h2><i class="bi bi-aspect-ratio"></i> <span data-i18n="templateSize">Label size (mm)</span></h2>
-            <div class="ql-fields mb-2">
-              <label><span data-i18n="labelW">Width</span><input id="cW" type="number" class="form-control form-control-sm" min="15" max="300" step="0.5" value="50"></label>
-              <label><span data-i18n="labelH">Height</span><input id="cH" type="number" class="form-control form-control-sm" min="10" max="300" step="0.5" value="30"></label>
-            </div>
-
-            <div class="ql-fields mb-2" id="sheetFields">
-              <label id="orientField"><span data-i18n="pageOrient">Orientation</span>
-                <select id="cOrient" class="form-select form-select-sm">
+            <div class="ql-fields">
+              <label>Width (mm)<input id="cW" type="number" class="form-control" min="15" max="300" step="0.5" value="50"></label>
+              <label>Height (mm)<input id="cH" type="number" class="form-control" min="10" max="300" step="0.5" value="30"></label>
+              <label id="orientField">Orientation
+                <select id="cOrient" class="form-select">
                   <option value="portrait">Portrait</option>
                   <option value="landscape">Landscape</option>
                 </select>
               </label>
-              <label id="colsField"><span data-i18n="cols">Columns</span><input id="cCols" type="number" class="form-control form-control-sm" min="1" max="12" value="4"></label>
-              <label id="rowsField"><span data-i18n="rows">Rows</span><input id="cRows" type="number" class="form-control form-control-sm" min="1" max="20" value="6"></label>
-              <label><span data-i18n="gapMm">Gap</span><input id="cGap" type="number" class="form-control form-control-sm" min="0" max="30" step="0.5" value="0"></label>
-              <label><span data-i18n="marginMm">Inner margin</span><input id="cMargin" type="number" class="form-control form-control-sm" min="0" max="20" step="0.5" value="0"></label>
+              <label id="colsField">Columns<input id="cCols" type="number" class="form-control" min="1" max="12" value="4"></label>
+              <label id="rowsField">Rows<input id="cRows" type="number" class="form-control" min="1" max="20" value="6"></label>
+              <label>Gap (mm)<input id="cGap" type="number" class="form-control" min="0" max="30" step="0.5" value="0"></label>
+              <label>Inner margin<input id="cMargin" type="number" class="form-control" min="0" max="20" step="0.5" value="0"></label>
             </div>
-
-            <div class="ql-actions">
-              <button type="button" class="tc-btn tc-btn-primary" id="btnOpenStudio">
-                <i class="bi bi-vector-pen"></i> <span data-i18n="openDesignStudio">Open Design Studio</span>
-              </button>
-              <button type="button" class="tc-btn tc-btn-primary" id="btnSaveTpl">
-                <i class="bi bi-save"></i> <span data-i18n="saveTemplate">Save template</span>
-              </button>
-              <button type="button" class="tc-btn" id="btnSaveAsTpl">
-                <i class="bi bi-files"></i> <span data-i18n="saveAsTemplate">Save as…</span>
-              </button>
-              <button type="button" class="tc-btn" id="btnCalibrate">
-                <i class="bi bi-rulers"></i> Calibrate printer
-              </button>
-              <button type="button" class="tc-btn" id="btnExportJson">
-                <i class="bi bi-filetype-json"></i> Export JSON
-              </button>
+            <div class="ql-step-nav">
+              <button type="button" class="tc-btn" data-goto="1"><i class="bi bi-arrow-left"></i> Back</button>
+              <button type="button" class="tc-btn tc-btn-primary" data-goto="3">Next · Codes <i class="bi bi-arrow-right"></i></button>
             </div>
           </section>
 
-          <section class="ql-panel">
-            <h2><i class="bi bi-qr-code"></i> <span data-i18n="generateLabels">Codes to print</span></h2>
+          <section class="ql-card ql-panel-step" data-panel="3" hidden>
+            <header class="ql-card-head">
+              <h2><i class="bi bi-qr-code"></i> Codes to print</h2>
+              <div class="ql-ready-count" id="readyCount" aria-live="polite">0 ready</div>
+            </header>
             <div class="ql-actions mb-2">
-              <button type="button" class="tc-btn tc-btn-primary" id="btnPick">
-                <i class="bi bi-check2-square"></i> <span data-i18n="pickItems">Choose items…</span>
-              </button>
-              <button type="button" class="tc-btn" id="btnDir">
-                <i class="bi bi-arrow-left-right"></i> IN / OUT
-              </button>
+              <button type="button" class="tc-btn tc-btn-primary" id="btnPick"><i class="bi bi-check2-square"></i> Choose items…</button>
+              <button type="button" class="tc-btn" id="btnDir"><i class="bi bi-arrow-left-right"></i> IN / OUT</button>
+              <label class="tc-btn ql-file-btn">
+                <i class="bi bi-filetype-csv"></i> Import CSV
+                <input type="file" id="csvImport" accept=".csv,.txt,text/csv" hidden>
+              </label>
+              <button type="button" class="tc-btn" id="btnClear"><i class="bi bi-x-lg"></i> Clear</button>
             </div>
             <div class="ql-selected-bar" id="selectedBar" style="display:none">
-              <span id="selectedCount">0</span>
-              <span data-i18n="itemsQueued">in queue</span>
+              <span id="selectedCount">0</span> in queue
             </div>
-            <textarea id="codes" class="form-control" rows="5" placeholder="P001 | Ahmad&#10;I1001 | Hammer"></textarea>
-            <p class="ql-hint" data-i18n="labelsCodesHint">Pick a saved template, change codes only, then Generate.</p>
-            <div class="ql-actions">
-              <button class="tc-btn tc-btn-primary" id="btnGen">
-                <i class="bi bi-magic"></i> <span data-i18n="generate">Generate</span>
-              </button>
-              <button class="tc-btn" id="btnOpenPreview" disabled>
-                <i class="bi bi-eye"></i> <span data-i18n="printPreview">Print preview</span>
-              </button>
-              <button class="tc-btn" id="btnClear">
-                <i class="bi bi-x-lg"></i> <span data-i18n="clearLabels">Clear</span>
+            <label class="ql-codes-label" for="codes">Paste codes (one per line: <code>CODE | Name</code>)</label>
+            <textarea id="codes" class="form-control ql-codes" rows="8" placeholder="P001 | أحمد علي&#10;I1001 | Hammer&#10;C12-B | Mechanical Gloves" spellcheck="false"></textarea>
+            <div class="ql-code-alerts" id="codeAlerts" aria-live="polite"></div>
+            <div class="ql-step-nav">
+              <button type="button" class="tc-btn" data-goto="2"><i class="bi bi-arrow-left"></i> Back</button>
+              <button type="button" class="tc-btn tc-btn-primary" id="btnGen">
+                <i class="bi bi-magic"></i> Generate &amp; preview
               </button>
             </div>
           </section>
-        </div>
+
+          <section class="ql-card ql-panel-step" data-panel="4" hidden>
+            <header class="ql-card-head">
+              <h2><i class="bi bi-printer"></i> Preview &amp; print</h2>
+              <span class="ql-chip" id="previewMetaInline"></span>
+            </header>
+            <div class="ql-print-actions">
+              <button type="button" class="tc-btn tc-btn-primary ql-btn-hero" id="btnPrint">
+                <i class="bi bi-printer-fill"></i> Print
+              </button>
+              <button type="button" class="tc-btn" id="btnTestPrint" title="Print one sample label">
+                <i class="bi bi-eyedropper"></i> Test print
+              </button>
+              <button type="button" class="tc-btn" id="btnExportPng"><i class="bi bi-file-earmark-image"></i> PNG</button>
+              <button type="button" class="tc-btn" id="btnExportPdf"><i class="bi bi-file-earmark-pdf"></i> PDF</button>
+              <button type="button" class="tc-btn" id="btnOpenPreview"><i class="bi bi-arrows-fullscreen"></i> Full preview</button>
+            </div>
+            <label class="ql-check">
+              <input type="checkbox" id="previewFlip">
+              Flip alternate labels
+            </label>
+            <label class="ql-check">
+              <input type="checkbox" id="thermalSim">
+              Thermal simulation (B/W high contrast)
+            </label>
+            <div id="labelsInline" class="label-sheet empty ql-inline-preview">
+              <span class="labels-empty-msg">Generate labels to preview</span>
+            </div>
+            <div class="ql-step-nav">
+              <button type="button" class="tc-btn" data-goto="3"><i class="bi bi-arrow-left"></i> Back</button>
+              <button type="button" class="tc-btn" data-goto="1">Start over</button>
+            </div>
+          </section>
+        </main>
+
+        <!-- RIGHT: live mini preview -->
+        <aside class="ql-col ql-col-preview">
+          <section class="ql-card ql-live">
+            <header class="ql-card-head">
+              <h2><i class="bi bi-eye"></i> Live preview</h2>
+            </header>
+            <div id="livePreview" class="ql-live-host" aria-label="Live label preview"></div>
+            <p class="ql-hint">Updates as you change size or the first queued code.</p>
+          </section>
+        </aside>
       </div>
     </div>
   </div>
 
-  <!-- Preview -->
+  <!-- Fullscreen preview modal -->
   <div class="tc-modal-backdrop" id="previewModal">
-    <div class="tc-modal preview-modal" role="dialog" aria-modal="true">
+    <div class="tc-modal preview-modal" role="dialog" aria-modal="true" aria-labelledby="previewModalTitle">
       <div class="tc-modal-head d-flex align-items-start justify-content-between gap-2">
         <div>
-          <h3 class="h5 mb-0" id="previewModalTitle"><i class="bi bi-eye"></i> <span data-i18n="printPreview">Print preview</span></h3>
-          <p class="tc-text-muted small mb-0 mt-1">Same renderer as Design Studio — prints via hidden frame (no popup).</p>
+          <h3 class="h5 mb-0" id="previewModalTitle"><i class="bi bi-eye"></i> Print preview</h3>
+          <p class="tc-text-muted small mb-0 mt-1">Same renderer as Design Studio — prints via hidden frame.</p>
         </div>
-        <span class="ql-chip badge text-bg-light text-dark" id="previewMeta"></span>
-        <button type="button" class="tc-btn tc-btn-sm" id="btnClosePreview"><i class="bi bi-x-lg"></i></button>
+        <span class="ql-chip" id="previewMeta"></span>
+        <button type="button" class="tc-btn tc-btn-sm" id="btnClosePreview" aria-label="Close"><i class="bi bi-x-lg"></i></button>
       </div>
       <div class="tc-modal-body">
         <div id="labels" class="label-sheet empty">
-          <span class="labels-empty-msg" data-i18n="labelsPreviewEmpty">Generate labels to preview</span>
+          <span class="labels-empty-msg">Generate labels to preview</span>
         </div>
       </div>
       <div class="tc-modal-foot d-flex flex-wrap align-items-center gap-2 justify-content-between">
-        <label class="d-flex align-items-center gap-2 mb-0">
-          <input type="checkbox" id="previewFlip">
-          <span data-i18n="previewFlip">Flip alternate labels</span>
-        </label>
+        <span class="small tc-text-muted">Tip: use browser Print → Save as PDF for archive copies.</span>
         <div class="d-flex gap-2">
-          <button type="button" class="tc-btn" id="btnClosePreview2" data-i18n="close">Close</button>
-          <button type="button" class="tc-btn tc-btn-primary" id="btnPrint">
-            <i class="bi bi-printer"></i> <span data-i18n="print">Print</span>
+          <button type="button" class="tc-btn" id="btnClosePreview2">Close</button>
+          <button type="button" class="tc-btn tc-btn-primary" id="btnPrintModal">
+            <i class="bi bi-printer"></i> Print
           </button>
         </div>
       </div>
@@ -163,19 +241,19 @@
 
   <!-- Picker -->
   <div class="tc-modal-backdrop" id="pickerModal">
-    <div class="tc-modal">
+    <div class="tc-modal" role="dialog" aria-modal="true">
       <div class="tc-modal-head d-flex justify-content-between">
         <div>
-          <h3 class="h5 mb-1" data-i18n="pickItemsTitle">Choose what to print</h3>
-          <p class="tc-text-muted small mb-0" data-i18n="pickItemsHint">Search, tick what you need, or select all filtered.</p>
+          <h3 class="h5 mb-1">Choose what to print</h3>
+          <p class="tc-text-muted small mb-0">Search, tick what you need, or select all filtered.</p>
         </div>
-        <button type="button" class="tc-btn tc-btn-sm" id="btnClosePicker"><i class="bi bi-x-lg"></i></button>
+        <button type="button" class="tc-btn tc-btn-sm" id="btnClosePicker" aria-label="Close"><i class="bi bi-x-lg"></i></button>
       </div>
       <div class="tc-modal-body">
         <div class="ql-picker-tabs" id="pickerTabs">
-          <button type="button" data-tab="people" data-i18n="people">People</button>
-          <button type="button" class="active" data-tab="tools" data-i18n="products">Tools</button>
-          <button type="button" data-tab="consumables" data-i18n="consumables">Consumables</button>
+          <button type="button" data-tab="people">People</button>
+          <button type="button" class="active" data-tab="tools">Tools</button>
+          <button type="button" data-tab="consumables">Consumables</button>
         </div>
         <div class="d-flex flex-wrap gap-2 mb-2">
           <input type="search" id="pickerSearch" class="tc-search form-control" placeholder="Search…">
@@ -196,20 +274,19 @@
 
   <!-- Calibration -->
   <div class="tc-modal-backdrop" id="calibModal">
-    <div class="tc-modal">
+    <div class="tc-modal" role="dialog" aria-modal="true">
       <div class="tc-modal-head d-flex justify-content-between">
         <h3 class="h5 mb-0">Printer calibration wizard</h3>
-        <button type="button" class="tc-btn tc-btn-sm" id="btnCloseCalib"><i class="bi bi-x-lg"></i></button>
+        <button type="button" class="tc-btn tc-btn-sm" id="btnCloseCalib" aria-label="Close"><i class="bi bi-x-lg"></i></button>
       </div>
       <div class="tc-modal-body" id="calibHost"></div>
     </div>
   </div>
 
-  <!-- Design Studio host (full-screen overlay managed by LabelEditor) -->
   <div id="editorHost"></div>
 
   <script type="module">
-    import { bootLabelApp } from "./labels/ui/app.js?v=5";
+    import { bootLabelApp } from "./labels/ui/app.js?v=10";
 
     document.addEventListener("DOMContentLoaded", () => {
       const start = async () => {

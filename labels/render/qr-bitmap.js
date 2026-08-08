@@ -40,13 +40,14 @@ export async function renderQrDataUrl(ly, value, dpi = 192) {
 
   try {
     const QRCodeStyling = await ensureQrLibrary();
-    const qr = new QRCodeStyling({
+    const logo = String(ly.logoUrl || ly.image || "").trim();
+    const opts = {
       width: px,
       height: px,
       type: "canvas",
       data: String(value || "QR"),
       margin: quiet,
-      qrOptions: { errorCorrectionLevel: ly.errorCorrection || "M" },
+      qrOptions: { errorCorrectionLevel: ly.errorCorrection || (logo ? "H" : "M") },
       dotsOptions: { color: ly.color || "#0f172a", type: qrDotType(ly.style) },
       cornersSquareOptions: {
         color: ly.cornerColor || ly.color || "#0f766e",
@@ -54,7 +55,16 @@ export async function renderQrDataUrl(ly, value, dpi = 192) {
       },
       cornersDotOptions: { color: ly.cornerColor || ly.color || "#0f766e" },
       backgroundOptions: { color: ly.bg || "#ffffff" }
-    });
+    };
+    if (logo) {
+      opts.image = logo;
+      opts.imageOptions = {
+        crossOrigin: "anonymous",
+        margin: 2,
+        imageSize: Math.min(0.4, Math.max(0.15, Number(ly.logoSize) || 0.28))
+      };
+    }
+    const qr = new QRCodeStyling(opts);
     const blob = await Promise.race([
       qr.getRawData("png"),
       new Promise((_, reject) =>
