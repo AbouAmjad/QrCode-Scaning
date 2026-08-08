@@ -5,10 +5,12 @@
 import { createDocument, bindItem } from "../core/document.js";
 import { layoutAbsolute, labelShellCss, mirrorLayers } from "../layout/index.js";
 import { paintElement } from "./paint-element.js";
+import { paintPageFrame } from "./page-frame.js";
 
 export { ensureQrLibrary } from "./qr-bitmap.js";
 export { ensureBarcodeLibrary } from "./barcode-bitmap.js";
 export { sharedPrintCss } from "./print-css.js";
+export { shouldPaintPageFrame, paintPageFrame } from "./page-frame.js";
 
 /**
  * @param {object} docOrPartial
@@ -51,6 +53,10 @@ export async function renderLabel(docOrPartial, item = null, options = {}) {
     }
     root.appendChild(node);
   }
+
+  // Page frame uses real label mm geometry (auto-follows labelW×labelH).
+  const frame = paintPageFrame(doc, mode);
+  if (frame) root.appendChild(frame);
 
   return root;
 }

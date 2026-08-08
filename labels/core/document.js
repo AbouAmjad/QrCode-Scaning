@@ -3,7 +3,13 @@
  * Pure data + pure transforms. No DOM.
  */
 import { roundMm, clamp } from "./units.js";
-import { DOC_VERSION, PAGE_MODES, DEFAULT_STYLE, BRAND_DEFAULT } from "./types.js";
+import {
+  DOC_VERSION,
+  PAGE_MODES,
+  DEFAULT_STYLE,
+  DEFAULT_PAGE_FRAME,
+  BRAND_DEFAULT
+} from "./types.js";
 import { contentBox } from "../layout/box.js";
 import { migrateLayersToMm, clampLayerMm } from "../layout/migrate.js";
 import { createDefaultLayers, normalizeLayer, createLayer } from "../elements/create.js";
@@ -20,6 +26,14 @@ export function createDocument(partial = {}) {
     partial.page === "a4" || partial.page === "a3" ? partial.page : "thermal";
   const mode = pageDefaults(page);
   const style = { ...DEFAULT_STYLE, ...(partial.style || {}) };
+  const pfIn = partial.pageFrame && typeof partial.pageFrame === "object" ? partial.pageFrame : {};
+  const pageFrame = {
+    enabled: pfIn.enabled !== false,
+    includeInPrint: !!pfIn.includeInPrint,
+    strokeWidth: Math.max(0.05, Number(pfIn.strokeWidth) || DEFAULT_PAGE_FRAME.strokeWidth),
+    color: pfIn.color || DEFAULT_PAGE_FRAME.color,
+    dash: pfIn.dash !== false
+  };
 
   const labelW = Math.max(1, Number(partial.labelW) || 50);
   const labelH = Math.max(1, Number(partial.labelH) || 30);
@@ -60,6 +74,7 @@ export function createDocument(partial = {}) {
     thermal: page === "thermal",
     brand: partial.brand || BRAND_DEFAULT,
     style,
+    pageFrame,
     layers,
     gridMm: Number(partial.gridMm) > 0 ? Number(partial.gridMm) : 1,
     snapToGrid: partial.snapToGrid !== false,

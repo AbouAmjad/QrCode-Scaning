@@ -46,7 +46,7 @@ export class GuidesPainter {
       }
     }
 
-    // Printable / content area
+    // Printable / content area (inner margin)
     ctx.strokeStyle = "rgba(14,116,144,0.35)";
     ctx.setLineDash([4, 3]);
     ctx.strokeRect(
@@ -56,6 +56,8 @@ export class GuidesPainter {
       box.usableH * pxPerMm
     );
     ctx.setLineDash([]);
+
+    // Page frame is painted by renderLabel (label geometry), not the guides overlay.
 
     // Safe area
     if (doc.showSafeArea !== false && doc.safeMm > 0) {

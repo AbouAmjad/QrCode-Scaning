@@ -252,6 +252,10 @@ export class LabelStudio {
     this.paintLayers();
     this.paintInspector();
     this.paintStatus();
+    const frameBtn = this.root.querySelector('[data-tool="page-frame"]');
+    if (frameBtn) {
+      frameBtn.classList.toggle("is-active", !doc.pageFrame || doc.pageFrame.enabled !== false);
+    }
   }
 
   paintHandles(doc) {
@@ -338,8 +342,10 @@ export class LabelStudio {
 
   paintInspector() {
     const selected = this.selection.selected(this.doc.layers);
+    const frameHtml = pageFrameInspectorHtml(this.doc, !!selected.length);
     if (!selected.length) {
-      this.el.inspector.innerHTML = `<p class="lp-empty">Select an element</p>`;
+      this.el.inspector.innerHTML = frameHtml;
+      this._wirePageFrameInspector();
       return;
     }
     if (selected.length > 1) {
@@ -351,10 +357,13 @@ export class LabelStudio {
           <button type="button" data-multi="align-left">Align left</button>
           <button type="button" data-multi="align-h">Center H</button>
           <button type="button" data-multi="align-right">Align right</button>
-        </div>`;
+        </div>
+        <div class="lp-insp-sep"></div>
+        ${frameHtml}`;
       this.el.inspector.querySelectorAll("[data-multi]").forEach((btn) => {
         btn.addEventListener("click", () => this._onTool(btn.dataset.multi));
       });
+      this._wirePageFrameInspector();
       return;
     }
     const ly = selected[0];
@@ -369,7 +378,9 @@ export class LabelStudio {
         <label>Rotate °<input data-f="rotation" type="number" step="1" value="${ly.rotation || 0}"></label>
         <label>Opacity<input data-f="opacity" type="number" min="0" max="1" step="0.05" value="${ly.opacity ?? 1}"></label>
         ${typeFieldsHtml(ly)}
-      </div>`;
+      </div>
+      <div class="lp-insp-sep"></div>
+      ${frameHtml}`;
     this.el.inspector.querySelectorAll("[data-f]").forEach((input) => {
       const apply = () => {
         const key = input.dataset.f;
@@ -394,12 +405,36 @@ export class LabelStudio {
         });
       }
     });
+    this._wirePageFrameInspector();
+  }
+
+  _wirePageFrameInspector() {
+    const pfRoot = this.el.inspector;
+    pfRoot.querySelectorAll("[data-pf]").forEach((input) => {
+      const apply = () => {
+        const key = input.dataset.pf;
+        let val =
+          input.type === "checkbox"
+            ? !!input.checked
+            : input.type === "number"
+              ? Number(input.value)
+              : input.value;
+        this.store.update((d) => {
+          d.pageFrame = { ...(d.pageFrame || {}), [key]: val };
+        }, "page frame");
+      };
+      input.addEventListener("change", apply);
+    });
   }
 
   paintStatus() {
     const selected = this.selection.selected(this.doc.layers);
     if (!selected.length) {
-      this.el.status.textContent = "Ready · mm geometry · single renderer";
+      const pf = this.doc.pageFrame;
+      const frameOn = !pf || pf.enabled !== false;
+      this.el.status.textContent = frameOn
+        ? `Ready · page frame ${Number(pf?.strokeWidth || 0.4).toFixed(2)}mm · ${this.doc.labelW}×${this.doc.labelH} mm`
+        : "Ready · page frame off";
       return;
     }
     const ly = selected[0];
@@ -655,6 +690,15 @@ export class LabelStudio {
       }, "toggle grid");
       return;
     }
+    if (tool === "page-frame") {
+      this.store.update((d) => {
+        d.pageFrame = {
+          ...(d.pageFrame || {}),
+          enabled: !(d.pageFrame && d.pageFrame.enabled !== false)
+        };
+      }, "toggle page frame");
+      return;
+    }
     if (tool === "snap") {
       this.store.update((d) => {
         d.snapToGrid = !d.snapToGrid;
@@ -835,6 +879,28 @@ function positionHandle(el, ly, h) {
   const [left, top] = map[h] || map.se;
   el.style.left = left;
   el.style.top = top;
+}
+
+function pageFrameInspectorHtml(doc, compact = false) {
+  const pf = doc.pageFrame || {};
+  const enabled = pf.enabled !== false;
+  const include = !!pf.includeInPrint;
+  const dash = pf.dash !== false;
+  const sw = Number(pf.strokeWidth) || 0.4;
+  const color = pf.color || "#2C2C2A";
+  const hint = compact
+    ? ""
+    : `<p class="lp-empty span-2" style="margin:0 0 .35rem">Edge guide for ${doc.labelW}×${doc.labelH} mm. Auto-updates with label size. Off in print unless enabled below.</p>`;
+  return `
+    <div class="lp-fields">
+      <div class="lp-section span-2">Page frame</div>
+      ${hint}
+      <label class="span-2 lp-check"><input data-pf="enabled" type="checkbox" ${enabled ? "checked" : ""}> Show frame</label>
+      <label class="span-2 lp-check"><input data-pf="includeInPrint" type="checkbox" ${include ? "checked" : ""}> Include in print / export</label>
+      <label class="span-2 lp-check"><input data-pf="dash" type="checkbox" ${dash ? "checked" : ""}> Dashed (guide style)</label>
+      <label>Stroke mm<input data-pf="strokeWidth" type="number" min="0.05" max="3" step="0.05" value="${sw}" ${enabled ? "" : "disabled"}></label>
+      <label>Color<input data-pf="color" type="color" value="${escapeAttr(color)}" ${enabled ? "" : "disabled"}></label>
+    </div>`;
 }
 
 function typeFieldsHtml(ly) {
@@ -1021,6 +1087,7 @@ function studioMarkup() {
           </select>
         </div>
         <div class="lt-group lt-group-end">
+          <button type="button" data-tool="page-frame" title="Toggle page frame">Frame</button>
           <button type="button" data-tool="grid" title="Grid (edit only)">Grid</button>
           <button type="button" data-tool="snap">Snap</button>
           <button type="button" data-tool="zoom-out">−</button>

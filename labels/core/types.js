@@ -49,4 +49,13 @@ export const DEFAULT_STYLE = Object.freeze({
   bgColor: "#ffffff"
 });
 
+/** Page frame — label-edge geometry helper (and optional print border). */
+export const DEFAULT_PAGE_FRAME = Object.freeze({
+  enabled: true,
+  includeInPrint: false,
+  strokeWidth: 0.4,
+  color: "#2C2C2A",
+  dash: true
+});
+
 export const BRAND_DEFAULT = "AbouAmjad Store";
