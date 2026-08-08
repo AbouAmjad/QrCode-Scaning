@@ -262,7 +262,6 @@ export async function bootLabelApp() {
       labels.innerHTML = `<div class="ql-hint">${t("loading", "Rendering…")}</div>`;
     }
     openPreview();
-    setPreviewBtn(true);
     try {
       await preview.show(documentModel, lastItems, {
         flip: document.getElementById("previewFlip")?.checked
@@ -286,7 +285,6 @@ export async function bootLabelApp() {
       labels.innerHTML = `<span class="labels-empty-msg">${t("labelsPreviewEmpty", "Generate labels to preview")}</span>`;
       labels.classList.add("empty");
     }
-    setPreviewBtn(false);
     updateSelectedBar();
   });
 
