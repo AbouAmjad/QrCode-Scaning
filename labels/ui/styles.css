@@ -167,6 +167,19 @@
   color: #fff;
 }
 .le-studio .le-btn-primary:hover { filter: brightness(1.08); }
+.le-studio .le-btn-save {
+  background: #059669;
+  border-color: #34d399;
+  color: #fff;
+  font-size: .9rem;
+  padding: .55rem 1.15rem;
+  box-shadow: 0 0 0 2px rgba(52, 211, 153, .25);
+}
+.le-studio .le-btn-save:hover {
+  filter: brightness(1.1);
+  box-shadow: 0 0 0 3px rgba(52, 211, 153, .4);
+}
+.le-studio .le-btn-save i { font-size: 1.05rem; }
 .le-studio .le-btn-accent {
   background: #334155;
   border-color: #94a3b8;

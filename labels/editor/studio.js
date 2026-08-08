@@ -814,7 +814,7 @@ function studioLabel(key, en, ar) {
 function studioMarkup() {
   const back = studioLabel("studioBack", "Back", "رجوع");
   const reset = studioLabel("studioReset", "Reset", "إعادة ضبط");
-  const save = studioLabel("saveTemplate", "Save template", "حفظ القالب");
+  const save = studioLabel("saveDesign", "Save design", "حفظ التصميم");
   const saveAs = studioLabel("saveAsTemplate", "Save as…", "حفظ باسم…");
   const done = studioLabel("studioDone", "Done", "تم");
   const title = studioLabel("designStudio", "Design Studio", "استوديو التصميم");
@@ -841,8 +841,8 @@ function studioMarkup() {
           <button type="button" class="le-btn" data-save-as title="${escapeAttr(saveAs)}">
             <i class="bi bi-files"></i> ${escapeHtml(saveAs)}
           </button>
-          <button type="button" class="le-btn le-btn-primary" data-save title="${escapeAttr(save)} (Ctrl+S)">
-            <i class="bi bi-save"></i> ${escapeHtml(save)}
+          <button type="button" class="le-btn le-btn-save" data-save title="${escapeAttr(save)} (Ctrl+S)">
+            <i class="bi bi-save-fill"></i> ${escapeHtml(save)}
           </button>
           <button type="button" class="le-btn le-btn-accent" data-done id="leDone" title="${escapeAttr(done)}">
             <i class="bi bi-check2"></i> ${escapeHtml(done)}
