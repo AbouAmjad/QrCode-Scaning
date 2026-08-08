@@ -7,7 +7,11 @@ const PUBLIC_BASE = process.env.PUBLIC_BASE || "https://aics.iskndr.com";
 const TOOL_PREFIXES = ["I", "E", "C", "B"];
 const DIRECTIONS = ["IN", "OUT"];
 
-/** PPE families mirrored from the frontend config.js PPE_RULES. */
+/**
+ * PPE detection rules (mirrored in frontend config.js).
+ * Matching means the item is subject to cooldown; the cooldown window itself
+ * is enforced per product code (see custody.lastPpeIssue + checkPpeCooldown).
+ */
 const PPE_RULES = [
   {
     id: "gloves",

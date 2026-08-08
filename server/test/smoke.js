@@ -303,7 +303,7 @@ async function testCatalog() {
   console.log("\ncatalog / products");
   const stockList = await call({ action: "getCatalogStock" });
   const mask = stockList.items.find((i) => i.code === "I1-A");
-  ok("getCatalogStock totals", stockList.totals.products === 7, stockList.totals);
+  ok("getCatalogStock totals", stockList.totals.products === 8, stockList.totals);
   // 10 received, 1 unit still out with P101 after the terminal suite.
   ok("available = received − damaged − custody", mask.available === 9 && mask.out === 1, mask);
   ok("item carries qc + image + minStock fields",
