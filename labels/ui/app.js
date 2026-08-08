@@ -249,11 +249,6 @@ export async function bootLabelApp() {
   document.getElementById("btnSaveTpl")?.addEventListener("click", () => saveTpl(false));
   document.getElementById("btnSaveAsTpl")?.addEventListener("click", () => saveTpl(true));
 
-  function setPreviewBtn(on) {
-    const btn = document.getElementById("btnOpenPreview");
-    if (btn) btn.disabled = !on;
-  }
-
   document.getElementById("btnGen")?.addEventListener("click", async () => {
     readSizeFieldsIntoDocument();
     lastItems = parseCodeLines(document.getElementById("codes")?.value);
