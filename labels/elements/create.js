@@ -305,7 +305,7 @@ export function layoutPresets() {
         font: 8,
         weight: 600,
         align: "center",
-        text: "Sample",
+        text: "Product name",
         z: 3
       })
     ],
