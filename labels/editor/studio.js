@@ -1028,12 +1028,6 @@ export class LabelStudio {
     this.store.commit(this.store.get(), kind);
     this.schedulePaint(false);
   }
-
-  destroy() {
-    this._unbindKeys?.();
-    this._unsub.forEach((u) => u());
-    this.root.innerHTML = "";
-  }
 }
 
 function positionHandle(el, ly, h) {
