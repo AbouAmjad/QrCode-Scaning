@@ -507,6 +507,10 @@ export class LabelStudio {
   }
 
   _onTool(tool) {
+    if (tool === "save") {
+      void this.save(false);
+      return;
+    }
     if (tool === "delete") {
       this.deleteSelected();
       return;
@@ -896,6 +900,11 @@ function studioMarkup() {
           <button type="button" data-tool="preset-thermal">Preset thermal</button>
           <button type="button" data-tool="preset-stacked">Preset stacked</button>
           <button type="button" data-tool="preset-qrOnly">QR only</button>
+        </div>
+        <div class="lt-group lt-group-save">
+          <button type="button" class="lt-save" data-tool="save" title="${escapeAttr(save)} (Ctrl+S)">
+            <i class="bi bi-save-fill"></i> ${escapeHtml(save)}
+          </button>
         </div>
       </div>
       <div class="le-body">

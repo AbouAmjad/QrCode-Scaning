@@ -320,6 +320,17 @@
   cursor: pointer;
 }
 .lt-toolbar button:hover { border-color: #14b8a6; }
+.lt-toolbar .lt-save {
+  background: #059669 !important;
+  border-color: #34d399 !important;
+  color: #fff !important;
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  padding: .4rem .75rem !important;
+  font-size: .82rem !important;
+}
+.lt-toolbar .lt-save:hover { filter: brightness(1.08); }
 
 .lp-fields {
   display: grid;
