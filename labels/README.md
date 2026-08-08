@@ -2,20 +2,23 @@
 
 Commercial-grade label design engine for ToolCustody.
 
+See **[REDESIGN.md](./REDESIGN.md)** for the v10 wizard redesign notes, isolation guarantees, and deferred API items.
+
 ## Architecture
 
 ```
 labels/
   core/        Document model, store, units, types
-  elements/    Extensible element registry (qr, text, image, shape, line…)
+  elements/    Extensible element registry (qr, barcode, text, image, shape, line…)
   layout/      Content box, snap, align, mirror, migrate
-  render/      THE single renderer (engine + paint + sheet + print CSS)
+  render/      THE single renderer (engine + paint + sheet + print CSS + barcode)
   editor/      Design Studio (viewport, selection, guides, shortcuts)
   print/       Iframe print + calibration wizard
-  data/        API, storage, serialize, code queue
+  export/      PNG / PDF sheet export
+  data/        API, storage, serialize, code queue, starter presets
   ui/          Page bootstrap + preview + styles
   vendor/      QRCodeStyling
-  tests/       Node unit tests (no DOM)
+  tests/       Node unit tests (no DOM) + prod fixture regression
 ```
 
 **Single source of truth:** `TemplateDocument` (`core/document.js`).
