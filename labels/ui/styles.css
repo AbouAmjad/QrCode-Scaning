@@ -482,6 +482,48 @@ body.le-studio-open .tc-nav-drawer {
   background: var(--le-line);
   margin: .75rem 0 .55rem;
 }
+.lp-img-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .4rem;
+}
+.lp-img-btn {
+  border: 1px solid var(--le-line);
+  background: var(--le-accent);
+  color: #fff;
+  border-radius: 9px;
+  padding: .4rem .65rem;
+  font-size: .75rem;
+  font-weight: 750;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+}
+.lp-img-btn:hover { filter: brightness(0.96); }
+.lp-img-btn.ghost {
+  background: #fff;
+  color: var(--le-ink);
+}
+.lp-img-btn:disabled {
+  opacity: .4;
+  cursor: not-allowed;
+}
+.lp-img-preview {
+  border: 1px solid var(--le-line);
+  border-radius: 10px;
+  background: #f8fafc;
+  padding: .4rem;
+  max-height: 120px;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+}
+.lp-img-preview img {
+  max-width: 100%;
+  max-height: 108px;
+  object-fit: contain;
+}
 .lr-page-frame {
   pointer-events: none;
 }

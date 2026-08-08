@@ -126,6 +126,7 @@ function paintImage(obj) {
   applyOpacity(el, obj);
   el.style.display = "grid";
   el.style.placeItems = "center";
+  el.style.overflow = "hidden";
   if (obj.src) {
     const img = document.createElement("img");
     img.src = obj.src;
@@ -135,6 +136,12 @@ function paintImage(obj) {
     img.style.height = "100%";
     img.style.objectFit = obj.fit || "contain";
     el.appendChild(img);
+  } else {
+    el.style.background = "repeating-linear-gradient(45deg,#f1f5f9,#f1f5f9 4px,#e2e8f0 4px,#e2e8f0 8px)";
+    el.style.border = "0.2mm dashed #94a3b8";
+    el.style.color = "#64748b";
+    el.style.font = "600 7pt system-ui,sans-serif";
+    el.textContent = "Image";
   }
   return el;
 }

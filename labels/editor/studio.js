@@ -11,6 +11,7 @@ import { snapPosition } from "../layout/snap.js";
 import { alignLayers, distributeLayers } from "../layout/align.js";
 import { renderLabel, ensureQrLibrary, ensureBarcodeLibrary } from "../render/engine.js";
 import { getStudioZoom, setStudioZoom } from "../data/storage.js";
+import { fileToLabelImageDataUrl, pickImageFile } from "../data/image-file.js";
 import { Viewport } from "./viewport.js";
 import { SelectionModel } from "./selection.js";
 import { GuidesPainter } from "./guides.js";
@@ -406,6 +407,56 @@ export class LabelStudio {
       }
     });
     this._wirePageFrameInspector();
+    this._wireImageInspector(ly);
+  }
+
+  _wireImageInspector(ly) {
+    if (!ly || ly.type !== "image") return;
+    const root = this.el.inspector;
+    root.querySelector("[data-img-upload]")?.addEventListener("click", () => {
+      void this.uploadImageToLayer(ly.id);
+    });
+    root.querySelector("[data-img-clear]")?.addEventListener("click", () => {
+      this.store.update((d) => {
+        const t = d.layers.find((x) => x.id === ly.id);
+        if (t) t.src = "";
+      }, "clear image");
+    });
+  }
+
+  /**
+   * Pick a local image file and embed it (compressed data URL) on a layer.
+   * @param {string} [layerId] existing image layer, or create one
+   */
+  async uploadImageToLayer(layerId = null) {
+    try {
+      const file = await pickImageFile();
+      if (!file) return;
+      this.el.status.textContent = "Loading image…";
+      const src = await fileToLabelImageDataUrl(file, { maxSide: 900, quality: 0.84 });
+      let targetId = layerId;
+      this.store.update((d) => {
+        let t = targetId ? d.layers.find((x) => x.id === targetId) : null;
+        if (!t) {
+          t = createLayer("image", {
+            x: Math.max(d.innerMargin || 0, 2),
+            y: Math.max(d.innerMargin || 0, 2),
+            w: Math.min(18, d.labelW - 4),
+            h: Math.min(18, d.labelH - 4),
+            name: file.name ? String(file.name).replace(/\.[^.]+$/, "").slice(0, 40) : "Picture"
+          });
+          d.layers.push(t);
+          targetId = t.id;
+        }
+        t.src = src;
+        t.visible = true;
+        this.selection.set([t.id]);
+      }, "upload image");
+      this.el.status.textContent = "Image added";
+    } catch (e) {
+      console.warn("[studio] image upload", e);
+      this.el.status.textContent = `Image error: ${e.message || e}`;
+    }
   }
 
   _wirePageFrameInspector() {
@@ -466,6 +517,10 @@ export class LabelStudio {
   }
 
   addLayer(type) {
+    if (type === "image") {
+      void this.uploadImageToLayer(null);
+      return;
+    }
     this.store.update((d) => {
       const ly = createLayer(type, {
         x: Math.max(d.innerMargin || 0, 2),
@@ -984,7 +1039,22 @@ function typeFieldsHtml(ly) {
       <label>Stroke mm<input data-f="strokeWidth" type="number" step="0.05" value="${ly.strokeWidth || 0.2}"></label>`;
   }
   if (ly.type === "image") {
-    return `<label class="span-2">Image URL<input data-f="src" value="${escapeAttr(ly.src || "")}"></label>`;
+    const has = !!ly.src;
+    return `
+      <div class="lp-section span-2">Image</div>
+      <div class="lp-img-actions span-2">
+        <button type="button" class="lp-img-btn" data-img-upload>
+          <i class="bi bi-upload"></i> ${has ? "Replace image" : "Upload image"}
+        </button>
+        <button type="button" class="lp-img-btn ghost" data-img-clear ${has ? "" : "disabled"}>Clear</button>
+      </div>
+      ${has ? `<div class="lp-img-preview span-2"><img src="${escapeAttr(ly.src)}" alt=""></div>` : `<p class="lp-empty span-2" style="margin:0">No image yet — upload a PNG/JPG/WebP.</p>`}
+      <label>Fit<select data-f="fit">
+        <option value="contain" ${ly.fit !== "cover" && ly.fit !== "fill" ? "selected" : ""}>Contain</option>
+        <option value="cover" ${ly.fit === "cover" ? "selected" : ""}>Cover</option>
+        <option value="fill" ${ly.fit === "fill" ? "selected" : ""}>Stretch</option>
+      </select></label>
+      <label class="span-2">Or image URL<input data-f="src" value="${has && !String(ly.src).startsWith("data:") ? escapeAttr(ly.src) : ""}" placeholder="https://…"></label>`;
   }
   if (ly.type === "line") {
     return `
@@ -1057,7 +1127,7 @@ function studioMarkup() {
           <button type="button" data-tool="qr" title="QR Code"><i class="bi bi-qr-code"></i> QR</button>
           <button type="button" data-tool="barcode" title="Barcode Code128 / EAN-13"><i class="bi bi-upc"></i> Barcode</button>
           <button type="button" data-tool="text" title="Text"><i class="bi bi-type"></i> Text</button>
-          <button type="button" data-tool="image" title="Image"><i class="bi bi-image"></i></button>
+          <button type="button" data-tool="image" title="Upload image"><i class="bi bi-image"></i> Image</button>
           <button type="button" data-tool="shape" title="Shape"><i class="bi bi-square"></i></button>
           <button type="button" data-tool="line" title="Line"><i class="bi bi-slash-lg"></i></button>
         </div>
