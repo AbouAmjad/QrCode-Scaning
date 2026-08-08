@@ -255,7 +255,7 @@
   border-radius: 12px;
   box-shadow: 0 16px 36px -20px rgba(15,23,42,.45);
   padding: .35rem;
-  z-index: 5;
+  z-index: 40;
   display: grid;
   gap: .15rem;
 }

@@ -3,20 +3,20 @@
  * Wires templates, studio, preview, print, picker, calibration.
  * Presentation only — document is the single source of truth.
  */
-import { LabelStudio } from "../editor/studio.js";
-import { LabelPreview } from "./preview.js";
-import { printLabels } from "../print/labels.js";
-import { createDocument, setPageMode } from "../core/document.js";
-import * as LabelApi from "../data/api.js";
+import { LabelStudio } from "../editor/studio.js?v=22";
+import { LabelPreview } from "./preview.js?v=22";
+import { printLabels } from "../print/labels.js?v=22";
+import { createDocument, setPageMode } from "../core/document.js?v=22";
+import * as LabelApi from "../data/api.js?v=22";
 import {
   getLastTemplateId,
   setLastTemplateId,
   loadCalibration
-} from "../data/storage.js";
-import { mountCalibrationWizard } from "../print/calibration.js";
-import { parseCodeLines, parseCsvCodes, itemsToText } from "../data/codes.js";
-import { parseServerTemplate } from "../data/serialize.js";
-import { ensureQrLibrary, ensureBarcodeLibrary } from "../render/engine.js";
+} from "../data/storage.js?v=22";
+import { mountCalibrationWizard } from "../print/calibration.js?v=22";
+import { parseCodeLines, parseCsvCodes, itemsToText } from "../data/codes.js?v=22";
+import { parseServerTemplate } from "../data/serialize.js?v=22";
+import { ensureQrLibrary, ensureBarcodeLibrary } from "../render/engine.js?v=22";
 
 function t(key, fallback) {
   if (typeof TCI18N !== "undefined" && TCI18N.t) return TCI18N.t(key) || fallback || key;

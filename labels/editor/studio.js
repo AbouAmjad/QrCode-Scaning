@@ -164,7 +164,17 @@ export class LabelStudio {
 
   _closeMoreMenu() {
     const menu = this.root.querySelector("[data-more-menu]");
-    if (menu) menu.hidden = true;
+    if (menu) menu.setAttribute("hidden", "");
+  }
+
+  destroy() {
+    if (this._onDocPointer) {
+      document.removeEventListener("pointerdown", this._onDocPointer, true);
+      this._onDocPointer = null;
+    }
+    this._unbindKeys?.();
+    this._unsub.forEach((u) => u());
+    this.root.innerHTML = "";
   }
 
   /** Persist current document via host callbacks (does not close the studio). */
@@ -718,16 +728,20 @@ export class LabelStudio {
       this._closeMoreMenu();
     });
     this.root.querySelector("[data-more-toggle]")?.addEventListener("click", (e) => {
+      e.preventDefault();
       e.stopPropagation();
       const menu = this.root.querySelector("[data-more-menu]");
       if (!menu) return;
-      menu.hidden = !menu.hidden;
+      const open = menu.hasAttribute("hidden");
+      if (open) menu.removeAttribute("hidden");
+      else menu.setAttribute("hidden", "");
     });
-    document.addEventListener("click", (e) => {
+    this._onDocPointer = (e) => {
       if (!this._open) return;
       if (e.target?.closest?.(".le-more")) return;
       this._closeMoreMenu();
-    });
+    };
+    document.addEventListener("pointerdown", this._onDocPointer, true);
 
     this.root.querySelectorAll("[data-tool]").forEach((btn) => {
       btn.addEventListener("click", () => this._onTool(btn.dataset.tool));
