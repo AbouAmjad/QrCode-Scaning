@@ -45,8 +45,8 @@ export async function bootLabelApp() {
       documentModel = createDocument(doc);
       syncSizeFields();
     },
-    onSave: async () => {
-      await saveTpl(false);
+    onSave: async (doc) => {
+      await saveTpl(false, doc);
     }
   });
 
@@ -216,19 +216,45 @@ export async function bootLabelApp() {
   };
   document.getElementById("btnOpenStudio")?.addEventListener("click", openStudio);
 
-  async function saveTpl(forceNew) {
-    readSizeFieldsIntoDocument();
+  function askTemplateName(suggested) {
+    const overlay = studio?.el?.studio;
+    const bodyOpen = document.body.classList.contains("le-studio-open");
+    if (overlay && studio.isOpen) {
+      overlay.hidden = true;
+      document.body.classList.remove("le-studio-open");
+    }
+    const name = prompt(t("templateNamePrompt", "Template name"), suggested || "");
+    if (overlay && studio.isOpen) {
+      overlay.hidden = false;
+      if (bodyOpen) document.body.classList.add("le-studio-open");
+    }
+    return name;
+  }
+
+  async function saveTpl(forceNew, studioDoc = null) {
+    if (studioDoc) {
+      documentModel = createDocument(studioDoc);
+      syncSizeFields();
+    } else if (!studio.isOpen) {
+      readSizeFieldsIntoDocument();
+    }
+
     let name = "";
     const existing = templates.find((x) => x.id === activeId);
-    if (!forceNew && existing) name = existing.name;
-    else {
-      name = prompt(t("templateNamePrompt", "Template name"), existing ? existing.name + " copy" : "");
-      if (name == null) return;
-      name = String(name).trim();
+    if (!forceNew && existing) {
+      name = existing.name;
+    } else if (!forceNew && !existing) {
+      // First save from studio/page — don't block on a prompt behind the overlay
+      name = `Design ${new Date().toISOString().slice(0, 16).replace("T", " ")}`;
+    } else {
+      const suggested = existing ? `${existing.name} copy` : "Label design";
+      const entered = askTemplateName(suggested);
+      if (entered == null) return false;
+      name = String(entered).trim();
     }
     if (!name) {
       toast(t("templateNameRequired", "Enter a template name"), "err");
-      return;
+      return false;
     }
     try {
       const item = await LabelApi.saveTemplate(
@@ -241,8 +267,11 @@ export async function bootLabelApp() {
       else templates.unshift(item);
       applyServerTemplate(item);
       toast(t("templateSaved", `Saved “${name}”`).replace("{name}", name), "ok");
+      return true;
     } catch (e) {
-      toast(e.message || e, "err");
+      console.error("[QR Labels] save failed", e);
+      toast(e.message || String(e), "err");
+      return false;
     }
   }
 

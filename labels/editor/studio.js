@@ -467,9 +467,19 @@ export class LabelStudio {
   }
 
   _wireChrome() {
-    const closeStudio = () => this.close(true);
-    this.root.querySelectorAll("[data-back], [data-done]").forEach((btn) => {
-      btn.addEventListener("click", closeStudio);
+    this.root.querySelectorAll("[data-back]").forEach((btn) => {
+      btn.addEventListener("click", () => this.close(true));
+    });
+    this.root.querySelectorAll("[data-done]").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        // Done = save design then leave studio
+        try {
+          await this.save(false);
+        } catch (e) {
+          console.error("[studio] save on Done failed", e);
+        }
+        this.close(true);
+      });
     });
     this.root.querySelector("[data-save]")?.addEventListener("click", () => {
       void this.save(false);
