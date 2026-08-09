@@ -561,40 +561,56 @@ body.le-studio-open .tc-nav-drawer {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  overflow: hidden;
+  /* Handles sit slightly outside the box — never clip them. */
+  overflow: visible;
 }
 .le-handles { pointer-events: none; }
 .le-sel-box {
   position: absolute;
-  border: 1.5px solid #0d9488;
-  box-shadow: 0 0 0 1px rgba(255,255,255,.8);
-  pointer-events: auto;
+  border: 1px solid #0d9488;
+  box-shadow: 0 0 0 1px rgba(255,255,255,.75);
+  /* Outline only — must not steal clicks from resize handles. */
+  pointer-events: none;
+  box-sizing: border-box;
 }
 .le-hnd {
   position: absolute;
-  width: 9px;
-  height: 9px;
+  width: 6px;
+  height: 6px;
+  margin: 0;
+  padding: 0;
   background: #fff;
-  border: 1.5px solid #0f766e;
-  border-radius: 2px;
+  border: 1px solid #0f766e;
+  border-radius: 1px;
+  box-sizing: border-box;
   pointer-events: auto;
+  /* JS sets left/top at the anchor; center the square on that point. */
+  transform: translate(-50%, -50%);
+  z-index: 5;
 }
-.le-hnd-nw { left: -5px; top: -5px; cursor: nwse-resize; }
-.le-hnd-n { left: calc(50% - 4px); top: -5px; cursor: ns-resize; }
-.le-hnd-ne { right: -5px; top: -5px; cursor: nesw-resize; }
-.le-hnd-e { right: -5px; top: calc(50% - 4px); cursor: ew-resize; }
-.le-hnd-se { right: -5px; bottom: -5px; cursor: nwse-resize; }
-.le-hnd-s { left: calc(50% - 4px); bottom: -5px; cursor: ns-resize; }
-.le-hnd-sw { left: -5px; bottom: -5px; cursor: nesw-resize; }
-.le-hnd-w { left: -5px; top: calc(50% - 4px); cursor: ew-resize; }
+/* Invisible hit padding — small visual square, easier to grab. */
+.le-hnd::after {
+  content: "";
+  position: absolute;
+  inset: -5px;
+}
+/* Cursor only — never set left/right/top/bottom here (JS owns position). */
+.le-hnd-nw { cursor: nwse-resize; }
+.le-hnd-n { cursor: ns-resize; }
+.le-hnd-ne { cursor: nesw-resize; }
+.le-hnd-e { cursor: ew-resize; }
+.le-hnd-se { cursor: nwse-resize; }
+.le-hnd-s { cursor: ns-resize; }
+.le-hnd-sw { cursor: nesw-resize; }
+.le-hnd-w { cursor: ew-resize; }
 .le-hnd-rot {
-  left: calc(50% - 5px);
-  top: -22px;
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   cursor: grab;
   background: #0d9488;
+  border-color: #0f766e;
+  z-index: 6;
 }
 
 .lt-toolbar {

@@ -270,27 +270,58 @@ export class LabelStudio {
 
     this.guides.paint(this.el.canvas.getContext("2d"), doc, pxPerMm);
     this.guides.paintRulers(this.el.rulerH, this.el.rulerV, doc, pxPerMm);
-    this.paintHandles(doc, pxPerMm);
-    this.paintLayers();
-    this.paintInspector();
-    this.paintStatus();
+    this.paintHandles(doc);
+    // During live drag/resize, sync layer boxes in-place (no full re-render)
+    // and skip heavy side panels so handles stay responsive.
+    if (this._drag) {
+      this.syncLiveLayerGeometry(doc);
+      this.paintStatus();
+    } else {
+      this.paintLayers();
+      this.paintInspector();
+      this.paintStatus();
+    }
     const frameBtn = this.root.querySelector('[data-tool="page-frame"]');
     if (frameBtn) {
       frameBtn.classList.toggle("is-active", !doc.pageFrame || doc.pageFrame.enabled !== false);
     }
   }
 
+  /** Push current mm geometry onto already-rendered layer nodes (live drag). */
+  syncLiveLayerGeometry(doc) {
+    const host = this.el.host;
+    if (!host) return;
+    const cbox = contentBox(doc);
+    for (const ly of doc.layers) {
+      const node = host.querySelector(`[data-layer-id="${CSS.escape(ly.id)}"]`);
+      if (!node) continue;
+      node.style.left = `${cbox.ox + Number(ly.x)}mm`;
+      node.style.top = `${cbox.oy + Number(ly.y)}mm`;
+      node.style.width = `${Number(ly.w)}mm`;
+      node.style.height = `${Number(ly.h)}mm`;
+      if (ly.rotation) node.style.transform = `rotate(${ly.rotation}deg)`;
+      else node.style.transform = "";
+    }
+  }
+
   paintHandles(doc) {
     const host = this.el.handles;
     host.innerHTML = "";
+    const cbox = contentBox(doc);
     const selected = this.selection.selected(doc.layers).filter((l) => l.visible !== false);
     for (const ly of selected) {
+      const abs = {
+        x: cbox.ox + Number(ly.x),
+        y: cbox.oy + Number(ly.y),
+        w: Number(ly.w),
+        h: Number(ly.h)
+      };
       const box = document.createElement("div");
       box.className = "le-sel-box";
-      box.style.left = `${ly.x}mm`;
-      box.style.top = `${ly.y}mm`;
-      box.style.width = `${ly.w}mm`;
-      box.style.height = `${ly.h}mm`;
+      box.style.left = `${abs.x}mm`;
+      box.style.top = `${abs.y}mm`;
+      box.style.width = `${abs.w}mm`;
+      box.style.height = `${abs.h}mm`;
       if (ly.rotation) box.style.transform = `rotate(${ly.rotation}deg)`;
       host.appendChild(box);
 
@@ -301,14 +332,14 @@ export class LabelStudio {
           handle.dataset.handle = h;
           handle.dataset.layerId = ly.id;
           host.appendChild(handle);
-          positionHandle(handle, ly, h);
+          positionHandle(handle, abs, h);
         }
         const rot = document.createElement("div");
         rot.className = "le-hnd le-hnd-rot";
         rot.dataset.handle = "rot";
         rot.dataset.layerId = ly.id;
-        rot.style.left = `calc(${ly.x + ly.w / 2}mm - 5px)`;
-        rot.style.top = `calc(${ly.y}mm - 22px)`;
+        rot.style.left = `${abs.x + abs.w / 2}mm`;
+        rot.style.top = `calc(${abs.y}mm - 16px)`;
         host.appendChild(rot);
       }
     }
@@ -885,6 +916,8 @@ export class LabelStudio {
 
     const handle = e.target?.closest?.("[data-handle]");
     if (handle) {
+      e.preventDefault();
+      e.stopPropagation();
       const ly = this.doc.layers.find((l) => l.id === handle.dataset.layerId);
       if (!ly || ly.locked) return;
       this._drag = {
@@ -892,7 +925,13 @@ export class LabelStudio {
         handle: handle.dataset.handle,
         id: ly.id,
         start: this.clientToContentMm(e.clientX, e.clientY),
-        origin: { ...ly }
+        origin: {
+          x: Number(ly.x),
+          y: Number(ly.y),
+          w: Number(ly.w),
+          h: Number(ly.h),
+          rotation: Number(ly.rotation) || 0
+        }
       };
       this.el.wrap.setPointerCapture(e.pointerId);
       return;
@@ -978,13 +1017,13 @@ export class LabelStudio {
   _liveResize(id, handle, dx, dy) {
     const draft = cloneDocument(this.doc);
     const origin = this._drag.origin;
+    const box = contentBox(draft);
     draft.layers = draft.layers.map((l) => {
       if (l.id !== id) return l;
-      let { x, y, w, h } = origin;
-      x = Number(x);
-      y = Number(y);
-      w = Number(w);
-      h = Number(h);
+      let x = Number(origin.x);
+      let y = Number(origin.y);
+      let w = Number(origin.w);
+      let h = Number(origin.h);
       if (handle.includes("e")) w = Math.max(0.5, w + dx);
       if (handle.includes("s")) h = Math.max(0.5, h + dy);
       if (handle.includes("w")) {
@@ -997,9 +1036,14 @@ export class LabelStudio {
         y += h - nh;
         h = nh;
       }
+      // Keep inside printable box (same space as layer x/y).
+      w = Math.min(w, box.usableW);
+      h = Math.min(h, box.usableH);
+      x = Math.max(0, Math.min(x, Math.max(0, box.usableW - w)));
+      y = Math.max(0, Math.min(y, Math.max(0, box.usableH - h)));
       const next = { ...l, x, y, w, h };
       if (next.keepCentered) {
-        const c = centerLayerOnLabel(next, contentBox(draft));
+        const c = centerLayerOnLabel(next, box);
         next.x = c.x;
         next.y = c.y;
       }
@@ -1025,25 +1069,32 @@ export class LabelStudio {
       this.schedulePaint(false);
       return;
     }
+    // Commit into history; subscribe triggers a full paint so content matches.
     this.store.commit(this.store.get(), kind);
-    this.schedulePaint(false);
   }
 }
 
-function positionHandle(el, ly, h) {
+/** Position a handle at an absolute mm anchor (centered via CSS translate). */
+function positionHandle(el, abs, h) {
+  const x = Number(abs.x);
+  const y = Number(abs.y);
+  const w = Number(abs.w);
+  const hh = Number(abs.h);
   const map = {
-    nw: [`calc(${ly.x}mm - 5px)`, `calc(${ly.y}mm - 5px)`],
-    n: [`calc(${ly.x + ly.w / 2}mm - 4px)`, `calc(${ly.y}mm - 5px)`],
-    ne: [`calc(${ly.x + ly.w}mm - 5px)`, `calc(${ly.y}mm - 5px)`],
-    e: [`calc(${ly.x + ly.w}mm - 5px)`, `calc(${ly.y + ly.h / 2}mm - 4px)`],
-    se: [`calc(${ly.x + ly.w}mm - 5px)`, `calc(${ly.y + ly.h}mm - 5px)`],
-    s: [`calc(${ly.x + ly.w / 2}mm - 4px)`, `calc(${ly.y + ly.h}mm - 5px)`],
-    sw: [`calc(${ly.x}mm - 5px)`, `calc(${ly.y + ly.h}mm - 5px)`],
-    w: [`calc(${ly.x}mm - 5px)`, `calc(${ly.y + ly.h / 2}mm - 4px)`]
+    nw: [x, y],
+    n: [x + w / 2, y],
+    ne: [x + w, y],
+    e: [x + w, y + hh / 2],
+    se: [x + w, y + hh],
+    s: [x + w / 2, y + hh],
+    sw: [x, y + hh],
+    w: [x, y + hh / 2]
   };
   const [left, top] = map[h] || map.se;
-  el.style.left = left;
-  el.style.top = top;
+  el.style.left = `${left}mm`;
+  el.style.top = `${top}mm`;
+  el.style.right = "auto";
+  el.style.bottom = "auto";
 }
 
 function pageFrameInspectorHtml(doc, compact = false) {
