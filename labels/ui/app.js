@@ -3,24 +3,34 @@
  * Wires templates, studio, preview, print, picker, calibration.
  * Presentation only — document is the single source of truth.
  */
-import { LabelStudio } from "../editor/studio.js?v=24";
-import { LabelPreview } from "./preview.js?v=24";
-import { printLabels } from "../print/labels.js?v=24";
-import { createDocument, setPageMode } from "../core/document.js?v=24";
-import * as LabelApi from "../data/api.js?v=24";
+import { LabelStudio } from "../editor/studio.js?v=25";
+import { LabelPreview } from "./preview.js?v=25";
+import { printLabels } from "../print/labels.js?v=25";
+import { createDocument, setPageMode } from "../core/document.js?v=25";
+import * as LabelApi from "../data/api.js?v=25";
 import {
   getLastTemplateId,
   setLastTemplateId,
   loadCalibration
-} from "../data/storage.js?v=24";
-import { mountCalibrationWizard } from "../print/calibration.js?v=24";
-import { parseCodeLines, parseCsvCodes, itemsToText } from "../data/codes.js?v=24";
-import { parseServerTemplate } from "../data/serialize.js?v=24";
-import { ensureQrLibrary, ensureBarcodeLibrary } from "../render/engine.js?v=24";
+} from "../data/storage.js?v=25";
+import { mountCalibrationWizard } from "../print/calibration.js?v=25";
+import { parseCodeLines, parseCsvCodes, itemsToText } from "../data/codes.js?v=25";
+import { parseServerTemplate } from "../data/serialize.js?v=25";
+import { ensureQrLibrary, ensureBarcodeLibrary } from "../render/engine.js?v=25";
 
 function t(key, fallback) {
-  if (typeof TCI18N !== "undefined" && TCI18N.t) return TCI18N.t(key) || fallback || key;
+  if (typeof TCI18N !== "undefined" && TCI18N.t) {
+    const v = TCI18N.t(key);
+    // Missing keys resolve to the key string — prefer HTML/JS fallback then.
+    if (v && v !== key) return v;
+  }
   return fallback || key;
+}
+
+function titleCaseWords(s) {
+  return String(s || "")
+    .toLowerCase()
+    .replace(/\b([a-z\u0600-\u06FF])/g, (m) => m.toUpperCase());
 }
 
 function toast(msg, kind = "ok") {
@@ -385,15 +395,23 @@ export async function bootLabelApp() {
   });
 
   const pickerModal = document.getElementById("pickerModal");
+  const closePicker = () => {
+    pickerModal?.classList.remove("open");
+    if (pickerModal) pickerModal.style.zIndex = "";
+  };
   document.getElementById("btnPickPeople")?.addEventListener("click", () =>
     openPicker({ mode: "people", tab: "people" })
   );
   document.getElementById("btnPickByCategory")?.addEventListener("click", () =>
     openPicker({ mode: "catalog", tab: "tools" })
   );
-  document.getElementById("btnClosePicker")?.addEventListener("click", () =>
-    pickerModal?.classList.remove("open")
-  );
+  document.getElementById("btnClosePicker")?.addEventListener("click", closePicker);
+  pickerModal?.addEventListener("click", (e) => {
+    if (e.target === pickerModal) closePicker();
+  });
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && pickerModal?.classList.contains("open")) closePicker();
+  });
 
   function setPickerChrome(mode) {
     const tabs = document.getElementById("pickerTabs");
@@ -402,26 +420,28 @@ export async function bootLabelApp() {
     const title = document.getElementById("pickerTitle");
     const hint = document.getElementById("pickerHint");
     const search = document.getElementById("pickerSearch");
+    const modal = pickerModal?.querySelector(".ql-picker-modal");
 
     if (tabs) tabs.hidden = mode !== "all";
     if (peopleF) peopleF.hidden = mode !== "people";
     if (catalogF) catalogF.hidden = mode !== "catalog";
+    if (modal) modal.dataset.mode = mode;
 
     if (mode === "people") {
       if (title) title.textContent = t("printPeopleTitle", "Print people");
       if (hint)
         hint.textContent = t(
           "printPeopleHint",
-          "Filter by supplier or status, search, then add to the print queue."
+          "Filter, search, select workers, then add them to the print queue."
         );
       if (search)
         search.placeholder = t("searchPeople", "Search code, name, residence, phone…");
     } else if (mode === "catalog") {
-      if (title) title.textContent = t("printByCategoryTitle", "Print by category");
+      if (title) title.textContent = t("printByCategoryTitle", "Print from catalog");
       if (hint)
         hint.textContent = t(
           "printByCategoryHint",
-          "Choose category → sub-category → item, search, then add to the print queue."
+          "Narrow by category, then select items to print."
         );
       if (search)
         search.placeholder = t("searchCatalog", "Search code, name, category…");
@@ -430,9 +450,33 @@ export async function bootLabelApp() {
       if (hint)
         hint.textContent = t(
           "pickItemsHint",
-          "Search, tick what you need, or select all filtered."
+          "Search, select what you need, then add to the queue."
         );
       if (search) search.placeholder = t("search", "Search…");
+    }
+
+    // Keep static <option> labels translated / human-readable.
+    const statusSel = document.getElementById("peopleStatusFilter");
+    if (statusSel) {
+      const map = {
+        all: t("allPeople", "All people"),
+        holding: t("holdingTools", "Holding tools"),
+        never: t("neverTookTools", "Never took tools")
+      };
+      [...statusSel.options].forEach((o) => {
+        if (map[o.value]) o.textContent = map[o.value];
+      });
+    }
+    const kindSel = document.getElementById("kindFilter");
+    if (kindSel) {
+      const map = {
+        all: t("toolsConsumables", "Tools + consumables"),
+        tools: t("toolsOnly", "Tools only"),
+        consumables: t("consumablesOnly", "Consumables only")
+      };
+      [...kindSel.options].forEach((o) => {
+        if (map[o.value]) o.textContent = map[o.value];
+      });
     }
   }
 
@@ -686,33 +730,74 @@ export async function bootLabelApp() {
     });
   }
 
+  function pickerRowHtml(it) {
+    const checked = pickerTicks.has(it.code) ? "checked" : "";
+    const code = escapeHtml(it.code);
+    if (it.kind === "person") {
+      const name = escapeHtml(titleCaseWords(it.name || it.code));
+      const bits = [it.supplierName, it.residenceNo, it.phone]
+        .filter(Boolean)
+        .map((x) => titleCaseWords(x));
+      if (Number(it.toolsHeldCount) > 0) {
+        bits.push(
+          t("holdingNTools", "{n} tools held").replace("{n}", String(it.toolsHeldCount))
+        );
+      } else if (it.neverTookTools) {
+        bits.push(t("neverTookTools", "Never took tools"));
+      }
+      const sub = bits.length ? `<span class="ql-picker-sub">${escapeHtml(bits.join(" · "))}</span>` : "";
+      return `<label class="ql-picker-row">
+        <input type="checkbox" data-code="${code}" ${checked}>
+        <span class="ql-picker-code">${code}</span>
+        <span class="ql-picker-main">
+          <span class="ql-picker-name">${name}</span>
+          ${sub}
+        </span>
+      </label>`;
+    }
+
+    const cat = String(document.getElementById("catFilter")?.value || "");
+    const sub = String(document.getElementById("subFilter")?.value || "");
+    const itemFilter = String(document.getElementById("itemFilter")?.value || "");
+    const name = escapeHtml(titleCaseWords(it.name || it.item || it.code));
+    // Avoid repeating filters already chosen above the list.
+    const pathBits = [];
+    if (!cat && it.category) pathBits.push(it.category);
+    if (!sub && it.subcategory) pathBits.push(it.subcategory);
+    if (!itemFilter && it.item && titleCaseWords(it.item) !== titleCaseWords(it.name || "")) {
+      pathBits.push(it.item);
+    }
+    const kindLabel =
+      it.kind === "consumable"
+        ? t("consumables", "Consumables")
+        : t("products", "Tools");
+    const subLine = [...pathBits.map(titleCaseWords), kindLabel].filter(Boolean);
+    const subHtml = subLine.length
+      ? `<span class="ql-picker-sub">${escapeHtml(subLine.join(" · "))}</span>`
+      : "";
+    return `<label class="ql-picker-row">
+      <input type="checkbox" data-code="${code}" ${checked}>
+      <span class="ql-picker-code">${code}</span>
+      <span class="ql-picker-main">
+        <span class="ql-picker-name">${name}</span>
+        ${subHtml}
+      </span>
+    </label>`;
+  }
+
   function renderPickerList() {
     const list = document.getElementById("pickerList");
     const meta = document.getElementById("pickerMeta");
     if (!list) return;
     const items = filteredPickerItems();
     if (meta) {
-      meta.textContent = t("pickerShowing", "Showing {n} of {total}")
+      meta.textContent = t("pickerShowing", "{n} of {total}")
         .replace("{n}", String(items.length))
         .replace("{total}", String(pickerItems.length));
     }
     list.innerHTML =
-      items
-        .map((it) => {
-          let detail = it.name || "";
-          if (it.kind === "person") {
-            const bits = [it.supplierName, it.residenceNo, it.phone].filter(Boolean);
-            if (bits.length) detail += ` · ${bits.join(" · ")}`;
-          } else {
-            const path = [it.category, it.subcategory, it.item].filter(Boolean).join(" / ");
-            if (path) detail = `${path} · ${detail}`;
-          }
-          return `<label class="ql-picker-row">
-        <input type="checkbox" data-code="${escapeHtml(it.code)}" ${pickerTicks.has(it.code) ? "checked" : ""}>
-        <span><strong>${escapeHtml(it.code)}</strong> · ${escapeHtml(detail)}</span>
-      </label>`;
-        })
-        .join("") || `<div class="ql-hint">${t("noResults", "No results")}</div>`;
+      items.map(pickerRowHtml).join("") ||
+      `<div class="ql-picker-empty">${t("noResults", "No results")}</div>`;
     list.querySelectorAll("input[type=checkbox]").forEach((cb) => {
       cb.onchange = () => {
         if (cb.checked) pickerTicks.add(cb.dataset.code);
@@ -770,7 +855,7 @@ export async function bootLabelApp() {
     if (mode === "replace") ta.value = text;
     else ta.value = ta.value.trim() ? ta.value.trim() + "\n" + text : text;
     updateSelectedBar();
-    pickerModal?.classList.remove("open");
+    closePicker();
     toast(
       t("queuedNItems", "Queued {n} item(s)").replace("{n}", String(finalList.length)),
       "ok"

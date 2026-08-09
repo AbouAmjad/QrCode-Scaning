@@ -8,13 +8,13 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="app.css?v=themes1">
-  <link rel="stylesheet" href="labels/ui/styles.css?v=24">
+  <link rel="stylesheet" href="labels/ui/styles.css?v=25">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#0f766e">
   <script src="labels/vendor/qr-code-styling.js" id="qrLibScript"></script>
   <script src="labels/vendor/jsbarcode.min.js"></script>
   <script src="config.js?v=themes1"></script>
-  <script src="i18n.js?v=studio15"></script>
+  <script src="i18n.js?v=25"></script>
   <script src="ui.js?v=live"></script>
 </head>
 <body class="tc-page ql-page">
@@ -101,22 +101,33 @@
               <h2><span class="ql-step">2</span> <i class="bi bi-qr-code"></i> <span data-i18n="generateLabels">Codes to print</span></h2>
             </div>
 
-            <div class="ql-pick-grid">
-              <button type="button" class="ql-pick-card" id="btnPickPeople">
-                <i class="bi bi-people"></i>
-                <strong data-i18n="printPeople">Print people…</strong>
-                <span data-i18n="printPeopleHintShort">Filter + search workers</span>
-              </button>
-              <button type="button" class="ql-pick-card" id="btnPickByCategory">
-                <i class="bi bi-diagram-3"></i>
-                <strong data-i18n="printByCategory">By category…</strong>
-                <span data-i18n="printByCategoryHintShort">Category → sub → item</span>
-              </button>
-              <button type="button" class="ql-pick-card ghost" id="btnImportCsv" title="Import CSV / TSV">
-                <i class="bi bi-filetype-csv"></i>
-                <strong>Import CSV</strong>
-                <span>code, name columns</span>
-              </button>
+            <div class="ql-add-codes">
+              <p class="ql-add-codes-label" data-i18n="addCodesFrom">Add codes from</p>
+              <div class="ql-add-codes-actions">
+                <button type="button" class="ql-add-btn" id="btnPickPeople">
+                  <span class="ql-add-btn-icon" aria-hidden="true"><i class="bi bi-people"></i></span>
+                  <span class="ql-add-btn-copy">
+                    <strong data-i18n="printPeople">People</strong>
+                    <small data-i18n="printPeopleHintShort">Filter by supplier or status, then pick workers</small>
+                  </span>
+                  <i class="bi bi-chevron-right ql-add-btn-chevron" aria-hidden="true"></i>
+                </button>
+                <button type="button" class="ql-add-btn" id="btnPickByCategory">
+                  <span class="ql-add-btn-icon" aria-hidden="true"><i class="bi bi-diagram-3"></i></span>
+                  <span class="ql-add-btn-copy">
+                    <strong data-i18n="printByCategory">Catalog</strong>
+                    <small data-i18n="printByCategoryHintShort">Browse category → sub → item</small>
+                  </span>
+                  <i class="bi bi-chevron-right ql-add-btn-chevron" aria-hidden="true"></i>
+                </button>
+                <button type="button" class="ql-add-btn ql-add-btn-muted" id="btnImportCsv" title="Import CSV / TSV">
+                  <span class="ql-add-btn-icon" aria-hidden="true"><i class="bi bi-filetype-csv"></i></span>
+                  <span class="ql-add-btn-copy">
+                    <strong data-i18n="importCsv">Import CSV</strong>
+                    <small data-i18n="importCsvHint">Paste a file with code and name columns</small>
+                  </span>
+                </button>
+              </div>
               <input type="file" id="csvFile" accept=".csv,.tsv,.txt,text/csv,text/tab-separated-values" hidden>
             </div>
 
@@ -125,6 +136,7 @@
               <span data-i18n="itemsQueued">in queue</span>
             </div>
 
+            <label class="ql-codes-label" for="codes" data-i18n="printQueue">Print queue</label>
             <textarea id="codes" rows="6" placeholder="P001 | Ahmad&#10;I1001 | Hammer"></textarea>
             <p class="ql-hint" data-i18n="labelsCodesHint">Add codes, then generate a print preview.</p>
 
@@ -174,74 +186,92 @@
 
   <!-- Picker -->
   <div class="tc-modal-backdrop" id="pickerModal">
-    <div class="tc-modal ql-picker-modal">
-      <div class="tc-modal-head d-flex justify-content-between">
-        <div>
+    <div class="tc-modal ql-picker-modal" role="dialog" aria-modal="true" aria-labelledby="pickerTitle">
+      <div class="tc-modal-head ql-picker-head">
+        <div class="ql-picker-head-text">
           <h3 class="h5 mb-1" id="pickerTitle" data-i18n="pickItemsTitle">Choose what to print</h3>
-          <p class="tc-text-muted small mb-0" id="pickerHint" data-i18n="pickItemsHint">Search, tick what you need, or select all filtered.</p>
+          <p class="tc-text-muted small mb-0" id="pickerHint" data-i18n="pickItemsHint">Search, select what you need, then add to the queue.</p>
         </div>
-        <button type="button" class="tc-btn tc-btn-sm" id="btnClosePicker"><i class="bi bi-x-lg"></i></button>
+        <button type="button" class="tc-btn tc-btn-sm" id="btnClosePicker" aria-label="Close"><i class="bi bi-x-lg"></i></button>
       </div>
-      <div class="tc-modal-body">
+      <div class="tc-modal-body ql-picker-body">
         <div class="ql-picker-tabs" id="pickerTabs">
           <button type="button" data-tab="people" data-i18n="people">People</button>
           <button type="button" class="active" data-tab="tools" data-i18n="products">Tools</button>
           <button type="button" data-tab="consumables" data-i18n="consumables">Consumables</button>
         </div>
 
-        <div class="ql-picker-filters" id="peopleFilters" hidden>
-          <label>
-            <span data-i18n="supplier">Supplier</span>
-            <select id="peopleSupplierFilter">
-              <option value="">All suppliers</option>
-            </select>
+        <div class="ql-picker-toolbar">
+          <label class="ql-picker-search">
+            <i class="bi bi-search" aria-hidden="true"></i>
+            <input type="search" id="pickerSearch" placeholder="Search…" autocomplete="off">
           </label>
-          <label>
-            <span data-i18n="peopleStatusFilter">Status</span>
-            <select id="peopleStatusFilter">
-              <option value="all">All people</option>
-              <option value="holding">Holding tools</option>
-              <option value="never">Never took tools</option>
-            </select>
-          </label>
+
+          <div class="ql-picker-filters" id="peopleFilters" hidden>
+            <label>
+              <span data-i18n="supplier">Supplier</span>
+              <select id="peopleSupplierFilter">
+                <option value="">All suppliers</option>
+              </select>
+            </label>
+            <label>
+              <span data-i18n="status">Status</span>
+              <select id="peopleStatusFilter">
+                <option value="all" data-i18n="allPeople">All people</option>
+                <option value="holding" data-i18n="holdingTools">Holding tools</option>
+                <option value="never" data-i18n="neverTookTools">Never took tools</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="ql-picker-filters ql-picker-filters-catalog" id="catalogFilters" hidden>
+            <label>
+              <span data-i18n="category">Category</span>
+              <select id="catFilter"><option value="">All categories</option></select>
+            </label>
+            <label>
+              <span data-i18n="subcategory">Sub-category</span>
+              <select id="subFilter"><option value="">All sub-categories</option></select>
+            </label>
+            <label>
+              <span data-i18n="item">Item</span>
+              <select id="itemFilter"><option value="">All items</option></select>
+            </label>
+            <label>
+              <span data-i18n="kind">Kind</span>
+              <select id="kindFilter">
+                <option value="all" data-i18n="toolsConsumables">Tools + consumables</option>
+                <option value="tools" data-i18n="toolsOnly">Tools only</option>
+                <option value="consumables" data-i18n="consumablesOnly">Consumables only</option>
+              </select>
+            </label>
+          </div>
         </div>
 
-        <div class="ql-picker-filters" id="catalogFilters" hidden>
-          <label>
-            <span data-i18n="category">Category</span>
-            <select id="catFilter"><option value="">All categories</option></select>
-          </label>
-          <label>
-            <span data-i18n="subcategory">Sub-category</span>
-            <select id="subFilter"><option value="">All sub-categories</option></select>
-          </label>
-          <label>
-            <span data-i18n="itemType">Item</span>
-            <select id="itemFilter"><option value="">All items</option></select>
-          </label>
-          <label>
-            <span data-i18n="kind">Kind</span>
-            <select id="kindFilter">
-              <option value="all">Tools + consumables</option>
-              <option value="tools">Tools only</option>
-              <option value="consumables">Consumables only</option>
-            </select>
-          </label>
+        <div class="ql-picker-meta-bar">
+          <div class="ql-picker-meta" id="pickerMeta"></div>
+          <div class="ql-picker-meta-actions">
+            <button type="button" class="tc-btn tc-btn-sm" id="btnSelectFiltered">
+              <i class="bi bi-check2-all"></i> <span data-i18n="selectFiltered">Select visible</span>
+            </button>
+            <button type="button" class="tc-btn tc-btn-sm" id="btnClearSelection">
+              <i class="bi bi-x-circle"></i> <span data-i18n="clearSelection">Clear selection</span>
+            </button>
+          </div>
         </div>
 
-        <div class="d-flex flex-wrap gap-2 mb-2">
-          <input type="search" id="pickerSearch" class="tc-search form-control" placeholder="Search…">
-          <button type="button" class="tc-btn" id="btnSelectFiltered"><i class="bi bi-check2-all"></i> <span data-i18n="selectFiltered">Select filtered</span></button>
-          <button type="button" class="tc-btn" id="btnClearSelection"><i class="bi bi-square"></i> <span data-i18n="clearSelection">Clear</span></button>
-        </div>
-        <div class="ql-picker-meta" id="pickerMeta"></div>
         <div class="ql-picker-list" id="pickerList"></div>
       </div>
-      <div class="tc-modal-foot d-flex justify-content-between align-items-center">
-        <div><span id="pickerTickCount">0</span> <span data-i18n="selected">selected</span></div>
-        <div class="d-flex gap-2">
+      <div class="tc-modal-foot ql-picker-foot">
+        <div class="ql-picker-selected">
+          <strong id="pickerTickCount">0</strong>
+          <span data-i18n="selected">selected</span>
+        </div>
+        <div class="ql-picker-foot-actions">
           <button type="button" class="tc-btn" id="btnApplyReplace" data-i18n="replaceQueue">Replace queue</button>
-          <button type="button" class="tc-btn tc-btn-primary" id="btnApplyAdd"><i class="bi bi-plus-lg"></i> <span data-i18n="addToQueue">Add to queue</span></button>
+          <button type="button" class="tc-btn tc-btn-primary" id="btnApplyAdd">
+            <i class="bi bi-plus-lg"></i> <span data-i18n="addToQueue">Add to queue</span>
+          </button>
         </div>
       </div>
     </div>
@@ -261,7 +291,7 @@
   <div id="editorHost"></div>
 
   <script type="module">
-    import { bootLabelApp } from "./labels/ui/app.js?v=24";
+    import { bootLabelApp } from "./labels/ui/app.js?v=25";
 
     document.addEventListener("DOMContentLoaded", () => {
       const start = async () => {
