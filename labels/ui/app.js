@@ -3,20 +3,20 @@
  * Wires templates, studio, preview, print, picker, calibration.
  * Presentation only — document is the single source of truth.
  */
-import { LabelStudio } from "../editor/studio.js?v=25";
-import { LabelPreview } from "./preview.js?v=25";
-import { printLabels } from "../print/labels.js?v=25";
-import { createDocument, setPageMode } from "../core/document.js?v=25";
-import * as LabelApi from "../data/api.js?v=25";
+import { LabelStudio } from "../editor/studio.js?v=26";
+import { LabelPreview } from "./preview.js?v=26";
+import { printLabels } from "../print/labels.js?v=26";
+import { createDocument, setPageMode } from "../core/document.js?v=26";
+import * as LabelApi from "../data/api.js?v=26";
 import {
   getLastTemplateId,
   setLastTemplateId,
   loadCalibration
-} from "../data/storage.js?v=25";
-import { mountCalibrationWizard } from "../print/calibration.js?v=25";
-import { parseCodeLines, parseCsvCodes, itemsToText } from "../data/codes.js?v=25";
-import { parseServerTemplate } from "../data/serialize.js?v=25";
-import { ensureQrLibrary, ensureBarcodeLibrary } from "../render/engine.js?v=25";
+} from "../data/storage.js?v=26";
+import { mountCalibrationWizard } from "../print/calibration.js?v=26";
+import { parseCodeLines, parseCsvCodes, itemsToText } from "../data/codes.js?v=26";
+import { parseServerTemplate } from "../data/serialize.js?v=26";
+import { ensureQrLibrary, ensureBarcodeLibrary } from "../render/engine.js?v=26";
 
 function t(key, fallback) {
   if (typeof TCI18N !== "undefined" && TCI18N.t) {
@@ -759,6 +759,7 @@ export async function bootLabelApp() {
     const cat = String(document.getElementById("catFilter")?.value || "");
     const sub = String(document.getElementById("subFilter")?.value || "");
     const itemFilter = String(document.getElementById("itemFilter")?.value || "");
+    const kindFilter = String(document.getElementById("kindFilter")?.value || "all");
     const name = escapeHtml(titleCaseWords(it.name || it.item || it.code));
     // Avoid repeating filters already chosen above the list.
     const pathBits = [];
@@ -767,11 +768,15 @@ export async function bootLabelApp() {
     if (!itemFilter && it.item && titleCaseWords(it.item) !== titleCaseWords(it.name || "")) {
       pathBits.push(it.item);
     }
-    const kindLabel =
-      it.kind === "consumable"
-        ? t("consumables", "Consumables")
-        : t("products", "Tools");
-    const subLine = [...pathBits.map(titleCaseWords), kindLabel].filter(Boolean);
+    const subLine = pathBits.map(titleCaseWords);
+    // Only show kind when the kind filter is broad (avoids "Consumables … Consumables").
+    if (kindFilter === "all") {
+      subLine.push(
+        it.kind === "consumable"
+          ? t("consumables", "Consumables")
+          : t("products", "Tools")
+      );
+    }
     const subHtml = subLine.length
       ? `<span class="ql-picker-sub">${escapeHtml(subLine.join(" · "))}</span>`
       : "";
