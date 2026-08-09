@@ -3,92 +3,325 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ToolCustody | QR Labels</title>
+  <title>AbouAmjad Store System | QR Labels</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="app.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="app.css?v=themes1">
+  <link rel="stylesheet" href="labels/ui/styles.css?v=26">
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#1e3a5f">
-  <script src="config.js"></script>
-  <script src="ui.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
-  <style>
-    @media print {
-      .tc-topbar, .tc-page-head, .no-print { display: none !important; }
-      .label-sheet { box-shadow: none !important; border: none !important; }
-    }
-    .label-sheet { display: flex; flex-wrap: wrap; gap: 1rem; }
-    .qr-label {
-      width: 180px; padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 12px;
-      text-align: center; background: #fff; color: #0f172a;
-    }
-    .qr-label canvas, .qr-label img { width: 140px; height: 140px; }
-    .qr-label strong { display: block; margin-top: 0.35rem; font-size: 0.95rem; }
-    .qr-label small { color: #64748b; }
-  </style>
+  <meta name="theme-color" content="#0f766e">
+  <script src="labels/vendor/qr-code-styling.js" id="qrLibScript"></script>
+  <script src="labels/vendor/jsbarcode.min.js"></script>
+  <script src="config.js?v=themes1"></script>
+  <script src="i18n.js?v=26"></script>
+  <script src="ui.js?v=live"></script>
 </head>
-<body class="tc-page">
+<body class="tc-page ql-page">
   <div class="tc-wrap">
     <div class="tc-shell">
       <div id="app-header"></div>
-      <div class="tc-card no-print mb-4">
-        <span class="tc-section-badge"><i class="bi bi-qr-code"></i> Generate labels</span>
-        <div class="row g-3 mt-1 align-items-end">
-          <div class="col-md-4"><label class="form-label">Codes (one per line)</label>
-            <textarea id="codes" class="form-control" rows="5" placeholder="P001&#10;I1001&#10;OUT"></textarea>
-          </div>
-          <div class="col-md-4"><label class="form-label">Optional title under code</label>
-            <input id="subtitle" class="form-control" placeholder="Abu Amjad Store">
-          </div>
-          <div class="col-md-4 d-flex gap-2">
-            <button class="tc-btn tc-btn-primary" id="btnGen"><i class="bi bi-magic"></i> Generate</button>
-            <button class="tc-btn" id="btnPrint"><i class="bi bi-printer"></i> Print</button>
-          </div>
+
+      <div class="ql-grid">
+        <!-- Templates -->
+        <section class="ql-panel ql-panel-templates">
+          <h2><i class="bi bi-bookmark-star"></i> <span data-i18n="savedTemplates">Saved templates</span></h2>
+          <button type="button" class="tc-btn tc-btn-primary w-100 mb-2" id="btnNewTpl">
+            <i class="bi bi-plus-lg"></i> <span data-i18n="newTemplate">New template</span>
+          </button>
+          <div class="ql-tpl-list" id="tplList"></div>
+          <p class="ql-hint" data-i18n="templatesHint">Pick a template, then design it in Studio or print codes.</p>
+        </section>
+
+        <!-- Print flow -->
+        <div class="ql-main-col">
+          <section class="ql-panel ql-panel-setup">
+            <div class="ql-active-bar">
+              <div class="ql-active-name">
+                <span class="ql-step">1</span>
+                <div>
+                  <div class="fw-bold" id="activeNameLabel" data-i18n="unsavedTemplate">New unsaved template</div>
+                  <div class="ql-active-meta">
+                    <span class="ql-mode-chip" id="activeModeChip">
+                      <i class="bi bi-printer"></i> <span id="activeModeChipTxt">Thermal</span>
+                    </span>
+                    <span id="activeMeta"></span>
+                    <span id="calibChip" title="Active printer profile"></span>
+                  </div>
+                </div>
+              </div>
+              <button type="button" class="tc-btn tc-btn-primary" id="btnOpenStudio">
+                <i class="bi bi-vector-pen"></i>
+                <span data-i18n="openDesignStudio">Open Design Studio</span>
+              </button>
+            </div>
+
+            <div class="ql-setup-block">
+              <h2><i class="bi bi-printer"></i> <span data-i18n="printMode">Print mode</span></h2>
+              <div class="ql-print-mode" id="printMode">
+                <button type="button" class="ql-mode-card" data-mode="a4" id="modeA4">
+                  <div class="t"><i class="bi bi-file-earmark"></i> <span data-i18n="modeA4Sheet">A4 sheet</span></div>
+                  <div class="s" data-i18n="modeA4SheetHint">Many labels · columns & gaps</div>
+                </button>
+                <button type="button" class="ql-mode-card" data-mode="a3" id="modeA3">
+                  <div class="t"><i class="bi bi-file-earmark-richtext"></i> <span data-i18n="modeA3Sheet">A3 sheet</span></div>
+                  <div class="s" data-i18n="modeA3SheetHint">Larger page · more per sheet</div>
+                </button>
+                <button type="button" class="ql-mode-card active" data-mode="thermal" id="modeThermal">
+                  <div class="t"><i class="bi bi-receipt"></i> <span data-i18n="modeThermalRoll">Thermal roll</span></div>
+                  <div class="s" data-i18n="modeThermalRollHint">One sticker per page</div>
+                </button>
+              </div>
+            </div>
+
+            <div class="ql-setup-block">
+              <h2><i class="bi bi-aspect-ratio"></i> <span data-i18n="templateSize">Label size (mm)</span></h2>
+              <div class="ql-fields ql-fields-size">
+                <label><span data-i18n="labelW">Width</span><input id="cW" type="number" min="15" max="300" step="0.5" value="50"></label>
+                <label><span data-i18n="labelH">Height</span><input id="cH" type="number" min="10" max="300" step="0.5" value="30"></label>
+              </div>
+              <div class="ql-fields" id="sheetFields">
+                <label id="orientField"><span data-i18n="pageOrient">Orientation</span>
+                  <select id="cOrient">
+                    <option value="portrait">Portrait</option>
+                    <option value="landscape">Landscape</option>
+                  </select>
+                </label>
+                <label id="colsField"><span data-i18n="cols">Columns</span><input id="cCols" type="number" min="1" max="12" value="4"></label>
+                <label id="rowsField"><span data-i18n="rows">Rows</span><input id="cRows" type="number" min="1" max="20" value="6"></label>
+                <label><span data-i18n="gapMm">Gap</span><input id="cGap" type="number" min="0" max="30" step="0.5" value="0"></label>
+                <label><span data-i18n="marginMm">Inner margin</span><input id="cMargin" type="number" min="0" max="20" step="0.5" value="0"></label>
+              </div>
+              <p class="ql-hint" data-i18n="designInStudioHint">Save, Save as, calibrate, and choose sample items are inside Design Studio.</p>
+            </div>
+          </section>
+
+          <section class="ql-panel ql-panel-codes">
+            <div class="ql-section-head">
+              <h2><span class="ql-step">2</span> <i class="bi bi-qr-code"></i> <span data-i18n="generateLabels">Codes to print</span></h2>
+            </div>
+
+            <div class="ql-add-codes">
+              <p class="ql-add-codes-label" data-i18n="addCodesFrom">Add codes from</p>
+              <div class="ql-add-codes-actions">
+                <button type="button" class="ql-add-btn" id="btnPickPeople">
+                  <span class="ql-add-btn-icon" aria-hidden="true"><i class="bi bi-people"></i></span>
+                  <span class="ql-add-btn-copy">
+                    <strong data-i18n="printPeople">People</strong>
+                    <small data-i18n="printPeopleHintShort">Filter by supplier or status, then pick workers</small>
+                  </span>
+                  <i class="bi bi-chevron-right ql-add-btn-chevron" aria-hidden="true"></i>
+                </button>
+                <button type="button" class="ql-add-btn" id="btnPickByCategory">
+                  <span class="ql-add-btn-icon" aria-hidden="true"><i class="bi bi-diagram-3"></i></span>
+                  <span class="ql-add-btn-copy">
+                    <strong data-i18n="printByCategory">Catalog</strong>
+                    <small data-i18n="printByCategoryHintShort">Browse category → sub → item</small>
+                  </span>
+                  <i class="bi bi-chevron-right ql-add-btn-chevron" aria-hidden="true"></i>
+                </button>
+                <button type="button" class="ql-add-btn ql-add-btn-muted" id="btnImportCsv" title="Import CSV / TSV">
+                  <span class="ql-add-btn-icon" aria-hidden="true"><i class="bi bi-filetype-csv"></i></span>
+                  <span class="ql-add-btn-copy">
+                    <strong data-i18n="importCsv">Import CSV</strong>
+                    <small data-i18n="importCsvHint">Paste a file with code and name columns</small>
+                  </span>
+                </button>
+              </div>
+              <input type="file" id="csvFile" accept=".csv,.tsv,.txt,text/csv,text/tab-separated-values" hidden>
+            </div>
+
+            <div class="ql-selected-bar" id="selectedBar" hidden>
+              <span id="selectedCount">0</span>
+              <span data-i18n="itemsQueued">in queue</span>
+            </div>
+
+            <label class="ql-codes-label" for="codes" data-i18n="printQueue">Print queue</label>
+            <textarea id="codes" rows="6" placeholder="P001 | Ahmad&#10;I1001 | Hammer"></textarea>
+            <p class="ql-hint" data-i18n="labelsCodesHint">Add codes, then generate a print preview.</p>
+
+            <div class="ql-actions ql-actions-end">
+              <button class="tc-btn" id="btnClear">
+                <i class="bi bi-x-lg"></i> <span data-i18n="clearLabels">Clear</span>
+              </button>
+              <button class="tc-btn tc-btn-primary tc-btn-lg" id="btnGen">
+                <i class="bi bi-magic"></i> <span data-i18n="generate">Generate / Print preview</span>
+              </button>
+            </div>
+          </section>
         </div>
       </div>
-      <div id="labels" class="label-sheet"></div>
     </div>
   </div>
-  <script>
-    document.addEventListener("DOMContentLoaded", () => TCUI.bootPage(() => {
-      TCUI.mountHeader("app-header", {
-        active: "labels", title: "QR / Barcode Labels",
-        subtitle: "Generate and print stickers for Person · Direction · Tools",
-        icon: "bi-qr-code"
-      });
-      document.getElementById("btnGen").onclick = generate;
-      document.getElementById("btnPrint").onclick = () => window.print();
-    }, { minRole: "store_keeper" }));
 
-    async function generate() {
-      const host = document.getElementById("labels");
-      host.innerHTML = "";
-      const lines = document.getElementById("codes").value.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
-      const sub = document.getElementById("subtitle").value.trim();
-      if (!lines.length) { TCUI.toast("Enter at least one code", "err"); return; }
-      if (typeof QRCode === "undefined") { TCUI.toast("QR library failed to load", "err"); return; }
-      for (const code of lines) {
-        const card = document.createElement("div");
-        card.className = "qr-label";
-        const canvas = document.createElement("canvas");
-        card.appendChild(canvas);
-        const strong = document.createElement("strong");
-        strong.textContent = code.toUpperCase();
-        card.appendChild(strong);
-        if (sub) {
-          const small = document.createElement("small");
-          small.textContent = sub;
-          card.appendChild(small);
+  <!-- Preview -->
+  <div class="tc-modal-backdrop" id="previewModal">
+    <div class="tc-modal preview-modal" role="dialog" aria-modal="true">
+      <div class="tc-modal-head d-flex align-items-start justify-content-between gap-2">
+        <div>
+          <h3 class="h5 mb-0" id="previewModalTitle"><i class="bi bi-eye"></i> <span data-i18n="printPreview">Print preview</span></h3>
+          <p class="tc-text-muted small mb-0 mt-1">Same renderer as print — no editor guides.</p>
+        </div>
+        <span class="ql-chip badge text-bg-light text-dark" id="previewMeta"></span>
+        <button type="button" class="tc-btn tc-btn-sm" id="btnClosePreview"><i class="bi bi-x-lg"></i></button>
+      </div>
+      <div class="tc-modal-body">
+        <div id="labels" class="label-sheet empty">
+          <span class="labels-empty-msg" data-i18n="labelsPreviewEmpty">Generate labels to preview</span>
+        </div>
+      </div>
+      <div class="tc-modal-foot d-flex flex-wrap align-items-center gap-2 justify-content-between">
+        <label class="d-flex align-items-center gap-2 mb-0">
+          <input type="checkbox" id="previewFlip">
+          <span data-i18n="previewFlip">Flip alternate labels</span>
+        </label>
+        <div class="d-flex gap-2">
+          <button type="button" class="tc-btn tc-btn-primary" id="btnPrint">
+            <i class="bi bi-printer"></i> <span data-i18n="print">Print</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Picker -->
+  <div class="tc-modal-backdrop" id="pickerModal">
+    <div class="tc-modal ql-picker-modal" role="dialog" aria-modal="true" aria-labelledby="pickerTitle">
+      <div class="tc-modal-head ql-picker-head">
+        <div class="ql-picker-head-text">
+          <h3 class="h5 mb-1" id="pickerTitle" data-i18n="pickItemsTitle">Choose what to print</h3>
+          <p class="tc-text-muted small mb-0" id="pickerHint" data-i18n="pickItemsHint">Search, select what you need, then add to the queue.</p>
+        </div>
+        <button type="button" class="tc-btn tc-btn-sm" id="btnClosePicker" aria-label="Close"><i class="bi bi-x-lg"></i></button>
+      </div>
+      <div class="tc-modal-body ql-picker-body">
+        <div class="ql-picker-tabs" id="pickerTabs">
+          <button type="button" data-tab="people" data-i18n="people">People</button>
+          <button type="button" class="active" data-tab="tools" data-i18n="products">Tools</button>
+          <button type="button" data-tab="consumables" data-i18n="consumables">Consumables</button>
+        </div>
+
+        <div class="ql-picker-toolbar">
+          <label class="ql-picker-search">
+            <i class="bi bi-search" aria-hidden="true"></i>
+            <input type="search" id="pickerSearch" placeholder="Search…" autocomplete="off">
+          </label>
+
+          <div class="ql-picker-filters" id="peopleFilters" hidden>
+            <label>
+              <span data-i18n="supplier">Supplier</span>
+              <select id="peopleSupplierFilter">
+                <option value="">All suppliers</option>
+              </select>
+            </label>
+            <label>
+              <span data-i18n="status">Status</span>
+              <select id="peopleStatusFilter">
+                <option value="all" data-i18n="allPeople">All people</option>
+                <option value="holding" data-i18n="holdingTools">Holding tools</option>
+                <option value="never" data-i18n="neverTookTools">Never took tools</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="ql-picker-filters ql-picker-filters-catalog" id="catalogFilters" hidden>
+            <label>
+              <span data-i18n="category">Category</span>
+              <select id="catFilter"><option value="">All categories</option></select>
+            </label>
+            <label>
+              <span data-i18n="subcategory">Sub-category</span>
+              <select id="subFilter"><option value="">All sub-categories</option></select>
+            </label>
+            <label>
+              <span data-i18n="item">Item</span>
+              <select id="itemFilter"><option value="">All items</option></select>
+            </label>
+            <label>
+              <span data-i18n="kind">Kind</span>
+              <select id="kindFilter">
+                <option value="all" data-i18n="toolsConsumables">Tools + consumables</option>
+                <option value="tools" data-i18n="toolsOnly">Tools only</option>
+                <option value="consumables" data-i18n="consumablesOnly">Consumables only</option>
+              </select>
+            </label>
+          </div>
+        </div>
+
+        <div class="ql-picker-meta-bar">
+          <div class="ql-picker-meta" id="pickerMeta"></div>
+          <div class="ql-picker-meta-actions">
+            <button type="button" class="tc-btn tc-btn-sm" id="btnSelectFiltered">
+              <i class="bi bi-check2-all"></i> <span data-i18n="selectFiltered">Select visible</span>
+            </button>
+            <button type="button" class="tc-btn tc-btn-sm" id="btnClearSelection">
+              <i class="bi bi-x-circle"></i> <span data-i18n="clearSelection">Clear selection</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="ql-picker-list" id="pickerList"></div>
+      </div>
+      <div class="tc-modal-foot ql-picker-foot">
+        <div class="ql-picker-selected">
+          <strong id="pickerTickCount">0</strong>
+          <span data-i18n="selected">selected</span>
+        </div>
+        <div class="ql-picker-foot-actions">
+          <button type="button" class="tc-btn" id="btnApplyReplace" data-i18n="replaceQueue">Replace queue</button>
+          <button type="button" class="tc-btn tc-btn-primary" id="btnApplyAdd">
+            <i class="bi bi-plus-lg"></i> <span data-i18n="addToQueue">Add to queue</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Calibration -->
+  <div class="tc-modal-backdrop" id="calibModal">
+    <div class="tc-modal">
+      <div class="tc-modal-head d-flex justify-content-between">
+        <h3 class="h5 mb-0">Printer calibration wizard</h3>
+        <button type="button" class="tc-btn tc-btn-sm" id="btnCloseCalib"><i class="bi bi-x-lg"></i></button>
+      </div>
+      <div class="tc-modal-body" id="calibHost"></div>
+    </div>
+  </div>
+
+  <div id="editorHost"></div>
+
+  <script type="module">
+    import { bootLabelApp } from "./labels/ui/app.js?v=26";
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const start = async () => {
+        const runApp = async () => {
+          try {
+            if (typeof TCI18N !== "undefined" && typeof TCI18N.applyDocumentLang === "function") {
+              TCI18N.applyDocumentLang();
+            }
+          } catch (e) {
+            console.warn("[QR Labels] i18n apply skipped", e);
+          }
+          await bootLabelApp();
+        };
+
+        if (typeof TCUI !== "undefined" && TCUI.bootPage) {
+          TCUI.bootPage(async () => {
+            TCUI.mountHeader("app-header", {
+              active: "labels",
+              titleKey: "labels",
+              subtitleKey: "labelsSub",
+              icon: "bi-qr-code"
+            });
+            await runApp();
+          }, { pageId: "labels" });
+        } else {
+          await runApp();
         }
-        host.appendChild(card);
-        await QRCode.toCanvas(canvas, code.toUpperCase(), { width: 140, margin: 1 });
-      }
-      if (typeof logAudit === "function") {
-        logAudit("QR_LABELS", { count: lines.length, codes: lines.slice(0, 20) });
-      }
-      TCUI.toast("Generated " + lines.length + " labels", "ok");
-    }
+      };
+      start().catch((e) => console.error("[QR Labels] boot failed", e));
+    });
   </script>
 </body>
 </html>
