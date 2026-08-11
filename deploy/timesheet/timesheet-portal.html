@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AbouAmjad Store System | My Timesheet</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="app.css?v=live">
+  <link rel="stylesheet" href="timesheet.css?v=2">
+  <script src="config.js?v=live"></script>
+  <script src="i18n.js?v=live"></script>
+  <script src="ui.js?v=live"></script>
+</head>
+<body class="tc-page ts-page tc-worker-portal" data-page="timesheetPortal">
+  <div class="tc-wrap"><div class="tc-shell">
+    <div id="app-header"></div>
+    <main class="tc-main p-3">
+      <section class="ts-hero">
+        <div class="ts-portal-top">
+          <div>
+            <h1 id="hello">My Timesheet</h1>
+            <p id="subHello">Your attendance, hours, deductions, and tools still out.</p>
+          </div>
+          <button class="ts-btn ts-btn-ghost" id="logoutBtn"><i class="bi bi-box-arrow-right"></i> Logout</button>
+        </div>
+      </section>
+
+      <div id="errBox" class="ts-banner err" style="display:none;margin-bottom:1rem"></div>
+
+      <div class="ts-kpis" id="summary">
+        <div class="ts-kpi"><span>Days present</span><strong id="sDays">—</strong></div>
+        <div class="ts-kpi"><span>Net hours</span><strong id="sHours">—</strong></div>
+        <div class="ts-kpi"><span>Deductions</span><strong id="sDed">—</strong></div>
+      </div>
+
+      <div class="ts-tabs">
+        <button type="button" class="ts-tab active" data-p="tools">Outstanding tools</button>
+        <button type="button" class="ts-tab" data-p="days">Days</button>
+        <button type="button" class="ts-tab" data-p="hours">Hours</button>
+        <button type="button" class="ts-tab" data-p="ded">Deductions</button>
+      </div>
+
+      <section class="ts-panel" id="pane-tools"></section>
+      <section class="ts-panel" id="pane-days" hidden></section>
+      <section class="ts-panel" id="pane-hours" hidden></section>
+      <section class="ts-panel" id="pane-ded" hidden></section>
+    </main>
+  </div></div>
+  <script>
+    (async function () {
+      if (typeof requireAuth === "function") requireAuth();
+      if (typeof TCUI !== "undefined") TCUI.mountHeader({ pageId: "timesheetPortal" });
+      logoutBtn.onclick = () => {
+        if (typeof logout === "function") logout();
+        else { localStorage.clear(); location.href = "login.html"; }
+      };
+
+      document.querySelectorAll("[data-p]").forEach((b) => b.onclick = () => {
+        document.querySelectorAll("[data-p]").forEach((x) => x.classList.remove("active"));
+        b.classList.add("active");
+        ["tools","days","hours","ded"].forEach((k) => {
+          document.getElementById("pane-" + k).hidden = b.dataset.p !== k;
+        });
+      });
+
+      function table(headers, bodyHtml) {
+        return `<div class="table-responsive"><table class="ts-table"><thead><tr>${headers.map((h)=>`<th>${h}</th>`).join("")}</tr></thead><tbody>${bodyHtml}</tbody></table></div>`;
+      }
+
+      try {
+        const sum = await apiGet({ action: "timesheetMySummary" });
+        if (sum.error === "WORKER_NOT_LINKED" || sum.error === "FORBIDDEN") {
+          errBox.style.display = "block";
+          errBox.innerHTML = "<strong>Account not linked.</strong><br>Ask admin: Timesheet Admin → Worker accounts → link this login to your worker code.<br><span dir='rtl'>الحساب غير مربوط بكود العامل.</span>";
+          return;
+        }
+        if (sum.error) throw new Error(sum.error);
+
+        hello.textContent = sum.workerName || "My Timesheet";
+        subHello.textContent = `${sum.workerCode} · ${sum.from} → ${sum.to}`;
+        sDays.textContent = sum.daysPresent;
+        sHours.textContent = sum.netHours;
+        sDed.textContent = `${sum.deductionsTotal} ${sum.currency || ""}`.trim();
+
+        const tools = await apiGet({ action: "timesheetMyOutstandingTools" });
+        document.getElementById("pane-tools").innerHTML =
+          `<h2><i class="bi bi-tools"></i> Outstanding tools</h2>` +
+          table(["Code","Item","Qty","Days out"],
+            (tools.rows || []).length
+              ? (tools.rows || []).map((t) => `<tr><td><strong>${t.code}</strong></td><td>${t.description||""}</td><td>${t.qty}</td><td>${t.daysOut??""}</td></tr>`).join("")
+              : `<tr><td colspan="4" class="ts-empty">No open custody — all returned</td></tr>`
+          );
+
+        const days = await apiGet({ action: "timesheetMyAttendance" });
+        document.getElementById("pane-days").innerHTML =
+          `<h2><i class="bi bi-calendar3"></i> Days</h2>` +
+          table(["Date","Project","Hours"],
+            (days.rows || []).length
+              ? (days.rows || []).map((r) => {
+                  const net = r.netHours != null ? r.netHours : r.baseHours;
+                  const adj = Number(r.adjustmentHours) || 0;
+                  const label = adj
+                    ? `<strong>${net}</strong> <span class="text-muted" style="font-size:.78rem">(${r.baseHours}${adj > 0 ? "+" : ""}${adj})</span>`
+                    : String(net);
+                  return `<tr><td>${r.workDate}</td><td>${r.projectName||""}</td><td>${label}</td></tr>`;
+                }).join("")
+              : `<tr><td colspan="3" class="ts-empty">No attendance yet</td></tr>`
+          );
+
+        const hours = await apiGet({ action: "timesheetMyHours" });
+        document.getElementById("pane-hours").innerHTML =
+          `<h2><i class="bi bi-hourglass-split"></i> Hours</h2>` +
+          table(["Date","Base","Adjust","Net"],
+            (hours.rows || []).length
+              ? (hours.rows || []).map((r) => `<tr><td>${r.workDate}</td><td>${r.baseHours}</td><td>${r.adjustmentHours}</td><td><strong>${r.netHours}</strong></td></tr>`).join("")
+              : `<tr><td colspan="4" class="ts-empty">No hours yet</td></tr>`
+          );
+
+        const ded = await apiGet({ action: "timesheetMyDeductions" });
+        document.getElementById("pane-ded").innerHTML =
+          `<h2><i class="bi bi-receipt"></i> Deductions</h2>` +
+          table(["Date","Type","Amount","Note"],
+            (ded.rows || []).length
+              ? (ded.rows || []).map((r) => `<tr><td>${r.workDate}</td><td>${r.dedType}</td><td>${r.amount} ${r.currency||""}</td><td>${r.note||""}</td></tr>`).join("")
+              : `<tr><td colspan="4" class="ts-empty">No deductions</td></tr>`
+          );
+      } catch (e) {
+        errBox.style.display = "block";
+        errBox.textContent = String(e.message || e);
+      }
+    })();
+  </script>
+</body>
+</html>
