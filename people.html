@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AbouAmjad Store System | People</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="app.css?v=live">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f766e">
+  <script src="config.js?v=live"></script>
+  <script src="i18n.js?v=live"></script>
+  <script src="ui.js?v=live"></script>
+  <style>
+    .people-page .pp-stats {
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: .85rem; margin-bottom: 1.15rem;
+    }
+    @media (min-width: 900px) { .people-page .pp-stats { grid-template-columns: repeat(4, 1fr); } }
+    .people-page .pp-stat {
+      background: var(--tc-surface); border: 1px solid var(--tc-border); border-radius: 16px;
+      padding: 1rem 1.1rem; box-shadow: 0 10px 28px -22px rgba(20,32,51,.45);
+      position: relative; overflow: hidden;
+    }
+    .people-page .pp-stat::before {
+      content: ""; position: absolute; inset: 0 auto 0 0; width: 4px; background: var(--tc-accent);
+    }
+    .people-page .pp-stat.warn::before { background: var(--tc-warning); }
+    .people-page .pp-stat.danger::before { background: var(--tc-danger); }
+    .people-page .pp-stat.ok::before { background: var(--tc-success); }
+    .people-page .pp-stat .k {
+      font-size: .72rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--tc-muted);
+    }
+    .people-page .pp-stat .v { font-size: 1.75rem; font-weight: 800; line-height: 1.15; margin-top: .2rem; }
+
+    .people-page .pp-panel {
+      background: var(--tc-surface); border: 1px solid var(--tc-border); border-radius: 18px;
+      box-shadow: 0 14px 36px -24px rgba(20,32,51,.4); overflow: hidden;
+    }
+    .people-page .pp-panel-head {
+      display: flex; align-items: center; justify-content: space-between; gap: .75rem; flex-wrap: wrap;
+      padding: 1rem 1.15rem; background: var(--tc-head-grad);
+      border-bottom: 1px solid var(--tc-border);
+    }
+    .people-page .pp-panel-head h2 {
+      margin: 0; font-size: .95rem; font-weight: 800;
+      display: flex; align-items: center; gap: .45rem;
+    }
+    .people-page .pp-panel-head h2 i { color: var(--tc-accent); }
+    .people-page .pp-panel-body { padding: 1.15rem; }
+
+    .people-page .pp-toolbar {
+      display: flex; flex-wrap: wrap; gap: .75rem; align-items: center; justify-content: space-between; margin-bottom: 1rem;
+    }
+    .people-page .pp-seg {
+      display: inline-flex; padding: .22rem; background: var(--tc-surface-2); border-radius: 999px; gap: .15rem; flex-wrap: wrap;
+    }
+    .people-page .pp-seg button {
+      border: 0; background: transparent; color: var(--tc-muted); font-weight: 700;
+      font-size: .78rem; padding: .45rem .9rem; border-radius: 999px; cursor: pointer;
+    }
+    .people-page .pp-seg button.active {
+      background: var(--tc-surface); color: var(--tc-accent-2); box-shadow: 0 4px 12px -6px rgba(20,32,51,.35);
+    }
+    .people-page .pp-search-wrap {
+      display: flex; gap: .45rem; align-items: center; flex: 1; min-width: 180px; max-width: 280px; margin-inline-start: auto;
+    }
+    .people-page .pp-search-wrap .tc-search { flex: 1; max-width: none !important; }
+    .people-page .pp-hint { font-size: .75rem; color: var(--tc-muted); margin: 0 0 1rem; }
+
+    .people-page .pp-bulk {
+      display: none; align-items: center; justify-content: space-between; gap: .75rem; flex-wrap: wrap;
+      padding: .75rem 1rem; margin-bottom: 1rem; border-radius: 12px;
+      background: linear-gradient(135deg, rgba(15,118,110,.08), rgba(30,58,95,.06));
+      border: 1px solid rgba(15,118,110,.2);
+    }
+    .people-page .pp-bulk.show { display: flex; }
+    .people-page .pp-bulk strong { font-size: .9rem; }
+
+    .people-page .pp-list { display: flex; flex-direction: column; gap: .65rem; }
+    .people-page .pp-row {
+      display: grid; grid-template-columns: auto auto 1fr auto; gap: .85rem; align-items: center;
+      padding: .85rem 1rem; border: 1px solid var(--tc-border); border-radius: 14px; background: var(--tc-surface);
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .people-page .pp-row:hover {
+      border-color: rgba(15,118,110,.28); box-shadow: 0 10px 24px -18px rgba(15,118,110,.45);
+    }
+    .people-page .pp-row.selected {
+      border-color: rgba(15,118,110,.45); background: linear-gradient(90deg, rgba(15,118,110,.06), var(--tc-surface) 40%);
+    }
+    .people-page .pp-row.has-tools {
+      border-color: rgba(194,65,12,.25); background: linear-gradient(90deg, var(--tc-warn-bg) 0%, var(--tc-surface) 28%);
+    }
+    .people-page .pp-check {
+      width: 18px; height: 18px; accent-color: var(--tc-accent); cursor: pointer;
+    }
+    .people-page .pp-avatar {
+      width: 52px; height: 52px; border-radius: 50%; object-fit: cover; background: var(--tc-thumb-bg);
+      display: grid; place-items: center; color: var(--tc-muted); font-size: 1.25rem;
+      border: 2px solid var(--tc-surface); box-shadow: 0 6px 14px -8px rgba(20,32,51,.4);
+    }
+    .people-page .pp-id .name { font-weight: 800; font-size: .95rem; line-height: 1.2; margin-bottom: .15rem; }
+    .people-page .pp-id .code {
+      display: inline-flex; font-size: .72rem; font-weight: 700; color: var(--tc-accent-2);
+      background: var(--tc-accent-soft); padding: .12rem .5rem; border-radius: 999px; margin-bottom: .35rem;
+    }
+    .people-page .pp-meta {
+      display: flex; flex-wrap: wrap; gap: .35rem .75rem; font-size: .76rem; color: var(--tc-muted);
+    }
+    .people-page .pp-meta span { display: inline-flex; align-items: center; gap: .28rem; }
+    .people-page .pp-side {
+      display: flex; flex-direction: column; align-items: flex-end; gap: .45rem; min-width: 120px;
+    }
+    .people-page .pp-chip {
+      display: inline-flex; align-items: center; gap: .3rem; font-size: .72rem; font-weight: 700;
+      padding: .28rem .6rem; border-radius: 999px; background: var(--tc-surface-2); color: var(--tc-muted); white-space: nowrap;
+    }
+    .people-page .pp-chip.hot { background: #fee2e2; color: #b91c1c; }
+    .people-page .pp-chip.idle { background: var(--tc-warn-bg); color: #c2410c; }
+    .people-page .pp-chip.ok { background: #d1fae5; color: #047857; }
+    .people-page .pp-ops { display: flex; gap: .35rem; }
+    .people-page .pp-ops .tc-btn {
+      width: 36px; height: 36px; padding: 0; display: grid; place-items: center; border-radius: 10px;
+    }
+    .people-page .pp-empty { text-align: center; padding: 2.5rem 1rem; color: var(--tc-muted); }
+    .people-page .pp-empty i {
+      font-size: 2rem; color: var(--tc-accent); opacity: .55; display: block; margin-bottom: .5rem;
+    }
+    .people-page .pp-head-actions { display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; }
+
+    @media (max-width: 700px) {
+      .people-page .pp-row { grid-template-columns: auto auto 1fr; }
+      .people-page .pp-side {
+        grid-column: 1 / -1; flex-direction: row; justify-content: space-between; align-items: center; min-width: 0;
+      }
+    }
+  </style>
+</head>
+<body class="tc-page people-page">
+  <div class="tc-wrap">
+    <div class="tc-shell">
+      <div id="app-header"></div>
+
+      <div class="pp-stats">
+        <div class="pp-stat">
+          <div class="k" data-i18n="peopleTotal">People</div>
+          <div class="v" id="kPeople">0</div>
+        </div>
+        <div class="pp-stat warn">
+          <div class="k" data-i18n="inactiveShown">In this filter</div>
+          <div class="v" id="kInactive">0</div>
+        </div>
+        <div class="pp-stat danger">
+          <div class="k" data-i18n="withToolsNow">Has tools now</div>
+          <div class="v" id="kWithTools">0</div>
+        </div>
+        <div class="pp-stat ok">
+          <div class="k" data-i18n="selectedCount">Selected</div>
+          <div class="v" id="kSelected">0</div>
+        </div>
+      </div>
+
+      <section class="pp-panel">
+        <div class="pp-panel-head">
+          <h2><i class="bi bi-people"></i> <span data-i18n="peopleList">People directory</span></h2>
+          <div class="pp-head-actions">
+            <button type="button" class="tc-btn" id="btnRefresh"><i class="bi bi-arrow-clockwise"></i></button>
+            <a class="tc-btn" href="suppliers.html" id="btnSuppliers"><i class="bi bi-truck"></i> <span data-i18n="suppliers">Suppliers</span></a>
+            <a class="tc-btn" id="btnBulkAdd" href="people-bulk.html">
+              <i class="bi bi-images"></i> <span data-i18n="bulkAddPeople">Bulk add</span>
+            </a>
+            <a class="tc-btn tc-btn-primary" id="btnAdd" href="people-form.html">
+              <i class="bi bi-person-plus"></i> <span data-i18n="addPersonBtn">Add person</span>
+            </a>
+          </div>
+        </div>
+        <div class="pp-panel-body">
+          <div class="pp-toolbar">
+            <div class="pp-seg" id="filterBar">
+              <button type="button" class="filter-btn active" data-months="0" data-i18n="filterAllPeople">All people</button>
+              <button type="button" class="filter-btn" data-months="1" data-i18n="filterInactive1m">No tools · 1+ month</button>
+              <button type="button" class="filter-btn" data-months="2" data-i18n="filterInactive2m">No tools · 2+ months</button>
+            </div>
+            <div class="pp-search-wrap">
+              <input id="q" class="tc-search" data-i18n-placeholder="searchPlaceholder" placeholder="Search…">
+            </div>
+          </div>
+          <p class="pp-hint" data-i18n="inactiveHint">
+            Inactive = never took tools, or last tool OUT older than the selected period.
+          </p>
+
+          <div class="pp-bulk" id="bulkBar">
+            <div>
+              <label class="d-inline-flex align-items-center gap-2 mb-0">
+                <input type="checkbox" class="pp-check" id="chkAll">
+                <strong id="bulkLabel">0 selected</strong>
+              </label>
+            </div>
+            <div class="d-flex gap-2 flex-wrap">
+              <button type="button" class="tc-btn" id="btnClearSel" data-i18n="clearSelection">Clear</button>
+              <button type="button" class="tc-btn tc-btn-danger" id="btnBulkDelete">
+                <i class="bi bi-trash"></i> <span data-i18n="deleteSelected">Delete selected</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="pp-list" id="body"></div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    let people = [];
+    let inactiveMonths = 0;
+    const selected = new Set();
+
+    document.addEventListener("DOMContentLoaded", () => TCUI.bootPage(() => {
+      TCUI.mountHeader("app-header", {
+        active: "people",
+        titleKey: "people",
+        subtitleKey: "peopleSub",
+        icon: "bi-person-badge"
+      });
+      document.getElementById("btnRefresh").onclick = load;
+      const btnSuppliers = document.getElementById("btnSuppliers");
+      if (btnSuppliers && typeof canAccessPage === "function" && !canAccessPage("suppliers")) {
+        btnSuppliers.hidden = true;
+      }
+      document.getElementById("q").oninput = render;
+      document.getElementById("chkAll").onchange = (e) => {
+        if (e.target.checked) visibleCodes().forEach((c) => selected.add(c));
+        else visibleCodes().forEach((c) => selected.delete(c));
+        syncSelectionUI();
+        render();
+      };
+      document.getElementById("btnClearSel").onclick = () => {
+        selected.clear();
+        syncSelectionUI();
+        render();
+      };
+      document.getElementById("btnBulkDelete").onclick = bulkDelete;
+      document.querySelectorAll(".filter-btn").forEach((btn) => {
+        btn.onclick = () => {
+          inactiveMonths = Number(btn.getAttribute("data-months")) || 0;
+          document.querySelectorAll(".filter-btn").forEach((b) => b.classList.toggle("active", b === btn));
+          selected.clear();
+          load();
+        };
+      });
+      load();
+    }, { pageId: "people" }));
+
+    window.addEventListener("pageshow", (e) => {
+      if (e.persisted) load();
+    });
+
+    function visibleCodes() {
+      const q = document.getElementById("q").value.trim().toUpperCase();
+      return people
+        .filter((p) => !q || [p.code, p.name, p.residenceNo, p.phone, p.supplierName, p.supervisorName].join(" ").toUpperCase().includes(q))
+        .map((p) => p.code);
+    }
+
+    function syncSelectionUI() {
+      const n = selected.size;
+      document.getElementById("kSelected").textContent = n;
+      document.getElementById("bulkBar").classList.toggle("show", n > 0);
+      document.getElementById("bulkLabel").textContent = t("selectedCountN", { n });
+      const codes = visibleCodes();
+      document.getElementById("chkAll").checked = codes.length > 0 && codes.every((c) => selected.has(c));
+    }
+
+    async function load() {
+      try {
+        const params = { action: "listPeople" };
+        if (inactiveMonths > 0) params.inactiveMonths = inactiveMonths;
+        const pData = await apiGet(params);
+        if (pData && pData.error) throw new Error(pData.error);
+        people = (pData && pData.items) || [];
+        const totals = (pData && pData.totals) || {};
+        document.getElementById("kPeople").textContent = inactiveMonths ? (totals.people || people.length) : people.length;
+        document.getElementById("kInactive").textContent = inactiveMonths ? people.length : (totals.neverTook || 0);
+        document.getElementById("kWithTools").textContent = totals.withTools || people.filter((p) => p.toolsHeldCount > 0).length;
+        [...selected].forEach((c) => {
+          if (!people.some((p) => p.code === c)) selected.delete(c);
+        });
+        syncSelectionUI();
+        render();
+      } catch (e) {
+        document.getElementById("body").innerHTML =
+          `<div class="pp-empty text-danger">${escHtml(e.message || "Error")}</div>`;
+      }
+    }
+
+    function lastOutLabel(p) {
+      if (p.neverTookTools) return t("neverTookTools");
+      if (p.lastOutDate) return formatDisplayDate(p.lastOutDate);
+      if (p.lastOutAt) return formatDisplayDate(p.lastOutAt);
+      return "—";
+    }
+
+    function avatarHtml(p) {
+      if (p.imageUrl) return `<img class="pp-avatar" src="${escHtml(p.imageUrl)}" alt="">`;
+      return `<div class="pp-avatar"><i class="bi bi-person"></i></div>`;
+    }
+
+    function render() {
+      const q = document.getElementById("q").value.trim().toUpperCase();
+      const filtered = !q ? people : people.filter((p) =>
+        [p.code, p.name, p.residenceNo, p.phone, p.supplierName, p.supervisorName].join(" ").toUpperCase().includes(q)
+      );
+      const body = document.getElementById("body");
+      if (!filtered.length) {
+        body.innerHTML = `<div class="pp-empty"><i class="bi bi-people"></i>${inactiveMonths ? t("noInactivePeople") : t("noPeople")}</div>`;
+        syncSelectionUI();
+        return;
+      }
+      body.innerHTML = filtered.map((p) => {
+        const isSel = selected.has(p.code);
+        const toolsChip = p.toolsHeldCount
+          ? `<span class="pp-chip hot"><i class="bi bi-tools"></i> ${p.toolsHeldCount}</span>`
+          : `<span class="pp-chip ok"><i class="bi bi-check2"></i> 0</span>`;
+        const activityChip = p.neverTookTools
+          ? `<span class="pp-chip idle">${escHtml(t("neverTookTools"))}</span>`
+          : `<span class="pp-chip"><i class="bi bi-calendar3"></i> ${escHtml(lastOutLabel(p))}</span>`;
+        return `<article class="pp-row${p.toolsHeldCount ? " has-tools" : ""}${isSel ? " selected" : ""}">
+          <input type="checkbox" class="pp-check" data-sel="${escHtml(p.code)}" ${isSel ? "checked" : ""}>
+          ${avatarHtml(p)}
+          <div class="pp-id">
+            <div class="name"><a href="worker.html?code=${encodeURIComponent(p.code)}" style="color:inherit;text-decoration:none">${escHtml(p.name || p.code)}</a></div>
+            <div class="code">${escHtml(p.code)}</div>
+            <div class="pp-meta">
+              <span><i class="bi bi-card-text"></i> ${escHtml(p.residenceNo || "—")}</span>
+              <span><i class="bi bi-telephone"></i> ${escHtml(p.phone || "—")}</span>
+              <span><i class="bi bi-person-badge"></i> ${escHtml(p.supervisorName || "—")}</span>
+              <span><i class="bi bi-building"></i> ${escHtml(p.supplierName || "—")}</span>
+            </div>
+          </div>
+          <div class="pp-side">
+            ${toolsChip}
+            ${activityChip}
+            <div class="pp-ops">
+              <a class="tc-btn" href="worker.html?code=${encodeURIComponent(p.code)}" title="${escHtml(t("viewReport"))}"><i class="bi bi-person-vcard"></i></a>
+              <a class="tc-btn" href="people-form.html?code=${encodeURIComponent(p.code)}" title="${escHtml(t("modeEdit"))}"><i class="bi bi-pencil"></i></a>
+            </div>
+          </div>
+        </article>`;
+      }).join("");
+      body.querySelectorAll("[data-sel]").forEach((chk) => {
+        chk.onchange = () => {
+          const code = chk.getAttribute("data-sel");
+          if (chk.checked) selected.add(code);
+          else selected.delete(code);
+          syncSelectionUI();
+          render();
+        };
+      });
+      syncSelectionUI();
+    }
+
+    async function deleteOne(code, force) {
+      const params = { action: "deletePerson", code };
+      if (force) params.force = "1";
+      return apiGet(params);
+    }
+
+    async function bulkDelete() {
+      const codes = [...selected];
+      if (!codes.length) return;
+      if (!confirm(t("deleteSelectedConfirm", { n: codes.length }))) return;
+
+      let deleted = 0;
+      const skipped = [];
+      for (const code of codes) {
+        const person = people.find((p) => p.code === code);
+        const label = person ? `${person.code} — ${person.name}` : code;
+        let res = await deleteOne(code, false);
+        if (res && res.error === "HAS_TOOLS" && res.needConfirm) {
+          const tools = (res.toolsHeld || []).map((x) => `${x.code}×${x.qty}`).join(", ");
+          const ok = confirm(t("deletePersonHasTools", { code: label, n: res.toolsHeldCount, tools: tools || "—" }));
+          if (!ok) {
+            skipped.push(code);
+            continue;
+          }
+          res = await deleteOne(code, true);
+        }
+        if (res && res.success) {
+          selected.delete(code);
+          deleted++;
+        } else {
+          skipped.push(code);
+          TCUI.toast((res && (res.message || res.error)) || code, "err");
+        }
+      }
+      TCUI.toast(t("bulkDeleteDone", { n: deleted }), deleted ? "ok" : "err");
+      await load();
+    }
+  </script>
+</body>
+</html>
