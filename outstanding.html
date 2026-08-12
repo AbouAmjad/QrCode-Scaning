@@ -7,12 +7,12 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="app.css?v=nrux4">
+  <link rel="stylesheet" href="app.css?v=nrux5">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#0f766e">
-  <script src="config.js?v=nrux4"></script>
-  <script src="i18n.js?v=nrux4"></script>
-  <script src="ui.js?v=nrux4"></script>
+  <script src="config.js?v=nrux5"></script>
+  <script src="i18n.js?v=nrux5"></script>
+  <script src="ui.js?v=nrux5"></script>
 
   <style>
     .nr-page {
@@ -505,6 +505,39 @@
     const keeperLabels = Object.create(null);
     /** usernames loaded from DB (listUsers) */
     const dbKeepers = new Set();
+    /**
+     * Old scan usernames that map to a current DB account.
+     * Prevents duplicate picker rows like boss + abouamjad.
+     */
+    const KEEPER_ALIASES = {
+      abouamjad: "boss",
+      amjad: "boss"
+    };
+
+    function canonicalKeeper(username) {
+      const u = String(username || "").trim();
+      if (!u) return "";
+      const mapped = KEEPER_ALIASES[u.toLowerCase()];
+      if (mapped && (dbKeepers.has(mapped) || keeperLabels[mapped])) return mapped;
+      return u;
+    }
+
+    function keeperMatchSet(selected) {
+      const canon = canonicalKeeper(selected);
+      if (!canon) return null;
+      const set = new Set([canon, selected]);
+      Object.keys(KEEPER_ALIASES).forEach((alias) => {
+        if (KEEPER_ALIASES[alias] === canon) set.add(alias);
+      });
+      return set;
+    }
+
+    function formatKeeperLabel(username, fullName, role) {
+      const u = String(username || "").trim();
+      const name = String(fullName || "").trim();
+      if (name) return name;
+      return u;
+    }
 
     function tt(key, fallback) {
       try {
@@ -651,13 +684,8 @@
           if (u.active === false) return;
           if ((u.approvalStatus || "approved") !== "approved") return;
           const username = String(u.username);
-          // Skip pure timesheet/worker accounts from store-keeper list? keep all DB users as requested.
           dbKeepers.add(username);
-          const name = String(u.fullName || "").trim();
-          const role = String(u.role || "").trim();
-          keeperLabels[username] = name
-            ? (role ? `${name} (${username}) · ${role}` : `${name} (${username})`)
-            : (role ? `${username} · ${role}` : username);
+          keeperLabels[username] = formatKeeperLabel(username, u.fullName, u.role);
         });
       } catch (_) {
         /* listUsers may require users.manage — fall back to scan keepers only */
@@ -671,18 +699,22 @@
       items.forEach((p) => {
         if (p.supplierName) suppliers.add(String(p.supplierName));
         if (p.supervisorName) supervisors.add(String(p.supervisorName));
-        (p.keepers || []).forEach((k) => { if (k) keepers.add(String(k)); });
-        if (p.keeper) keepers.add(String(p.keeper));
+        const addKeeper = (raw) => {
+          if (!raw) return;
+          const canon = canonicalKeeper(raw);
+          // Skip legacy aliases when the real DB account already exists
+          if (KEEPER_ALIASES[String(raw).toLowerCase()] && dbKeepers.has(canon)) return;
+          keepers.add(canon);
+          if (!keeperLabels[canon]) keeperLabels[canon] = formatKeeperLabel(canon);
+        };
+        (p.keepers || []).forEach(addKeeper);
+        if (p.keeper) addKeeper(p.keeper);
         (p.tools || []).forEach((tool) => {
-          if (tool.keeper) keepers.add(String(tool.keeper));
-          (tool.keepers || []).forEach((k) => { if (k) keepers.add(String(k)); });
-          (tool.lots || []).forEach((lot) => {
-            const k = lot.keeper || lot.createdBy;
-            if (k) keepers.add(String(k));
-          });
+          if (tool.keeper) addKeeper(tool.keeper);
+          (tool.keepers || []).forEach(addKeeper);
+          (tool.lots || []).forEach((lot) => addKeeper(lot.keeper || lot.createdBy));
         });
       });
-      // Ignore automated system actors in the picker
       ["damage-auto", "system", "auto"].forEach((x) => keepers.delete(x));
       fillKeeperSelect(keepers);
       fillSelect("filterSupplier", suppliers, tt("allSuppliers", "All suppliers"));
@@ -735,9 +767,12 @@
 
     function toolMatchesKeeper(tool, keeper) {
       if (!keeper) return true;
-      if (tool.keeper === keeper) return true;
-      if (Array.isArray(tool.keepers) && tool.keepers.includes(keeper)) return true;
-      return (tool.lots || []).some((lot) => (lot.keeper || lot.createdBy || "") === keeper);
+      const match = keeperMatchSet(keeper);
+      if (!match) return true;
+      const hit = (raw) => raw && match.has(String(raw));
+      if (hit(tool.keeper)) return true;
+      if (Array.isArray(tool.keepers) && tool.keepers.some(hit)) return true;
+      return (tool.lots || []).some((lot) => hit(lot.keeper || lot.createdBy));
     }
 
     function openExportModal() {
