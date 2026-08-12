@@ -1,6 +1,33 @@
 /** منطق المخزون المشترك — results / worker / tool / dashboard */
 const CustodyParser = (() => {
 
+  /** @returns {string} */
+  function scanKeeper(row) {
+    return String(row?.createdBy || row?.created_by || "").trim();
+  }
+
+  /** Holder entry: string (legacy) or { person, personCode?, keeper } */
+  function holderPerson(h) {
+    if (h == null) return "";
+    return typeof h === "string" ? h : String(h.person || "");
+  }
+
+  function holderKeeper(h) {
+    if (h == null || typeof h === "string") return "";
+    return String(h.keeper || "").trim();
+  }
+
+  function makeHolder(person, personCode, keeper) {
+    return { person, personCode: personCode || null, keeper: keeper || "" };
+  }
+
+  function findHolderIndex(list, person) {
+    for (let i = list.length - 1; i >= 0; i--) {
+      if (holderPerson(list[i]) === person) return i;
+    }
+    return -1;
+  }
+
   function runInventory(rows) {
     const inv = {};
     let lastPerson = "General Store";
@@ -74,7 +101,7 @@ const CustodyParser = (() => {
       }
 
       if (lastDir === "IN") {
-        const idx = inv[code].holdersList.lastIndexOf(lastPerson);
+        const idx = findHolderIndex(inv[code].holdersList, lastPerson);
         if (idx !== -1) {
           inv[code].holdersList.splice(idx, 1);
           if (isToday) {
@@ -86,17 +113,19 @@ const CustodyParser = (() => {
         } else if (inv[code].holdersList.length > 0) {
           const orig = inv[code].holdersList.shift();
           if (isToday) {
-            inv[code].actionsToday.push(`⚠️ Found & Returned by · ${lastPerson} (Lost by: ${orig})`);
+            inv[code].actionsToday.push(`⚠️ Found & Returned by · ${lastPerson} (Lost by: ${holderPerson(orig)})`);
             inv[code].hasWarning = true;
             if (lastPersonCode && inv[lastPersonCode]) {
-              inv[lastPersonCode].actionsToday.push(`⚠️ Recovered ${code} (was with ${orig})`);
+              inv[lastPersonCode].actionsToday.push(`⚠️ Recovered ${code} (was with ${holderPerson(orig)})`);
             }
           }
         } else if (isToday) {
           inv[code].actionsToday.push(`📥 Returned · ${lastPerson} (unregistered)`);
         }
       } else {
-        inv[code].holdersList.push(lastPerson);
+        inv[code].holdersList.push(
+          makeHolder(lastPerson, lastPersonCode, scanKeeper(row))
+        );
         if (isToday) {
           inv[code].actionsToday.push(`📤 Checked out to · ${lastPerson}`);
           if (lastPersonCode && inv[lastPersonCode]) {
@@ -112,7 +141,9 @@ const CustodyParser = (() => {
     const map = {};
     for (const [code, item] of Object.entries(inv)) {
       if (item.isPerson || item.isConsumable) continue;
-      item.holdersList.forEach(p => {
+      item.holdersList.forEach(h => {
+        const p = holderPerson(h);
+        if (!p) return;
         if (!map[p]) map[p] = {};
         if (!map[p][code]) map[p][code] = { code, desc: item.description, qty: 0 };
         map[p][code].qty++;
@@ -201,7 +232,11 @@ const CustodyParser = (() => {
         if (item.hasWarning) warnings++;
         if (item.scannedToday || qty > 0) {
           const hMap = new Map();
-          item.holdersList.forEach(p => hMap.set(p, (hMap.get(p) || 0) + 1));
+          item.holdersList.forEach(h => {
+            const p = holderPerson(h);
+            if (!p) return;
+            hMap.set(p, (hMap.get(p) || 0) + 1);
+          });
           const holdersHtml = hMap.size === 0
             ? `<span class="text-success small fw-semibold"><i class="bi bi-house-fill me-1"></i>In store</span>`
             : Array.from(hMap.entries()).map(([p, q]) =>
@@ -438,7 +473,11 @@ const CustodyParser = (() => {
       }
       if (t.qty > 0) {
         const hMap = new Map();
-        inv[t.code].holdersList.forEach(p => hMap.set(p, (hMap.get(p) || 0) + 1));
+        inv[t.code].holdersList.forEach(h => {
+          const p = holderPerson(h);
+          if (!p) return;
+          hMap.set(p, (hMap.get(p) || 0) + 1);
+        });
         hMap.forEach((qty, person) => {
           holderRank[person] = (holderRank[person] || 0) + qty;
           const takenOn = (allTaken[t.code] && allTaken[t.code][person]) || selectedDate;
@@ -658,7 +697,11 @@ const CustodyParser = (() => {
         item.kind = "tool";
         item.out = invItem.holdersList.length;
         const hMap = new Map();
-        invItem.holdersList.forEach(p => hMap.set(p, (hMap.get(p) || 0) + 1));
+        invItem.holdersList.forEach(h => {
+          const p = holderPerson(h);
+          if (!p) return;
+          hMap.set(p, (hMap.get(p) || 0) + 1);
+        });
         item.holders = Array.from(hMap.entries()).map(([name, qty]) => ({ name, qty }));
       }
     });
@@ -691,27 +734,86 @@ const CustodyParser = (() => {
     };
   }
 
-  /** Who still has tools (not returned) */
-  function buildOutstanding(rows) {
+  /**
+   * Who still has tools (not returned).
+   * @param {object[]} rows scan ledger
+   * @param {{ keeper?: string, allKeepers?: boolean }} [opts]
+   *   - keeper: only OUT events recorded by this store-keeper username
+   *   - allKeepers: admin view — include every keeper (grouped in result)
+   */
+  function buildOutstanding(rows, opts = {}) {
     const inv = runInventory(rows || []);
-    const byPerson = {};
+    const keeperFilter = opts.keeper ? String(opts.keeper).trim() : "";
+    const adminAll = !!opts.allKeepers;
+    const groups = new Map();
+
     Object.keys(inv).forEach(code => {
       const item = inv[code];
       if (item.isPerson || item.isConsumable) return;
-      const hMap = new Map();
-      (item.holdersList || []).forEach(p => hMap.set(p, (hMap.get(p) || 0) + 1));
-      hMap.forEach((qty, person) => {
-        if (!byPerson[person]) byPerson[person] = { person, tools: [], qty: 0 };
-        byPerson[person].tools.push({ code, description: item.description, qty });
-        byPerson[person].qty += qty;
+      (item.holdersList || []).forEach(h => {
+        const person = holderPerson(h);
+        if (!person) return;
+        const keeper = holderKeeper(h);
+
+        if (!adminAll) {
+          if (!keeperFilter) return;
+          if (!keeper || keeper !== keeperFilter) return;
+        }
+
+        const key = adminAll ? `${keeper || "\x00"}\x01${person}` : person;
+        if (!groups.has(key)) {
+          groups.set(key, {
+            keeper: adminAll ? keeper : keeperFilter,
+            person,
+            tools: [],
+            qty: 0
+          });
+        }
+        const g = groups.get(key);
+        const existing = g.tools.find(t => t.code === code);
+        if (existing) existing.qty += 1;
+        else g.tools.push({ code, description: item.description, qty: 1 });
+        g.qty += 1;
       });
     });
-    return Object.values(byPerson).sort((a, b) => b.qty - a.qty);
+
+    const list = Array.from(groups.values());
+    if (adminAll) {
+      list.sort((a, b) => {
+        const ka = a.keeper || "\uffff";
+        const kb = b.keeper || "\uffff";
+        if (ka !== kb) return ka.localeCompare(kb);
+        return b.qty - a.qty || a.person.localeCompare(b.person);
+      });
+    } else {
+      list.sort((a, b) => b.qty - a.qty || a.person.localeCompare(b.person));
+    }
+    return list;
+  }
+
+  /** Admin helper: group buildOutstanding(allKeepers) rows by store keeper. */
+  function groupOutstandingByKeeper(groups) {
+    const byKeeper = new Map();
+    for (const g of groups || []) {
+      const label = g.keeper || "";
+      if (!byKeeper.has(label)) {
+        byKeeper.set(label, { keeper: label, people: [], qty: 0 });
+      }
+      const bucket = byKeeper.get(label);
+      bucket.people.push(g);
+      bucket.qty += g.qty;
+    }
+    return Array.from(byKeeper.values()).sort((a, b) => {
+      if (!a.keeper && b.keeper) return 1;
+      if (a.keeper && !b.keeper) return -1;
+      return b.qty - a.qty || a.keeper.localeCompare(b.keeper);
+    });
   }
 
   return {
     parseOverview, parseForWorker, parseForTool, parseForConsumable, parseDashboard,
     parseConsumableIssues, lookupTool, dotClass, dotIcon, exportCsv,
-    exportConsumablesCsv, exportConsumablesXlsx, buildStockReport, buildOutstanding
+    exportConsumablesCsv, exportConsumablesXlsx, buildStockReport, buildOutstanding,
+    groupOutstandingByKeeper
   };
 })();

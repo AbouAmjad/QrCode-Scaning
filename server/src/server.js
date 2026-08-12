@@ -163,7 +163,7 @@ async function handle(params) {
     if (auth.error) return auth;
     const targetDate = params.date || "";
     const r = await query(
-      `SELECT s.tool_code, s.row_date, s.scanned_at,
+      `SELECT s.tool_code, s.row_date, s.scanned_at, s.created_by,
               COALESCE(c.description, s.tool_code) AS description
        FROM scans s
        LEFT JOIN catalog c ON c.code = s.tool_code
@@ -175,6 +175,7 @@ async function handle(params) {
       rowDate: row.row_date,
       timestamp: row.scanned_at ? new Date(row.scanned_at).toISOString() : row.row_date,
       isTargetDay: row.row_date === targetDate,
+      createdBy: row.created_by || "",
     }));
   }
 
