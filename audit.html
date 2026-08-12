@@ -289,7 +289,7 @@
       return "scan";
     }
 
-    const SCAN_AUTO_REFRESH_MS = 15000;
+    const SCAN_AUTO_REFRESH_MS = 5000;
 
     let state = {
       tab: "system",
@@ -318,6 +318,13 @@
       try {
         const d = new Date(ts);
         if (!Number.isNaN(d.getTime())) {
+          if (state.tab === "scans") {
+            return d.toLocaleTimeString(undefined, {
+              hour: "numeric",
+              minute: "2-digit",
+              second: "2-digit"
+            });
+          }
           return d.toLocaleString(undefined, {
             year: "numeric",
             month: "numeric",

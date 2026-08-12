@@ -168,7 +168,7 @@ async function getScanLog(ctx) {
        FROM scans s
        LEFT JOIN catalog c ON c.code = s.tool_code
        ${where}
-      ORDER BY s.id DESC
+      ORDER BY s.scanned_at DESC NULLS LAST, s.id DESC
       LIMIT $${nextIndex} OFFSET $${nextIndex + 1}`,
     listArgs
   );
