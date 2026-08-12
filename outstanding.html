@@ -7,12 +7,12 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="app.css?v=nrux7">
+  <link rel="stylesheet" href="app.css?v=nrux8">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#0f766e">
-  <script src="config.js?v=nrux7"></script>
-  <script src="i18n.js?v=nrux7"></script>
-  <script src="ui.js?v=nrux7"></script>
+  <script src="config.js?v=nrux8"></script>
+  <script src="i18n.js?v=nrux8"></script>
+  <script src="ui.js?v=nrux8"></script>
 
   <style>
     .nr-page {
@@ -506,13 +506,10 @@
     /** usernames loaded from DB (listUsers) */
     const dbKeepers = new Set();
     /**
-     * Old scan usernames that map to a current DB account.
-     * Prevents duplicate picker rows like boss + abouamjad.
+     * Legacy scan usernames → current username (only used when the target
+     * is itself a listed store keeper).
      */
-    const KEEPER_ALIASES = {
-      abouamjad: "boss",
-      amjad: "boss"
-    };
+    const KEEPER_ALIASES = {};
     /** Roles that operate the warehouse terminal (Store Keepers). Admin is NOT a store keeper. */
     const STORE_KEEPER_ROLES = new Set(["employee", "store_manager"]);
     const userRoles = Object.create(null);
@@ -700,28 +697,12 @@
     function refreshFilterOptions() {
       const suppliers = new Set();
       const supervisors = new Set();
+      // Picker shows ONLY real users from users table (store-keeper roles).
+      // Do NOT inject legacy scan.created_by names like abouamjad / amjad.
       const keepers = new Set([...dbKeepers]);
       items.forEach((p) => {
         if (p.supplierName) suppliers.add(String(p.supplierName));
         if (p.supervisorName) supervisors.add(String(p.supervisorName));
-        const addKeeper = (raw) => {
-          if (!raw) return;
-          const canon = canonicalKeeper(raw);
-          // Skip legacy aliases when the real DB account already exists
-          if (KEEPER_ALIASES[String(raw).toLowerCase()] && dbKeepers.has(canon)) return;
-          // If this username is a known non-keeper DB role, never list them
-          const role = userRoles[canon] || userRoles[String(raw)];
-          if (role && !STORE_KEEPER_ROLES.has(role)) return;
-          keepers.add(canon);
-          if (!keeperLabels[canon]) keeperLabels[canon] = formatKeeperLabel(canon);
-        };
-        (p.keepers || []).forEach(addKeeper);
-        if (p.keeper) addKeeper(p.keeper);
-        (p.tools || []).forEach((tool) => {
-          if (tool.keeper) addKeeper(tool.keeper);
-          (tool.keepers || []).forEach(addKeeper);
-          (tool.lots || []).forEach((lot) => addKeeper(lot.keeper || lot.createdBy));
-        });
       });
       ["damage-auto", "system", "auto"].forEach((x) => keepers.delete(x));
       fillKeeperSelect(keepers);
