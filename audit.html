@@ -289,12 +289,16 @@
       return "scan";
     }
 
+    const SCAN_AUTO_REFRESH_MS = 15000;
+
     let state = {
       tab: "system",
       offset: 0,
       items: [],
       total: 0,
-      meta: null
+      meta: null,
+      lastUpdated: null,
+      autoRefreshTimer: null
     };
 
     function auditT(key, fallback) {
@@ -309,12 +313,20 @@
       return ACTION_LABELS[code] || code || "—";
     }
 
-    function fmtWhen(ts, label) {
-      if (label) return label;
+    function fmtWhen(ts) {
       if (!ts) return "—";
       try {
         const d = new Date(ts);
-        if (!Number.isNaN(d.getTime())) return d.toLocaleString();
+        if (!Number.isNaN(d.getTime())) {
+          return d.toLocaleString(undefined, {
+            year: "numeric",
+            month: "numeric",
+            day: "numeric",
+            hour: "numeric",
+            minute: "2-digit",
+            second: "2-digit"
+          });
+        }
       } catch (_) { /* ignore */ }
       return String(ts);
     }
@@ -356,11 +368,39 @@
       const el = document.getElementById("auditMeta");
       const from = state.total ? state.offset + 1 : 0;
       const to = Math.min(state.offset + state.items.length, state.total);
-      el.textContent = state.total
+      let text = state.total
         ? `Showing ${from}–${to} of ${state.total}`
         : "No rows";
+      if (state.lastUpdated) {
+        const when = state.lastUpdated.toLocaleTimeString(undefined, {
+          hour: "numeric",
+          minute: "2-digit",
+          second: "2-digit"
+        });
+        text += ` · Updated ${when}`;
+        if (state.tab === "scans") {
+          text += ` · Auto-refresh ${Math.round(SCAN_AUTO_REFRESH_MS / 1000)}s`;
+        }
+      }
+      el.textContent = text;
       document.getElementById("btnPrev").disabled = state.offset <= 0;
       document.getElementById("btnNext").disabled = state.offset + state.items.length >= state.total;
+    }
+
+    function stopAutoRefresh() {
+      if (state.autoRefreshTimer) {
+        clearInterval(state.autoRefreshTimer);
+        state.autoRefreshTimer = null;
+      }
+    }
+
+    function startAutoRefresh() {
+      stopAutoRefresh();
+      if (state.tab !== "scans") return;
+      state.autoRefreshTimer = setInterval(() => {
+        if (document.visibilityState !== "visible") return;
+        loadAudit({ silent: true });
+      }, SCAN_AUTO_REFRESH_MS);
     }
 
     function renderUserChips() {
@@ -445,7 +485,7 @@
             const evt = scanEventLabel(row);
             const evtClass = scanEventClass(row);
             return `<tr class="audit-open-row" data-idx="${idx}">
-              <td>${escHtml(fmtWhen(row.timestamp, row.dateTimeLabel))}</td>
+              <td>${escHtml(fmtWhen(row.timestamp))}</td>
               <td><span class="audit-pill user">${escHtml(row.createdBy || "—")}</span></td>
               <td><span class="audit-pill ${evtClass}">${escHtml(evt)}</span></td>
               <td>${escHtml(summarizeRow(row))}</td>
@@ -468,7 +508,7 @@
 
           const warn = row.action === "LOGIN_FAILED" || String(row.action || "").includes("DELETE");
           return `<tr class="audit-open-row" data-idx="${idx}">
-            <td>${escHtml(fmtWhen(row.timestamp, row.dateTimeLabel))}</td>
+            <td>${escHtml(fmtWhen(row.timestamp))}</td>
             <td>
               <div><strong>${escHtml(row.user || "—")}</strong></div>
               <small class="text-muted">${escHtml(row.role || "")}</small>
@@ -503,9 +543,12 @@
       renderMeta();
     }
 
-    async function loadAudit() {
+    async function loadAudit(opts = {}) {
+      const silent = Boolean(opts.silent);
       const body = document.getElementById("auditBody");
-      body.innerHTML = `<tr><td colspan="5" class="tc-text-muted text-center">Loading…</td></tr>`;
+      if (!silent) {
+        body.innerHTML = `<tr><td colspan="5" class="tc-text-muted text-center">Loading…</td></tr>`;
+      }
       try {
         const params = buildParams();
         const action = state.tab === "scans" ? "getScanLog" : "getAuditLog";
@@ -513,6 +556,7 @@
         if (data && data.error) throw new Error(data.error);
         state.items = data.items || [];
         state.total = Number(data.total) || state.items.length;
+        state.lastUpdated = new Date();
         if (data.meta) state.meta = data.meta;
         if (state.offset === 0 && data.meta) {
           fillMetaSelects();
@@ -520,8 +564,10 @@
         }
         renderTable();
       } catch (e) {
-        body.innerHTML = `<tr><td colspan="5" class="text-danger text-center">${escHtml(e.message || "Error")}</td></tr>`;
-        document.getElementById("auditMeta").textContent = "Error";
+        if (!silent) {
+          body.innerHTML = `<tr><td colspan="5" class="text-danger text-center">${escHtml(e.message || "Error")}</td></tr>`;
+          document.getElementById("auditMeta").textContent = "Error";
+        }
       }
     }
 
@@ -532,7 +578,7 @@
         state.items.forEach((r) => {
           lines.push(
             [
-              `"${fmtWhen(r.timestamp, r.dateTimeLabel)}"`,
+              `"${fmtWhen(r.timestamp)}"`,
               `"${r.createdBy || ""}"`,
               `"${scanEventLabel(r).replace(/"/g, '""')}"`,
               r.code || "",
@@ -548,7 +594,7 @@
         state.items.forEach((r) => {
           lines.push(
             [
-              `"${fmtWhen(r.timestamp, r.dateTimeLabel)}"`,
+              `"${fmtWhen(r.timestamp)}"`,
               `"${r.user || ""}"`,
               `"${r.role || ""}"`,
               r.action || "",
@@ -586,6 +632,7 @@
               )
             : auditT("auditSub", "Who did what — system changes and settings");
       }
+      startAutoRefresh();
       loadAudit();
     }
 
@@ -637,6 +684,13 @@
           btn.addEventListener("click", () => setTab(btn.dataset.tab));
         });
 
+        document.addEventListener("visibilitychange", () => {
+          if (document.visibilityState === "visible" && state.tab === "scans") {
+            loadAudit({ silent: true });
+          }
+        });
+
+        startAutoRefresh();
         loadAudit();
       }, { minRole: "admin" })
     );
