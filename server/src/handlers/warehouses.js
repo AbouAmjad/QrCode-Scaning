@@ -256,11 +256,17 @@ async function createInventoryCountSheet(ctx) {
 
   const sourceSql =
     locationType === "project"
-      ? `SELECT ps.code, ps.qty, COALESCE(c.description,'') AS description, COALESCE(c.category,'') AS category
-           FROM project_stock ps LEFT JOIN catalog c ON c.code = ps.code
+      ? `SELECT ps.code, ps.qty, COALESCE(c.description,'') AS description, COALESCE(c.category,'') AS category,
+                 COALESCE(ph.image_url,'') AS image_url
+           FROM project_stock ps
+           LEFT JOIN catalog c ON c.code = ps.code
+           LEFT JOIN product_photos ph ON UPPER(ph.code) = UPPER(ps.code)
           WHERE ps.project_id = $1 AND ps.qty > 0`
-      : `SELECT ws.code, ws.qty, COALESCE(c.description,'') AS description, COALESCE(c.category,'') AS category
-           FROM warehouse_stock ws LEFT JOIN catalog c ON c.code = ws.code
+      : `SELECT ws.code, ws.qty, COALESCE(c.description,'') AS description, COALESCE(c.category,'') AS category,
+                 COALESCE(ph.image_url,'') AS image_url
+           FROM warehouse_stock ws
+           LEFT JOIN catalog c ON c.code = ws.code
+           LEFT JOIN product_photos ph ON UPPER(ph.code) = UPPER(ws.code)
           WHERE ws.warehouse_id = $1 AND ws.qty > 0`;
 
   const source = await query(sourceSql, [locationType === "project" ? projectId : warehouseId]);
@@ -324,6 +330,7 @@ async function createInventoryCountSheet(ctx) {
         code: U.upper(row.code),
         description: row.description || "",
         expectedQty: U.num(row.qty, 0),
+        imageUrl: row.image_url || "",
       })),
     };
   const lines = sheet.lines;
