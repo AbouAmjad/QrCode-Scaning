@@ -7,7 +7,6 @@ const TCUI = (() => {
     { id: "damage", href: "damage.html", icon: "bi-exclamation-octagon-fill", i18n: "damage", group: "ops" },
     { id: "logs", href: "logs.html", icon: "bi-journal-text", i18n: "logs", group: "ops" },
     { id: "timesheetScan", href: "timesheet-scan.html", icon: "bi-person-badge", i18n: "timesheetScan", group: "ops" },
-    { id: "audit", href: "audit.html", icon: "bi-journal-text", i18n: "audit", group: "admin" },
     { id: "timesheetAdmin", href: "timesheet-admin.html", icon: "bi-clock-history", i18n: "timesheetAdmin", group: "admin" },
     { id: "timesheetPortal", href: "timesheet-portal.html", icon: "bi-person-bounding-box", i18n: "timesheetPortal", group: "account" },
     { id: "products", href: "products.html", icon: "bi-box-seam-fill", i18n: "products", group: "catalog" },
