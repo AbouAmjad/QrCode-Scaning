@@ -705,7 +705,7 @@
       const to = document.getElementById("dateTo").value;
       const groupBy = document.getElementById("groupBy").value;
       if (filterMode === "overdue") push("overdue", tt("overdueOnly", "Overdue only"));
-      if (keeper) push("keeper", tt("storeKeeper", "Keeper") + ": " + keeper);
+      if (keeper) push("keeper", tt("storeKeeper", "Keeper") + ": " + (keeperLabels[keeper] || keeper));
       if (supplier) push("supplier", tt("supplier", "Supplier") + ": " + supplier);
       if (supervisor) push("supervisor", tt("supervisor", "Supervisor") + ": " + supervisor);
       if (Number(minDays) > 0) push("minDays", tt("minDaysOut", "Min days") + ": " + minDays + "+");
