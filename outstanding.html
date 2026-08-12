@@ -2,67 +2,852 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ToolCustody | Not returned</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>AbouAmjad Store System | Not returned</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="app.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="app.css?v=nrux1">
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#1e3a5f">
-  <script src="config.js"></script>
-  <script src="ui.js"></script>
-  <script src="parser.js"></script>
+  <meta name="theme-color" content="#0f766e">
+  <script src="config.js?v=nrux1"></script>
+  <script src="i18n.js?v=nrux1"></script>
+  <script src="ui.js?v=nrux1"></script>
+  <style>
+    .nr-page {
+      font-family: "Plus Jakarta Sans", var(--tc-font);
+      padding-bottom: calc(5.75rem + env(safe-area-inset-bottom, 0px));
+    }
+    @media (min-width: 900px) { .nr-page { padding-bottom: 1.5rem; } }
+
+    /* Compact summary strip — operational, not marketing hero */
+    .nr-page .nr-summary {
+      display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .5rem;
+      margin-bottom: .9rem;
+    }
+    @media (min-width: 720px) { .nr-page .nr-summary { grid-template-columns: repeat(4, 1fr); } }
+    .nr-page .nr-kpi {
+      background: var(--tc-surface); border: 1px solid var(--tc-border);
+      border-radius: 14px; padding: .7rem .8rem; position: relative; overflow: hidden;
+    }
+    .nr-page .nr-kpi::before {
+      content: ""; position: absolute; inset: 0 auto 0 0; width: 3px; background: var(--tc-accent);
+    }
+    .nr-page .nr-kpi.warn::before { background: var(--tc-warning); }
+    .nr-page .nr-kpi.danger::before { background: var(--tc-danger); }
+    .nr-page .nr-kpi .k {
+      font-size: .62rem; font-weight: 800; text-transform: uppercase; letter-spacing: .04em;
+      color: var(--tc-muted);
+    }
+    .nr-page .nr-kpi .v {
+      font-size: 1.35rem; font-weight: 800; line-height: 1.15; margin-top: .12rem;
+      font-variant-numeric: tabular-nums;
+    }
+    .nr-page .nr-kpi .s { font-size: .7rem; color: var(--tc-muted); margin-top: .1rem; }
+
+    .nr-page .nr-controls {
+      position: sticky; top: calc(var(--tc-topbar-h, 64px) + 2px); z-index: 8;
+      margin: 0 0 .85rem; padding: .45rem 0 .25rem;
+      background: linear-gradient(180deg, var(--tc-bg) 60%, transparent);
+    }
+    .nr-page .nr-search-row {
+      display: flex; gap: .45rem; align-items: center; margin-bottom: .5rem;
+    }
+    .nr-page .nr-search-row .tc-search {
+      flex: 1; min-width: 0; max-width: none !important; border-radius: 12px;
+      min-height: 46px; font-size: 16px;
+    }
+    .nr-page .nr-icon-btn {
+      width: 46px; height: 46px; flex: 0 0 46px; border-radius: 12px; padding: 0;
+      display: grid; place-items: center; border: 1px solid var(--tc-border);
+      background: var(--tc-surface); color: var(--tc-text); position: relative;
+    }
+    .nr-page .nr-icon-btn.active {
+      border-color: rgba(15,118,110,.45); background: var(--tc-accent-soft); color: var(--tc-accent-2);
+    }
+    .nr-page .nr-icon-btn .dot {
+      position: absolute; top: 8px; right: 8px; width: 8px; height: 8px; border-radius: 50%;
+      background: var(--tc-accent); display: none;
+    }
+    .nr-page .nr-icon-btn.active .dot { display: block; }
+
+    .nr-page .nr-seg {
+      display: flex; width: 100%; padding: .2rem; background: var(--tc-surface-2);
+      border-radius: 12px; gap: .2rem; border: 1px solid var(--tc-border);
+    }
+    .nr-page .nr-seg button {
+      flex: 1; border: 0; background: transparent; color: var(--tc-muted); font-weight: 800;
+      font-size: .78rem; padding: .55rem .4rem; border-radius: 10px; cursor: pointer; min-height: 40px;
+    }
+    .nr-page .nr-seg button.active {
+      background: var(--tc-surface); color: var(--tc-accent-2);
+      box-shadow: 0 4px 12px -8px rgba(20,32,51,.35);
+    }
+
+    .nr-page .nr-filters {
+      display: none; margin-top: .5rem; padding: .8rem;
+      border-radius: 14px; border: 1px solid var(--tc-border);
+      background: var(--tc-surface);
+    }
+    .nr-page .nr-filters.open { display: grid; gap: .55rem; }
+    .nr-page .nr-filters-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; }
+    .nr-page .nr-field label {
+      display: block; font-size: .65rem; font-weight: 800; text-transform: uppercase;
+      letter-spacing: .04em; color: var(--tc-muted); margin-bottom: .2rem;
+    }
+    .nr-page .nr-field input,
+    .nr-page .nr-field select {
+      width: 100%; min-height: 44px; border-radius: 11px; font-size: 16px;
+    }
+    .nr-page .nr-filters-actions { display: grid; grid-template-columns: 1fr 1fr; gap: .4rem; }
+    .nr-page .nr-filters-actions .tc-btn { min-height: 44px; justify-content: center; }
+
+    @media (min-width: 900px) {
+      .nr-page .nr-controls { position: static; background: none; }
+      .nr-page .nr-filters {
+        display: flex !important; flex-wrap: wrap; align-items: end; gap: .55rem;
+        margin-top: .65rem; padding: 0; border: 0; background: transparent;
+      }
+      .nr-page .nr-filters-grid { display: contents; }
+      .nr-page .nr-field { min-width: 140px; }
+      .nr-page .nr-filters-actions { display: contents; }
+      .nr-page .nr-icon-btn#btnToggleFilters { display: none; }
+      .nr-page .nr-seg { width: auto; display: inline-flex; }
+      .nr-page .nr-seg button { flex: none; padding: .4rem .9rem; }
+    }
+
+    .nr-page .nr-result-meta {
+      display: flex; justify-content: space-between; align-items: center; gap: .5rem;
+      margin: 0 0 .65rem; font-size: .78rem; color: var(--tc-muted); font-weight: 700;
+    }
+
+    .nr-page .nr-list { display: flex; flex-direction: column; gap: .85rem; }
+
+    /* Person custody card */
+    .nr-page .nr-card {
+      border: 1px solid var(--tc-border); border-radius: 16px;
+      background: var(--tc-surface); overflow: hidden;
+      box-shadow: 0 10px 28px -24px rgba(20,32,51,.4);
+    }
+    .nr-page .nr-card.overdue {
+      border-color: color-mix(in srgb, var(--tc-danger) 38%, var(--tc-border));
+    }
+    .nr-page .nr-card-head {
+      display: grid; grid-template-columns: auto 1fr auto; gap: .7rem; align-items: start;
+      padding: .9rem .9rem .75rem; text-decoration: none; color: inherit;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .nr-page .nr-card-head:active { background: var(--tc-surface-2); }
+    .nr-page .nr-avatar {
+      width: 48px; height: 48px; border-radius: 14px; object-fit: cover;
+      background: var(--tc-thumb-bg); display: grid; place-items: center;
+      color: var(--tc-muted); font-weight: 800; border: 1px solid var(--tc-border);
+      font-size: 1rem;
+    }
+    .nr-page .nr-name { font-weight: 800; font-size: 1.02rem; line-height: 1.2; }
+    .nr-page .nr-code {
+      display: inline-flex; font-size: .68rem; font-weight: 800; color: var(--tc-accent-2);
+      background: var(--tc-accent-soft); padding: .12rem .45rem; border-radius: 999px; margin-top: .28rem;
+    }
+    .nr-page .nr-status {
+      display: flex; flex-direction: column; align-items: flex-end; gap: .3rem;
+    }
+    .nr-page .nr-badge {
+      display: inline-flex; align-items: center; gap: .25rem;
+      font-size: .7rem; font-weight: 800; padding: .35rem .55rem; border-radius: 999px;
+      background: var(--tc-warn-bg); color: var(--tc-warning); white-space: nowrap;
+    }
+    .nr-page .nr-badge.hot { background: var(--tc-danger-bg); color: var(--tc-danger); }
+    .nr-page .nr-badge.ok { background: var(--tc-ok-bg); color: var(--tc-success); }
+    .nr-page .nr-qty-pill {
+      font-size: .68rem; font-weight: 800; color: var(--tc-muted);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .nr-page .nr-info {
+      display: grid; gap: .35rem; padding: 0 .9rem .7rem;
+      border-bottom: 1px solid var(--tc-border);
+    }
+    .nr-page .nr-info-row {
+      display: flex; gap: .45rem; align-items: flex-start;
+      font-size: .78rem; color: var(--tc-muted); line-height: 1.35;
+    }
+    .nr-page .nr-info-row i { margin-top: .12rem; flex-shrink: 0; opacity: .85; }
+    .nr-page .nr-info-row strong { color: var(--tc-text); font-weight: 700; }
+
+    .nr-page .nr-tools-head {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: .55rem .9rem .35rem; font-size: .68rem; font-weight: 800;
+      text-transform: uppercase; letter-spacing: .04em; color: var(--tc-muted);
+    }
+    .nr-page .nr-tools-body { padding: 0 .65rem .65rem; display: flex; flex-direction: column; gap: .4rem; }
+
+    .nr-page .nr-tool {
+      display: grid; grid-template-columns: 52px 1fr auto; gap: .35rem .55rem;
+      align-items: start;
+      padding: .65rem .7rem; border-radius: 12px;
+      background: var(--tc-surface-2); border: 1px solid var(--tc-border);
+    }
+    .nr-page .nr-tool .tc-product-thumb {
+      width: 52px; height: 52px; border-radius: 10px;
+      object-fit: cover; flex-shrink: 0;
+    }
+    .nr-page .nr-tool .tc-product-thumb.placeholder {
+      width: 52px; height: 52px;
+    }
+    .nr-page .nr-tool.hot {
+      background: color-mix(in srgb, var(--tc-danger-bg) 70%, var(--tc-surface-2));
+      border-color: color-mix(in srgb, var(--tc-danger) 28%, var(--tc-border));
+    }
+    .nr-page .nr-tool-code {
+      font-size: .72rem; font-weight: 800; color: var(--tc-accent-2);
+      font-variant-numeric: tabular-nums;
+    }
+    .nr-page .nr-tool-name {
+      font-size: .86rem; font-weight: 700; color: var(--tc-text); line-height: 1.25;
+      margin-top: .1rem; word-break: break-word;
+    }
+    .nr-page .nr-tool-days {
+      font-size: .72rem; font-weight: 800; padding: .28rem .5rem; border-radius: 999px;
+      background: var(--tc-warn-bg); color: var(--tc-warning); align-self: start;
+      white-space: nowrap;
+    }
+    .nr-page .nr-tool.hot .nr-tool-days { background: var(--tc-danger-bg); color: var(--tc-danger); }
+    .nr-page .nr-tool-meta {
+      grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: .25rem .65rem;
+      font-size: .72rem; color: var(--tc-muted); margin-top: .05rem;
+    }
+    .nr-page .nr-tool-meta span { display: inline-flex; align-items: center; gap: .22rem; }
+    .nr-page .nr-tool-lots { display: grid; gap: .22rem; width: 100%; }
+    .nr-page .nr-tool-lot {
+      display: flex; align-items: center; gap: .35rem; flex-wrap: wrap;
+      padding: .22rem .45rem; border-radius: 8px;
+      background: var(--tc-surface-2); border: 1px solid var(--tc-border);
+      color: var(--tc-text);
+    }
+    .nr-page .nr-tool-lot.hot {
+      border-color: color-mix(in srgb, var(--tc-danger) 35%, transparent);
+      background: var(--tc-danger-bg);
+    }
+    .nr-page .nr-tool-lot i { color: var(--tc-accent); }
+
+    .nr-page .nr-card-foot {
+      display: flex; justify-content: space-between; align-items: center; gap: .5rem;
+      padding: .55rem .9rem .75rem; border-top: 1px solid var(--tc-border);
+      background: color-mix(in srgb, var(--tc-surface-2) 55%, transparent);
+    }
+    .nr-page .nr-card-foot .tc-btn {
+      min-height: 40px; border-radius: 11px; font-weight: 800; font-size: .8rem;
+    }
+    .nr-page .nr-card-foot .hint {
+      font-size: .72rem; color: var(--tc-muted); font-weight: 600;
+    }
+
+    .nr-page .nr-empty {
+      text-align: center; padding: 2.2rem 1rem; border: 1px dashed var(--tc-border);
+      border-radius: 16px; background: var(--tc-surface);
+    }
+    .nr-page .nr-empty i { font-size: 2.1rem; color: var(--tc-success); display: block; margin-bottom: .45rem; }
+
+    .nr-page .nr-dock-mobile {
+      position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
+      padding: .6rem .85rem calc(.6rem + env(safe-area-inset-bottom, 0px));
+      background: color-mix(in srgb, var(--tc-surface) 90%, transparent);
+      border-top: 1px solid var(--tc-border);
+      backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+      display: grid; grid-template-columns: 1fr 1fr; gap: .45rem;
+    }
+    .nr-page .nr-dock-desktop { display: none; }
+    .nr-page .nr-dock-mobile .tc-btn,
+    .nr-page .nr-dock-desktop .tc-btn {
+      min-height: 46px; justify-content: center; border-radius: 12px; font-weight: 800;
+    }
+    @media (min-width: 900px) {
+      .nr-page .nr-dock-mobile { display: none; }
+      .nr-page .nr-dock-desktop {
+        display: flex; justify-content: flex-end; gap: .45rem; margin: 0 0 .85rem;
+      }
+      .nr-page .nr-dock-desktop .tc-btn { min-height: 40px; }
+      .nr-page .nr-card-head:hover { background: var(--tc-surface-2); }
+    }
+
+    .nr-page .nr-card {
+      animation: nrIn .28s ease both;
+    }
+    .nr-page .nr-card:nth-child(2) { animation-delay: .03s; }
+    .nr-page .nr-card:nth-child(3) { animation-delay: .06s; }
+    .nr-page .nr-card:nth-child(4) { animation-delay: .09s; }
+    .nr-page .nr-card:nth-child(5) { animation-delay: .12s; }
+    @keyframes nrIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: none; }
+    }
+    .nr-page .nr-group { margin-bottom: 1.1rem; }
+    .nr-page .nr-group-head {
+      display: flex; align-items: center; justify-content: space-between; gap: .5rem;
+      margin: 0 0 .55rem; padding: .15rem 0 .35rem;
+      border-bottom: 1px solid var(--tc-border);
+    }
+    .nr-page .nr-group-head strong {
+      font-size: .88rem; font-weight: 800; display: inline-flex; align-items: center; gap: .4rem;
+    }
+    .nr-page .nr-group-head strong i { color: var(--tc-accent); }
+    .nr-page .nr-group-badge {
+      font-size: .7rem; font-weight: 800; padding: .2rem .55rem; border-radius: 999px;
+      background: var(--tc-accent-soft); color: var(--tc-accent-2);
+    }
+    .nr-page .nr-updated {
+      font-size: .72rem; color: var(--tc-muted); font-weight: 600;
+    }
+    .nr-page .nr-tool a.nr-tool-code {
+      text-decoration: none; color: var(--tc-accent-2);
+    }
+    .nr-page .nr-tool a.nr-tool-code:hover { text-decoration: underline; }
+    .nr-page .nr-chip-row {
+      display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .35rem;
+    }
+    .nr-page .nr-chip {
+      font-size: .66rem; font-weight: 800; padding: .18rem .45rem; border-radius: 999px;
+      background: var(--tc-surface-2); color: var(--tc-muted);
+    }
+    .nr-page .nr-chip.sup { background: #ccfbf1; color: #0f766e; }
+    .nr-page .nr-chip.sv { background: #e0f2fe; color: #0369a1; }
+  </style>
 </head>
-<body class="tc-page">
+<body class="tc-page nr-page">
   <div class="tc-wrap">
     <div class="tc-shell">
       <div id="app-header"></div>
-      <div class="tc-card">
-        <span class="tc-section-badge"><i class="bi bi-person-exclamation"></i> مين ما رجّع العدة</span>
-        <p class="tc-text-muted small mt-2">عمال معهم أدوات لسه برّا المخزن</p>
-        <div id="list" class="mt-3">Loading…</div>
+
+      <div class="nr-summary" aria-label="Summary">
+        <div class="nr-kpi">
+          <div class="k" data-i18n="peopleWithTools">People</div>
+          <div class="v" id="kPeople">0</div>
+          <div class="s" data-i18n="nrWithOpenCustody">With open custody</div>
+        </div>
+        <div class="nr-kpi danger">
+          <div class="k" data-i18n="toolsOut">Tools out</div>
+          <div class="v" id="kTools">0</div>
+          <div class="s" data-i18n="nrStillNotReturned">Still not returned</div>
+        </div>
+        <div class="nr-kpi warn">
+          <div class="k" data-i18n="overduePeople">Overdue</div>
+          <div class="v" id="kOverdue">0</div>
+          <div class="s" data-i18n="nrPastDueThreshold">Past due threshold</div>
+        </div>
+        <div class="nr-kpi">
+          <div class="k" data-i18n="oldestDays">Oldest (days)</div>
+          <div class="v" id="kMax">0</div>
+          <div class="s" data-i18n="nrLongestHold">Longest hold</div>
+        </div>
+      </div>
+
+      <div class="nr-controls">
+        <div class="nr-search-row">
+          <input id="q" class="tc-search" data-i18n-placeholder="searchPersonOrTool" placeholder="Search person or tool…">
+          <button type="button" class="nr-icon-btn" id="btnToggleFilters" aria-expanded="false" title="Filters">
+            <i class="bi bi-sliders"></i><span class="dot"></span>
+          </button>
+        </div>
+        <div class="nr-seg" id="filterSeg">
+          <button type="button" class="active" data-filter="all" data-i18n="all">All</button>
+          <button type="button" data-filter="overdue" data-i18n="overdueOnly">Overdue only</button>
+        </div>
+        <div class="nr-filters" id="filtersPanel">
+          <div class="nr-filters-grid">
+            <div class="nr-field">
+              <label data-i18n="dateFrom">From</label>
+              <input type="date" id="dateFrom" class="tc-input">
+            </div>
+            <div class="nr-field">
+              <label data-i18n="dateTo">To</label>
+              <input type="date" id="dateTo" class="tc-input">
+            </div>
+            <div class="nr-field">
+              <label data-i18n="supplier">Supplier</label>
+              <select id="filterSupplier" class="tc-select">
+                <option value="">All suppliers</option>
+              </select>
+            </div>
+            <div class="nr-field">
+              <label data-i18n="supervisor">Supervisor</label>
+              <select id="filterSupervisor" class="tc-select">
+                <option value="">All supervisors</option>
+              </select>
+            </div>
+            <div class="nr-field">
+              <label data-i18n="minDaysOut">Min days out</label>
+              <select id="minDays" class="tc-select">
+                <option value="0">Any</option>
+                <option value="1">1+</option>
+                <option value="2">2+</option>
+                <option value="3">3+</option>
+                <option value="7">7+</option>
+                <option value="14">14+</option>
+                <option value="30">30+</option>
+              </select>
+            </div>
+            <div class="nr-field">
+              <label data-i18n="groupBy">Group by</label>
+              <select id="groupBy" class="tc-select">
+                <option value="none">None</option>
+                <option value="supplier">Supplier</option>
+                <option value="supervisor">Supervisor</option>
+              </select>
+            </div>
+            <div class="nr-field" style="grid-column: 1 / -1">
+              <label data-i18n="sortByDays">Sort</label>
+              <select id="sortBy" class="tc-select">
+                <option value="days" data-i18n="sortByDays">Longest out</option>
+                <option value="qty" data-i18n="sortByQty">Most tools</option>
+                <option value="name" data-i18n="sortByName">Name</option>
+                <option value="time" data-i18n="sortByTime">Latest OUT time</option>
+              </select>
+            </div>
+          </div>
+          <div class="nr-filters-actions">
+            <button type="button" class="tc-btn" id="btnClearDates"><i class="bi bi-x-lg"></i> <span data-i18n="clearDates">Clear</span></button>
+            <button type="button" class="tc-btn tc-btn-primary" id="btnApplyFilters"><i class="bi bi-check2"></i> OK</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="nr-dock-desktop" id="dockDesktop">
+        <button type="button" class="tc-btn" id="btnExport" disabled><i class="bi bi-download"></i> <span data-i18n="export">Export</span></button>
+        <button type="button" class="tc-btn tc-btn-primary" id="btnRefresh"><i class="bi bi-arrow-clockwise"></i> <span data-i18n="refresh">Refresh</span></button>
+      </div>
+
+      <div class="nr-result-meta">
+        <span id="resultCount">—</span>
+        <span><span id="overdueHint"></span> · <span class="nr-updated" id="lastUpdated"></span></span>
+      </div>
+
+      <div id="list" class="nr-list"></div>
+    </div>
+  </div>
+
+  <div class="nr-dock-mobile" id="dockMobile">
+    <button type="button" class="tc-btn" id="btnExportM" disabled><i class="bi bi-download"></i> <span data-i18n="export">Export</span></button>
+    <button type="button" class="tc-btn tc-btn-primary" id="btnRefreshM"><i class="bi bi-arrow-clockwise"></i> <span data-i18n="refresh">Refresh</span></button>
+  </div>
+
+  <div class="tc-modal-backdrop" id="exportModal">
+    <div class="tc-modal" style="max-width:420px">
+      <div class="tc-modal-head">
+        <div>
+          <h3 class="h5 mb-1" data-i18n="exportNotReturned">Export not returned</h3>
+          <p class="tc-text-muted small mb-0" id="exportModalHint" data-i18n="chooseExportFormat">Choose Excel or PDF</p>
+        </div>
+        <button type="button" class="tc-btn tc-btn-sm" id="btnCloseExport"><i class="bi bi-x-lg"></i></button>
+      </div>
+      <div class="tc-modal-body d-grid gap-2">
+        <button type="button" class="tc-btn tc-btn-primary" id="btnExportXlsx" style="min-height:48px"><i class="bi bi-file-earmark-spreadsheet"></i> <span data-i18n="exportExcel">Excel (.xlsx)</span></button>
+        <button type="button" class="tc-btn" id="btnExportPdf" style="min-height:48px"><i class="bi bi-file-earmark-pdf"></i> <span data-i18n="exportPdf">PDF</span></button>
       </div>
     </div>
   </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="export-utils.js?v=photos1"></script>
   <script>
+    let items = [];
+    let filterMode = "all";
+    let overdueDaysSetting = 1;
+    let autoTimer = null;
+    const AUTO_MS = 30000;
+
     document.addEventListener("DOMContentLoaded", () => TCUI.bootPage(() => {
       TCUI.mountHeader("app-header", {
         active: "outstanding",
-        title: "Not returned",
-        subtitle: "Who still has tools out",
-        icon: "bi-person-exclamation",
-        toolbar: `<button class="tc-btn tc-btn-primary" id="btnRefresh"><i class="bi bi-arrow-clockwise"></i> Refresh</button>`
+        titleKey: "outstanding",
+        subtitleKey: "outstandingSub",
+        icon: "bi-person-exclamation"
       });
-      document.getElementById("btnRefresh").onclick = load;
+      const refresh = () => load();
+      const openExp = () => openExportModal();
+      document.getElementById("btnRefresh").onclick = refresh;
+      document.getElementById("btnRefreshM").onclick = refresh;
+      document.getElementById("btnExport").onclick = openExp;
+      document.getElementById("btnExportM").onclick = openExp;
+      document.getElementById("btnCloseExport").onclick = closeExportModal;
+      document.getElementById("btnExportXlsx").onclick = () => doExport("xlsx");
+      document.getElementById("btnExportPdf").onclick = () => doExport("pdf");
+      document.getElementById("exportModal").addEventListener("click", (e) => {
+        if (e.target.id === "exportModal") closeExportModal();
+      });
+      document.getElementById("q").oninput = render;
+      document.getElementById("sortBy").onchange = render;
+      document.getElementById("filterSupplier").onchange = () => { syncFilterDot(); render(); };
+      document.getElementById("filterSupervisor").onchange = () => { syncFilterDot(); render(); };
+      document.getElementById("minDays").onchange = () => { syncFilterDot(); render(); };
+      document.getElementById("groupBy").onchange = render;
+      document.getElementById("dateFrom").onchange = syncFilterDot;
+      document.getElementById("dateTo").onchange = syncFilterDot;
+      document.addEventListener("visibilitychange", () => {
+        if (document.hidden) stopAuto();
+        else startAuto();
+      });
+      startAuto();
+      document.getElementById("btnClearDates").onclick = () => {
+        document.getElementById("dateFrom").value = "";
+        document.getElementById("dateTo").value = "";
+        document.getElementById("filterSupplier").value = "";
+        document.getElementById("filterSupervisor").value = "";
+        document.getElementById("minDays").value = "0";
+        document.getElementById("groupBy").value = "none";
+        syncFilterDot();
+        render();
+      };
+      document.getElementById("btnApplyFilters").onclick = () => {
+        document.getElementById("filtersPanel").classList.remove("open");
+        document.getElementById("btnToggleFilters").classList.remove("active");
+        document.getElementById("btnToggleFilters").setAttribute("aria-expanded", "false");
+        syncFilterDot();
+        render();
+      };
+      document.getElementById("btnToggleFilters").onclick = () => {
+        const panel = document.getElementById("filtersPanel");
+        const btn = document.getElementById("btnToggleFilters");
+        const open = !panel.classList.contains("open");
+        panel.classList.toggle("open", open);
+        btn.classList.toggle("active", open);
+        btn.setAttribute("aria-expanded", open ? "true" : "false");
+      };
+      document.querySelectorAll("#filterSeg button").forEach((btn) => {
+        btn.onclick = () => {
+          filterMode = btn.getAttribute("data-filter") || "all";
+          document.querySelectorAll("#filterSeg button").forEach((b) => b.classList.toggle("active", b === btn));
+          render();
+        };
+      });
+      if (window.matchMedia("(min-width: 900px)").matches) {
+        document.getElementById("filtersPanel").classList.add("open");
+      }
       load();
     }, { pageId: "outstanding" }));
 
-    async function load() {
-      const host = document.getElementById("list");
+    function startAuto() {
+      stopAuto();
+      autoTimer = setInterval(() => load({ silent: true }), AUTO_MS);
+    }
+    function stopAuto() {
+      if (autoTimer) clearInterval(autoTimer);
+      autoTimer = null;
+    }
+
+    function syncFilterDot() {
+      const datesOn = !!(document.getElementById("dateFrom").value || document.getElementById("dateTo").value);
+      const extraOn = !!(
+        document.getElementById("filterSupplier").value ||
+        document.getElementById("filterSupervisor").value ||
+        Number(document.getElementById("minDays").value || 0)
+      );
+      const filtersOn = datesOn || extraOn;
+      const open = document.getElementById("filtersPanel").classList.contains("open");
+      const btn = document.getElementById("btnToggleFilters");
+      btn.classList.toggle("active", open || filtersOn);
+      btn.querySelector(".dot").style.display = filtersOn ? "block" : "none";
+    }
+
+    function fillSelect(id, values, allLabel) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const prev = el.value;
+      const opts = [`<option value="">${escHtml(allLabel)}</option>`]
+        .concat([...values].sort((a, b) => a.localeCompare(b)).map((v) =>
+          `<option value="${escHtml(v)}">${escHtml(v)}</option>`
+        ));
+      el.innerHTML = opts.join("");
+      if (prev && values.has(prev)) el.value = prev;
+    }
+
+    function refreshFilterOptions() {
+      const suppliers = new Set();
+      const supervisors = new Set();
+      items.forEach((p) => {
+        if (p.supplierName) suppliers.add(String(p.supplierName));
+        if (p.supervisorName) supervisors.add(String(p.supervisorName));
+      });
+      fillSelect("filterSupplier", suppliers, t("allSuppliers") || "All suppliers");
+      fillSelect("filterSupervisor", supervisors, t("allSupervisors") || "All supervisors");
+    }
+
+    function openExportModal() {
+      const rows = filtered();
+      if (!rows.length) return;
+      document.getElementById("exportModalHint").textContent =
+        `${rows.length} ${t("peopleWithTools").toLowerCase()} · ${t("chooseExportFormat")}`;
+      document.getElementById("exportModal").style.display = "block";
+    }
+
+    function closeExportModal() {
+      document.getElementById("exportModal").style.display = "none";
+    }
+
+    function doExport(format) {
+      closeExportModal();
+      const rows = filtered();
+      if (!rows.length) return;
+      const label = TCExport.stamp();
       try {
-        const dates = await apiGet({ action: "getDates" });
-        const day = Array.isArray(dates) && dates.length ? dates[dates.length - 1] : "";
-        const rows = day ? await apiGet({ action: "getData", date: day }) : [];
-        if (rows && rows.error) throw new Error(rows.error);
-        const list = CustodyParser.buildOutstanding(Array.isArray(rows) ? rows : []);
-        if (!list.length) {
-          host.innerHTML = `<div class="tc-alert ok"><i class="bi bi-check-circle"></i><span>كل العدة راجعة — All tools returned</span></div>`;
-          return;
-        }
-        host.innerHTML = list.map(p => `
-          <div class="tc-card mb-3" style="padding:1rem">
-            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-              <strong>${escHtml(p.person)}</strong>
-              <span class="badge bg-danger">${p.qty} tool(s)</span>
-            </div>
-            <ul class="mb-0 mt-2 small">${p.tools.map(t =>
-              `<li><a href="tool.html?code=${encodeURIComponent(t.code)}">${escHtml(t.code)}</a> — ${escHtml(t.description)} ×${t.qty}</li>`
-            ).join("")}</ul>
-          </div>`).join("");
+        if (format === "pdf") TCExport.exportOutstandingPdf(rows, label);
+        else TCExport.exportOutstandingExcel(rows, label);
       } catch (e) {
-        host.innerHTML = `<div class="text-danger">${escHtml(e.message || "Error")}</div>`;
+        alert(e.message || t("error"));
       }
+    }
+
+    function fmtWhen(iso, fallback) {
+      if (iso && typeof formatDisplayDateTime === "function") return formatDisplayDateTime(iso);
+      if (fallback) return fallback;
+      return "—";
+    }
+
+    function dayBounds() {
+      const fromVal = document.getElementById("dateFrom").value;
+      const toVal = document.getElementById("dateTo").value;
+      let fromMs = null;
+      let toMs = null;
+      if (fromVal) {
+        const d = new Date(fromVal + "T00:00:00");
+        if (!Number.isNaN(d.getTime())) fromMs = d.getTime();
+      }
+      if (toVal) {
+        const d = new Date(toVal + "T23:59:59.999");
+        if (!Number.isNaN(d.getTime())) toMs = d.getTime();
+      }
+      return { fromMs, toMs };
+    }
+
+    function toolInRange(tool, fromMs, toMs) {
+      if (fromMs == null && toMs == null) return true;
+      const ms = tool.takenAt ? new Date(tool.takenAt).getTime() : NaN;
+      if (Number.isNaN(ms)) return false;
+      if (fromMs != null && ms < fromMs) return false;
+      if (toMs != null && ms > toMs) return false;
+      return true;
+    }
+
+    async function load(opts = {}) {
+      const host = document.getElementById("list");
+      const silent = !!opts.silent;
+      if (!silent) host.innerHTML = `<div class="tc-text-muted text-center py-4">${t("loading")}</div>`;
+      try {
+        overdueDaysSetting = typeof getOverdueDays === "function" ? getOverdueDays() : 1;
+        const data = await apiGet({ action: "getOutstanding", overdueDays: overdueDaysSetting });
+        if (data && data.error) throw new Error(data.error);
+        items = (data && data.items) || [];
+        if (data && data.overdueDays) overdueDaysSetting = data.overdueDays;
+        refreshFilterOptions();
+        const stampEl = document.getElementById("lastUpdated");
+        if (stampEl) {
+          const now = new Date();
+          stampEl.textContent = (t("lastUpdated") || "Updated") + " " + now.toLocaleTimeString();
+        }
+        render();
+      } catch (e) {
+        if (!silent) {
+          host.innerHTML = `<div class="text-danger text-center py-4">${escHtml(e.message || "Error")}</div>`;
+        }
+      }
+    }
+
+    function filtered() {
+      const q = document.getElementById("q").value.trim().toUpperCase();
+      const { fromMs, toMs } = dayBounds();
+      let rows = items.map((p) => {
+        const tools = (p.tools || []).filter((tool) => toolInRange(tool, fromMs, toMs));
+        if ((fromMs != null || toMs != null) && !tools.length) return null;
+        const qty = tools.reduce((s, tool) => s + (tool.qty || 1), 0);
+        const daysOut = tools.length ? Math.max(...tools.map((tool) => tool.daysOut || 0)) : p.daysOut;
+        return {
+          ...p,
+          tools,
+          qty: (fromMs != null || toMs != null) ? qty : p.qty,
+          daysOut,
+          overdue: tools.some((tool) => tool.overdue) || ((fromMs == null && toMs == null) && p.overdue)
+        };
+      }).filter(Boolean);
+
+      if (filterMode === "overdue") rows = rows.filter((p) => p.overdue);
+      const supplier = document.getElementById("filterSupplier").value;
+      if (supplier) rows = rows.filter((p) => String(p.supplierName || "") === supplier);
+      const supervisor = document.getElementById("filterSupervisor").value;
+      if (supervisor) rows = rows.filter((p) => String(p.supervisorName || "") === supervisor);
+      const minDays = Number(document.getElementById("minDays").value || 0);
+      if (minDays > 0) rows = rows.filter((p) => (p.daysOut || 0) >= minDays);
+      if (q) {
+        rows = rows.filter((p) => {
+          const blob = [
+            p.code, p.name, p.phone, p.residenceNo, p.supplierName, p.supervisorName,
+            ...(p.tools || []).map((tool) => tool.code + " " + tool.description)
+          ].join(" ").toUpperCase();
+          return blob.includes(q);
+        });
+      }
+      const sort = document.getElementById("sortBy").value;
+      rows.sort((a, b) => {
+        if (sort === "qty") return b.qty - a.qty || a.name.localeCompare(b.name);
+        if (sort === "name") return a.name.localeCompare(b.name);
+        if (sort === "time") {
+          const ta = a.lastOutAt ? new Date(a.lastOutAt).getTime() : 0;
+          const tb = b.lastOutAt ? new Date(b.lastOutAt).getTime() : 0;
+          return tb - ta;
+        }
+        return b.daysOut - a.daysOut || b.qty - a.qty;
+      });
+      return rows;
+    }
+
+    function updateKpis(rows) {
+      const people = rows.length;
+      const tools = rows.reduce((s, p) => s + (p.qty || 0), 0);
+      const overduePeople = rows.filter((p) => p.overdue).length;
+      const maxDays = rows.length ? Math.max(...rows.map((p) => p.daysOut || 0)) : 0;
+      document.getElementById("kPeople").textContent = people;
+      document.getElementById("kTools").textContent = tools;
+      document.getElementById("kOverdue").textContent = overduePeople;
+      document.getElementById("kMax").textContent = maxDays;
+      document.getElementById("resultCount").textContent =
+        t("nrShowingPeople", { n: people }) || `Showing ${people} people`;
+      document.getElementById("overdueHint").textContent =
+        t("nrOverdueAfter", { n: overdueDaysSetting }) || `Overdue after ${overdueDaysSetting}d`;
+      ["btnExport", "btnExportM"].forEach((id) => {
+        const btn = document.getElementById(id);
+        if (btn) btn.disabled = !rows.length;
+      });
+    }
+
+    function avatarHtml(p) {
+      if (p.imageUrl) {
+        return `<img class="nr-avatar" src="${escHtml(p.imageUrl)}" alt="" loading="lazy">`;
+      }
+      const ini = (typeof initials === "function" ? initials(p.name) : (p.name || "?").slice(0, 2)).toUpperCase();
+      return `<div class="nr-avatar">${escHtml(ini)}</div>`;
+    }
+
+    function statusBadge(p) {
+      if (p.overdue) {
+        return `<span class="nr-badge hot"><i class="bi bi-exclamation-triangle-fill"></i> ${escHtml(t("overdueHolding", { n: p.daysOut }) || `Overdue · ${p.daysOut}d`)}</span>`;
+      }
+      return `<span class="nr-badge"><i class="bi bi-hourglass-split"></i> ${p.daysOut}d ${escHtml(t("nrOut") || "out")}</span>`;
+    }
+
+    function toolRowsHtml(tools) {
+      if (!tools.length) {
+        return `<div class="tc-text-muted small px-2 py-2">${escHtml(t("noRows"))}</div>`;
+      }
+      return tools.map((tool) => {
+        const when = fmtWhen(tool.takenAt, tool.takenDateTime || tool.takenDate);
+        const desc = tool.description && tool.description !== tool.code ? tool.description : "";
+        const qty = tool.qty > 1 ? `×${tool.qty}` : "";
+        const thumb = typeof productThumbHtml === "function"
+          ? productThumbHtml(tool.imageUrl, tool.code, 52)
+          : "";
+        const lots = Array.isArray(tool.lots) ? tool.lots : [];
+        const showLots = (tool.qty || 1) > 1 && lots.length > 1;
+        const lotsHtml = showLots
+          ? `<div class="nr-tool-lots">${lots.map((lot) => {
+              const lotWhen = fmtWhen(lot.takenAt, lot.takenDateTime || lot.takenDate);
+              return `<div class="nr-tool-lot${lot.overdue ? " hot" : ""}"><i class="bi bi-clock"></i> ${escHtml(lotWhen)} · <strong>${lot.daysOut}d</strong></div>`;
+            }).join("")}</div>`
+          : `<span><i class="bi bi-box-arrow-right"></i> <strong>${escHtml(t("nrIssuedOn") || "Issued")}:</strong>&nbsp;${escHtml(when)}</span>`;
+        return `<div class="nr-tool ${tool.overdue ? "hot" : ""}">
+          ${thumb}
+          <div>
+            <a class="nr-tool-code" href="tool.html?code=${encodeURIComponent(tool.code)}">${escHtml(tool.code)}${qty ? " " + qty : ""}</a>
+            <div class="nr-tool-name">${escHtml(desc || tool.code)}</div>
+          </div>
+          <div class="nr-tool-days">${tool.daysOut}d</div>
+          <div class="nr-tool-meta">
+            ${lotsHtml}
+            ${tool.overdue && !showLots ? `<span style="color:var(--tc-danger);font-weight:800"><i class="bi bi-flag-fill"></i> ${escHtml(t("nrToolOverdue") || "Overdue")}</span>` : ""}
+          </div>
+        </div>`;
+      }).join("");
+    }
+
+    function personCardHtml(p) {
+      const lastWhen = fmtWhen(p.lastOutAt, p.lastOutDateTime || p.lastOutDate);
+      const tools = p.tools || [];
+      const href = `worker.html?code=${encodeURIComponent(p.code)}`;
+      const chips = [];
+      if (p.supplierName) chips.push(`<span class="nr-chip sup"><i class="bi bi-truck"></i> ${escHtml(p.supplierName)}</span>`);
+      if (p.supervisorName) chips.push(`<span class="nr-chip sv"><i class="bi bi-person-badge"></i> ${escHtml(p.supervisorName)}</span>`);
+      return `<article class="nr-card ${p.overdue ? "overdue" : ""}">
+        <a class="nr-card-head" href="${href}">
+          ${avatarHtml(p)}
+          <div>
+            <div class="nr-name">${escHtml(p.name)}</div>
+            <div class="nr-code">${escHtml(p.code)}</div>
+            ${chips.length ? `<div class="nr-chip-row">${chips.join("")}</div>` : ""}
+          </div>
+          <div class="nr-status">
+            ${statusBadge(p)}
+            <div class="nr-qty-pill">${p.qty} ${escHtml(t("toolsHeldShort") || "tools")}</div>
+          </div>
+        </a>
+        <div class="nr-info">
+          <div class="nr-info-row"><i class="bi bi-clock-history"></i><span><strong>${escHtml(t("lastOut") || "Last OUT")}:</strong>&nbsp;${escHtml(lastWhen)}</span></div>
+          ${p.phone ? `<div class="nr-info-row"><i class="bi bi-telephone"></i><span><strong>${escHtml(t("phone") || "Phone")}:</strong>&nbsp;<a href="tel:${escHtml(p.phone)}">${escHtml(p.phone)}</a></span></div>` : ""}
+          ${p.residenceNo ? `<div class="nr-info-row"><i class="bi bi-person-vcard"></i><span><strong>${escHtml(t("residenceNo") || "Residence")}:</strong>&nbsp;${escHtml(p.residenceNo)}</span></div>` : ""}
+          ${p.supplierName ? `<div class="nr-info-row"><i class="bi bi-truck"></i><span><strong>${escHtml(t("supplier") || "Supplier")}:</strong>&nbsp;${escHtml(p.supplierName)}</span></div>` : ""}
+          ${p.supervisorName ? `<div class="nr-info-row"><i class="bi bi-person-badge"></i><span><strong>${escHtml(t("supervisor") || "Supervisor")}:</strong>&nbsp;${escHtml(p.supervisorName)}</span></div>` : ""}
+        </div>
+        <div class="nr-tools-head">
+          <span>${escHtml(t("currentlyHeld") || "Currently held")}</span>
+          <span>${tools.length} ${escHtml(t("nrLineItems") || "line(s)")}</span>
+        </div>
+        <div class="nr-tools-body">${toolRowsHtml(tools)}</div>
+        <div class="nr-card-foot">
+          <span class="hint">${escHtml(t("nrTapForHistory") || "Full custody history")}</span>
+          <a class="tc-btn tc-btn-primary" href="${href}">
+            ${escHtml(t("viewReport") || "View report")} <i class="bi bi-chevron-right"></i>
+          </a>
+        </div>
+      </article>`;
+    }
+
+    function groupedHtml(rows) {
+      const mode = document.getElementById("groupBy").value || "none";
+      if (mode === "none") return rows.map(personCardHtml).join("");
+      const keyOf = (p) => {
+        if (mode === "supervisor") return p.supervisorName || (t("unassigned") || "Unassigned");
+        return p.supplierName || (t("unassigned") || "Unassigned");
+      };
+      const icon = mode === "supervisor" ? "bi-person-badge" : "bi-truck";
+      const groups = new Map();
+      rows.forEach((p) => {
+        const k = keyOf(p);
+        if (!groups.has(k)) groups.set(k, []);
+        groups.get(k).push(p);
+      });
+      return [...groups.entries()].map(([label, people]) => {
+        const qty = people.reduce((s, p) => s + (p.qty || 0), 0);
+        return `<section class="nr-group">
+          <div class="nr-group-head">
+            <strong><i class="bi ${icon}"></i> ${escHtml(label)}</strong>
+            <span class="nr-group-badge">${people.length} · ${qty} ${escHtml(t("toolsShort") || "tools")}</span>
+          </div>
+          <div class="nr-list">${people.map(personCardHtml).join("")}</div>
+        </section>`;
+      }).join("");
+    }
+
+    function render() {
+      const host = document.getElementById("list");
+      const rows = filtered();
+      updateKpis(rows);
+      syncFilterDot();
+      if (!items.length) {
+        host.innerHTML = `<div class="nr-empty"><i class="bi bi-check-circle"></i><strong>${t("allReturnedTitle") || "All clear"}</strong><div class="tc-text-muted mt-1">${t("allReturnedHint") || "Every tool has been returned."}</div></div>`;
+        return;
+      }
+      if (!rows.length) {
+        host.innerHTML = `<div class="nr-empty"><i class="bi bi-search" style="color:var(--tc-muted)"></i>${t("noRows") || "No matches"}</div>`;
+        return;
+      }
+      host.innerHTML = groupedHtml(rows);
     }
   </script>
 </body>
