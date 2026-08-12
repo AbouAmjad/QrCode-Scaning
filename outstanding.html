@@ -481,8 +481,8 @@
       document.getElementById("filterSupervisor").onchange = () => { syncFilterDot(); render(); };
       document.getElementById("minDays").onchange = () => { syncFilterDot(); render(); };
       document.getElementById("groupBy").onchange = render;
-      document.getElementById("dateFrom").onchange = syncFilterDot;
-      document.getElementById("dateTo").onchange = syncFilterDot;
+      document.getElementById("dateFrom").onchange = () => { syncFilterDot(); render(); };
+      document.getElementById("dateTo").onchange = () => { syncFilterDot(); render(); };
       document.addEventListener("visibilitychange", () => {
         if (document.hidden) stopAuto();
         else startAuto();
