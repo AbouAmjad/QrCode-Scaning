@@ -364,6 +364,12 @@
               <input type="date" id="dateTo" class="tc-input">
             </div>
             <div class="nr-field">
+              <label data-i18n="storeKeeper">Store keeper</label>
+              <select id="filterKeeper" class="tc-select">
+                <option value="">All store keepers</option>
+              </select>
+            </div>
+            <div class="nr-field">
               <label data-i18n="supplier">Supplier</label>
               <select id="filterSupplier" class="tc-select">
                 <option value="">All suppliers</option>
@@ -391,6 +397,7 @@
               <label data-i18n="groupBy">Group by</label>
               <select id="groupBy" class="tc-select">
                 <option value="none">None</option>
+                <option value="keeper">Store keeper</option>
                 <option value="supplier">Supplier</option>
                 <option value="supervisor">Supervisor</option>
               </select>
@@ -477,6 +484,7 @@
       });
       document.getElementById("q").oninput = render;
       document.getElementById("sortBy").onchange = render;
+      document.getElementById("filterKeeper").onchange = () => { syncFilterDot(); render(); };
       document.getElementById("filterSupplier").onchange = () => { syncFilterDot(); render(); };
       document.getElementById("filterSupervisor").onchange = () => { syncFilterDot(); render(); };
       document.getElementById("minDays").onchange = () => { syncFilterDot(); render(); };
@@ -491,6 +499,7 @@
       document.getElementById("btnClearDates").onclick = () => {
         document.getElementById("dateFrom").value = "";
         document.getElementById("dateTo").value = "";
+        document.getElementById("filterKeeper").value = "";
         document.getElementById("filterSupplier").value = "";
         document.getElementById("filterSupervisor").value = "";
         document.getElementById("minDays").value = "0";
@@ -538,6 +547,7 @@
     function syncFilterDot() {
       const datesOn = !!(document.getElementById("dateFrom").value || document.getElementById("dateTo").value);
       const extraOn = !!(
+        document.getElementById("filterKeeper").value ||
         document.getElementById("filterSupplier").value ||
         document.getElementById("filterSupervisor").value ||
         Number(document.getElementById("minDays").value || 0)
@@ -564,12 +574,31 @@
     function refreshFilterOptions() {
       const suppliers = new Set();
       const supervisors = new Set();
+      const keepers = new Set();
       items.forEach((p) => {
         if (p.supplierName) suppliers.add(String(p.supplierName));
         if (p.supervisorName) supervisors.add(String(p.supervisorName));
+        (p.keepers || []).forEach((k) => { if (k) keepers.add(String(k)); });
+        if (p.keeper) keepers.add(String(p.keeper));
+        (p.tools || []).forEach((tool) => {
+          if (tool.keeper) keepers.add(String(tool.keeper));
+          (tool.keepers || []).forEach((k) => { if (k) keepers.add(String(k)); });
+          (tool.lots || []).forEach((lot) => {
+            const k = lot.keeper || lot.createdBy;
+            if (k) keepers.add(String(k));
+          });
+        });
       });
+      fillSelect("filterKeeper", keepers, t("allStoreKeepers") || "All store keepers");
       fillSelect("filterSupplier", suppliers, t("allSuppliers") || "All suppliers");
       fillSelect("filterSupervisor", supervisors, t("allSupervisors") || "All supervisors");
+    }
+
+    function toolMatchesKeeper(tool, keeper) {
+      if (!keeper) return true;
+      if (tool.keeper === keeper) return true;
+      if (Array.isArray(tool.keepers) && tool.keepers.includes(keeper)) return true;
+      return (tool.lots || []).some((lot) => (lot.keeper || lot.createdBy || "") === keeper);
     }
 
     function openExportModal() {
@@ -655,17 +684,35 @@
     function filtered() {
       const q = document.getElementById("q").value.trim().toUpperCase();
       const { fromMs, toMs } = dayBounds();
+      const keeper = document.getElementById("filterKeeper").value;
       let rows = items.map((p) => {
-        const tools = (p.tools || []).filter((tool) => toolInRange(tool, fromMs, toMs));
-        if ((fromMs != null || toMs != null) && !tools.length) return null;
+        let tools = (p.tools || []).filter((tool) => toolInRange(tool, fromMs, toMs));
+        tools = tools.filter((tool) => toolMatchesKeeper(tool, keeper));
+        if (((fromMs != null || toMs != null) || keeper) && !tools.length) return null;
         const qty = tools.reduce((s, tool) => s + (tool.qty || 1), 0);
         const daysOut = tools.length ? Math.max(...tools.map((tool) => tool.daysOut || 0)) : p.daysOut;
+        const keepers = [
+          ...new Set(
+            tools.flatMap((tool) => {
+              const list = [];
+              if (tool.keeper) list.push(tool.keeper);
+              (tool.keepers || []).forEach((k) => list.push(k));
+              (tool.lots || []).forEach((lot) => {
+                const k = lot.keeper || lot.createdBy;
+                if (k) list.push(k);
+              });
+              return list;
+            })
+          ),
+        ];
         return {
           ...p,
           tools,
-          qty: (fromMs != null || toMs != null) ? qty : p.qty,
+          qty: (fromMs != null || toMs != null || keeper) ? qty : p.qty,
           daysOut,
-          overdue: tools.some((tool) => tool.overdue) || ((fromMs == null && toMs == null) && p.overdue)
+          overdue: tools.some((tool) => tool.overdue) || ((fromMs == null && toMs == null && !keeper) && p.overdue),
+          keeper: keepers[0] || p.keeper || "",
+          keepers
         };
       }).filter(Boolean);
 
@@ -680,7 +727,8 @@
         rows = rows.filter((p) => {
           const blob = [
             p.code, p.name, p.phone, p.residenceNo, p.supplierName, p.supervisorName,
-            ...(p.tools || []).map((tool) => tool.code + " " + tool.description)
+            ...(p.keepers || []),
+            ...(p.tools || []).map((tool) => tool.code + " " + tool.description + " " + (tool.keeper || ""))
           ].join(" ").toUpperCase();
           return blob.includes(q);
         });
@@ -752,6 +800,10 @@
               return `<div class="nr-tool-lot${lot.overdue ? " hot" : ""}"><i class="bi bi-clock"></i> ${escHtml(lotWhen)} · <strong>${lot.daysOut}d</strong></div>`;
             }).join("")}</div>`
           : `<span><i class="bi bi-box-arrow-right"></i> <strong>${escHtml(t("nrIssuedOn") || "Issued")}:</strong>&nbsp;${escHtml(when)}</span>`;
+        const keeper = tool.keeper || (tool.keepers && tool.keepers[0]) || "";
+        const keeperHtml = keeper
+          ? `<span><i class="bi bi-person-workspace"></i> <strong>${escHtml(t("storeKeeper") || "Keeper")}:</strong>&nbsp;${escHtml(keeper)}</span>`
+          : "";
         return `<div class="nr-tool ${tool.overdue ? "hot" : ""}">
           ${thumb}
           <div>
@@ -761,6 +813,7 @@
           <div class="nr-tool-days">${tool.daysOut}d</div>
           <div class="nr-tool-meta">
             ${lotsHtml}
+            ${keeperHtml}
             ${tool.overdue && !showLots ? `<span style="color:var(--tc-danger);font-weight:800"><i class="bi bi-flag-fill"></i> ${escHtml(t("nrToolOverdue") || "Overdue")}</span>` : ""}
           </div>
         </div>`;
@@ -774,6 +827,10 @@
       const chips = [];
       if (p.supplierName) chips.push(`<span class="nr-chip sup"><i class="bi bi-truck"></i> ${escHtml(p.supplierName)}</span>`);
       if (p.supervisorName) chips.push(`<span class="nr-chip sv"><i class="bi bi-person-badge"></i> ${escHtml(p.supervisorName)}</span>`);
+      const keeperLabel = (p.keepers && p.keepers.length > 1)
+        ? p.keepers.join(", ")
+        : (p.keeper || (p.keepers && p.keepers[0]) || "");
+      if (keeperLabel) chips.push(`<span class="nr-chip"><i class="bi bi-person-workspace"></i> ${escHtml(keeperLabel)}</span>`);
       return `<article class="nr-card ${p.overdue ? "overdue" : ""}">
         <a class="nr-card-head" href="${href}">
           ${avatarHtml(p)}
@@ -813,9 +870,17 @@
       if (mode === "none") return rows.map(personCardHtml).join("");
       const keyOf = (p) => {
         if (mode === "supervisor") return p.supervisorName || (t("unassigned") || "Unassigned");
+        if (mode === "keeper") {
+          if (p.keepers && p.keepers.length) return p.keepers.join(", ");
+          return p.keeper || (t("unassigned") || "Unassigned");
+        }
         return p.supplierName || (t("unassigned") || "Unassigned");
       };
-      const icon = mode === "supervisor" ? "bi-person-badge" : "bi-truck";
+      const icon = mode === "supervisor"
+        ? "bi-person-badge"
+        : mode === "keeper"
+          ? "bi-person-workspace"
+          : "bi-truck";
       const groups = new Map();
       rows.forEach((p) => {
         const k = keyOf(p);
