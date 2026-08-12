@@ -7,12 +7,13 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="app.css?v=nrux2">
+  <link rel="stylesheet" href="app.css?v=nrux3">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#0f766e">
-  <script src="config.js?v=nrux2"></script>
-  <script src="i18n.js?v=nrux2"></script>
-  <script src="ui.js?v=nrux2"></script>
+  <script src="config.js?v=nrux3"></script>
+  <script src="i18n.js?v=nrux3"></script>
+  <script src="ui.js?v=nrux3"></script>
+
   <style>
     .nr-page {
       font-family: "Plus Jakarta Sans", var(--tc-font);
@@ -20,50 +21,62 @@
     }
     @media (min-width: 900px) { .nr-page { padding-bottom: 1.5rem; } }
 
-    /* Compact summary strip — operational, not marketing hero */
     .nr-page .nr-summary {
-      display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .5rem;
-      margin-bottom: .9rem;
+      display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .65rem;
+      margin-bottom: 1rem;
     }
-    @media (min-width: 720px) { .nr-page .nr-summary { grid-template-columns: repeat(4, 1fr); } }
+    @media (min-width: 900px) { .nr-page .nr-summary { grid-template-columns: repeat(4, 1fr); gap: .75rem; } }
     .nr-page .nr-kpi {
-      background: var(--tc-surface); border: 1px solid var(--tc-border);
-      border-radius: 14px; padding: .7rem .8rem; position: relative; overflow: hidden;
+      background:
+        linear-gradient(145deg, color-mix(in srgb, var(--tc-surface) 88%, var(--tc-accent) 12%), var(--tc-surface));
+      border: 1px solid var(--tc-border);
+      border-radius: 16px; padding: .85rem .95rem; position: relative; overflow: hidden;
+      box-shadow: 0 12px 28px -24px rgba(0,0,0,.55);
+      transition: transform .18s ease, border-color .18s ease;
     }
+    .nr-page .nr-kpi:hover { transform: translateY(-1px); border-color: color-mix(in srgb, var(--tc-accent) 35%, var(--tc-border)); }
     .nr-page .nr-kpi::before {
       content: ""; position: absolute; inset: 0 auto 0 0; width: 3px; background: var(--tc-accent);
     }
     .nr-page .nr-kpi.warn::before { background: var(--tc-warning); }
     .nr-page .nr-kpi.danger::before { background: var(--tc-danger); }
+    .nr-page .nr-kpi.ok::before { background: var(--tc-success); }
     .nr-page .nr-kpi .k {
-      font-size: .62rem; font-weight: 800; text-transform: uppercase; letter-spacing: .04em;
+      font-size: .62rem; font-weight: 800; text-transform: uppercase; letter-spacing: .05em;
       color: var(--tc-muted);
     }
     .nr-page .nr-kpi .v {
-      font-size: 1.35rem; font-weight: 800; line-height: 1.15; margin-top: .12rem;
-      font-variant-numeric: tabular-nums;
+      font-size: 1.55rem; font-weight: 800; line-height: 1.1; margin-top: .2rem;
+      font-variant-numeric: tabular-nums; letter-spacing: -.02em;
     }
-    .nr-page .nr-kpi .s { font-size: .7rem; color: var(--tc-muted); margin-top: .1rem; }
+    .nr-page .nr-kpi .s { font-size: .72rem; color: var(--tc-muted); margin-top: .18rem; font-weight: 600; }
 
-    .nr-page .nr-controls {
-      position: sticky; top: calc(var(--tc-topbar-h, 64px) + 2px); z-index: 8;
-      margin: 0 0 .85rem; padding: .45rem 0 .25rem;
-      background: linear-gradient(180deg, var(--tc-bg) 60%, transparent);
+    .nr-page .nr-toolbar {
+      background: var(--tc-surface);
+      border: 1px solid var(--tc-border);
+      border-radius: 18px;
+      padding: .85rem;
+      margin-bottom: .9rem;
+      box-shadow: 0 14px 36px -28px rgba(0,0,0,.55);
+    }
+    .nr-page .nr-toolbar-top {
+      display: flex; flex-wrap: wrap; gap: .55rem; align-items: center;
     }
     .nr-page .nr-search-row {
-      display: flex; gap: .45rem; align-items: center; margin-bottom: .5rem;
+      display: flex; gap: .45rem; align-items: center; flex: 1; min-width: min(100%, 280px);
     }
     .nr-page .nr-search-row .tc-search {
       flex: 1; min-width: 0; max-width: none !important; border-radius: 12px;
-      min-height: 46px; font-size: 16px;
+      min-height: 44px; font-size: 16px;
     }
     .nr-page .nr-icon-btn {
-      width: 46px; height: 46px; flex: 0 0 46px; border-radius: 12px; padding: 0;
+      width: 44px; height: 44px; flex: 0 0 44px; border-radius: 12px; padding: 0;
       display: grid; place-items: center; border: 1px solid var(--tc-border);
-      background: var(--tc-surface); color: var(--tc-text); position: relative;
+      background: var(--tc-surface-2); color: var(--tc-text); position: relative;
     }
     .nr-page .nr-icon-btn.active {
-      border-color: rgba(15,118,110,.45); background: var(--tc-accent-soft); color: var(--tc-accent-2);
+      border-color: color-mix(in srgb, var(--tc-accent) 45%, transparent);
+      background: var(--tc-accent-soft); color: var(--tc-accent-2);
     }
     .nr-page .nr-icon-btn .dot {
       position: absolute; top: 8px; right: 8px; width: 8px; height: 8px; border-radius: 50%;
@@ -72,143 +85,192 @@
     .nr-page .nr-icon-btn.active .dot { display: block; }
 
     .nr-page .nr-seg {
-      display: flex; width: 100%; padding: .2rem; background: var(--tc-surface-2);
+      display: inline-flex; padding: .2rem; background: var(--tc-surface-2);
       border-radius: 12px; gap: .2rem; border: 1px solid var(--tc-border);
     }
     .nr-page .nr-seg button {
-      flex: 1; border: 0; background: transparent; color: var(--tc-muted); font-weight: 800;
-      font-size: .78rem; padding: .55rem .4rem; border-radius: 10px; cursor: pointer; min-height: 40px;
+      border: 0; background: transparent; color: var(--tc-muted); font-weight: 800;
+      font-size: .78rem; padding: .45rem .85rem; border-radius: 10px; cursor: pointer; min-height: 36px;
     }
     .nr-page .nr-seg button.active {
       background: var(--tc-surface); color: var(--tc-accent-2);
       box-shadow: 0 4px 12px -8px rgba(20,32,51,.35);
     }
+    .nr-page .nr-toolbar-actions {
+      display: flex; gap: .4rem; margin-inline-start: auto; flex-wrap: wrap;
+    }
+    .nr-page .nr-toolbar-actions .tc-btn { min-height: 40px; border-radius: 11px; font-weight: 800; }
 
     .nr-page .nr-filters {
-      display: none; margin-top: .5rem; padding: .8rem;
-      border-radius: 14px; border: 1px solid var(--tc-border);
-      background: var(--tc-surface);
+      display: none; margin-top: .75rem; padding-top: .75rem;
+      border-top: 1px solid var(--tc-border);
     }
-    .nr-page .nr-filters.open { display: grid; gap: .55rem; }
-    .nr-page .nr-filters-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; }
+    .nr-page .nr-filters.open { display: block; }
+    .nr-page .nr-filters-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: .65rem;
+    }
     .nr-page .nr-field label {
       display: block; font-size: .65rem; font-weight: 800; text-transform: uppercase;
-      letter-spacing: .04em; color: var(--tc-muted); margin-bottom: .2rem;
+      letter-spacing: .04em; color: var(--tc-muted); margin-bottom: .25rem;
     }
     .nr-page .nr-field input,
     .nr-page .nr-field select {
-      width: 100%; min-height: 44px; border-radius: 11px; font-size: 16px;
+      width: 100%; min-height: 42px; border-radius: 11px; font-size: 15px;
     }
-    .nr-page .nr-filters-actions { display: grid; grid-template-columns: 1fr 1fr; gap: .4rem; }
-    .nr-page .nr-filters-actions .tc-btn { min-height: 44px; justify-content: center; }
+    .nr-page .nr-filters-actions {
+      display: grid; grid-template-columns: 1fr 1fr; gap: .45rem; margin-top: .75rem;
+    }
+    .nr-page .nr-filters-actions .tc-btn { min-height: 42px; justify-content: center; }
+    .nr-page .nr-active-chips {
+      display: none; flex-wrap: wrap; gap: .35rem; margin-top: .65rem;
+    }
+    .nr-page .nr-active-chips.show { display: flex; }
+    .nr-page .nr-active-chip {
+      display: inline-flex; align-items: center; gap: .3rem;
+      font-size: .72rem; font-weight: 800; padding: .28rem .55rem; border-radius: 999px;
+      background: var(--tc-accent-soft); color: var(--tc-accent-2);
+      border: 1px solid color-mix(in srgb, var(--tc-accent) 25%, transparent);
+    }
+    .nr-page .nr-active-chip button {
+      border: 0; background: transparent; color: inherit; padding: 0; line-height: 1; cursor: pointer;
+      display: grid; place-items: center;
+    }
 
     @media (min-width: 900px) {
-      .nr-page .nr-controls { position: static; background: none; }
-      .nr-page .nr-filters {
-        display: flex !important; flex-wrap: wrap; align-items: end; gap: .55rem;
-        margin-top: .65rem; padding: 0; border: 0; background: transparent;
+      .nr-page .nr-toolbar { padding: 1rem 1.1rem; }
+      .nr-page .nr-filters { display: block !important; }
+      .nr-page .nr-filters-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
       }
-      .nr-page .nr-filters-grid { display: contents; }
-      .nr-page .nr-field { min-width: 140px; }
-      .nr-page .nr-filters-actions { display: contents; }
+      .nr-page .nr-filters-actions {
+        display: flex; justify-content: flex-end; margin-top: .7rem;
+      }
+      .nr-page .nr-filters-actions #btnApplyFilters { display: none; }
+      .nr-page .nr-filters-actions .tc-btn { min-width: 120px; }
       .nr-page .nr-icon-btn#btnToggleFilters { display: none; }
-      .nr-page .nr-seg { width: auto; display: inline-flex; }
-      .nr-page .nr-seg button { flex: none; padding: .4rem .9rem; }
+      .nr-page .nr-toolbar-actions #btnExportM,
+      .nr-page .nr-toolbar-actions #btnRefreshM { display: none; }
+    }
+    @media (max-width: 899px) {
+      .nr-page .nr-toolbar-actions #btnExport,
+      .nr-page .nr-toolbar-actions #btnRefresh { display: none; }
     }
 
     .nr-page .nr-result-meta {
-      display: flex; justify-content: space-between; align-items: center; gap: .5rem;
-      margin: 0 0 .65rem; font-size: .78rem; color: var(--tc-muted); font-weight: 700;
+      display: flex; justify-content: space-between; align-items: center; gap: .5rem; flex-wrap: wrap;
+      margin: 0 0 .75rem; font-size: .78rem; color: var(--tc-muted); font-weight: 700;
     }
 
     .nr-page .nr-list { display: flex; flex-direction: column; gap: .85rem; }
 
-    /* Person custody card */
     .nr-page .nr-card {
-      border: 1px solid var(--tc-border); border-radius: 16px;
+      border: 1px solid var(--tc-border); border-radius: 18px;
       background: var(--tc-surface); overflow: hidden;
-      box-shadow: 0 10px 28px -24px rgba(20,32,51,.4);
+      box-shadow: 0 14px 34px -26px rgba(0,0,0,.55);
+      animation: nrIn .28s ease both;
+    }
+    .nr-page .nr-card:nth-child(2) { animation-delay: .03s; }
+    .nr-page .nr-card:nth-child(3) { animation-delay: .06s; }
+    .nr-page .nr-card:nth-child(4) { animation-delay: .09s; }
+    .nr-page .nr-card:nth-child(5) { animation-delay: .12s; }
+    @keyframes nrIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: none; }
     }
     .nr-page .nr-card.overdue {
-      border-color: color-mix(in srgb, var(--tc-danger) 38%, var(--tc-border));
+      border-color: color-mix(in srgb, var(--tc-danger) 42%, var(--tc-border));
+      box-shadow: 0 14px 34px -24px color-mix(in srgb, var(--tc-danger) 45%, transparent);
     }
     .nr-page .nr-card-head {
-      display: grid; grid-template-columns: auto 1fr auto; gap: .7rem; align-items: start;
-      padding: .9rem .9rem .75rem; text-decoration: none; color: inherit;
+      display: grid; grid-template-columns: auto 1fr auto; gap: .75rem; align-items: start;
+      padding: 1rem 1rem .8rem; text-decoration: none; color: inherit;
       -webkit-tap-highlight-color: transparent;
     }
     .nr-page .nr-card-head:active { background: var(--tc-surface-2); }
+    @media (min-width: 900px) {
+      .nr-page .nr-card-head:hover { background: color-mix(in srgb, var(--tc-surface-2) 70%, transparent); }
+    }
     .nr-page .nr-avatar {
-      width: 48px; height: 48px; border-radius: 14px; object-fit: cover;
+      width: 52px; height: 52px; border-radius: 15px; object-fit: cover;
       background: var(--tc-thumb-bg); display: grid; place-items: center;
       color: var(--tc-muted); font-weight: 800; border: 1px solid var(--tc-border);
-      font-size: 1rem;
+      font-size: 1rem; box-shadow: 0 8px 18px -14px rgba(0,0,0,.5);
     }
-    .nr-page .nr-name { font-weight: 800; font-size: 1.02rem; line-height: 1.2; }
+    .nr-page .nr-name { font-weight: 800; font-size: 1.05rem; line-height: 1.2; }
     .nr-page .nr-code {
       display: inline-flex; font-size: .68rem; font-weight: 800; color: var(--tc-accent-2);
       background: var(--tc-accent-soft); padding: .12rem .45rem; border-radius: 999px; margin-top: .28rem;
     }
-    .nr-page .nr-status {
-      display: flex; flex-direction: column; align-items: flex-end; gap: .3rem;
-    }
+    .nr-page .nr-status { display: flex; flex-direction: column; align-items: flex-end; gap: .3rem; }
     .nr-page .nr-badge {
       display: inline-flex; align-items: center; gap: .25rem;
       font-size: .7rem; font-weight: 800; padding: .35rem .55rem; border-radius: 999px;
       background: var(--tc-warn-bg); color: var(--tc-warning); white-space: nowrap;
     }
     .nr-page .nr-badge.hot { background: var(--tc-danger-bg); color: var(--tc-danger); }
-    .nr-page .nr-badge.ok { background: var(--tc-ok-bg); color: var(--tc-success); }
     .nr-page .nr-qty-pill {
-      font-size: .68rem; font-weight: 800; color: var(--tc-muted);
+      font-size: .7rem; font-weight: 800; color: var(--tc-muted);
       font-variant-numeric: tabular-nums;
     }
 
     .nr-page .nr-info {
-      display: grid; gap: .35rem; padding: 0 .9rem .7rem;
+      display: grid; gap: .35rem; padding: 0 1rem .8rem;
       border-bottom: 1px solid var(--tc-border);
     }
     .nr-page .nr-info-row {
       display: flex; gap: .45rem; align-items: flex-start;
       font-size: .78rem; color: var(--tc-muted); line-height: 1.35;
     }
-    .nr-page .nr-info-row i { margin-top: .12rem; flex-shrink: 0; opacity: .85; }
+    .nr-page .nr-info-row i { margin-top: .12rem; flex-shrink: 0; opacity: .85; color: var(--tc-accent); }
     .nr-page .nr-info-row strong { color: var(--tc-text); font-weight: 700; }
+    .nr-page .nr-info-row a { color: var(--tc-accent-2); font-weight: 700; text-decoration: none; }
+    .nr-page .nr-info-row a:hover { text-decoration: underline; }
 
     .nr-page .nr-tools-head {
       display: flex; justify-content: space-between; align-items: center;
-      padding: .55rem .9rem .35rem; font-size: .68rem; font-weight: 800;
+      padding: .6rem 1rem .4rem; font-size: .68rem; font-weight: 800;
       text-transform: uppercase; letter-spacing: .04em; color: var(--tc-muted);
     }
-    .nr-page .nr-tools-body { padding: 0 .65rem .65rem; display: flex; flex-direction: column; gap: .4rem; }
+    .nr-page .nr-tools-body {
+      padding: 0 .75rem .75rem; display: grid;
+      grid-template-columns: 1fr; gap: .45rem;
+    }
+    @media (min-width: 1100px) {
+      .nr-page .nr-tools-body.multi { grid-template-columns: 1fr 1fr; }
+    }
 
     .nr-page .nr-tool {
-      display: grid; grid-template-columns: 52px 1fr auto; gap: .35rem .55rem;
+      display: grid; grid-template-columns: 56px 1fr auto; gap: .4rem .6rem;
       align-items: start;
-      padding: .65rem .7rem; border-radius: 12px;
+      padding: .7rem .75rem; border-radius: 14px;
       background: var(--tc-surface-2); border: 1px solid var(--tc-border);
+      transition: border-color .15s ease, transform .15s ease;
     }
-    .nr-page .nr-tool .tc-product-thumb {
-      width: 52px; height: 52px; border-radius: 10px;
-      object-fit: cover; flex-shrink: 0;
+    .nr-page .nr-tool:hover {
+      border-color: color-mix(in srgb, var(--tc-accent) 30%, var(--tc-border));
     }
+    .nr-page .nr-tool .tc-product-thumb,
     .nr-page .nr-tool .tc-product-thumb.placeholder {
-      width: 52px; height: 52px;
+      width: 56px; height: 56px; border-radius: 12px; object-fit: cover; flex-shrink: 0;
     }
     .nr-page .nr-tool.hot {
       background: color-mix(in srgb, var(--tc-danger-bg) 70%, var(--tc-surface-2));
       border-color: color-mix(in srgb, var(--tc-danger) 28%, var(--tc-border));
     }
-    .nr-page .nr-tool-code {
+    .nr-page .nr-tool-code,
+    .nr-page .nr-tool a.nr-tool-code {
       font-size: .72rem; font-weight: 800; color: var(--tc-accent-2);
-      font-variant-numeric: tabular-nums;
+      font-variant-numeric: tabular-nums; text-decoration: none;
     }
+    .nr-page .nr-tool a.nr-tool-code:hover { text-decoration: underline; }
     .nr-page .nr-tool-name {
-      font-size: .86rem; font-weight: 700; color: var(--tc-text); line-height: 1.25;
+      font-size: .88rem; font-weight: 700; color: var(--tc-text); line-height: 1.25;
       margin-top: .1rem; word-break: break-word;
     }
     .nr-page .nr-tool-days {
-      font-size: .72rem; font-weight: 800; padding: .28rem .5rem; border-radius: 999px;
+      font-size: .72rem; font-weight: 800; padding: .3rem .55rem; border-radius: 999px;
       background: var(--tc-warn-bg); color: var(--tc-warning); align-self: start;
       white-space: nowrap;
     }
@@ -222,7 +284,7 @@
     .nr-page .nr-tool-lot {
       display: flex; align-items: center; gap: .35rem; flex-wrap: wrap;
       padding: .22rem .45rem; border-radius: 8px;
-      background: var(--tc-surface-2); border: 1px solid var(--tc-border);
+      background: var(--tc-surface); border: 1px solid var(--tc-border);
       color: var(--tc-text);
     }
     .nr-page .nr-tool-lot.hot {
@@ -233,7 +295,7 @@
 
     .nr-page .nr-card-foot {
       display: flex; justify-content: space-between; align-items: center; gap: .5rem;
-      padding: .55rem .9rem .75rem; border-top: 1px solid var(--tc-border);
+      padding: .65rem 1rem .85rem; border-top: 1px solid var(--tc-border);
       background: color-mix(in srgb, var(--tc-surface-2) 55%, transparent);
     }
     .nr-page .nr-card-foot .tc-btn {
@@ -244,75 +306,49 @@
     }
 
     .nr-page .nr-empty {
-      text-align: center; padding: 2.2rem 1rem; border: 1px dashed var(--tc-border);
-      border-radius: 16px; background: var(--tc-surface);
+      text-align: center; padding: 2.4rem 1rem; border: 1px dashed var(--tc-border);
+      border-radius: 18px; background: var(--tc-surface);
     }
     .nr-page .nr-empty i { font-size: 2.1rem; color: var(--tc-success); display: block; margin-bottom: .45rem; }
 
     .nr-page .nr-dock-mobile {
       position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
       padding: .6rem .85rem calc(.6rem + env(safe-area-inset-bottom, 0px));
-      background: color-mix(in srgb, var(--tc-surface) 90%, transparent);
+      background: color-mix(in srgb, var(--tc-surface) 92%, transparent);
       border-top: 1px solid var(--tc-border);
       backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
       display: grid; grid-template-columns: 1fr 1fr; gap: .45rem;
     }
-    .nr-page .nr-dock-desktop { display: none; }
-    .nr-page .nr-dock-mobile .tc-btn,
-    .nr-page .nr-dock-desktop .tc-btn {
+    .nr-page .nr-dock-mobile .tc-btn {
       min-height: 46px; justify-content: center; border-radius: 12px; font-weight: 800;
     }
-    @media (min-width: 900px) {
-      .nr-page .nr-dock-mobile { display: none; }
-      .nr-page .nr-dock-desktop {
-        display: flex; justify-content: flex-end; gap: .45rem; margin: 0 0 .85rem;
-      }
-      .nr-page .nr-dock-desktop .tc-btn { min-height: 40px; }
-      .nr-page .nr-card-head:hover { background: var(--tc-surface-2); }
-    }
+    @media (min-width: 900px) { .nr-page .nr-dock-mobile { display: none; } }
 
-    .nr-page .nr-card {
-      animation: nrIn .28s ease both;
-    }
-    .nr-page .nr-card:nth-child(2) { animation-delay: .03s; }
-    .nr-page .nr-card:nth-child(3) { animation-delay: .06s; }
-    .nr-page .nr-card:nth-child(4) { animation-delay: .09s; }
-    .nr-page .nr-card:nth-child(5) { animation-delay: .12s; }
-    @keyframes nrIn {
-      from { opacity: 0; transform: translateY(8px); }
-      to { opacity: 1; transform: none; }
-    }
-    .nr-page .nr-group { margin-bottom: 1.1rem; }
+    .nr-page .nr-group { margin-bottom: 1.15rem; }
     .nr-page .nr-group-head {
       display: flex; align-items: center; justify-content: space-between; gap: .5rem;
-      margin: 0 0 .55rem; padding: .15rem 0 .35rem;
+      margin: 0 0 .6rem; padding: .2rem 0 .4rem;
       border-bottom: 1px solid var(--tc-border);
     }
     .nr-page .nr-group-head strong {
-      font-size: .88rem; font-weight: 800; display: inline-flex; align-items: center; gap: .4rem;
+      font-size: .9rem; font-weight: 800; display: inline-flex; align-items: center; gap: .4rem;
     }
     .nr-page .nr-group-head strong i { color: var(--tc-accent); }
     .nr-page .nr-group-badge {
-      font-size: .7rem; font-weight: 800; padding: .2rem .55rem; border-radius: 999px;
+      font-size: .7rem; font-weight: 800; padding: .22rem .55rem; border-radius: 999px;
       background: var(--tc-accent-soft); color: var(--tc-accent-2);
     }
-    .nr-page .nr-updated {
-      font-size: .72rem; color: var(--tc-muted); font-weight: 600;
-    }
-    .nr-page .nr-tool a.nr-tool-code {
-      text-decoration: none; color: var(--tc-accent-2);
-    }
-    .nr-page .nr-tool a.nr-tool-code:hover { text-decoration: underline; }
-    .nr-page .nr-chip-row {
-      display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .35rem;
-    }
+    .nr-page .nr-updated { font-size: .72rem; color: var(--tc-muted); font-weight: 600; }
+    .nr-page .nr-chip-row { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .4rem; }
     .nr-page .nr-chip {
       font-size: .66rem; font-weight: 800; padding: .18rem .45rem; border-radius: 999px;
       background: var(--tc-surface-2); color: var(--tc-muted);
     }
-    .nr-page .nr-chip.sup { background: #ccfbf1; color: #0f766e; }
-    .nr-page .nr-chip.sv { background: #e0f2fe; color: #0369a1; }
+    .nr-page .nr-chip.sup { background: color-mix(in srgb, var(--tc-accent) 18%, transparent); color: var(--tc-accent-2); }
+    .nr-page .nr-chip.sv { background: color-mix(in srgb, #0284c7 18%, transparent); color: #38bdf8; }
+    .nr-page .nr-chip.keeper { background: color-mix(in srgb, var(--tc-warning) 18%, transparent); color: var(--tc-warning); }
   </style>
+
 </head>
 <body class="tc-page nr-page">
   <div class="tc-wrap">
@@ -335,34 +371,33 @@
           <div class="v" id="kOverdue">0</div>
           <div class="s" data-i18n="nrPastDueThreshold">Past due threshold</div>
         </div>
-        <div class="nr-kpi">
+        <div class="nr-kpi ok">
           <div class="k" data-i18n="oldestDays">Oldest (days)</div>
           <div class="v" id="kMax">0</div>
           <div class="s" data-i18n="nrLongestHold">Longest hold</div>
         </div>
       </div>
 
-      <div class="nr-controls">
-        <div class="nr-search-row">
-          <input id="q" class="tc-search" data-i18n-placeholder="searchPersonOrTool" placeholder="Search person or tool…">
-          <button type="button" class="nr-icon-btn" id="btnToggleFilters" aria-expanded="false" title="Filters">
-            <i class="bi bi-sliders"></i><span class="dot"></span>
-          </button>
+      <div class="nr-toolbar" id="nrToolbar">
+        <div class="nr-toolbar-top">
+          <div class="nr-search-row">
+            <input id="q" class="tc-search" data-i18n-placeholder="searchPersonOrTool" placeholder="Search person or tool…">
+            <button type="button" class="nr-icon-btn" id="btnToggleFilters" aria-expanded="false" title="Filters">
+              <i class="bi bi-sliders"></i><span class="dot"></span>
+            </button>
+          </div>
+          <div class="nr-seg" id="filterSeg">
+            <button type="button" class="active" data-filter="all" data-i18n="all">All</button>
+            <button type="button" data-filter="overdue" data-i18n="overdueOnly">Overdue only</button>
+          </div>
+          <div class="nr-toolbar-actions">
+            <button type="button" class="tc-btn" id="btnExport" disabled><i class="bi bi-download"></i> <span data-i18n="export">Export</span></button>
+            <button type="button" class="tc-btn tc-btn-primary" id="btnRefresh"><i class="bi bi-arrow-clockwise"></i> <span data-i18n="refresh">Refresh</span></button>
+          </div>
         </div>
-        <div class="nr-seg" id="filterSeg">
-          <button type="button" class="active" data-filter="all" data-i18n="all">All</button>
-          <button type="button" data-filter="overdue" data-i18n="overdueOnly">Overdue only</button>
-        </div>
-        <div class="nr-filters" id="filtersPanel">
+
+        <div class="nr-filters open" id="filtersPanel">
           <div class="nr-filters-grid">
-            <div class="nr-field">
-              <label data-i18n="dateFrom">From</label>
-              <input type="date" id="dateFrom" class="tc-input">
-            </div>
-            <div class="nr-field">
-              <label data-i18n="dateTo">To</label>
-              <input type="date" id="dateTo" class="tc-input">
-            </div>
             <div class="nr-field">
               <label data-i18n="storeKeeper">Store keeper</label>
               <select id="filterKeeper" class="tc-select">
@@ -394,6 +429,14 @@
               </select>
             </div>
             <div class="nr-field">
+              <label data-i18n="dateFrom">From</label>
+              <input type="date" id="dateFrom" class="tc-input">
+            </div>
+            <div class="nr-field">
+              <label data-i18n="dateTo">To</label>
+              <input type="date" id="dateTo" class="tc-input">
+            </div>
+            <div class="nr-field">
               <label data-i18n="groupBy">Group by</label>
               <select id="groupBy" class="tc-select">
                 <option value="none">None</option>
@@ -402,7 +445,7 @@
                 <option value="supervisor">Supervisor</option>
               </select>
             </div>
-            <div class="nr-field" style="grid-column: 1 / -1">
+            <div class="nr-field">
               <label data-i18n="sortByDays">Sort</label>
               <select id="sortBy" class="tc-select">
                 <option value="days" data-i18n="sortByDays">Longest out</option>
@@ -413,15 +456,11 @@
             </div>
           </div>
           <div class="nr-filters-actions">
-            <button type="button" class="tc-btn" id="btnClearDates"><i class="bi bi-x-lg"></i> <span data-i18n="clearDates">Clear</span></button>
-            <button type="button" class="tc-btn tc-btn-primary" id="btnApplyFilters"><i class="bi bi-check2"></i> OK</button>
+            <button type="button" class="tc-btn" id="btnClearDates"><i class="bi bi-x-lg"></i> <span data-i18n="clearDates">Clear filters</span></button>
+            <button type="button" class="tc-btn tc-btn-primary" id="btnApplyFilters"><i class="bi bi-check2"></i> <span data-i18n="done">Done</span></button>
           </div>
+          <div class="nr-active-chips" id="activeChips"></div>
         </div>
-      </div>
-
-      <div class="nr-dock-desktop" id="dockDesktop">
-        <button type="button" class="tc-btn" id="btnExport" disabled><i class="bi bi-download"></i> <span data-i18n="export">Export</span></button>
-        <button type="button" class="tc-btn tc-btn-primary" id="btnRefresh"><i class="bi bi-arrow-clockwise"></i> <span data-i18n="refresh">Refresh</span></button>
       </div>
 
       <div class="nr-result-meta">
@@ -462,6 +501,16 @@
     let overdueDaysSetting = 1;
     let autoTimer = null;
     const AUTO_MS = 30000;
+
+    function tt(key, fallback) {
+      try {
+        if (typeof t === "function") {
+          const v = t(key);
+          if (v && v !== key) return v;
+        }
+      } catch (_) {}
+      return fallback || key;
+    }
 
     document.addEventListener("DOMContentLoaded", () => TCUI.bootPage(() => {
       TCUI.mountHeader("app-header", {
@@ -529,8 +578,8 @@
           render();
         };
       });
-      if (window.matchMedia("(min-width: 900px)").matches) {
-        document.getElementById("filtersPanel").classList.add("open");
+      if (!window.matchMedia("(min-width: 900px)").matches) {
+        document.getElementById("filtersPanel").classList.remove("open");
       }
       load();
     }, { pageId: "outstanding" }));
@@ -589,9 +638,53 @@
           });
         });
       });
-      fillSelect("filterKeeper", keepers, t("allStoreKeepers") || "All store keepers");
-      fillSelect("filterSupplier", suppliers, t("allSuppliers") || "All suppliers");
-      fillSelect("filterSupervisor", supervisors, t("allSupervisors") || "All supervisors");
+      fillSelect("filterKeeper", keepers, tt("allStoreKeepers", "All store keepers"));
+      fillSelect("filterSupplier", suppliers, tt("allSuppliers", "All suppliers"));
+      fillSelect("filterSupervisor", supervisors, tt("allSupervisors", "All supervisors"));
+    }
+
+
+    function renderActiveChips() {
+      const host = document.getElementById("activeChips");
+      if (!host) return;
+      const chips = [];
+      const push = (id, label, clear) => {
+        chips.push(`<span class="nr-active-chip">${escHtml(label)} <button type="button" data-clear="${id}" aria-label="Remove"><i class="bi bi-x"></i></button></span>`);
+      };
+      const keeper = document.getElementById("filterKeeper").value;
+      const supplier = document.getElementById("filterSupplier").value;
+      const supervisor = document.getElementById("filterSupervisor").value;
+      const minDays = document.getElementById("minDays").value;
+      const from = document.getElementById("dateFrom").value;
+      const to = document.getElementById("dateTo").value;
+      const groupBy = document.getElementById("groupBy").value;
+      if (filterMode === "overdue") push("overdue", tt("overdueOnly", "Overdue only"));
+      if (keeper) push("keeper", tt("storeKeeper", "Keeper") + ": " + keeper);
+      if (supplier) push("supplier", tt("supplier", "Supplier") + ": " + supplier);
+      if (supervisor) push("supervisor", tt("supervisor", "Supervisor") + ": " + supervisor);
+      if (Number(minDays) > 0) push("minDays", tt("minDaysOut", "Min days") + ": " + minDays + "+");
+      if (from) push("from", tt("dateFrom", "From") + ": " + from);
+      if (to) push("to", tt("dateTo", "To") + ": " + to);
+      if (groupBy && groupBy !== "none") push("groupBy", tt("groupBy", "Group") + ": " + groupBy);
+      host.innerHTML = chips.join("");
+      host.classList.toggle("show", chips.length > 0);
+      host.querySelectorAll("button[data-clear]").forEach((btn) => {
+        btn.onclick = () => {
+          const id = btn.getAttribute("data-clear");
+          if (id === "overdue") {
+            filterMode = "all";
+            document.querySelectorAll("#filterSeg button").forEach((b) => b.classList.toggle("active", b.getAttribute("data-filter") === "all"));
+          } else if (id === "keeper") document.getElementById("filterKeeper").value = "";
+          else if (id === "supplier") document.getElementById("filterSupplier").value = "";
+          else if (id === "supervisor") document.getElementById("filterSupervisor").value = "";
+          else if (id === "minDays") document.getElementById("minDays").value = "0";
+          else if (id === "from") document.getElementById("dateFrom").value = "";
+          else if (id === "to") document.getElementById("dateTo").value = "";
+          else if (id === "groupBy") document.getElementById("groupBy").value = "none";
+          syncFilterDot();
+          render();
+        };
+      });
     }
 
     function toolMatchesKeeper(tool, keeper) {
@@ -671,7 +764,7 @@
         const stampEl = document.getElementById("lastUpdated");
         if (stampEl) {
           const now = new Date();
-          stampEl.textContent = (t("lastUpdated") || "Updated") + " " + now.toLocaleTimeString();
+          stampEl.textContent = tt("updatedAt", "Updated") + " " + now.toLocaleTimeString();
         }
         render();
       } catch (e) {
@@ -830,7 +923,7 @@
       const keeperLabel = (p.keepers && p.keepers.length > 1)
         ? p.keepers.join(", ")
         : (p.keeper || (p.keepers && p.keepers[0]) || "");
-      if (keeperLabel) chips.push(`<span class="nr-chip"><i class="bi bi-person-workspace"></i> ${escHtml(keeperLabel)}</span>`);
+      if (keeperLabel) chips.push(`<span class="nr-chip keeper"><i class="bi bi-person-workspace"></i> ${escHtml(keeperLabel)}</span>`);
       return `<article class="nr-card ${p.overdue ? "overdue" : ""}">
         <a class="nr-card-head" href="${href}">
           ${avatarHtml(p)}
@@ -855,7 +948,7 @@
           <span>${escHtml(t("currentlyHeld") || "Currently held")}</span>
           <span>${tools.length} ${escHtml(t("nrLineItems") || "line(s)")}</span>
         </div>
-        <div class="nr-tools-body">${toolRowsHtml(tools)}</div>
+        <div class="nr-tools-body${tools.length > 1 ? " multi" : ""}">${toolRowsHtml(tools)}</div>
         <div class="nr-card-foot">
           <span class="hint">${escHtml(t("nrTapForHistory") || "Full custody history")}</span>
           <a class="tc-btn tc-btn-primary" href="${href}">
@@ -904,6 +997,7 @@
       const rows = filtered();
       updateKpis(rows);
       syncFilterDot();
+      renderActiveChips();
       if (!items.length) {
         host.innerHTML = `<div class="nr-empty"><i class="bi bi-check-circle"></i><strong>${t("allReturnedTitle") || "All clear"}</strong><div class="tc-text-muted mt-1">${t("allReturnedHint") || "Every tool has been returned."}</div></div>`;
         return;
