@@ -45,6 +45,9 @@ function buildScanLogWhere(params) {
   const date = U.trimmed(params.date);
   const user = U.trimmed(params.user);
   const q = U.trimmed(params.q);
+  const scanType = U.trimmed(params.scanType);
+  const directionOnly = U.bool(params.directionOnly);
+  const custodyFlow = U.bool(params.custodyFlow);
 
   if (date) {
     conditions.push(`REPLACE(REPLACE(s.row_date,'{',''),'}','') = $${n++}`);
@@ -62,6 +65,27 @@ function buildScanLogWhere(params) {
     args.push(like);
     n++;
   }
+  if (directionOnly) {
+    conditions.push(`UPPER(s.tool_code) IN ('IN', 'OUT')`);
+  } else if (custodyFlow) {
+    conditions.push(
+      `(UPPER(s.tool_code) IN ('IN', 'OUT')
+        OR UPPER(s.tool_code) LIKE 'P%'
+        OR UPPER(s.tool_code) LIKE 'I%'
+        OR UPPER(s.tool_code) LIKE 'E%'
+        OR UPPER(s.tool_code) LIKE 'C%'
+        OR UPPER(s.tool_code) LIKE 'B%')`
+    );
+  }
+  if (scanType === "direction") {
+    conditions.push(`UPPER(s.tool_code) IN ('IN', 'OUT')`);
+  } else if (scanType === "person") {
+    conditions.push(`UPPER(s.tool_code) LIKE 'P%'`);
+  } else if (scanType === "tool") {
+    conditions.push(`(UPPER(s.tool_code) LIKE 'I%' OR UPPER(s.tool_code) LIKE 'E%')`);
+  } else if (scanType === "consumable") {
+    conditions.push(`(UPPER(s.tool_code) LIKE 'C%' OR UPPER(s.tool_code) LIKE 'B%')`);
+  }
 
   return {
     where: conditions.length ? `WHERE ${conditions.join(" AND ")}` : "",
@@ -70,8 +94,59 @@ function buildScanLogWhere(params) {
   };
 }
 
+/** Replay terminal session state so IN/OUT rows show which worker was active. */
+function enrichScanContext(items) {
+  const byId = new Map();
+  const sorted = [...items].sort((a, b) => a.id - b.id);
+  const sessions = new Map();
+
+  for (const item of sorted) {
+    const key = `${item.deviceId || "_"}|${item.sessionId || "_"}`;
+    const st = sessions.get(key) || {
+      personCode: "",
+      personName: "",
+      direction: "",
+    };
+
+    if (item.type === "person") {
+      st.personCode = item.code;
+      st.personName = item.description || item.code;
+      st.direction = "";
+      item.contextLabel = `Worker selected · ${st.personName} (${st.personCode})`;
+      item.eventKind = "person";
+    } else if (item.type === "direction") {
+      st.direction = item.code;
+      item.eventKind = item.code === "IN" ? "scan_in" : "scan_out";
+      item.contextLabel = st.personName
+        ? `${item.code} · ${st.personName} (${st.personCode})`
+        : `${item.code} · no worker selected yet`;
+    } else if (item.type === "tool") {
+      item.eventKind = st.direction === "OUT" ? "checkout" : st.direction === "IN" ? "checkin" : "tool_scan";
+      const dir = st.direction || "—";
+      const who = st.personName ? `${st.personName} (${st.personCode})` : "no worker";
+      item.contextLabel = `${dir} · ${who} → ${item.code} · ${item.description || ""}`.trim();
+    } else if (item.type === "consumable") {
+      item.eventKind = "consumable";
+      const who = st.personName ? `${st.personName} (${st.personCode})` : "no worker";
+      item.contextLabel = `${st.direction || "—"} · ${who} → ${item.code} · ${item.description || ""}`.trim();
+    } else {
+      item.eventKind = "other";
+      item.contextLabel = item.description || item.code;
+    }
+
+    item.sessionPerson = st.personName;
+    item.sessionPersonCode = st.personCode;
+    item.sessionDirection = st.direction;
+    sessions.set(key, st);
+    byId.set(item.id, item);
+  }
+
+  return items.map((item) => byId.get(item.id) || item);
+}
+
 async function getScanLog(ctx) {
-  ctx.requireAny(["logs.view", "audit.view", "reports.all"]);
+  // Admin-only: full scan trail including IN/OUT custody events.
+  ctx.requireAny(["audit.view", "settings.manage"]);
   const limit = Math.min(20000, U.posInt(ctx.params.limit, 500));
   const offset = Math.max(0, U.posInt(ctx.params.offset, 0));
   const { where, args, nextIndex } = buildScanLogWhere(ctx.params);
@@ -100,20 +175,22 @@ async function getScanLog(ctx) {
 
   const payload = {
     total: countR.rows[0]?.c || 0,
-    items: r.rows.map((row) => ({
-      id: row.id,
-      code: U.upper(row.tool_code),
-      description: row.description || "",
-      kind: row.kind || "",
-      type: classify(row.tool_code),
-      rowDate: row.row_date,
-      timestamp: U.isoOrNull(row.scanned_at),
-      dateLabel: U.fmtDate(row.scanned_at),
-      dateTimeLabel: U.fmtDateTime(row.scanned_at),
-      createdBy: row.created_by || "",
-      deviceId: row.device_id || "",
-      sessionId: row.session_id || "",
-    })),
+    items: enrichScanContext(
+      r.rows.map((row) => ({
+        id: row.id,
+        code: U.upper(row.tool_code),
+        description: row.description || "",
+        kind: row.kind || "",
+        type: classify(row.tool_code),
+        rowDate: row.row_date,
+        timestamp: U.isoOrNull(row.scanned_at),
+        dateLabel: U.fmtDate(row.scanned_at),
+        dateTimeLabel: U.fmtDateTime(row.scanned_at),
+        createdBy: row.created_by || "",
+        deviceId: row.device_id || "",
+        sessionId: row.session_id || "",
+      }))
+    ),
   };
 
   if (U.bool(ctx.params.includeMeta)) {
