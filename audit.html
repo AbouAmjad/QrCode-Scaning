@@ -11,7 +11,125 @@
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#1e3a5f">
   <script src="config.js"></script>
+  <script src="i18n.js?v=26"></script>
   <script src="ui.js"></script>
+  <style>
+    .audit-tabs { display: flex; gap: .4rem; flex-wrap: wrap; margin-bottom: .85rem; }
+    .audit-tabs button {
+      border: 1px solid var(--tc-border);
+      background: var(--tc-surface-2);
+      border-radius: 999px;
+      padding: .4rem .85rem;
+      font-weight: 700;
+      font-size: .78rem;
+      cursor: pointer;
+      color: inherit;
+    }
+    .audit-tabs button.active {
+      background: var(--tc-accent);
+      color: #fff;
+      border-color: transparent;
+    }
+    .audit-filters {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: .55rem;
+      margin-bottom: .75rem;
+    }
+    @media (max-width: 900px) { .audit-filters { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 520px) { .audit-filters { grid-template-columns: 1fr; } }
+    .audit-filters label {
+      display: flex;
+      flex-direction: column;
+      gap: .2rem;
+      font-size: .68rem;
+      font-weight: 700;
+      color: var(--tc-muted);
+      text-transform: uppercase;
+      letter-spacing: .03em;
+    }
+    .audit-filters input, .audit-filters select {
+      border: 1px solid var(--tc-border);
+      border-radius: 10px;
+      background: var(--tc-surface);
+      color: inherit;
+      padding: .45rem .55rem;
+      font-size: .85rem;
+      font-weight: 600;
+      text-transform: none;
+      letter-spacing: 0;
+    }
+    .audit-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .45rem;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: .65rem;
+    }
+    .audit-meta {
+      font-size: .78rem;
+      color: var(--tc-muted);
+      font-weight: 650;
+    }
+    .audit-row-detail {
+      display: none;
+      padding: .65rem .75rem;
+      background: var(--tc-surface-2);
+      border-radius: 10px;
+      margin-top: .35rem;
+      font-size: .78rem;
+      line-height: 1.45;
+      word-break: break-word;
+    }
+    .audit-row-detail.open { display: block; }
+    .audit-row-detail pre {
+      margin: .35rem 0 0;
+      white-space: pre-wrap;
+      font-size: .72rem;
+      background: var(--tc-surface);
+      border: 1px solid var(--tc-border);
+      border-radius: 8px;
+      padding: .45rem .55rem;
+      max-height: 160px;
+      overflow: auto;
+    }
+    .audit-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: .25rem;
+      padding: .15rem .45rem;
+      border-radius: 999px;
+      font-size: .68rem;
+      font-weight: 750;
+      background: color-mix(in srgb, var(--tc-accent) 12%, transparent);
+      color: var(--tc-accent-2, var(--tc-accent));
+    }
+    .audit-pill.warn { background: #fef3c7; color: #92400e; }
+    .audit-pill.scan { background: #e0f2fe; color: #0369a1; }
+    .audit-pill.user { background: #f1f5f9; color: #334155; }
+    .audit-user-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .35rem;
+      margin-bottom: .75rem;
+    }
+    .audit-user-chips button {
+      border: 1px solid var(--tc-border);
+      background: var(--tc-surface);
+      border-radius: 999px;
+      padding: .25rem .6rem;
+      font-size: .72rem;
+      font-weight: 700;
+      cursor: pointer;
+      color: inherit;
+    }
+    .audit-user-chips button.active {
+      border-color: var(--tc-accent);
+      background: var(--tc-accent-soft);
+    }
+    tr.audit-open td { background: color-mix(in srgb, var(--tc-accent) 6%, transparent); }
+  </style>
 </head>
 <body class="tc-page">
   <div class="tc-wrap">
@@ -19,51 +137,457 @@
       <div id="app-header"></div>
       <div class="tc-card">
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
-          <span class="tc-section-badge"><i class="bi bi-journal-text"></i> Audit log</span>
-          <button class="tc-btn" id="btnRefresh"><i class="bi bi-arrow-clockwise"></i> Refresh</button>
+          <span class="tc-section-badge"><i class="bi bi-journal-text"></i> <span id="auditTitle">Audit log</span></span>
+          <div class="d-flex gap-2">
+            <button class="tc-btn" id="btnExport" type="button"><i class="bi bi-download"></i> Export</button>
+            <button class="tc-btn tc-btn-primary" id="btnRefresh" type="button"><i class="bi bi-arrow-clockwise"></i> Refresh</button>
+          </div>
         </div>
-        <p class="tc-text-muted small">Who · When · Before/After · Device — last 200 events</p>
+        <p class="tc-text-muted small mb-2" id="auditSub">Who did what — system changes and scanner activity</p>
+
+        <div class="audit-tabs" role="tablist">
+          <button type="button" class="active" data-tab="system" id="tabSystem">System events</button>
+          <button type="button" data-tab="scans" id="tabScans">Scanner activity</button>
+        </div>
+
+        <div class="audit-filters">
+          <label>
+            <span>User</span>
+            <select id="fUser"><option value="">All users</option></select>
+          </label>
+          <label id="fActionWrap">
+            <span>Action</span>
+            <select id="fAction"><option value="">All actions</option></select>
+          </label>
+          <label>
+            <span>Search</span>
+            <input type="search" id="fSearch" placeholder="Code, detail, device…">
+          </label>
+          <label>
+            <span>Rows</span>
+            <select id="fLimit">
+              <option value="200">200</option>
+              <option value="500" selected>500</option>
+              <option value="1000">1000</option>
+              <option value="2000">2000</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="audit-user-chips" id="userChips" hidden></div>
+
+        <div class="audit-toolbar">
+          <div class="audit-meta" id="auditMeta">Loading…</div>
+          <div class="d-flex gap-2">
+            <button class="tc-btn tc-btn-sm" id="btnPrev" type="button" disabled><i class="bi bi-chevron-left"></i></button>
+            <button class="tc-btn tc-btn-sm" id="btnNext" type="button" disabled><i class="bi bi-chevron-right"></i></button>
+          </div>
+        </div>
+
         <div class="table-responsive">
           <table class="table tc-table mb-0">
-            <thead><tr><th>When</th><th>User</th><th>Role</th><th>Action</th><th>Detail</th><th>Device</th></tr></thead>
-            <tbody id="auditBody"><tr><td colspan="6" class="tc-text-muted text-center">Loading…</td></tr></tbody>
+            <thead id="auditHead">
+              <tr>
+                <th>When</th>
+                <th>User</th>
+                <th>Action</th>
+                <th>Summary</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="auditBody">
+              <tr><td colspan="5" class="tc-text-muted text-center">Loading…</td></tr>
+            </tbody>
           </table>
         </div>
       </div>
     </div>
   </div>
   <script>
-    document.addEventListener("DOMContentLoaded", () => TCUI.bootPage(() => {
-      TCUI.mountHeader("app-header", {
-        active: "audit", title: "Audit Log",
-        subtitle: "Every sensitive movement — who, when, before/after, device",
-        icon: "bi-journal-text"
+    const ACTION_LABELS = {
+      LOGIN: "Login · تسجيل دخول",
+      LOGIN_FAILED: "Login failed · فشل دخول",
+      LOGOUT: "Logout · خروج",
+      PERSON_CREATE: "Created person · إضافة شخص",
+      PERSON_UPDATE: "Updated person · تعديل شخص",
+      PERSON_DELETE: "Deleted person · حذف شخص",
+      PERSON_RENAME: "Renamed person · تغيير رمز شخص",
+      PRODUCT_CREATE: "Created product · إضافة منتج",
+      PRODUCT_UPDATE: "Updated product · تعديل منتج",
+      PRODUCT_DELETE: "Deleted product · حذف منتج",
+      PRODUCT_IMPORT_CREATE: "Import created · استيراد (جديد)",
+      PRODUCT_IMPORT_UPDATE: "Import updated · استيراد (تحديث)",
+      PRODUCT_IMPORT_BATCH: "Import batch · استيراد دفعة",
+      DAMAGE_CREATE: "Damage report · بلاغ تلف",
+      RECEIVE_ITEM: "Stock received · استلام مخزون",
+      LIFECYCLE_SET: "Lifecycle change · حالة أداة",
+      USER_CREATE: "User created · مستخدم جديد",
+      USER_UPDATE: "User updated · تعديل مستخدم",
+      USER_DELETE: "User deleted · حذف مستخدم",
+      USER_APPROVE: "User approved · موافقة مستخدم",
+      USER_REJECT: "User rejected · رفض مستخدم",
+      ROLE_PERMISSIONS_SET: "Permissions changed · صلاحيات",
+      PROFILE_UPDATE: "Profile updated · الملف الشخصي",
+      PASSWORD_CHANGE: "Password changed · كلمة المرور",
+      REQUEST_CREATE: "Store request · طلب مخزن",
+      REQUEST_CANCEL: "Request cancelled · إلغاء طلب",
+      WAREHOUSE_CREATE: "Warehouse created · مخزن جديد",
+      WAREHOUSE_DELETE: "Warehouse deleted · حذف مخزن",
+      PROJECT_CREATE: "Project created · مشروع",
+      PROJECT_UPDATE: "Project updated · تعديل مشروع",
+      PROJECT_DISPATCH: "Project dispatch · صرف مشروع",
+      PROJECT_RETURN: "Project return · إرجاع مشروع",
+      INVENTORY_COUNT_SHEET: "Inventory count · جرد",
+      TIMESHEET_PUNCH: "Timesheet punch · بصمة",
+      TIMESHEET_SETTINGS: "Timesheet settings · إعدادات دوام",
+      TERMINAL_SESSION_RESET: "Terminal reset · إعادة طرفية",
+      QR_LABELS: "QR labels · ملصقات",
+      CLIENT_EVENT: "Client event · حدث واجهة"
+    };
+
+    const SCAN_TYPE_LABELS = {
+      direction: "Direction · اتجاه",
+      person: "Worker · عامل",
+      tool: "Tool · أداة",
+      consumable: "Consumable · مستهلك",
+      unknown: "Scan · مسح"
+    };
+
+    let state = {
+      tab: "system",
+      offset: 0,
+      items: [],
+      total: 0,
+      meta: null
+    };
+
+    function auditT(key, fallback) {
+      if (typeof TCI18N !== "undefined" && TCI18N.t) {
+        const v = TCI18N.t(key);
+        if (v && v !== key) return v;
+      }
+      return fallback || key;
+    }
+
+    function actionLabel(code) {
+      return ACTION_LABELS[code] || code || "—";
+    }
+
+    function fmtWhen(ts, label) {
+      if (label) return label;
+      if (!ts) return "—";
+      try {
+        const d = new Date(ts);
+        if (!Number.isNaN(d.getTime())) return d.toLocaleString();
+      } catch (_) { /* ignore */ }
+      return String(ts);
+    }
+
+    function summarizeRow(row) {
+      if (state.tab === "scans") {
+        const bits = [row.code];
+        if (row.description) bits.push(row.description);
+        if (row.type === "direction") return `${row.code} — IN/OUT scan`;
+        return bits.join(" · ");
+      }
+      const parts = [];
+      if (row.detail) parts.push(row.detail);
+      else if (row.after) parts.push(row.after.slice(0, 140));
+      else if (row.before) parts.push(row.before.slice(0, 140));
+      return parts.join(" ") || "—";
+    }
+
+    function buildParams() {
+      const limit = Number(document.getElementById("fLimit").value) || 500;
+      const params = {
+        limit,
+        offset: state.offset,
+        includeMeta: state.offset === 0 ? "1" : ""
+      };
+      const user = document.getElementById("fUser").value.trim();
+      const q = document.getElementById("fSearch").value.trim();
+      if (user) params.user = user;
+      if (q) params.q = q;
+      if (state.tab === "system") {
+        const action = document.getElementById("fAction").value.trim();
+        if (action) params.action = action;
+        params.action = params.action; // keep
+      }
+      return params;
+    }
+
+    function renderMeta() {
+      const el = document.getElementById("auditMeta");
+      const from = state.total ? state.offset + 1 : 0;
+      const to = Math.min(state.offset + state.items.length, state.total);
+      el.textContent = state.total
+        ? `Showing ${from}–${to} of ${state.total}`
+        : "No rows";
+      document.getElementById("btnPrev").disabled = state.offset <= 0;
+      document.getElementById("btnNext").disabled = state.offset + state.items.length >= state.total;
+    }
+
+    function renderUserChips() {
+      const host = document.getElementById("userChips");
+      const cur = document.getElementById("fUser").value;
+      const users = new Map();
+      (state.meta?.users || []).forEach((u) => users.set(u.user, u.count));
+      (state.meta?.scanUsers || []).forEach((u) => {
+        users.set(u.user, (users.get(u.user) || 0) + Number(u.count || 0));
       });
-      document.getElementById("btnRefresh").onclick = loadAudit;
-      loadAudit();
-    }, { minRole: "admin" }));
+      const list = [...users.entries()].sort((a, b) => b[1] - a[1]).slice(0, 16);
+      if (!list.length) {
+        host.hidden = true;
+        return;
+      }
+      host.hidden = false;
+      host.innerHTML =
+        `<button type="button" data-user="" class="${cur ? "" : "active"}">All</button>` +
+        list
+          .map(
+            ([user, count]) =>
+              `<button type="button" data-user="${escHtml(user)}" class="${cur === user ? "active" : ""}">${escHtml(user)} <span class="text-muted">(${count})</span></button>`
+          )
+          .join("");
+      host.querySelectorAll("button").forEach((btn) => {
+        btn.onclick = () => {
+          document.getElementById("fUser").value = btn.dataset.user || "";
+          state.offset = 0;
+          loadAudit();
+        };
+      });
+    }
+
+    function fillMetaSelects() {
+      if (!state.meta) return;
+      const userSel = document.getElementById("fUser");
+      const actionSel = document.getElementById("fAction");
+      const curUser = userSel.value;
+      const curAction = actionSel.value;
+      const users = new Set();
+      (state.meta.users || []).forEach((u) => users.add(u.user));
+      (state.meta.scanUsers || []).forEach((u) => users.add(u.user));
+      userSel.innerHTML =
+        `<option value="">All users</option>` +
+        [...users]
+          .filter(Boolean)
+          .sort((a, b) => a.localeCompare(b))
+          .map((u) => `<option value="${escHtml(u)}">${escHtml(u)}</option>`)
+          .join("");
+      if (curUser && [...userSel.options].some((o) => o.value === curUser)) userSel.value = curUser;
+
+      actionSel.innerHTML =
+        `<option value="">All actions</option>` +
+        (state.meta.actions || [])
+          .map(
+            (a) =>
+              `<option value="${escHtml(a.action)}">${escHtml(actionLabel(a.action))} (${a.count})</option>`
+          )
+          .join("");
+      if (curAction && [...actionSel.options].some((o) => o.value === curAction)) actionSel.value = curAction;
+    }
+
+    function renderTable() {
+      const body = document.getElementById("auditBody");
+      const head = document.getElementById("auditHead");
+      if (state.tab === "scans") {
+        head.innerHTML = `<tr><th>When</th><th>Store keeper</th><th>Type</th><th>Scan</th><th></th></tr>`;
+      } else {
+        head.innerHTML = `<tr><th>When</th><th>User</th><th>Action</th><th>Summary</th><th></th></tr>`;
+      }
+
+      if (!state.items.length) {
+        body.innerHTML = `<tr><td colspan="5" class="tc-text-muted text-center">No rows for this filter</td></tr>`;
+        renderMeta();
+        return;
+      }
+
+      body.innerHTML = state.items
+        .map((row, idx) => {
+          const id = `audit-detail-${idx}`;
+          if (state.tab === "scans") {
+            const type = SCAN_TYPE_LABELS[row.type] || row.type;
+            return `<tr class="audit-open-row" data-idx="${idx}">
+              <td>${escHtml(fmtWhen(row.timestamp, row.dateTimeLabel))}</td>
+              <td><span class="audit-pill user">${escHtml(row.createdBy || "—")}</span></td>
+              <td><span class="audit-pill scan">${escHtml(type)}</span></td>
+              <td>${escHtml(summarizeRow(row))}</td>
+              <td><button type="button" class="tc-btn tc-btn-sm audit-toggle" data-target="${id}"><i class="bi bi-chevron-down"></i></button></td>
+            </tr>
+            <tr class="audit-detail-row" id="${id}" hidden>
+              <td colspan="5">
+                <div class="audit-row-detail open">
+                  <div><strong>Code:</strong> ${escHtml(row.code)}</div>
+                  <div><strong>Description:</strong> ${escHtml(row.description || "—")}</div>
+                  <div><strong>Date sheet:</strong> ${escHtml(String(row.rowDate || "").replace(/[{}]/g, ""))}</div>
+                  <div><strong>Device:</strong> ${escHtml(row.deviceId || "—")}</div>
+                  <div><strong>Session:</strong> ${escHtml(row.sessionId || "—")}</div>
+                </div>
+              </td>
+            </tr>`;
+          }
+
+          const warn = row.action === "LOGIN_FAILED" || String(row.action || "").includes("DELETE");
+          return `<tr class="audit-open-row" data-idx="${idx}">
+            <td>${escHtml(fmtWhen(row.timestamp, row.dateTimeLabel))}</td>
+            <td>
+              <div><strong>${escHtml(row.user || "—")}</strong></div>
+              <small class="text-muted">${escHtml(row.role || "")}</small>
+            </td>
+            <td><span class="audit-pill ${warn ? "warn" : ""}">${escHtml(actionLabel(row.action))}</span></td>
+            <td>${escHtml(summarizeRow(row))}</td>
+            <td><button type="button" class="tc-btn tc-btn-sm audit-toggle" data-target="${id}"><i class="bi bi-chevron-down"></i></button></td>
+          </tr>
+          <tr class="audit-detail-row" id="${id}" hidden>
+            <td colspan="5">
+              <div class="audit-row-detail open">
+                <div><strong>Action code:</strong> ${escHtml(row.action || "")}</div>
+                ${row.detail ? `<div><strong>Detail:</strong> ${escHtml(row.detail)}</div>` : ""}
+                ${row.device ? `<div><strong>Device:</strong> ${escHtml(row.device)}</div>` : ""}
+                ${row.before ? `<div><strong>Before</strong><pre>${escHtml(row.before)}</pre></div>` : ""}
+                ${row.after ? `<div><strong>After</strong><pre>${escHtml(row.after)}</pre></div>` : ""}
+              </div>
+            </td>
+          </tr>`;
+        })
+        .join("");
+
+      body.querySelectorAll(".audit-toggle").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const row = document.getElementById(btn.dataset.target);
+          if (!row) return;
+          const open = row.hasAttribute("hidden");
+          row.toggleAttribute("hidden", !open);
+          btn.querySelector("i").className = open ? "bi bi-chevron-up" : "bi bi-chevron-down";
+        });
+      });
+      renderMeta();
+    }
 
     async function loadAudit() {
       const body = document.getElementById("auditBody");
+      body.innerHTML = `<tr><td colspan="5" class="tc-text-muted text-center">Loading…</td></tr>`;
       try {
-        const data = await apiGet({ action: "getAuditLog" });
-        const items = (data && data.items) || [];
-        if (!items.length) {
-          body.innerHTML = `<tr><td colspan="6" class="tc-text-muted text-center">No audit rows yet — redeploy Code.gs with AuditLog sheet</td></tr>`;
-          return;
+        const params = buildParams();
+        const action = state.tab === "scans" ? "getScanLog" : "getAuditLog";
+        const data = await apiGet({ action, ...params });
+        if (data && data.error) throw new Error(data.error);
+        state.items = data.items || [];
+        state.total = Number(data.total) || state.items.length;
+        if (data.meta) state.meta = data.meta;
+        if (state.offset === 0 && data.meta) {
+          fillMetaSelects();
+          renderUserChips();
         }
-        body.innerHTML = items.map(i => `<tr>
-          <td>${escHtml(i.timestamp || "")}</td>
-          <td>${escHtml(i.user || "")}</td>
-          <td>${escHtml(i.role || "")}</td>
-          <td><strong>${escHtml(i.action || "")}</strong></td>
-          <td><small>${escHtml((i.detail || i.after || "").slice(0, 120))}</small></td>
-          <td><small>${escHtml((i.device || "").slice(0, 40))}</small></td>
-        </tr>`).join("");
+        renderTable();
       } catch (e) {
-        body.innerHTML = `<tr><td colspan="6" class="text-danger text-center">${escHtml(e.message || "Error")}</td></tr>`;
+        body.innerHTML = `<tr><td colspan="5" class="text-danger text-center">${escHtml(e.message || "Error")}</td></tr>`;
+        document.getElementById("auditMeta").textContent = "Error";
       }
     }
+
+    function exportCsv() {
+      const lines = [];
+      if (state.tab === "scans") {
+        lines.push(["When", "User", "Type", "Code", "Description", "Device"].join(","));
+        state.items.forEach((r) => {
+          lines.push(
+            [
+              `"${fmtWhen(r.timestamp, r.dateTimeLabel)}"`,
+              `"${r.createdBy || ""}"`,
+              r.type || "",
+              r.code || "",
+              `"${(r.description || "").replace(/"/g, '""')}"`,
+              `"${r.deviceId || ""}"`
+            ].join(",")
+          );
+        });
+      } else {
+        lines.push(["When", "User", "Role", "Action", "Detail", "Before", "After", "Device"].join(","));
+        state.items.forEach((r) => {
+          lines.push(
+            [
+              `"${fmtWhen(r.timestamp, r.dateTimeLabel)}"`,
+              `"${r.user || ""}"`,
+              `"${r.role || ""}"`,
+              r.action || "",
+              `"${(r.detail || "").replace(/"/g, '""')}"`,
+              `"${(r.before || "").replace(/"/g, '""')}"`,
+              `"${(r.after || "").replace(/"/g, '""')}"`,
+              `"${(r.device || "").replace(/"/g, '""')}"`
+            ].join(",")
+          );
+        });
+      }
+      const blob = new Blob(["\uFEFF" + lines.join("\n")], { type: "text/csv;charset=utf-8" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `audit-${state.tab}-${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 1500);
+    }
+
+    function setTab(tab) {
+      state.tab = tab;
+      state.offset = 0;
+      document.querySelectorAll(".audit-tabs button").forEach((b) => {
+        b.classList.toggle("active", b.dataset.tab === tab);
+      });
+      document.getElementById("fActionWrap").hidden = tab === "scans";
+      loadAudit();
+    }
+
+    document.addEventListener("DOMContentLoaded", () =>
+      TCUI.bootPage(() => {
+        TCUI.mountHeader("app-header", {
+          active: "audit",
+          title: auditT("audit", "Audit log"),
+          subtitle: auditT("auditSub", "Who did what — system changes and scanner activity"),
+          icon: "bi-journal-text"
+        });
+        document.getElementById("auditTitle").textContent = auditT("audit", "Audit log");
+        document.getElementById("auditSub").textContent = auditT(
+          "auditSub",
+          "Who did what — system changes and scanner activity"
+        );
+
+        document.getElementById("btnRefresh").onclick = () => loadAudit();
+        document.getElementById("btnExport").onclick = exportCsv;
+        document.getElementById("btnPrev").onclick = () => {
+          const limit = Number(document.getElementById("fLimit").value) || 500;
+          state.offset = Math.max(0, state.offset - limit);
+          loadAudit();
+        };
+        document.getElementById("btnNext").onclick = () => {
+          const limit = Number(document.getElementById("fLimit").value) || 500;
+          if (state.offset + state.items.length < state.total) {
+            state.offset += limit;
+            loadAudit();
+          }
+        };
+
+        ["fUser", "fAction", "fLimit"].forEach((id) => {
+          document.getElementById(id).addEventListener("change", () => {
+            state.offset = 0;
+            loadAudit();
+          });
+        });
+        let searchTimer = 0;
+        document.getElementById("fSearch").addEventListener("input", () => {
+          clearTimeout(searchTimer);
+          searchTimer = setTimeout(() => {
+            state.offset = 0;
+            loadAudit();
+          }, 350);
+        });
+
+        document.querySelectorAll(".audit-tabs button").forEach((btn) => {
+          btn.addEventListener("click", () => setTab(btn.dataset.tab));
+        });
+
+        loadAudit();
+      }, { minRole: "admin" })
+    );
   </script>
 </body>
 </html>
