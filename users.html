@@ -6,12 +6,12 @@
   <title>AbouAmjad Store System | Users</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-  <link rel="stylesheet" href="app.css?v=rolesync1">
+  <link rel="stylesheet" href="app.css?v=rolesync2">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#0f766e">
-  <script src="config.js?v=rolesync1"></script>
-  <script src="i18n.js?v=rolesync1"></script>
-  <script src="ui.js?v=rolesync1"></script>
+  <script src="config.js?v=rolesync2"></script>
+  <script src="i18n.js?v=rolesync2"></script>
+  <script src="ui.js?v=rolesync2"></script>
   <style>
     .users-pending-card { margin-bottom: 1rem; }
     .users-pending-badge {
@@ -72,6 +72,10 @@
           <div class="tc-field mt-3">
             <label data-i18n="usersUsername">Username</label>
             <input type="text" id="newUser" class="form-control" autocomplete="off">
+          </div>
+          <div class="tc-field">
+            <label data-i18n="usersFullName">Full name</label>
+            <input type="text" id="newFullName" class="form-control" autocomplete="name" data-i18n-placeholder="usersFullName" placeholder="Full name">
           </div>
           <div class="tc-field">
             <label data-i18n="usersPassword">Password</label>
@@ -479,6 +483,7 @@
 
     async function createUser() {
       const username = document.getElementById("newUser").value.trim();
+      const fullName = document.getElementById("newFullName").value.trim();
       const password = document.getElementById("newPass").value;
       const role = document.getElementById("newRole").value;
       if (role === "admin") {
@@ -493,7 +498,7 @@
         TCUI.toast("Password must be at least 8 characters", "err");
         return;
       }
-      const payload = { action: "createUser", username, password, role, fullName: username === "suheil" ? "Suheil Murad" : "" };
+      const payload = { action: "createUser", username, password, role, fullName };
       if (role === "employee") {
         payload.warehouseIds = JSON.stringify(selectedIds("newWarehouses"));
         payload.projectIds = JSON.stringify(selectedIds("newProjects"));
@@ -506,6 +511,7 @@
         }
         TCUI.toast("User created", "ok");
         document.getElementById("newUser").value = "";
+        document.getElementById("newFullName").value = "";
         document.getElementById("newPass").value = "";
         setSelectedIds("newWarehouses", []);
         setSelectedIds("newProjects", []);
