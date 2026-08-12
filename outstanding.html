@@ -7,12 +7,12 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="app.css?v=nrux3">
+  <link rel="stylesheet" href="app.css?v=nrux4">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#0f766e">
-  <script src="config.js?v=nrux3"></script>
-  <script src="i18n.js?v=nrux3"></script>
-  <script src="ui.js?v=nrux3"></script>
+  <script src="config.js?v=nrux4"></script>
+  <script src="i18n.js?v=nrux4"></script>
+  <script src="ui.js?v=nrux4"></script>
 
   <style>
     .nr-page {
@@ -501,6 +501,10 @@
     let overdueDaysSetting = 1;
     let autoTimer = null;
     const AUTO_MS = 30000;
+    /** username -> display label from DB users */
+    const keeperLabels = Object.create(null);
+    /** usernames loaded from DB (listUsers) */
+    const dbKeepers = new Set();
 
     function tt(key, fallback) {
       try {
@@ -620,10 +624,50 @@
       if (prev && values.has(prev)) el.value = prev;
     }
 
+    function fillKeeperSelect(values) {
+      const el = document.getElementById("filterKeeper");
+      if (!el) return;
+      const prev = el.value;
+      const sorted = [...values].sort((a, b) => {
+        const la = (keeperLabels[a] || a).toLowerCase();
+        const lb = (keeperLabels[b] || b).toLowerCase();
+        return la.localeCompare(lb);
+      });
+      const opts = [`<option value="">${escHtml(tt("allStoreKeepers", "All store keepers"))}</option>`]
+        .concat(sorted.map((u) => {
+          const label = keeperLabels[u] || u;
+          return `<option value="${escHtml(u)}">${escHtml(label)}</option>`;
+        }));
+      el.innerHTML = opts.join("");
+      if (prev && values.has(prev)) el.value = prev;
+    }
+
+    async function loadKeeperDirectory() {
+      try {
+        const data = await apiGet({ action: "listUsers" });
+        if (!data || data.error) return;
+        (data.items || []).forEach((u) => {
+          if (!u || !u.username) return;
+          if (u.active === false) return;
+          if ((u.approvalStatus || "approved") !== "approved") return;
+          const username = String(u.username);
+          // Skip pure timesheet/worker accounts from store-keeper list? keep all DB users as requested.
+          dbKeepers.add(username);
+          const name = String(u.fullName || "").trim();
+          const role = String(u.role || "").trim();
+          keeperLabels[username] = name
+            ? (role ? `${name} (${username}) · ${role}` : `${name} (${username})`)
+            : (role ? `${username} · ${role}` : username);
+        });
+      } catch (_) {
+        /* listUsers may require users.manage — fall back to scan keepers only */
+      }
+    }
+
     function refreshFilterOptions() {
       const suppliers = new Set();
       const supervisors = new Set();
-      const keepers = new Set();
+      const keepers = new Set([...dbKeepers]);
       items.forEach((p) => {
         if (p.supplierName) suppliers.add(String(p.supplierName));
         if (p.supervisorName) supervisors.add(String(p.supervisorName));
@@ -638,7 +682,9 @@
           });
         });
       });
-      fillSelect("filterKeeper", keepers, tt("allStoreKeepers", "All store keepers"));
+      // Ignore automated system actors in the picker
+      ["damage-auto", "system", "auto"].forEach((x) => keepers.delete(x));
+      fillKeeperSelect(keepers);
       fillSelect("filterSupplier", suppliers, tt("allSuppliers", "All suppliers"));
       fillSelect("filterSupervisor", supervisors, tt("allSupervisors", "All supervisors"));
     }
@@ -756,6 +802,7 @@
       if (!silent) host.innerHTML = `<div class="tc-text-muted text-center py-4">${t("loading")}</div>`;
       try {
         overdueDaysSetting = typeof getOverdueDays === "function" ? getOverdueDays() : 1;
+        if (!dbKeepers.size) await loadKeeperDirectory();
         const data = await apiGet({ action: "getOutstanding", overdueDays: overdueDaysSetting });
         if (data && data.error) throw new Error(data.error);
         items = (data && data.items) || [];
