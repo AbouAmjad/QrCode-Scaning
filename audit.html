@@ -342,6 +342,23 @@
       if (state.tab === "scans") {
         return row.contextLabel || row.description || row.code || "—";
       }
+      if (row.action === "LOGIN") {
+        return row.detail ? `Login · ${row.detail}` : "Login · success";
+      }
+      if (row.action === "LOGOUT") {
+        return row.detail || "Logout";
+      }
+      if (row.action === "PRODUCT_UPDATE" || row.action === "PRODUCT_CREATE") {
+        try {
+          const payload = row.after ? JSON.parse(row.after) : null;
+          if (payload && payload.code) {
+            const bits = [payload.code];
+            if (payload.description) bits.push(payload.description);
+            if (payload.stockQty !== undefined) bits.push(`qty ${payload.stockQty}`);
+            return bits.join(" · ");
+          }
+        } catch (_) { /* ignore */ }
+      }
       const parts = [];
       if (row.detail) parts.push(row.detail);
       else if (row.after) parts.push(row.after.slice(0, 140));
@@ -362,7 +379,7 @@
       if (q) params.q = q;
       if (state.tab === "system") {
         const action = document.getElementById("fAction").value.trim();
-        if (action) params.action = action;
+        if (action) params.auditAction = action;
       } else {
         const mode = document.getElementById("fScanMode").value;
         if (mode === "custody") params.custodyFlow = "1";

@@ -143,7 +143,12 @@ const TCUI = (() => {
     refreshPermissions().finally(finish);
   }
 
-  function logout() {
+  async function logout() {
+    try {
+      if (typeof logAudit === "function" && typeof getApiToken === "function" && getApiToken()) {
+        await logAudit("LOGOUT", "user logout");
+      }
+    } catch (_) { /* ignore */ }
     if (typeof clearToken === "function") clearToken();
     window.location.href = "login.html";
   }

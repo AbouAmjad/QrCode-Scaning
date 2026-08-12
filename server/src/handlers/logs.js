@@ -263,7 +263,9 @@ async function getAuditLog(ctx) {
   const limit = Math.min(2000, U.posInt(ctx.params.limit, 500));
   const offset = Math.max(0, U.posInt(ctx.params.offset, 0));
   const user = U.trimmed(ctx.params.user);
-  const action = U.trimmed(ctx.params.action);
+  const filterAction =
+    U.trimmed(ctx.params.auditAction || ctx.params.filterAction) ||
+    (U.trimmed(ctx.params.action) !== "getAuditLog" ? U.trimmed(ctx.params.action) : "");
   const q = U.trimmed(ctx.params.q);
 
   const conditions = [];
@@ -273,9 +275,9 @@ async function getAuditLog(ctx) {
     conditions.push(`username ILIKE $${n++}`);
     args.push(user);
   }
-  if (action) {
+  if (filterAction) {
     conditions.push(`action = $${n++}`);
-    args.push(action);
+    args.push(filterAction);
   }
   if (q) {
     const like = `%${q}%`;
