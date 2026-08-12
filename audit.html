@@ -697,8 +697,12 @@
           }
         });
 
-        startAutoRefresh();
-        loadAudit();
+        const tabParam = new URLSearchParams(location.search).get("tab");
+        if (tabParam === "scans") setTab("scans");
+        else {
+          startAutoRefresh();
+          loadAudit();
+        }
       }, { minRole: "admin" })
     );
   </script>
