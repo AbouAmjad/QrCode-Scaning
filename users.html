@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AbouAmjad Store System | Users</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="app.css?v=rolesave1">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f766e">
+  <script src="config.js?v=mcrole1"></script>
+  <script src="i18n.js?v=mcrole1"></script>
+  <script src="ui.js?v=rolesave1"></script>
+  <style>
+    .users-pending-card { margin-bottom: 1rem; }
+    .users-pending-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-width: 1.35rem; height: 1.35rem; padding: 0 0.35rem;
+      border-radius: 999px; font-size: 0.72rem; font-weight: 800;
+      background: #ffedd5; color: #c2410c; margin-inline-start: 0.35rem;
+    }
+    .users-pending-card .tc-table td { vertical-align: middle; }
+    .users-scope-select { min-height: 6.5rem; }
+    .users-scope-chip {
+      display: inline-block; font-size: 0.72rem; padding: 0.1rem 0.4rem;
+      margin: 0.1rem; border-radius: 0.35rem; background: #ecfdf5; color: #0f766e;
+    }
+    .users-scopes-panel { display: none; margin-top: 0.75rem; }
+    .users-scopes-panel.is-open { display: block; }
+  </style>
+</head>
+<body class="tc-page">
+  <div class="tc-wrap">
+    <div class="tc-shell">
+      <div id="app-header"></div>
+
+      <div class="mb-2">
+        <a class="tc-btn tc-btn-sm" href="settings.html"><i class="bi bi-arrow-left"></i> <span data-i18n="settings">Settings</span></a>
+      </div>
+
+      <div class="tc-card users-pending-card" id="pendingCard">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+          <span class="tc-section-badge">
+            <i class="bi bi-hourglass-split"></i>
+            <span data-i18n="usersPending">Pending requests</span>
+            <span class="users-pending-badge" id="pendingCount">0</span>
+          </span>
+          <button type="button" class="tc-btn" id="btnRefreshPending"><i class="bi bi-arrow-clockwise"></i></button>
+        </div>
+        <div class="table-responsive">
+          <table class="tc-table mb-0">
+            <thead>
+              <tr>
+                <th data-i18n="usersFullName">Full name</th>
+                <th data-i18n="usersUsername">Username</th>
+                <th data-i18n="regPhone">Phone</th>
+                <th data-i18n="usersRole">Role</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="pendingBody">
+              <tr><td colspan="5" class="tc-text-muted text-center">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="tc-grid-2">
+        <div class="tc-card">
+          <span class="tc-section-badge"><i class="bi bi-person-plus"></i> <span data-i18n="usersAdd">Add user</span></span>
+          <div class="tc-field mt-3">
+            <label data-i18n="usersUsername">Username</label>
+            <input type="text" id="newUser" class="form-control" autocomplete="off">
+          </div>
+          <div class="tc-field">
+            <label data-i18n="usersFullName">Full name</label>
+            <input type="text" id="newFullName" class="form-control" autocomplete="name" data-i18n-placeholder="usersFullName" placeholder="Full name">
+          </div>
+          <div class="tc-field">
+            <label data-i18n="usersPassword">Password</label>
+            <input type="text" id="newPass" class="form-control" autocomplete="off">
+          </div>
+          <div class="tc-field">
+            <label data-i18n="usersRole">Role / department</label>
+            <select id="newRole" class="tc-select w-100"></select>
+            <div class="form-text" id="newRoleDesc"></div>
+          </div>
+          <div id="newScopesBlock" class="users-scopes-panel is-open">
+            <div class="tc-field">
+              <label data-i18n="usersWarehouses">Warehouses</label>
+              <select id="newWarehouses" class="form-select users-scope-select" multiple size="4"></select>
+              <div class="form-text" data-i18n="usersScopesHint">Hold Ctrl/Cmd to select multiple. Empty = no access until assigned.</div>
+            </div>
+            <div class="tc-field">
+              <label data-i18n="usersProjects">Projects</label>
+              <select id="newProjects" class="form-select users-scope-select" multiple size="4"></select>
+            </div>
+          </div>
+          <button type="button" class="tc-btn tc-btn-primary" id="btnCreate">
+            <i class="bi bi-plus-lg"></i> <span data-i18n="usersCreate">Create</span>
+          </button>
+        </div>
+
+        <div class="tc-card">
+          <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+            <span class="tc-section-badge"><i class="bi bi-people"></i> <span data-i18n="usersList">Users</span></span>
+            <button type="button" class="tc-btn" id="btnRefresh"><i class="bi bi-arrow-clockwise"></i></button>
+          </div>
+          <div class="table-responsive">
+            <table class="tc-table mb-0">
+              <thead>
+                <tr>
+                  <th data-i18n="usersUsername">Username</th>
+                  <th data-i18n="usersRole">Role</th>
+                  <th data-i18n="usersScopes">Scopes</th>
+                  <th data-i18n="usersStatus">Status</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="usersBody">
+                <tr><td colspan="5" class="tc-text-muted text-center">Loading…</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div id="editScopesPanel" class="users-scopes-panel tc-card mt-3 p-3" style="background:var(--tc-surface-2,#f8fafc)">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <strong id="editScopesTitle">Assign work scopes</strong>
+              <button type="button" class="tc-btn tc-btn-sm" id="btnCloseScopes"><i class="bi bi-x-lg"></i></button>
+            </div>
+            <input type="hidden" id="editScopesUser">
+            <div class="tc-field">
+              <label data-i18n="usersWarehouses">Warehouses</label>
+              <select id="editWarehouses" class="form-select users-scope-select" multiple size="5"></select>
+            </div>
+            <div class="tc-field">
+              <label data-i18n="usersProjects">Projects</label>
+              <select id="editProjects" class="form-select users-scope-select" multiple size="5"></select>
+            </div>
+            <button type="button" class="tc-btn tc-btn-primary" id="btnSaveScopes">
+              <i class="bi bi-check2"></i> <span data-i18n="usersSaveScopes">Save scopes</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let allUsers = [];
+    let allWarehouses = [];
+    let allProjects = [];
+
+    document.addEventListener("DOMContentLoaded", () => TCUI.bootPage(() => {
+      TCUI.mountHeader("app-header", {
+        active: "settings",
+        titleKey: "users",
+        subtitleKey: "usersSub",
+        icon: "bi-people"
+      });
+      document.getElementById("btnCreate").onclick = createUser;
+      document.getElementById("btnRefresh").onclick = loadUsers;
+      document.getElementById("btnRefreshPending").onclick = loadUsers;
+      document.getElementById("newRole").onchange = syncNewScopesVisibility;
+      document.getElementById("btnCloseScopes").onclick = () => {
+        document.getElementById("editScopesPanel").classList.remove("is-open");
+      };
+      document.getElementById("btnSaveScopes").onclick = saveScopes;
+      (async () => {
+        await loadRoleCatalog();
+        fillRoleSelects();
+        await Promise.all([loadScopeOptions(), loadUsers()]);
+      })();
+    }, { pageId: "users", minRole: "admin" }));
+
+    /** Same catalog as roles.html (listPermissions.editableRoles). */
+    let roleCatalog = [];
+    let roleMetaMap = {};
+
+    function roleLabel(role) {
+      if (typeof TCI18N !== "undefined") return TCI18N.roleLabelI18n(role);
+      const r = String(role || "");
+      if (AppConfig.ROLE_LABELS && AppConfig.ROLE_LABELS[r]) return AppConfig.ROLE_LABELS[r];
+      const meta = roleMetaMap[r];
+      return (meta && meta.title) || r;
+    }
+
+    function t(k) {
+      return typeof TCI18N !== "undefined" ? TCI18N.t(k) : k;
+    }
+
+    function roleOptions() {
+      if (roleCatalog.length) return roleCatalog;
+      return (AppConfig.ROLE_OPTIONS || []).slice();
+    }
+
+    /** Admin may only be held by username "boss" — never offer it for assignment. */
+    function assignableRoleOptions() {
+      return roleOptions().filter((o) => o.value !== "admin" && o.value !== "worker");
+    }
+
+    async function loadRoleCatalog() {
+      try {
+        const data = await apiGet({ action: "listPermissions" });
+        roleMetaMap = (data && data.roleMeta) || {};
+        const editable = (data && data.editableRoles) || [];
+        const optionOrder = (AppConfig.ROLE_OPTIONS || []).map((x) => x.value);
+        const ordered = [...editable].sort((a, b) => {
+          const ia = optionOrder.indexOf(a);
+          const ib = optionOrder.indexOf(b);
+          if (ia >= 0 && ib >= 0) return ia - ib;
+          if (ia >= 0) return -1;
+          if (ib >= 0) return 1;
+          return a.localeCompare(b);
+        });
+        roleCatalog = ordered.map((value) => ({
+          value,
+          labelKey: "role_" + value,
+          descKey: "role_" + value + "_desc"
+        }));
+        // Keep admin available for display of sole admin account
+        if (!roleCatalog.some((o) => o.value === "admin")) {
+          roleCatalog.push({ value: "admin", labelKey: "role_admin", descKey: "role_admin_desc" });
+        }
+      } catch (e) {
+        console.warn("role catalog", e);
+        roleCatalog = (AppConfig.ROLE_OPTIONS || []).slice();
+      }
+    }
+
+    function isSoleAdminUser(username) {
+      return String(username || "").trim().toLowerCase() === "boss";
+    }
+
+    function roleOptionsHtml(selected, opts) {
+      const options = opts || assignableRoleOptions();
+      const list = [...options];
+      // Keep current admin label visible for boss only (read-only display).
+      if (selected === "admin" && !list.some((o) => o.value === "admin")) {
+        list.unshift({ value: "admin", labelKey: "role_admin" });
+      }
+      return list.map((o) =>
+        `<option value="${o.value}" ${selected === o.value ? "selected" : ""}>${escHtml(roleLabel(o.value))}</option>`
+      ).join("");
+    }
+
+    function fillRoleSelects() {
+      const sel = document.getElementById("newRole");
+      if (!sel) return;
+      sel.innerHTML = roleOptionsHtml("employee");
+      sel.onchange = () => {
+        syncNewScopesVisibility();
+        const opt = assignableRoleOptions().find((o) => o.value === sel.value) || roleOptions().find((o) => o.value === sel.value);
+        const desc = document.getElementById("newRoleDesc");
+        if (desc) desc.textContent = opt && opt.descKey ? t(opt.descKey) : "";
+      };
+      sel.onchange();
+    }
+
+    function syncNewScopesVisibility() {
+      const isSk = document.getElementById("newRole").value === "employee";
+      document.getElementById("newScopesBlock").classList.toggle("is-open", isSk);
+    }
+
+    async function loadScopeOptions() {
+      try {
+        const [wh, pr] = await Promise.all([
+          apiGet({ action: "listWarehouses" }),
+          apiGet({ action: "listProjects", status: "active" }),
+        ]);
+        allWarehouses = (wh && wh.items) || [];
+        allProjects = (pr && pr.items) || [];
+        fillMultiSelect("newWarehouses", allWarehouses.map((w) => ({ id: w.id, label: w.name + (w.isMain ? " ★" : "") })));
+        fillMultiSelect("newProjects", allProjects.map((p) => ({ id: p.id, label: (p.code ? p.code + " — " : "") + p.name })));
+        fillMultiSelect("editWarehouses", allWarehouses.map((w) => ({ id: w.id, label: w.name + (w.isMain ? " ★" : "") })));
+        fillMultiSelect("editProjects", allProjects.map((p) => ({ id: p.id, label: (p.code ? p.code + " — " : "") + p.name })));
+      } catch (e) {
+        console.warn("scope options", e);
+      }
+    }
+
+    function fillMultiSelect(id, options) {
+      const sel = document.getElementById(id);
+      if (!sel) return;
+      const prev = new Set([...sel.selectedOptions].map((o) => o.value));
+      sel.innerHTML = options.map((o) =>
+        `<option value="${escHtml(String(o.id))}" ${prev.has(String(o.id)) ? "selected" : ""}>${escHtml(o.label)}</option>`
+      ).join("");
+    }
+
+    function selectedIds(selId) {
+      return [...document.getElementById(selId).selectedOptions].map((o) => Number(o.value)).filter((n) => n > 0);
+    }
+
+    function setSelectedIds(selId, ids) {
+      const want = new Set((ids || []).map(Number));
+      [...document.getElementById(selId).options].forEach((o) => {
+        o.selected = want.has(Number(o.value));
+      });
+    }
+
+    function warehouseName(id) {
+      const w = allWarehouses.find((x) => Number(x.id) === Number(id));
+      return w ? w.name : ("#" + id);
+    }
+
+    function projectName(id) {
+      const p = allProjects.find((x) => Number(x.id) === Number(id));
+      return p ? (p.code ? p.code + " — " : "") + p.name : ("#" + id);
+    }
+
+    function formatScopes(u) {
+      if (u.role !== "employee") return '<span class="tc-text-muted">—</span>';
+      const scopes = u.scopes || { warehouseIds: [], projectIds: [] };
+      const chips = [];
+      (scopes.warehouseIds || []).forEach((id) => {
+        chips.push(`<span class="users-scope-chip"><i class="bi bi-building"></i> ${escHtml(warehouseName(id))}</span>`);
+      });
+      (scopes.projectIds || []).forEach((id) => {
+        chips.push(`<span class="users-scope-chip"><i class="bi bi-briefcase"></i> ${escHtml(projectName(id))}</span>`);
+      });
+      if (!chips.length) return `<span class="tc-text-muted">${t("usersScopesEmpty")}</span>`;
+      return chips.join(" ");
+    }
+
+    async function loadUsers() {
+      try {
+        const data = await apiGet({ action: "listUsers" });
+        allUsers = (data && data.items) || [];
+        renderPending();
+        renderApproved();
+      } catch (e) {
+        document.getElementById("usersBody").innerHTML =
+          `<tr><td colspan="5" class="text-danger text-center">${escHtml(e.message || "Error")}</td></tr>`;
+        document.getElementById("pendingBody").innerHTML =
+          `<tr><td colspan="5" class="text-danger text-center">${escHtml(e.message || "Error")}</td></tr>`;
+      }
+    }
+
+    function renderPending() {
+      const pending = allUsers.filter((u) => u.approvalStatus === "pending");
+      const body = document.getElementById("pendingBody");
+      const card = document.getElementById("pendingCard");
+      document.getElementById("pendingCount").textContent = String(pending.length);
+      card.style.display = pending.length ? "" : "none";
+      if (!pending.length) {
+        body.innerHTML = `<tr><td colspan="5" class="tc-text-muted text-center">${t("usersPendingEmpty")}</td></tr>`;
+        return;
+      }
+      body.innerHTML = pending.map((u) => `<tr>
+        <td><strong>${escHtml(u.fullName || "—")}</strong></td>
+        <td>${escHtml(u.username)}</td>
+        <td>${escHtml(u.phone || "—")}</td>
+        <td>
+          <select class="tc-select" id="pending-role-${escHtml(u.username)}">
+            ${roleOptionsHtml(u.role || "employee")}
+          </select>
+        </td>
+        <td class="text-end text-nowrap">
+          <button type="button" class="tc-btn tc-btn-primary" onclick="approveUser('${escHtml(u.username)}')">
+            <i class="bi bi-check2"></i> ${t("usersApprove")}
+          </button>
+          <button type="button" class="tc-btn" style="color:#b91c1c" onclick="rejectUser('${escHtml(u.username)}')">
+            <i class="bi bi-x-lg"></i> ${t("usersReject")}
+          </button>
+        </td>
+      </tr>`).join("");
+    }
+
+    function renderApproved() {
+      const body = document.getElementById("usersBody");
+      const items = allUsers.filter((u) => u.approvalStatus !== "pending");
+      if (!items.length) {
+        body.innerHTML = `<tr><td colspan="5" class="tc-text-muted text-center">No users</td></tr>`;
+        return;
+      }
+      const me = typeof getSessionUser === "function" ? getSessionUser() : "";
+      body.innerHTML = items.map((u) => {
+        const isMe = u.username === me;
+        const isSoleAdmin = isSoleAdminUser(u.username);
+        const active = u.active !== false;
+        const rejected = u.approvalStatus === "rejected";
+        const roleLocked = isMe || rejected || isSoleAdmin;
+        const statusBadge = rejected
+          ? '<span class="tc-dir-badge tc-dir-out">REJECTED</span>'
+          : (active ? '<span class="tc-text-muted">Active</span>' : '<span class="tc-dir-badge tc-dir-out">OFF</span>');
+        return `<tr>
+          <td>
+            <strong>${escHtml(u.username)}</strong>${isMe ? ' <span class="tc-text-muted">(you)</span>' : ""}
+            ${isSoleAdmin ? ' <span class="tc-text-muted">(sole admin)</span>' : ""}
+            ${u.fullName ? `<div class="tc-text-muted small">${escHtml(u.fullName)}</div>` : ""}
+          </td>
+          <td>
+            <select class="tc-select" data-role-user="${escHtml(u.username)}" ${roleLocked ? "disabled" : ""} onchange="saveRole('${escHtml(u.username)}')">
+              ${roleOptionsHtml(u.role)}
+            </select>
+          </td>
+          <td style="max-width:220px">${formatScopes(u)}</td>
+          <td>${statusBadge}</td>
+          <td class="text-end text-nowrap">
+            ${u.role === "employee" && !rejected ? `<button type="button" class="tc-btn" title="${t("usersAssignScopes")}" onclick="openScopes('${escHtml(u.username)}')"><i class="bi bi-geo-alt"></i></button>` : ""}
+            <button type="button" class="tc-btn" title="Toggle active" ${isMe || rejected || isSoleAdmin ? "disabled" : ""} onclick="toggleActive('${escHtml(u.username)}', ${active ? "false" : "true"})">
+              <i class="bi ${active ? "bi-pause-circle" : "bi-play-circle"}"></i>
+            </button>
+            <button type="button" class="tc-btn" ${rejected ? "disabled" : ""} onclick="resetPass('${escHtml(u.username)}')"><i class="bi bi-key"></i></button>
+            <button type="button" class="tc-btn" ${roleLocked ? "disabled" : ""} onclick="saveRole('${escHtml(u.username)}')"><i class="bi bi-check2"></i></button>
+            <button type="button" class="tc-btn" style="color:#b91c1c" ${isMe || isSoleAdmin ? "disabled" : ""} onclick="removeUser('${escHtml(u.username)}')"><i class="bi bi-trash"></i></button>
+          </td>
+        </tr>`;
+      }).join("");
+    }
+
+    function openScopes(username) {
+      const u = allUsers.find((x) => x.username === username);
+      if (!u) return;
+      document.getElementById("editScopesUser").value = username;
+      document.getElementById("editScopesTitle").textContent = t("usersAssignScopes") + ": " + username;
+      const scopes = u.scopes || { warehouseIds: [], projectIds: [] };
+      setSelectedIds("editWarehouses", scopes.warehouseIds);
+      setSelectedIds("editProjects", scopes.projectIds);
+      document.getElementById("editScopesPanel").classList.add("is-open");
+      document.getElementById("editScopesPanel").scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+
+    async function saveScopes() {
+      const username = document.getElementById("editScopesUser").value;
+      if (!username) return;
+      const warehouseIds = selectedIds("editWarehouses");
+      const projectIds = selectedIds("editProjects");
+      try {
+        const data = await apiGet({
+          action: "updateUser",
+          username,
+          warehouseIds: JSON.stringify(warehouseIds),
+          projectIds: JSON.stringify(projectIds),
+        });
+        if (!data || data.success === false) {
+          TCUI.toast(data.error || "Failed", "err");
+          return;
+        }
+        TCUI.toast(t("usersSaveScopes") + " ✓", "ok");
+        document.getElementById("editScopesPanel").classList.remove("is-open");
+        loadUsers();
+      } catch (e) {
+        TCUI.toast(e.message || "Error", "err");
+      }
+    }
+
+    async function approveUser(username) {
+      const sel = document.getElementById("pending-role-" + username);
+      const role = sel ? sel.value : "employee";
+      if (role === "admin" && !isSoleAdminUser(username)) {
+        TCUI.toast(deleteUserErrorMsg("ONLY_BOSS_CAN_BE_ADMIN"), "err");
+        return;
+      }
+      try {
+        const data = await apiGet({ action: "approveUser", username, role });
+        if (!data || data.success === false) {
+          TCUI.toast(deleteUserErrorMsg((data && data.error) || "Failed"), "err");
+          return;
+        }
+        TCUI.toast(t("usersApprove") + ": " + username, "ok");
+        loadUsers();
+      } catch (e) {
+        TCUI.toast(e.message || "Error", "err");
+      }
+    }
+
+    async function rejectUser(username) {
+      if (!confirm(t("usersReject") + " " + username + "?")) return;
+      try {
+        const data = await apiGet({ action: "rejectUser", username });
+        if (!data || data.success === false) {
+          TCUI.toast(data.error || "Failed", "err");
+          return;
+        }
+        TCUI.toast(t("usersReject") + ": " + username, "ok");
+        loadUsers();
+      } catch (e) {
+        TCUI.toast(e.message || "Error", "err");
+      }
+    }
+
+    async function createUser() {
+      const username = document.getElementById("newUser").value.trim();
+      const fullName = document.getElementById("newFullName").value.trim();
+      const password = document.getElementById("newPass").value;
+      const role = document.getElementById("newRole").value;
+      if (role === "admin") {
+        TCUI.toast(deleteUserErrorMsg("ONLY_BOSS_CAN_BE_ADMIN"), "err");
+        return;
+      }
+      if (!username || !password) {
+        TCUI.toast("Username + password required", "err");
+        return;
+      }
+      if (password.length < 8) {
+        TCUI.toast("Password must be at least 8 characters", "err");
+        return;
+      }
+      const payload = { action: "createUser", username, password, role, fullName };
+      if (role === "employee") {
+        payload.warehouseIds = JSON.stringify(selectedIds("newWarehouses"));
+        payload.projectIds = JSON.stringify(selectedIds("newProjects"));
+      }
+      try {
+        const data = await apiGet(payload);
+        if (!data || data.success === false) {
+          TCUI.toast(data.error || "Failed", "err");
+          return;
+        }
+        TCUI.toast("User created", "ok");
+        document.getElementById("newUser").value = "";
+        document.getElementById("newFullName").value = "";
+        document.getElementById("newPass").value = "";
+        setSelectedIds("newWarehouses", []);
+        setSelectedIds("newProjects", []);
+        loadUsers();
+      } catch (e) {
+        TCUI.toast(e.message || "Error", "err");
+      }
+    }
+
+    async function saveRole(username) {
+      if (isSoleAdminUser(username)) {
+        TCUI.toast(deleteUserErrorMsg("CANNOT_DEMOTE_SOLE_ADMIN"), "err");
+        return;
+      }
+      const sel = document.querySelector(`[data-role-user="${username}"]`);
+      const role = sel ? sel.value : "employee";
+      if (role === "admin") {
+        TCUI.toast(deleteUserErrorMsg("ONLY_BOSS_CAN_BE_ADMIN"), "err");
+        return;
+      }
+      try {
+        const data = await apiPostPlain({ action: "updateUser", username, newRole: role });
+        if (!data || data.success === false) {
+          TCUI.toast(deleteUserErrorMsg((data && data.error) || data.error || "Failed"), "err");
+          loadUsers();
+          return;
+        }
+        TCUI.toast("Role updated: " + roleLabel(data.role || role), "ok");
+        loadUsers();
+      } catch (e) {
+        TCUI.toast(e.message || "Error", "err");
+      }
+    }
+
+    async function resetPass(username) {
+      const password = prompt(`New password for ${username}:`);
+      if (!password) return;
+      if (password.length < 8) {
+        TCUI.toast("Password must be at least 8 characters", "err");
+        return;
+      }
+      try {
+        const data = await apiGet({ action: "updateUser", username, password });
+        if (!data || data.success === false) {
+          TCUI.toast(data.error || "Failed", "err");
+          return;
+        }
+        TCUI.toast("Password updated (session reset)", "ok");
+      } catch (e) {
+        TCUI.toast(e.message || "Error", "err");
+      }
+    }
+
+    async function toggleActive(username, active) {
+      try {
+        const data = await apiGet({ action: "updateUser", username, active: String(active) });
+        if (!data || data.success === false) {
+          TCUI.toast(data.error || "Failed", "err");
+          return;
+        }
+        TCUI.toast(active ? "Account enabled" : "Account disabled", "ok");
+        loadUsers();
+      } catch (e) {
+        TCUI.toast(e.message || "Error", "err");
+      }
+    }
+
+    function deleteUserErrorMsg(code) {
+      const map = {
+        CANNOT_DELETE_SELF: "You cannot delete your own account",
+        CANNOT_DELETE_LAST_ADMIN: "Cannot delete the last active admin",
+        CANNOT_DELETE_SOLE_ADMIN: "Cannot delete the sole admin account (boss)",
+        CANNOT_DEMOTE_SOLE_ADMIN: "Cannot demote boss from admin",
+        CANNOT_DISABLE_SOLE_ADMIN: "Cannot disable the sole admin account (boss)",
+        CANNOT_MODIFY_SOLE_ADMIN: "Cannot modify the sole admin account (boss)",
+        ONLY_BOSS_CAN_BE_ADMIN: "Only user \"boss\" can have the admin role",
+        USER_HAS_LINKED_RECORDS: "User still has linked records — refresh and try again",
+        NOT_FOUND: "User not found",
+        FORBIDDEN: "No permission to delete users",
+        UNAUTHORIZED: "Session expired — sign in again"
+      };
+      return map[code] || code || "Failed";
+    }
+
+    async function removeUser(username) {
+      if (isSoleAdminUser(username)) {
+        TCUI.toast(deleteUserErrorMsg("CANNOT_DELETE_SOLE_ADMIN"), "err");
+        return;
+      }
+      if (!confirm(`Delete user "${username}"?`)) return;
+      try {
+        const data = await apiGet({ action: "deleteUser", username });
+        if (!data || data.success === false) {
+          TCUI.toast(deleteUserErrorMsg((data && data.error) || "Failed"), "err");
+          return;
+        }
+        TCUI.toast("User deleted", "ok");
+        loadUsers();
+      } catch (e) {
+        TCUI.toast(deleteUserErrorMsg(e.message) || "Error", "err");
+      }
+    }
+  </script>
+</body>
+</html>
