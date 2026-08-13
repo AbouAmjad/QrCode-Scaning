@@ -1,0 +1,1180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AbouAmjad Store System | Worker Violation Form</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+Arabic:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="app.css?v=themes1">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#185020">
+  <script src="config.js?v=navperm2"></script>
+  <script src="i18n.js?v=formphoto1"></script>
+  <script src="ui.js?v=catux1"></script>
+  <style>
+    /* Official AICS document layout — print-first */
+    .vl-toolbar {
+      display: flex; flex-wrap: wrap; gap: .5rem; align-items: center;
+      max-width: 216mm; margin: 0 auto 1rem;
+    }
+    .vl-toolbar .sp { flex: 1; }
+
+    .vl-sheet {
+      --ink: #111;
+      --muted: #6b7280;
+      --line: #9ca3af;
+      --soft: #e5e7eb;
+      --green: #14532d;
+      --green-deep: #0f3d22;
+      --green-soft: #ecfdf5;
+      --green-tint: #f0fdf4;
+      --paper: #fff;
+      color-scheme: light;
+      width: 210mm; max-width: 100%; margin: 0 auto 3rem;
+      background: var(--paper); color: var(--ink);
+      font-family: "Inter", "Segoe UI", sans-serif; font-size: 11px;
+      border: 1px solid #b7c1b8;
+      position: relative;
+      box-shadow: 0 16px 42px -24px rgba(0,0,0,.22);
+      -webkit-print-color-adjust: exact; print-color-adjust: exact;
+    }
+    .vl-sheet::before {
+      content: "";
+      position: absolute;
+      inset: 8px;
+      border: 1px solid #edf1ed;
+      pointer-events: none;
+    }
+    .vl-sheet * { box-sizing: border-box; }
+    .vl-sheet input,
+    .vl-sheet select,
+    .vl-sheet textarea {
+      color: var(--ink) !important;
+      -webkit-text-fill-color: var(--ink);
+      caret-color: var(--green);
+    }
+    .vl-sheet input::placeholder,
+    .vl-sheet textarea::placeholder {
+      color: #9ca3af !important;
+      -webkit-text-fill-color: #9ca3af;
+      opacity: 1;
+    }
+
+    /* Header */
+    .vl-header {
+      display: grid; grid-template-columns: 80px 1fr 146px;
+      border-bottom: 2px solid var(--green);
+      background: #fff;
+    }
+    .vl-header .logo-cell {
+      display: flex; align-items: center; justify-content: center;
+      padding: 10px 8px; border-right: 1px solid var(--soft);
+    }
+    .vl-header .logo-cell img { width: 62px; height: 62px; object-fit: contain; }
+    .vl-header .logo-cell .fallback {
+      width: 62px; height: 62px; background: var(--green); border-radius: 8px;
+      display: none; align-items: center; justify-content: center;
+      color: #fff; font-weight: 900; font-size: 18px; letter-spacing: .04em;
+    }
+    .vl-header .co-cell { padding: 12px 16px; display: flex; flex-direction: column; justify-content: center; }
+    .vl-header .co-en {
+      font-size: 14px; font-weight: 900; color: var(--green-deep);
+      text-transform: uppercase; letter-spacing: .055em; line-height: 1.15;
+    }
+    .vl-header .co-ar {
+      font-family: "Noto Sans Arabic", "Segoe UI", sans-serif;
+      font-size: 13px; font-weight: 700; color: #374151; direction: rtl; margin-top: 4px;
+    }
+    .vl-header .co-sub { margin-top: 7px; font-size: 9px; color: var(--muted); line-height: 1.45; }
+    .vl-header .docref-cell {
+      border-left: 1px solid var(--soft); display: flex; flex-direction: column; padding: 0;
+      margin: 8px 10px 8px 0;
+      border: 1px solid #c8d0c9;
+      align-self: center;
+    }
+    .vl-header .drtitle {
+      background: linear-gradient(180deg, var(--green-deep), var(--green)); color: #fff;
+      font-size: 8.5px; font-weight: 800; letter-spacing: .12em;
+      text-transform: uppercase; padding: 5px 10px; text-align: center;
+    }
+    .vl-header .drrow {
+      display: grid; grid-template-columns: 44px 1fr; border-top: 1px solid var(--soft); flex: 1;
+    }
+    .vl-header .drrow .drlbl {
+      padding: 4px 6px; font-size: 8px; font-weight: 700; text-transform: uppercase;
+      color: var(--muted); background: #f9fafb; border-right: 1px solid var(--soft);
+      display: flex; align-items: center;
+    }
+    .vl-header .drrow .drval {
+      padding: 4px 7px; font-size: 9px; font-weight: 700; display: flex; align-items: center; color: var(--ink);
+    }
+
+    /* Title */
+    .vl-banner {
+      background: #fff; color: var(--ink);
+      padding: 12px 16px 12px;
+      display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 10px;
+      border-bottom: 1px solid #cfd8d0;
+      position: relative;
+    }
+    .vl-banner::after {
+      content: "";
+      position: absolute;
+      left: 16px; right: 16px; bottom: 0;
+      height: 2px; background: var(--green);
+    }
+    .vl-banner .ban-kicker {
+      display: inline-flex; align-items: center;
+      font-size: 8px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase;
+      color: var(--green); background: var(--green-soft);
+      border: 1px solid #bbd9c2; padding: 3px 8px; margin-bottom: 6px;
+    }
+    .vl-banner .ban-en {
+      font-size: 18px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase;
+      color: var(--green-deep);
+    }
+    .vl-banner .ban-sub {
+      font-size: 9.5px; font-weight: 600; margin-top: 4px; letter-spacing: .03em; color: #5f6c61;
+    }
+    .vl-banner .ban-ar {
+      font-family: "Noto Sans Arabic", "Segoe UI", sans-serif;
+      font-size: 13px; font-weight: 700; direction: rtl; color: #2f4a36;
+    }
+    .vl-banner .ban-meta {
+      display: flex; justify-content: flex-end; margin-top: 6px;
+      font-size: 8px; letter-spacing: .08em; text-transform: uppercase; color: #738173;
+    }
+
+    .vl-body { padding: 12px 14px 8px; }
+
+    /* Sections — continuous document flow (no cards) */
+    .vl-block { margin: 0; border: 0; background: transparent; box-shadow: none; border-radius: 0; }
+
+    .vl-sec {
+      display: flex; align-items: center; gap: 0;
+      margin: 16px 0 0;
+    }
+    .vl-sec .sec-num {
+      background: var(--green); color: #fff;
+      font-size: 9px; font-weight: 900; letter-spacing: .08em;
+      padding: 5px 10px; text-transform: uppercase; white-space: nowrap;
+    }
+    .vl-sec .sec-lbl {
+      background: #f7faf7; color: var(--green);
+      font-size: 9px; font-weight: 800; letter-spacing: .1em;
+      text-transform: uppercase; padding: 5px 11px;
+      border: 1px solid #d5ddd6; border-left: 0; flex: 1;
+    }
+    .vl-sec.green .sec-num { background: var(--green); }
+    .vl-sec.green .sec-lbl { background: var(--green-soft); color: var(--green); }
+
+    .vl-status {
+      display: none; margin: 0; padding: 6px 8px; font-size: 11px; font-weight: 700;
+      border: 1px solid var(--line); border-bottom: 0;
+    }
+    .vl-status.show { display: block; }
+    .vl-status.ok { background: var(--green-soft); color: var(--green); }
+    .vl-status.err { background: #fff7ed; color: #9a3412; }
+
+    /* Field grid */
+    .vl-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      border: 1px solid var(--line); border-bottom: none;
+    }
+    .vl-cell {
+      border-right: 1px solid var(--line); border-bottom: 1px solid var(--line);
+      min-height: 34px; display: flex; flex-direction: column; background: #fff;
+    }
+    .vl-cell:nth-child(4n) { border-right: none; }
+    .vl-cell.span2 { grid-column: span 2; }
+    .vl-cell.span3 { grid-column: span 3; }
+    .vl-cell.span4 { grid-column: span 4; border-right: none; }
+    .vl-cell.xtall { min-height: 72px; }
+    .vl-cell .lbl {
+      font-size: 7.5px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
+      color: var(--muted); background: #f9fafb; padding: 4px 8px;
+      border-bottom: 1px solid var(--soft); line-height: 1;
+    }
+    .vl-cell .lbl.red,
+    .vl-cell .lbl.green {
+      background: var(--green); color: #fff; border-bottom-color: var(--green);
+    }
+    .vl-cell .field { flex: 1; display: flex; align-items: center; padding: 0; gap: 4px; }
+    .vl-cell .field input,
+    .vl-cell .field select,
+    .vl-cell .field textarea {
+      width: 100%; height: 100%; border: 0; outline: none; background: transparent;
+      font: inherit; font-weight: 600; color: var(--ink); padding: 6px 8px;
+    }
+    .vl-cell .field input[type="date"],
+    .vl-cell .field input[type="time"] { cursor: pointer; color-scheme: light; }
+    .vl-cell .field select { cursor: pointer; appearance: auto; }
+    .vl-cell .field textarea { resize: none; line-height: 1.4; align-self: stretch; }
+    .vl-cell .field input:focus,
+    .vl-cell .field select:focus,
+    .vl-cell .field textarea:focus { background: var(--green-tint); }
+    .vl-cell .name-input { font-size: 13px; font-weight: 700; }
+    .vl-load-btn {
+      flex-shrink: 0; border: 0; background: var(--green); color: #fff;
+      font-size: 10px; font-weight: 800; padding: 4px 9px; cursor: pointer; margin-right: 5px;
+    }
+    .vl-load-btn:hover { background: #166534; }
+
+    /* Checklist chips */
+    .vl-chips {
+      border: 1px solid var(--line); border-top: none;
+      background: #fbfcfb; padding: 8px 8px 9px;
+      display: flex; flex-wrap: wrap; gap: 4px 6px;
+    }
+    .vl-chip {
+      display: inline-flex; align-items: center; gap: 5px;
+      border: 1px solid #d5dbd6; background: #fff;
+      padding: 5px 10px 5px 8px; cursor: pointer;
+      font-size: 10px; font-weight: 600; color: #374151; user-select: none;
+    }
+    .vl-chip:hover { border-color: #6ee7b7; background: var(--green-tint); }
+    .vl-chip input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+    .vl-chip .cb {
+      width: 14px; height: 14px; border: 1.5px solid #7a8b7d;
+      flex-shrink: 0; position: relative; background: #fff;
+      display: inline-flex; align-items: center; justify-content: center;
+    }
+    .vl-chip input[type="radio"] + .cb { border-radius: 50%; }
+    .vl-chip input[type="checkbox"] + .cb { border-radius: 3px; }
+    .vl-chip input:checked + .cb {
+      background: var(--green); border-color: var(--green);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.15);
+    }
+    .vl-chip input[type="checkbox"]:checked + .cb::after {
+      content: "";
+      width: 4px; height: 8px;
+      border: solid #fff;
+      border-width: 0 2px 2px 0;
+      transform: rotate(45deg) translateY(-1px);
+      margin-top: -1px;
+    }
+    .vl-chip input[type="radio"]:checked + .cb::after {
+      content: "";
+      width: 6px; height: 6px; border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 0 0 1px rgba(20,83,45,.12);
+    }
+    .vl-chip:has(input:checked) {
+      background: var(--green-soft); border-color: var(--green); color: var(--green); font-weight: 700;
+    }
+
+    /* Tools table */
+    .vl-lines-wrap {
+      border: 1px solid var(--line); border-top: none; border-bottom: none; background: #fff;
+    }
+    .vl-lines { width: 100%; border-collapse: collapse; }
+    .vl-lines th {
+      background: var(--green); color: #fff;
+      font-size: 8px; font-weight: 800; letter-spacing: .07em; text-transform: uppercase;
+      padding: 8px 6px; text-align: center; border-bottom: 1px solid var(--green);
+    }
+    .vl-lines th.left { text-align: left; padding-left: 9px; }
+    .vl-lines td {
+      border-top: 1px solid var(--soft); border-right: 1px solid var(--soft);
+      padding: 0; vertical-align: middle; background: #fff;
+    }
+    .vl-lines td:last-child { border-right: none; }
+    .vl-lines tbody tr:nth-child(even) td:not(.code):not(.n):not(.del) { background: #fcfcfc; }
+    .vl-lines td.n {
+      width: 28px; text-align: center; font-weight: 800; color: var(--muted);
+      background: #f9fafb; font-size: 10px; padding: 5px 2px;
+    }
+    .vl-lines td input {
+      width: 100%; border: 0; outline: none; background: transparent;
+      font: inherit; font-weight: 600; padding: 7px 7px;
+      color: var(--ink) !important;
+      -webkit-text-fill-color: var(--ink);
+    }
+    .vl-lines td.desc input,
+    .vl-lines .in-desc {
+      color: var(--ink) !important;
+      -webkit-text-fill-color: var(--ink) !important;
+      font-weight: 600;
+    }
+    .vl-lines td input:focus { background: var(--green-tint); }
+    .vl-lines .col-code { width: 110px; }
+    .vl-lines .col-photo { width: 48px; }
+    .vl-lines td.photo {
+      text-align: center; padding: 3px 2px; background: #f6faf6 !important;
+      width: 48px;
+    }
+    .vl-thumb {
+      width: 38px; height: 38px; object-fit: cover;
+      border: 1px solid #d5dbd6; background: #fff;
+      display: inline-block; vertical-align: middle;
+    }
+    .vl-thumb.empty {
+      display: inline-grid; place-items: center;
+      color: #9ca3af; font-size: 15px; width: 38px; height: 38px;
+    }
+    .vl-lines td.code { background: #f6faf6 !important; }
+    .vl-lines td.code input {
+      font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+      font-weight: 800; letter-spacing: .02em; text-transform: uppercase;
+      color: var(--green) !important;
+      -webkit-text-fill-color: var(--green);
+    }
+    .vl-lines .col-qty { width: 50px; }
+    .vl-lines .col-days { width: 56px; }
+    .vl-lines .col-cost { width: 84px; }
+    .vl-lines .col-del { width: 30px; }
+    .vl-lines .qty input, .vl-lines .days input, .vl-lines .cost input {
+      text-align: right; font-variant-numeric: tabular-nums;
+    }
+    .vl-lines td.del { text-align: center; background: #f9fafb; }
+    .vl-lines .btn-del {
+      width: 24px; height: 24px; border: 0; background: transparent;
+      color: #9a3412; cursor: pointer; font-size: 12px;
+    }
+    .vl-addrow {
+      padding: 7px 8px; background: #fff;
+      border: 1px solid var(--line); border-top: 1px dashed var(--soft); border-bottom: none;
+    }
+
+    /* Cost */
+    .vl-costbox {
+      display: grid; grid-template-columns: 1.2fr .8fr;
+      border: 1px solid var(--line); border-top: none; background: #fff;
+    }
+    .vl-words {
+      padding: 10px 11px; border-right: 1px solid var(--line); background: #fbfcfb;
+      display: flex; flex-direction: column; justify-content: center;
+    }
+    .vl-words .wlbl {
+      font-size: 8px; font-weight: 800; text-transform: uppercase;
+      letter-spacing: .08em; color: var(--muted);
+    }
+    .vl-words .wval {
+      margin-top: 4px; font-size: 12px; font-weight: 800; line-height: 1.35; color: var(--ink);
+    }
+    .vl-total { width: 100%; border-collapse: collapse; font-size: 11px; }
+    .vl-total th, .vl-total td { border-bottom: 1px solid var(--soft); padding: 7px 10px; color: var(--ink); }
+    .vl-total tr:last-child th, .vl-total tr:last-child td { border-bottom: 0; }
+    .vl-total th {
+      text-align: left; font-size: 8.5px; font-weight: 800;
+      letter-spacing: .05em; text-transform: uppercase; color: var(--muted); width: 58%;
+      background: #f9fafb;
+    }
+    .vl-total td { text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .vl-total tr.grand th { background: var(--green); color: #fff; }
+    .vl-total tr.grand td {
+      background: var(--green-soft); color: var(--green); font-size: 14px; font-weight: 900;
+    }
+
+    /* Declaration */
+    .vl-decl {
+      border: 1px solid var(--line); margin-top: 14px;
+      padding: 9px 11px; font-size: 9.5px; line-height: 1.55; color: #374151;
+      background: #fbfcfb; border-left: 4px solid var(--green);
+    }
+    .vl-decl strong {
+      color: var(--green); font-weight: 800; text-transform: uppercase; letter-spacing: .04em;
+    }
+
+    /* Signatures */
+    .vl-signs-wrap { padding: 0 14px 14px; }
+    .vl-signs {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      border: 1px solid var(--line); border-top: none;
+    }
+    .vl-sign {
+      border-right: 1px solid var(--line); min-height: 102px;
+      display: flex; flex-direction: column; padding: 8px 9px; background: #fff;
+    }
+    .vl-sign:last-child { border-right: none; }
+    .vl-sign .stitle {
+      font-size: 8px; font-weight: 900; text-transform: uppercase; letter-spacing: .08em;
+      color: var(--green); border-bottom: 1px solid var(--soft);
+      padding-bottom: 6px; margin-bottom: 8px; text-align: center;
+      background: transparent;
+    }
+    .vl-sign .sspace { flex: 1; min-height: 36px; }
+    .vl-sign input {
+      width: 100%; border: 0; border-top: 1px dashed var(--line); outline: none;
+      background: transparent; font-size: 9.5px; font-weight: 600; padding: 4px 0 0;
+      font-family: inherit; text-align: center;
+      color: var(--ink) !important;
+      -webkit-text-fill-color: var(--ink);
+    }
+    .vl-sign .shint {
+      margin-top: 2px; font-size: 7.5px; color: #9ca3af; text-align: center;
+      text-transform: uppercase; letter-spacing: .04em;
+    }
+
+    .vl-foot {
+      border-top: 2px solid var(--green); padding: 8px 14px;
+      display: flex; justify-content: space-between; gap: 10px;
+      font-size: 8px; color: var(--muted); background: #fff;
+    }
+    .vl-foot strong { color: var(--green); font-weight: 900; }
+    .vl-foot .fr { text-align: right; }
+
+    @media (max-width: 760px) {
+      .vl-header { grid-template-columns: 68px 1fr; }
+      .vl-header .docref-cell { grid-column: 1 / -1; border-left: 0; border-top: 1px solid var(--soft); }
+      .vl-banner { grid-template-columns: 1fr; }
+      .vl-banner .ban-meta { justify-content: flex-start; }
+      .vl-costbox { grid-template-columns: 1fr; }
+      .vl-words { border-right: 0; border-bottom: 1px solid var(--line); }
+      .vl-signs { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media print {
+      @page { size: A4 portrait; margin: 6mm 8mm; }
+      html, body { background: #fff !important; height: auto !important; overflow: visible !important; }
+      .no-print, .vl-toolbar, .vl-addrow, .vl-load-btn,
+      .tc-topbar, .tc-sidebar, .tc-sidebar-backdrop,
+      .tc-menu-btn, #app-header, #tc-topbar, #tc-sidebar, #tc-sidebar-backdrop { display: none !important; }
+      .tc-wrap, .tc-shell, #tc-app-layout, .tc-app-layout {
+        display: block !important; margin: 0 !important; padding: 0 !important;
+        max-width: none !important; width: 100% !important;
+        height: auto !important; overflow: visible !important; position: static !important;
+      }
+      .vl-sheet {
+        width: 100% !important; max-width: none !important;
+        border: none !important; box-shadow: none !important; margin: 0 !important;
+        font-size: 12px !important;
+        line-height: 1.35 !important;
+      }
+      .vl-sheet::before { display: none !important; }
+
+      /* Keep sections readable — never orphan a title from its content */
+      .vl-block,
+      .vl-costbox,
+      .vl-decl,
+      .vl-signs-wrap,
+      .vl-header,
+      .vl-banner {
+        break-inside: avoid-page;
+        page-break-inside: avoid;
+      }
+      .vl-sec {
+        break-after: avoid-page;
+        page-break-after: avoid;
+        margin-top: 8px !important;
+      }
+      .vl-sec + .vl-chips,
+      .vl-sec + .vl-lines-wrap,
+      .vl-sec + .vl-grid,
+      .vl-sec + .vl-costbox,
+      .vl-sec + .vl-signs,
+      .vl-sec + .vl-status {
+        break-before: avoid-page;
+        page-break-before: avoid;
+      }
+      .vl-lines thead { display: table-header-group; }
+      .vl-lines tr { break-inside: avoid; page-break-inside: avoid; }
+      .print-hide-empty { display: none !important; }
+
+      .vl-header { grid-template-columns: 70px 1fr 132px !important; }
+      .vl-header .logo-cell { padding: 8px 6px !important; }
+      .vl-header .logo-cell img { width: 54px !important; height: 54px !important; }
+      .vl-header .co-cell { padding: 8px 12px !important; }
+      .vl-header .co-en { font-size: 13.5px !important; letter-spacing: .04em !important; }
+      .vl-header .co-ar { font-size: 12.5px !important; margin-top: 3px !important; }
+      .vl-header .co-sub { margin-top: 4px !important; font-size: 9.5px !important; }
+      .vl-header .docref-cell {
+        margin: 6px 0 !important;
+        border: 1px solid #c8d0c9 !important;
+      }
+      .vl-header .drtitle { padding: 4px 7px !important; font-size: 9px !important; }
+      .vl-header .drrow .drlbl,
+      .vl-header .drrow .drval { padding: 4px 6px !important; font-size: 10px !important; }
+
+      .vl-banner {
+        padding: 8px 0 8px !important;
+        border-bottom: 1px solid #cfd8d0 !important;
+        gap: 8px !important;
+      }
+      .vl-banner::after { left: 0 !important; right: 0 !important; height: 2px !important; }
+      .vl-banner .ban-kicker,
+      .vl-banner .ban-meta { display: none !important; }
+      .vl-banner .ban-en { font-size: 16px !important; letter-spacing: .06em !important; }
+      .vl-banner .ban-sub { font-size: 10.5px !important; margin-top: 3px !important; }
+      .vl-banner .ban-ar { font-size: 13px !important; }
+
+      .vl-body { padding: 6px 0 4px !important; }
+      .vl-signs-wrap { padding: 0 !important; }
+      .vl-sec .sec-num,
+      .vl-sec .sec-lbl { padding: 4px 9px !important; font-size: 10px !important; }
+
+      .vl-cell { min-height: 32px !important; }
+      .vl-cell.xtall { min-height: 56px !important; }
+      .vl-cell .lbl { padding: 3px 7px !important; font-size: 9px !important; }
+      .vl-cell .field input,
+      .vl-cell .field select,
+      .vl-cell .field textarea {
+        padding: 5px 7px !important;
+        font-size: 12.5px !important;
+        font-weight: 700 !important;
+      }
+      .vl-cell .name-input { font-size: 14px !important; }
+
+      .vl-chips {
+        gap: 4px 5px !important;
+        padding: 6px 7px !important;
+      }
+      .vl-chip {
+        padding: 4px 8px 4px 6px !important;
+        font-size: 11px !important;
+        box-shadow: none !important;
+        border-radius: 2px !important;
+      }
+      .vl-chip .cb { width: 13px !important; height: 13px !important; }
+      .vl-chip input[type="checkbox"]:checked + .cb::after {
+        width: 3.5px !important; height: 7px !important;
+      }
+
+      .vl-lines th { padding: 6px 5px !important; font-size: 9.5px !important; }
+      .vl-lines td input {
+        padding: 5px 6px !important;
+        font-size: 12px !important;
+        font-weight: 700 !important;
+      }
+      .vl-lines td.n { padding: 5px 2px !important; font-size: 11px !important; }
+      .vl-lines td.desc input,
+      .vl-lines .in-desc { font-size: 12px !important; font-weight: 700 !important; }
+
+      .vl-words { padding: 8px 10px !important; }
+      .vl-words .wlbl { font-size: 9px !important; }
+      .vl-words .wval { font-size: 13px !important; margin-top: 3px !important; }
+      .vl-total th, .vl-total td { padding: 6px 9px !important; font-size: 11.5px !important; }
+      .vl-total tr.grand td { font-size: 14px !important; }
+
+      .vl-decl {
+        margin-top: 8px !important;
+        padding: 7px 9px !important;
+        font-size: 11px !important;
+        line-height: 1.5 !important;
+      }
+
+      .vl-sign { min-height: 78px !important; padding: 6px 7px !important; }
+      .vl-sign .stitle { padding-bottom: 4px !important; margin-bottom: 5px !important; font-size: 9.5px !important; }
+      .vl-sign .sspace { min-height: 28px !important; }
+      .vl-sign input { font-size: 11px !important; padding-top: 3px !important; }
+      .vl-sign .shint { font-size: 8.5px !important; }
+      .vl-foot { padding: 6px 0 !important; font-size: 9px !important; }
+
+      .vl-cell .field input, .vl-cell .field select, .vl-cell .field textarea,
+      .vl-lines input, .vl-sign input, .vl-total input {
+        border: none !important; background: transparent !important;
+        color: #111 !important; -webkit-text-fill-color: #111 !important;
+        -webkit-print-color-adjust: exact; print-color-adjust: exact;
+      }
+      .vl-lines td.code input {
+        color: #14532d !important; -webkit-text-fill-color: #14532d !important;
+        font-size: 12px !important;
+      }
+      .vl-thumb { width: 40px !important; height: 40px !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+      .vl-sign input { border-top: 1px dashed #9ca3af !important; }
+      .vl-lines .col-del, .vl-lines td.del, .vl-lines .btn-del { display: none !important; }
+      .vl-banner, .vl-header .drtitle, .vl-sec .sec-num, .vl-sec .sec-lbl,
+      .vl-lines th, .vl-total tr.grand th, .vl-chip:has(input:checked),
+      .vl-chip input:checked + .cb, .vl-cell .lbl.green, .vl-cell .lbl.red {
+        -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;
+      }
+    }
+  </style>
+</head>
+<body class="tc-page">
+  <div class="tc-wrap">
+    <div class="tc-shell">
+      <div id="app-header"></div>
+
+      <div class="vl-toolbar no-print">
+        <a href="forms.html" class="tc-btn"><i class="bi bi-arrow-left"></i> <span data-i18n="backToForms">Back to forms</span></a>
+        <span class="sp"></span>
+        <button type="button" class="tc-btn" id="btnAddRow"><i class="bi bi-plus-lg"></i> Add tool</button>
+        <button type="button" class="tc-btn" id="btnClear"><i class="bi bi-eraser"></i> Clear</button>
+        <button type="button" class="tc-btn tc-btn-primary" id="btnPrint"><i class="bi bi-printer"></i> Print</button>
+      </div>
+
+      <div class="vl-sheet" id="vlSheet">
+        <div class="vl-header">
+          <div class="logo-cell">
+            <img src="aics-logo.png" alt="AICS" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+            <div class="fallback">AICS</div>
+          </div>
+          <div class="co-cell">
+            <div class="co-en">Arabian Integrated Construction Services</div>
+            <div class="co-ar">الشركة العربية المتكاملة لخدمات الإنشاءات</div>
+            <div class="co-sub">Kingdom of Saudi Arabia · Store / Warehouse · Worker custody &amp; discipline record</div>
+          </div>
+          <div class="docref-cell">
+            <div class="drtitle">Document</div>
+            <div class="drrow"><span class="drlbl">Code</span><span class="drval">AICS-VL</span></div>
+            <div class="drrow"><span class="drlbl">Rev.</span><span class="drval">01</span></div>
+            <div class="drrow"><span class="drlbl">Page</span><span class="drval">1 / 1</span></div>
+          </div>
+        </div>
+
+        <div class="vl-banner">
+          <div>
+            <div class="ban-kicker">Controlled Discipline Form</div>
+            <div class="ban-en">Worker Violation Report</div>
+            <div class="ban-sub">Not returned · Sent with another person · Damaged · Lost · Misuse</div>
+            <div class="ban-meta">Store Control / HR Record / Internal Use</div>
+          </div>
+          <div class="ban-ar">تقرير مخالفة عامل — عهدة / عدة</div>
+        </div>
+
+        <div class="vl-body">
+          <div class="vl-block">
+          <div class="vl-grid">
+            <div class="vl-cell">
+              <div class="lbl">Form No.</div>
+              <div class="field"><input id="formNo" type="text" placeholder="VL-YYYYMMDD-HHMM" autocomplete="off"></div>
+            </div>
+            <div class="vl-cell">
+              <div class="lbl">Report Date</div>
+              <div class="field"><input id="formDate" type="date"></div>
+            </div>
+            <div class="vl-cell">
+              <div class="lbl">Project</div>
+              <div class="field"><input id="project" type="text" placeholder="Project name / code" autocomplete="off"></div>
+            </div>
+            <div class="vl-cell">
+              <div class="lbl">Site / Area</div>
+              <div class="field"><input id="site" type="text" placeholder="Zone / building" autocomplete="off"></div>
+            </div>
+          </div>
+          </div>
+
+          <div class="vl-block">
+          <div class="vl-sec">
+            <span class="sec-num">① Worker</span>
+            <span class="sec-lbl">enter P code — system fills the rest</span>
+          </div>
+          <div id="loadStatus" class="vl-status no-print"></div>
+          <div class="vl-grid">
+            <div class="vl-cell">
+              <div class="lbl red">Person Code — auto-fill</div>
+              <div class="field">
+                <input id="personCode" type="text" placeholder="Scan / type P…" autocomplete="off" style="flex:1;min-width:0">
+                <button type="button" class="vl-load-btn no-print" id="btnLoadPerson" title="Load from system">Load</button>
+              </div>
+            </div>
+            <div class="vl-cell">
+              <div class="lbl">Iqama / ID</div>
+              <div class="field"><input id="iqama" type="text" placeholder="Auto / edit" autocomplete="off"></div>
+            </div>
+            <div class="vl-cell">
+              <div class="lbl">Company / Sub</div>
+              <div class="field"><input id="company" type="text" placeholder="Auto / edit" autocomplete="off"></div>
+            </div>
+            <div class="vl-cell">
+              <div class="lbl">Phone</div>
+              <div class="field"><input id="phone" type="text" placeholder="Auto / edit" autocomplete="off"></div>
+            </div>
+            <div class="vl-cell span4">
+              <div class="lbl green">Full Name (auto from system)</div>
+              <div class="field"><input id="personName" class="name-input" type="text" placeholder="Loads when you enter P code" autocomplete="off"></div>
+            </div>
+            <div class="vl-cell span2">
+              <div class="lbl">Supervisor / Foreman</div>
+              <div class="field"><input id="supervisor" type="text" placeholder="Name of direct supervisor" autocomplete="off"></div>
+            </div>
+            <div class="vl-cell span2">
+              <div class="lbl">Last OUT Date (from store)</div>
+              <div class="field"><input id="lastOutDate" type="date"></div>
+            </div>
+          </div>
+          </div>
+
+          <div class="vl-block">
+          <div class="vl-sec">
+            <span class="sec-num">② Violation Type</span>
+            <span class="sec-lbl">tick all that apply</span>
+          </div>
+          <div class="vl-chips" id="violTypes">
+            <label class="vl-chip"><input type="checkbox"><span class="cb"></span>Did not return tools</label>
+            <label class="vl-chip"><input type="checkbox"><span class="cb"></span>Late return / overdue</label>
+            <label class="vl-chip"><input type="checkbox"><span class="cb"></span>Sent tools with another person</label>
+            <label class="vl-chip"><input type="checkbox"><span class="cb"></span>Left tools on site / abandoned</label>
+            <label class="vl-chip"><input type="checkbox"><span class="cb"></span>Damaged tools / equipment</label>
+            <label class="vl-chip"><input type="checkbox"><span class="cb"></span>Lost / missing tools</label>
+            <label class="vl-chip"><input type="checkbox"><span class="cb"></span>Wrong person scanned / fake hand-over</label>
+            <label class="vl-chip"><input type="checkbox"><span class="cb"></span>Used tools without permission</label>
+            <label class="vl-chip"><input type="checkbox"><span class="cb"></span>PPE / consumable misuse</label>
+            <label class="vl-chip"><input type="checkbox"><span class="cb"></span>Refused store instructions</label>
+            <label class="vl-chip"><input type="checkbox"><span class="cb"></span>Other</label>
+          </div>
+          <div class="vl-sec">
+            <span class="sec-num">Severity</span>
+            <span class="sec-lbl">select one</span>
+          </div>
+          <div class="vl-chips" id="severity">
+            <label class="vl-chip"><input type="radio" name="sev"><span class="cb"></span>Warning (1st)</label>
+            <label class="vl-chip"><input type="radio" name="sev"><span class="cb"></span>Written warning</label>
+            <label class="vl-chip"><input type="radio" name="sev"><span class="cb"></span>Serious — charge / deduct</label>
+            <label class="vl-chip"><input type="radio" name="sev"><span class="cb"></span>Critical — escalate to management</label>
+            <label class="vl-chip"><input type="radio" name="sev"><span class="cb"></span>Repeat offender</label>
+          </div>
+          </div>
+
+          <div class="vl-block">
+          <div class="vl-sec green">
+            <span class="sec-num">③ Tools Involved</span>
+            <span class="sec-lbl">codes still out / damaged / missing</span>
+          </div>
+          <div class="vl-lines-wrap">
+          <table class="vl-lines">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th class="col-code">Product code</th>
+                <th class="col-photo">Photo</th>
+                <th class="left">Description</th>
+                <th class="col-qty">Qty</th>
+                <th class="col-days">Days out</th>
+                <th class="col-cost">Est. cost</th>
+                <th class="col-del no-print">✕</th>
+              </tr>
+            </thead>
+            <tbody id="linesBody"></tbody>
+          </table>
+          <div class="vl-addrow no-print">
+            <button type="button" class="tc-btn tc-btn-sm" id="btnAddRow2"><i class="bi bi-plus"></i> Add tool line</button>
+          </div>
+          </div>
+          <div class="vl-grid">
+            <div class="vl-cell span4 xtall">
+              <div class="lbl">What happened — full story</div>
+              <div class="field"><textarea id="story" placeholder="Explain clearly: when tools were taken, what the worker did, and what happened…"></textarea></div>
+            </div>
+          </div>
+          </div>
+
+          <div class="vl-block">
+          <div class="vl-sec">
+            <span class="sec-num">④ Action &amp; Charge</span>
+            <span class="sec-lbl">what the store / company will do</span>
+          </div>
+          <div class="vl-chips" id="actions">
+            <label class="vl-chip"><input type="checkbox"><span class="cb"></span>Verbal warning recorded</label>
+            <label class="vl-chip"><input type="checkbox"><span class="cb"></span>Written warning to HR</label>
+            <label class="vl-chip"><input type="checkbox"><span class="cb"></span>Block further OUT until cleared</label>
+            <label class="vl-chip"><input type="checkbox"><span class="cb"></span>Charge worker (deduct)</label>
+            <label class="vl-chip"><input type="checkbox"><span class="cb"></span>Charge subcontractor</label>
+            <label class="vl-chip"><input type="checkbox"><span class="cb"></span>Replace / repair at worker cost</label>
+            <label class="vl-chip"><input type="checkbox"><span class="cb"></span>Escalate to management</label>
+            <label class="vl-chip"><input type="checkbox"><span class="cb"></span>Pending investigation</label>
+          </div>
+          <div class="vl-costbox">
+            <div class="vl-words">
+              <div class="wlbl">Amount in words</div>
+              <div class="wval" id="amountWords">Zero Saudi Riyals only</div>
+            </div>
+            <table class="vl-total">
+              <tr>
+                <th>Tools lines total</th>
+                <td id="linesTotal">0.00</td>
+              </tr>
+              <tr>
+                <th>Extra / other cost</th>
+                <td><input id="extraCost" type="number" min="0" step="0.01" placeholder="0.00" style="width:100%;border:0;text-align:right;font-weight:700;outline:none;background:transparent;padding:0"></td>
+              </tr>
+              <tr class="grand">
+                <th>Total charge (SAR)</th>
+                <td id="grandTotal">0.00</td>
+              </tr>
+            </table>
+          </div>
+          </div>
+
+          <div class="vl-decl">
+            <strong>Declaration — </strong>
+            The worker named above is responsible for the tools listed while they were under his custody.
+            Sending tools with another person, delaying return, damage, or loss without store approval is a violation of store rules.
+            The worker acknowledges this report and any warning / charge / deduction stated.
+            Until cleared, further tool OUT may be blocked by the store.
+          </div>
+        </div>
+
+        <div class="vl-signs-wrap">
+        <div class="vl-block">
+        <div class="vl-sec">
+          <span class="sec-num">⑤ Signatures</span>
+          <span class="sec-lbl">all parties must sign</span>
+        </div>
+        <div class="vl-signs">
+          <div class="vl-sign"><div class="stitle">Store Keeper</div><div class="sspace"></div><input type="text" placeholder="Name" autocomplete="off"><div class="shint">Prepared</div></div>
+          <div class="vl-sign"><div class="stitle">Supervisor</div><div class="sspace"></div><input type="text" placeholder="Name" autocomplete="off"><div class="shint">Acknowledged</div></div>
+          <div class="vl-sign"><div class="stitle">Worker</div><div class="sspace"></div><input type="text" placeholder="Name" autocomplete="off"><div class="shint">Acknowledged</div></div>
+          <div class="vl-sign"><div class="stitle">Management</div><div class="sspace"></div><input type="text" placeholder="Name" autocomplete="off"><div class="shint">Approved</div></div>
+        </div>
+        </div>
+        </div>
+
+        <div class="vl-foot">
+          <div><strong>AICS</strong> · Arabian Integrated Construction Services · Controlled document — retain with worker file / store file</div>
+          <div class="fr">System by Mahmoud Iskandar · +966 56 005 4242</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const ROWS = 5;
+    const ONES = ["","One","Two","Three","Four","Five","Six","Seven","Eight","Nine",
+      "Ten","Eleven","Twelve","Thirteen","Fourteen","Fifteen","Sixteen","Seventeen","Eighteen","Nineteen"];
+    const TENS = ["","","Twenty","Thirty","Forty","Fifty","Sixty","Seventy","Eighty","Ninety"];
+    const TEXT_IDS = [
+      "formNo","project","site","personName","personCode","iqama","company","phone",
+      "supervisor","story","extraCost"
+    ];
+    const DATE_IDS = ["formDate","lastOutDate"];
+    const CHECK_ROOTS = ["violTypes","severity","actions"];
+    let loadTimer = null;
+    let lastLoadedCode = "";
+
+    function chunkW(n){
+      if(n<20)return ONES[n];
+      if(n<100)return(TENS[Math.floor(n/10)]+(n%10?"-"+ONES[n%10]:"")).trim();
+      return(ONES[Math.floor(n/100)]+" Hundred"+(n%100?" "+chunkW(n%100):"")).trim();
+    }
+    function n2w(num){
+      let n=Math.floor(Math.abs(Number(num)||0));
+      if(!n)return"Zero";
+      const sc=[{v:1e9,w:"Billion"},{v:1e6,w:"Million"},{v:1e3,w:"Thousand"}];
+      const p=[];
+      for(const s of sc){if(n>=s.v){p.push(chunkW(Math.floor(n/s.v))+" "+s.w);n%=s.v;}}
+      if(n>0)p.push(chunkW(n));
+      return p.join(" ");
+    }
+    function inWords(t){
+      const v=Math.round((Number(t)||0)*100)/100;
+      const r=Math.floor(v), h=Math.round((v-r)*100);
+      let s=n2w(r)+" Saudi Riyal"+(r===1?"":"s");
+      if(h>0)s+=" and "+n2w(h)+" Halala"+(h===1?"":"s");
+      return s+" only";
+    }
+    function money(n){
+      const v=Number(n);
+      return Number.isFinite(v)?v.toLocaleString("en-SA",{minimumFractionDigits:2,maximumFractionDigits:2}):"0.00";
+    }
+    function suggestFormNo(){
+      const d=new Date();
+      return "VL-"+d.getFullYear()+String(d.getMonth()+1).padStart(2,"0")+String(d.getDate()).padStart(2,"0")
+        +"-"+String(d.getHours()).padStart(2,"0")+String(d.getMinutes()).padStart(2,"0");
+    }
+    function todayIso(){return new Date().toISOString().slice(0,10);}
+    function toDateInput(v){
+      if(!v)return"";
+      if(/^\d{4}-\d{2}-\d{2}/.test(String(v))) return String(v).slice(0,10);
+      const d=new Date(v);
+      if(Number.isNaN(d.getTime())) return"";
+      return d.toISOString().slice(0,10);
+    }
+    function setVal(id, value){
+      const el=document.getElementById(id);
+      if(el) el.value = value == null ? "" : String(value);
+    }
+    function setStatus(msg, ok){
+      const el=document.getElementById("loadStatus");
+      if(!el)return;
+      if(!msg){el.className="vl-status no-print";el.textContent="";return;}
+      el.className="vl-status no-print show "+(ok?"ok":"err");
+      el.textContent=msg;
+    }
+    function tickChip(rootId, labelIncludes){
+      const needles=[].concat(labelIncludes||[]).map((s)=>String(s).toLowerCase());
+      document.querySelectorAll("#"+rootId+" .vl-chip").forEach((lab)=>{
+        const txt=String(lab.textContent||"").toLowerCase();
+        if(needles.some((n)=>txt.includes(n))){
+          const inp=lab.querySelector("input");
+          if(inp) inp.checked=true;
+        }
+      });
+    }
+
+    function renumber(){
+      document.querySelectorAll("#linesBody tr").forEach((tr,i)=>{
+        const n=tr.querySelector(".n"); if(n)n.textContent=String(i+1);
+      });
+    }
+    function recalc(){
+      let lines=0;
+      document.querySelectorAll("#linesBody tr").forEach((tr)=>{
+        const qty=Number(tr.querySelector(".in-qty")?.value)||0;
+        const cost=Number(tr.querySelector(".in-cost")?.value)||0;
+        lines += qty>0 && cost>0 ? qty*cost : cost;
+      });
+      const extra=Number(document.getElementById("extraCost")?.value)||0;
+      const total=lines+extra;
+      const lt=document.getElementById("linesTotal"); if(lt)lt.textContent=money(lines);
+      const gt=document.getElementById("grandTotal"); if(gt)gt.textContent=money(total);
+      const aw=document.getElementById("amountWords"); if(aw)aw.textContent=inWords(total);
+    }
+    function setRowPhoto(tr, url) {
+      const cell = tr.querySelector(".photo");
+      if (!cell) return;
+      const src = String(url || "").trim();
+      cell.innerHTML = "";
+      if (!src) {
+        cell.innerHTML = '<div class="vl-thumb empty" title="No photo"><i class="bi bi-image"></i></div>';
+        return;
+      }
+      const img = document.createElement("img");
+      img.className = "vl-thumb";
+      img.alt = "";
+      img.src = src;
+      img.onerror = () => {
+        cell.innerHTML = '<div class="vl-thumb empty" title="No photo"><i class="bi bi-image"></i></div>';
+      };
+      cell.appendChild(img);
+    }
+    function deleteRow(tr){
+      const body=document.getElementById("linesBody");
+      if(!body||!tr)return;
+      if(body.querySelectorAll("tr").length<=1){
+        tr.querySelectorAll("input").forEach((el)=>{el.value="";});
+        setRowPhoto(tr, "");
+        recalc(); return;
+      }
+      tr.remove(); renumber(); recalc();
+    }
+    async function fillFromCatalog(tr, force){
+      const codeEl=tr.querySelector(".in-code");
+      if(!codeEl)return;
+      const code=String(codeEl.value||"").trim().toUpperCase();
+      codeEl.value=code;
+      if(!code || code.length<2){
+        setRowPhoto(tr, "");
+        return;
+      }
+      const descEl=tr.querySelector(".in-desc");
+      const descEmpty=!String(descEl?.value||"").trim();
+      const photoEmpty=!tr.querySelector(".photo img");
+      if(!force && !descEmpty && !photoEmpty) return;
+      try{
+        if(typeof apiGet!=="function") return;
+        const d=await apiGet({action:"getDesc", code});
+        let photo="";
+        if(d && d.found){
+          if((force || descEmpty) && d.hasDescription!==false && d.description && d.description!=="DESCRIPTION NOT FOUND"){
+            if(descEl) descEl.value=d.description;
+          }
+          photo=d.imageUrl||d.image||"";
+        }
+        if(!photo && typeof getProductImages==="function"){
+          try{
+            const images=await getProductImages(code);
+            photo=(images && (images[code]||images[String(code).toUpperCase()]))||"";
+          }catch(_){}
+        }
+        if(force || photoEmpty || photo) setRowPhoto(tr, photo);
+      }catch(_){}
+    }
+    function wireToolCode(tr){
+      const codeEl=tr.querySelector(".in-code");
+      if(!codeEl)return;
+      codeEl.addEventListener("blur", ()=>fillFromCatalog(tr, false));
+      codeEl.addEventListener("keydown",(e)=>{ if(e.key==="Enter"){ e.preventDefault(); fillFromCatalog(tr, true); }});
+    }
+    function addRow(focus, data){
+      const body=document.getElementById("linesBody");
+      if(!body)return;
+      const tr=document.createElement("tr");
+      tr.innerHTML=
+        '<td class="n"></td>'+
+        '<td class="code"><input type="text" class="in-code" placeholder="I17-A" autocomplete="off"></td>'+
+        '<td class="photo"><div class="vl-thumb empty" title="No photo"><i class="bi bi-image"></i></div></td>'+
+        '<td class="desc"><input type="text" class="in-desc" placeholder="Auto / edit" autocomplete="off"></td>'+
+        '<td class="qty"><input type="number" class="in-qty" min="0" step="1" inputmode="numeric" placeholder="1"></td>'+
+        '<td class="days"><input type="number" class="in-days" min="0" step="1" inputmode="numeric" placeholder="0"></td>'+
+        '<td class="cost"><input type="number" class="in-cost" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></td>'+
+        '<td class="del no-print"><button type="button" class="btn-del" title="Delete">✕</button></td>';
+      if(data){
+        const c=tr.querySelector(".in-code"); if(c)c.value=data.code||"";
+        const d=tr.querySelector(".in-desc"); if(d)d.value=data.description||"";
+        const q=tr.querySelector(".in-qty"); if(q)q.value=data.qty!=null?data.qty:1;
+        const days=tr.querySelector(".in-days"); if(days)days.value=data.daysOut!=null?data.daysOut:"";
+        const cost=tr.querySelector(".in-cost"); if(cost && data.cost!=null) cost.value=data.cost;
+        if(data.imageUrl) setRowPhoto(tr, data.imageUrl);
+      }
+      tr.querySelectorAll(".in-qty, .in-cost").forEach((el)=>el.addEventListener("input",recalc));
+      tr.querySelector(".btn-del")?.addEventListener("click",(e)=>{e.preventDefault();deleteRow(tr);});
+      wireToolCode(tr);
+      body.appendChild(tr); renumber();
+      if(data && data.code) fillFromCatalog(tr, false);
+      if(focus){const c=tr.querySelector(".in-code"); if(c){tr.scrollIntoView({behavior:"smooth",block:"nearest"});setTimeout(()=>c.focus(),40);}}
+      return tr;
+    }
+
+    function fillToolsFromCustody(tools){
+      const body=document.getElementById("linesBody");
+      if(!body)return;
+      body.innerHTML="";
+      const list=Array.isArray(tools)?tools:[];
+      if(!list.length){
+        for(let i=0;i<ROWS;i++) addRow();
+        recalc();
+        return;
+      }
+      for(const t of list){
+        const lots=Array.isArray(t.lots)&&t.lots.length>1?t.lots:null;
+        if(lots){
+          lots.forEach((lot)=>{
+            addRow(false,{
+              code:t.code||"",
+              description:t.description||"",
+              qty:1,
+              daysOut:lot.daysOut!=null?lot.daysOut:(t.daysOut||0)
+            });
+          });
+        }else{
+          addRow(false,{
+            code:t.code||"",
+            description:t.description||"",
+            qty:t.qty||1,
+            daysOut:t.daysOut||0
+          });
+        }
+      }
+      recalc();
+    }
+
+    async function loadPersonFromSystem(force){
+      const codeEl=document.getElementById("personCode");
+      let code=String(codeEl?.value||"").trim().toUpperCase();
+      if(code && !code.startsWith("P")) code="P"+code.replace(/^P/i,"");
+      if(codeEl) codeEl.value=code;
+      if(!code || code.length<2){
+        setStatus("Enter a person code (P…)", false);
+        return;
+      }
+      if(!force && code===lastLoadedCode) return;
+      if(typeof apiGet!=="function"){
+        setStatus("API not available", false);
+        return;
+      }
+      setStatus("Loading "+code+" …", true);
+      try{
+        const data=await apiGet({
+          action:"getPersonCustody",
+          code,
+          overdueDays: typeof getOverdueDays==="function" ? getOverdueDays() : 1
+        });
+        if(!data || data.error){
+          setStatus(data?.error==="NOT_FOUND" ? "Person "+code+" not found" : ("Load failed: "+(data?.error||"error")), false);
+          return;
+        }
+        lastLoadedCode=code;
+        setVal("personName", data.name||"");
+        setVal("iqama", data.residenceNo||"");
+        setVal("phone", data.phone||"");
+        setVal("company", data.supplierName||"");
+        setVal("supervisor", data.supervisorName||"");
+        setVal("lastOutDate", toDateInput(data.lastOutAt || data.lastOutDateTime || data.lastOutDate));
+
+        fillToolsFromCustody(data.toolsHeld||[]);
+
+        // Suggest violation chips from live custody
+        const held=Number(data.toolsHeldQty||0);
+        if(held>0) tickChip("violTypes", ["did not return"]);
+        if(data.overdue) {
+          tickChip("violTypes", ["late return","overdue"]);
+          tickChip("severity", ["written warning","serious"]);
+        } else if(held>0) {
+          tickChip("severity", ["warning (1st)"]);
+        }
+        if(held>0) tickChip("actions", ["block further"]);
+
+        const nTools=(data.toolsHeld||[]).length;
+        setStatus(
+          "Loaded "+(data.name||code)+" · holding "+(data.toolsHeldQty||0)+" item(s)"+(data.overdue?" · OVERDUE":""),
+          true
+        );
+        if(!nTools){
+          setStatus("Loaded "+(data.name||code)+" · no tools currently held — add lines manually if needed", true);
+        }
+      }catch(e){
+        setStatus(e.message||"Network error", false);
+      }
+    }
+
+    function clearForm(){
+      TEXT_IDS.forEach((id)=>{const e=document.getElementById(id); if(e)e.value="";});
+      DATE_IDS.forEach((id)=>{const e=document.getElementById(id); if(e)e.value="";});
+      CHECK_ROOTS.forEach((id)=>{
+        document.querySelectorAll("#"+id+" input").forEach((el)=>{el.checked=false;});
+      });
+      document.querySelectorAll(".vl-sign input").forEach((el)=>{el.value="";});
+      document.getElementById("linesBody").innerHTML="";
+      lastLoadedCode="";
+      setStatus("", true);
+      for(let i=0;i<ROWS;i++) addRow();
+      const fn=document.getElementById("formNo"); if(fn)fn.value=suggestFormNo();
+      const fd=document.getElementById("formDate"); if(fd)fd.value=todayIso();
+      recalc();
+    }
+
+    function scheduleLoad(){
+      clearTimeout(loadTimer);
+      loadTimer=setTimeout(()=>loadPersonFromSystem(false), 450);
+    }
+
+    TCUI.bootPage(()=>{
+      TCUI.mountHeader("app-header",{
+        active:"forms",
+        titleKey:"formViolation",
+        subtitleKey:"formViolationSub"
+      });
+      if(typeof TCI18N!=="undefined"){
+        if(typeof TCI18N.applyDocumentLang==="function") TCI18N.applyDocumentLang();
+        else if(typeof TCI18N.apply==="function") TCI18N.apply(document);
+      }
+      clearForm();
+      document.getElementById("extraCost")?.addEventListener("input",recalc);
+      document.getElementById("btnAddRow")?.addEventListener("click",()=>addRow(true));
+      document.getElementById("btnAddRow2")?.addEventListener("click",()=>addRow(true));
+      document.getElementById("btnClear")?.addEventListener("click",()=>{
+        if(confirm("Clear all fields?")) clearForm();
+      });
+      function preparePrintRows(){
+        const rows=[...document.querySelectorAll("#linesBody tr")];
+        rows.forEach((tr)=>tr.classList.remove("print-hide-empty"));
+        const filled=rows.filter((tr)=>{
+          const code=String(tr.querySelector(".in-code")?.value||"").trim();
+          const desc=String(tr.querySelector(".in-desc")?.value||"").trim();
+          const qty=String(tr.querySelector(".in-qty")?.value||"").trim();
+          const cost=String(tr.querySelector(".in-cost")?.value||"").trim();
+          return !!(code||desc||qty||cost);
+        });
+        const keep=filled.length?filled:rows.slice(0,1);
+        rows.forEach((tr)=>{ if(!keep.includes(tr)) tr.classList.add("print-hide-empty"); });
+      }
+      function clearPrintRows(){
+        document.querySelectorAll("#linesBody tr.print-hide-empty")
+          .forEach((tr)=>tr.classList.remove("print-hide-empty"));
+      }
+      window.addEventListener("beforeprint", preparePrintRows);
+      window.addEventListener("afterprint", clearPrintRows);
+      document.getElementById("btnPrint")?.addEventListener("click",(e)=>{
+        e.preventDefault();
+        preparePrintRows();
+        try{window.print();}catch(_){}
+        setTimeout(clearPrintRows, 800);
+      });
+      document.getElementById("btnLoadPerson")?.addEventListener("click",()=>loadPersonFromSystem(true));
+      const pc=document.getElementById("personCode");
+      if(pc){
+        pc.addEventListener("input", scheduleLoad);
+        pc.addEventListener("blur", ()=>loadPersonFromSystem(false));
+        pc.addEventListener("keydown",(e)=>{
+          if(e.key==="Enter"){ e.preventDefault(); loadPersonFromSystem(true); }
+        });
+        setTimeout(()=>pc.focus(), 80);
+      }
+    },{pageId:"forms"});
+  </script>
+</body>
+</html>

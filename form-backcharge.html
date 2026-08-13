@@ -11,7 +11,7 @@
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#185020">
   <script src="config.js?v=navperm2"></script>
-  <script src="i18n.js?v=bcux1"></script>
+  <script src="i18n.js?v=formphoto1"></script>
   <script src="ui.js?v=catux1"></script>
   <style>
     .vl-toolbar {
@@ -270,6 +270,20 @@
     }
     .vl-lines td input:focus { background: var(--green-tint); }
     .vl-lines .col-code { width: 92px; }
+    .vl-lines .col-photo { width: 48px; }
+    .vl-lines td.photo {
+      text-align: center; padding: 3px 2px; background: #f6faf6 !important;
+      width: 48px;
+    }
+    .vl-thumb {
+      width: 38px; height: 38px; object-fit: cover;
+      border: 1px solid #d5dbd6; background: #fff;
+      display: inline-block; vertical-align: middle;
+    }
+    .vl-thumb.empty {
+      display: inline-grid; place-items: center;
+      color: #9ca3af; font-size: 15px; width: 38px; height: 38px;
+    }
     .vl-lines td.code { background: #f6faf6 !important; }
     .vl-lines td.code input {
       font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
@@ -420,6 +434,7 @@
         color: #111 !important; -webkit-text-fill-color: #111 !important;
       }
       .vl-lines td.code input { color: #14532d !important; -webkit-text-fill-color: #14532d !important; }
+      .vl-thumb { width: 40px !important; height: 40px !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
       .vl-sign input { border-top: 1px dashed #9ca3af !important; }
       .vl-header .drtitle, .vl-sec .sec-num, .vl-sec .sec-lbl,
       .vl-lines th, .vl-total tr.grand th, .vl-chip:has(input:checked),
@@ -568,6 +583,7 @@
                   <tr>
                     <th>#</th>
                     <th class="col-code">Code</th>
+                    <th class="col-photo">Photo</th>
                     <th class="left">Description</th>
                     <th class="col-qty">Qty</th>
                     <th class="col-unit">Unit</th>
@@ -741,6 +757,7 @@
       if (!body || !tr) return;
       if (body.querySelectorAll("tr").length <= 1) {
         tr.querySelectorAll("input").forEach((el) => { el.value = ""; });
+        setRowPhoto(tr, "");
         recalc();
         return;
       }
@@ -749,28 +766,61 @@
       recalc();
     }
 
+    function setRowPhoto(tr, url) {
+      const cell = tr.querySelector(".photo");
+      if (!cell) return;
+      const src = String(url || "").trim();
+      cell.innerHTML = "";
+      if (!src) {
+        cell.innerHTML = '<div class="vl-thumb empty" title="No photo"><i class="bi bi-image"></i></div>';
+        return;
+      }
+      const img = document.createElement("img");
+      img.className = "vl-thumb";
+      img.alt = "";
+      img.src = src;
+      img.onerror = () => {
+        cell.innerHTML = '<div class="vl-thumb empty" title="No photo"><i class="bi bi-image"></i></div>';
+      };
+      cell.appendChild(img);
+    }
+
     async function fillFromCatalog(tr, force) {
       const codeEl = tr.querySelector(".in-code");
       if (!codeEl) return;
       const code = String(codeEl.value || "").trim().toUpperCase();
       codeEl.value = code;
-      if (!code || code.length < 2) return;
+      if (!code || code.length < 2) {
+        setRowPhoto(tr, "");
+        return;
+      }
       const descEl = tr.querySelector(".in-desc");
       const unitEl = tr.querySelector(".in-unit");
       const rateEl = tr.querySelector(".in-rate");
       const descEmpty = !String(descEl?.value || "").trim();
       const unitEmpty = !String(unitEl?.value || "").trim();
       const rateEmpty = !String(rateEl?.value || "").trim();
-      if (!force && !descEmpty && !unitEmpty && !rateEmpty) return;
+      const photoEmpty = !tr.querySelector(".photo img");
+      if (!force && !descEmpty && !unitEmpty && !rateEmpty && !photoEmpty) return;
       try {
         if (typeof apiGet !== "function") return;
         const d = await apiGet({ action: "getDesc", code });
-        if (!d || !d.found || d.hasDescription === false) return;
-        if (descEl && (force || descEmpty) && d.description && d.description !== "DESCRIPTION NOT FOUND") {
-          descEl.value = d.description;
+        let photo = "";
+        if (d && d.found) {
+          if ((force || descEmpty) && d.description && d.description !== "DESCRIPTION NOT FOUND" && d.hasDescription !== false) {
+            if (descEl) descEl.value = d.description;
+          }
+          if ((force || unitEmpty) && d.unit && unitEl) unitEl.value = d.unit;
+          if ((force || rateEmpty) && Number(d.price) > 0 && rateEl) rateEl.value = d.price;
+          photo = d.imageUrl || d.image || "";
         }
-        if (unitEl && (force || unitEmpty) && d.unit) unitEl.value = d.unit;
-        if (rateEl && (force || rateEmpty) && Number(d.price) > 0) rateEl.value = d.price;
+        if (!photo && typeof getProductImages === "function") {
+          try {
+            const images = await getProductImages(code);
+            photo = (images && (images[code] || images[String(code).toUpperCase()])) || "";
+          } catch (_) {}
+        }
+        if (force || photoEmpty || photo) setRowPhoto(tr, photo);
         recalc();
       } catch (_) {}
     }
@@ -791,6 +841,7 @@
       tr.innerHTML =
         '<td class="n"></td>' +
         '<td class="code"><input type="text" class="in-code" placeholder="I17-A" autocomplete="off"></td>' +
+        '<td class="photo"><div class="vl-thumb empty" title="No photo"><i class="bi bi-image"></i></div></td>' +
         '<td class="desc"><input type="text" class="in-desc" placeholder="Auto / edit" autocomplete="off"></td>' +
         '<td class="qty"><input type="number" class="in-qty" min="0" step="any" inputmode="decimal" placeholder="1"></td>' +
         '<td class="unit"><input type="text" class="in-unit" placeholder="pcs" autocomplete="off"></td>' +
@@ -803,6 +854,7 @@
         const q = tr.querySelector(".in-qty"); if (q) q.value = data.qty != null ? data.qty : "";
         const u = tr.querySelector(".in-unit"); if (u) u.value = data.unit || "";
         const r = tr.querySelector(".in-rate"); if (r && data.rate != null && data.rate !== "") r.value = data.rate;
+        if (data.imageUrl) setRowPhoto(tr, data.imageUrl);
       }
       tr.querySelectorAll(".in-qty, .in-rate").forEach((el) => el.addEventListener("input", recalc));
       tr.querySelector(".btn-del")?.addEventListener("click", (e) => { e.preventDefault(); deleteRow(tr); });
