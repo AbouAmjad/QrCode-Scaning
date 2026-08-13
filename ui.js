@@ -45,9 +45,47 @@ const TCUI = (() => {
 
   let pwaRegistered = false;
   let lastHeader = null;
+  let permPollTimer = null;
+  let permEventsBound = false;
 
   function tt(key) {
     return typeof TCI18N !== "undefined" ? TCI18N.t(key) : key;
+  }
+
+  function remountChrome() {
+    if (!lastHeader || !lastHeader.containerId) return;
+    try {
+      const side = document.getElementById("tc-sidebar");
+      const top = document.getElementById("tc-topbar");
+      const opts = lastHeader.opts || {};
+      const activeId = opts.active || "";
+      if (side && !side.hidden) side.innerHTML = renderSidebar(activeId);
+      if (top) {
+        top.innerHTML = renderTopbar(activeId, {
+          showNav: opts.showNav !== false,
+          showLogout: opts.showLogout !== false && opts.showNav !== false,
+          pageTitle: pageTitleFromOpts(opts)
+        });
+        bindTopbarInteractions(top);
+      }
+    } catch (_) {}
+  }
+
+  function currentPageId() {
+    const fromHeader = lastHeader && lastHeader.opts && lastHeader.opts.active;
+    if (fromHeader) return fromHeader;
+    const file = (location.pathname.split("/").pop() || "").split("?")[0];
+    const hit = PAGE_META.find((p) => p.href.split("#")[0] === file);
+    return hit ? hit.id : "";
+  }
+
+  function enforcePageAccess() {
+    const pageId = currentPageId();
+    const here = (location.pathname.split("/").pop() || "").split("?")[0];
+    if (here === "profile.html" || here === "login.html") return;
+    if (pageId && typeof canAccessPage === "function" && !canAccessPage(pageId)) {
+      window.location.href = "profile.html";
+    }
   }
 
   function pageAllowed(page) {
@@ -79,16 +117,46 @@ const TCUI = (() => {
   }
 
   async function refreshPermissions() {
-    if (typeof apiGet !== "function" || typeof getToken !== "function" || !getToken()) return;
+    if (typeof apiGet !== "function" || typeof getToken !== "function" || !getToken()) return false;
     try {
+      const before = typeof getPermissions === "function" ? JSON.stringify(getPermissions()) : "";
+      const beforeRole = typeof getRole === "function" ? getRole() : "";
       const data = await apiGet({ action: "getMyPermissions" });
-      if (data && Array.isArray(data.permissions) && typeof setPermissions === "function") {
+      if (!data || data.error || data.success === false) return false;
+      if (Array.isArray(data.permissions) && typeof setPermissions === "function") {
         setPermissions(data.permissions);
       }
-      if (data && data.role && typeof localStorage !== "undefined") {
+      if (data.role && typeof localStorage !== "undefined") {
         try { localStorage.setItem(AppConfig.ROLE_KEY, normalizeRole(data.role)); } catch (_) {}
       }
+      const after = typeof getPermissions === "function" ? JSON.stringify(getPermissions()) : "";
+      const afterRole = typeof getRole === "function" ? getRole() : "";
+      if (before !== after || beforeRole !== afterRole) {
+        remountChrome();
+        enforcePageAccess();
+        return true;
+      }
     } catch (_) {}
+    return false;
+  }
+
+  function startPermissionWatch() {
+    if (permPollTimer) return;
+    permPollTimer = setInterval(() => { refreshPermissions(); }, 15000);
+    if (permEventsBound || typeof window === "undefined") return;
+    permEventsBound = true;
+    window.addEventListener("tc-permissions-changed", () => {
+      remountChrome();
+      enforcePageAccess();
+    });
+    window.addEventListener("storage", (e) => {
+      if (!e || (e.key !== AppConfig.PERMS_KEY && e.key !== AppConfig.ROLE_KEY)) return;
+      remountChrome();
+      enforcePageAccess();
+    });
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") refreshPermissions();
+    });
   }
 
   function bootPage(callback, options = {}) {
@@ -119,25 +187,9 @@ const TCUI = (() => {
         return;
       }
       registerPWA();
+      startPermissionWatch();
       if (typeof callback === "function") callback();
-      // Refresh sidebar/topbar once if header was already mounted (perms just loaded)
-      if (lastHeader && lastHeader.containerId) {
-        try {
-          const side = document.getElementById("tc-sidebar");
-          const top = document.getElementById("tc-topbar");
-          const opts = lastHeader.opts || {};
-          const activeId = opts.active || "";
-          if (side && !side.hidden) side.innerHTML = renderSidebar(activeId);
-          if (top) {
-            top.innerHTML = renderTopbar(activeId, {
-              showNav: opts.showNav !== false,
-              showLogout: opts.showLogout !== false && opts.showNav !== false,
-              pageTitle: pageTitleFromOpts(opts)
-            });
-            bindTopbarInteractions(top);
-          }
-        } catch (_) {}
-      }
+      remountChrome();
     };
 
     // Always refresh role matrix from server before showing menu / page

@@ -91,32 +91,26 @@ const AppConfig = {
    * Pages NOT listed here are DENIED for non-admins (safe default for new sections).
    */
   PAGE_PERMISSIONS: {
-    terminal: ["terminal.use", "tool.checkout"],
+    terminal: ["terminal.use"],
     outstanding: ["tool.return"],
     receiving: ["tool.receive"],
     damage: ["damage.create", "damage.review", "damage.approve"],
     logs: ["logs.view"],
-    products: ["tool.view", "tool.create", "tool.edit", "tool.delete", "tool.receive", "tool.search"],
+    products: ["tool.view", "tool.create", "tool.edit", "tool.delete"],
     categories: ["tool.create", "tool.edit", "tool.delete"],
     people: ["worker.view", "worker.create", "worker.edit", "worker.delete"],
-    suppliers: ["worker.view", "worker.create", "worker.edit", "tool.receive"],
+    suppliers: ["worker.view", "worker.create", "worker.edit"],
     consumables: ["consumables.manage"],
-    labels: ["tool.edit", "tool.create", "tool.view"],
+    labels: ["tool.edit", "tool.create"],
     requests: ["request.create", "request.approve"],
     forms: ["forms.view"],
     inventoryCount: ["inventory.count"],
-    warehouses: [
-      "inventory.view", "inventory.count", "inventory.adjust", "inventory.transfer",
-      "projects.view", "projects.manage", "projects.dispatch", "projects.return",
-      "tool.view", "tool.create", "tool.edit", "tool.receive",
-      "damage.create", "damage.review", "damage.approve",
-      "repair.create", "repair.manage"
-    ],
+    warehouses: ["inventory.view", "inventory.count", "inventory.adjust", "inventory.transfer"],
     warehouseTransfer: ["inventory.transfer"],
     projects: ["projects.view", "projects.manage", "projects.dispatch", "projects.return"],
     repair: ["repair.create", "repair.manage"],
     qc: ["qc.view", "qc.manage"],
-    dashboard: ["dashboard.view", "dashboard.full", "reports.warehouse", "reports.team", "reports.all"],
+    dashboard: ["dashboard.view", "dashboard.full"],
     audit: ["audit.view"],
     users: ["users.manage"],
     roles: ["roles.manage"],
@@ -378,7 +372,12 @@ function getPermissions() {
 
 function setPermissions(list) {
   const clean = Array.isArray(list) ? list.map(String) : [];
-  localStorage.setItem(AppConfig.PERMS_KEY, JSON.stringify(clean));
+  const prev = localStorage.getItem(AppConfig.PERMS_KEY) || "";
+  const next = JSON.stringify(clean);
+  localStorage.setItem(AppConfig.PERMS_KEY, next);
+  if (prev !== next && typeof window !== "undefined") {
+    try { window.dispatchEvent(new CustomEvent("tc-permissions-changed")); } catch (_) {}
+  }
   return clean;
 }
 
@@ -425,7 +424,7 @@ function setSession({ token, role, user, permissions, avatarUrl, fullName } = {}
   if (token) setToken(token);
   if (role) localStorage.setItem(AppConfig.ROLE_KEY, normalizeRole(role));
   if (user) localStorage.setItem(AppConfig.USER_KEY, String(user));
-  if (permissions) setPermissions(permissions);
+  if (permissions !== undefined) setPermissions(permissions);
   if (avatarUrl != null) {
     if (avatarUrl) localStorage.setItem(AppConfig.AVATAR_KEY, String(avatarUrl));
     else localStorage.removeItem(AppConfig.AVATAR_KEY);

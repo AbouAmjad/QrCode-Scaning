@@ -305,14 +305,9 @@ async function handle(params) {
 
 async function dispatch(req, res) {
   try {
-    // Logs / scans / dashboards are always expected to be "latest".
-    // Disable HTTP caching aggressively for the API endpoints so the browser
-    // can't serve stale JSON even if a Service Worker / HTTP cache is misbehaving.
-    if (req.path === "/api" || req.path === "/api/exec") {
-      res.setHeader("Cache-Control", "no-store, max-age=0, must-revalidate, proxy-revalidate");
-      res.setHeader("Pragma", "no-cache");
-      res.setHeader("Expires", "0");
-    }
+    res.setHeader("Cache-Control", "no-store, max-age=0, must-revalidate, proxy-revalidate");
+    res.setHeader("Pragma", "no-cache");
+    res.setHeader("Expires", "0");
     const result = await handle(mergeParams(req));
     res.type("application/json").send(JSON.stringify(result === undefined ? {} : result));
   } catch (e) {
