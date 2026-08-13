@@ -11,7 +11,7 @@
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#185020">
   <script src="config.js?v=navperm2"></script>
-  <script src="i18n.js?v=formphoto2"></script>
+  <script src="i18n.js?v=formdesc1"></script>
   <script src="ui.js?v=catux1"></script>
   <style>
     .vl-toolbar {
@@ -244,12 +244,14 @@
 
     .vl-lines-wrap {
       border: 1px solid var(--line); border-top: none; border-bottom: none; background: #fff;
+      overflow-x: auto;
     }
-    .vl-lines { width: 100%; border-collapse: collapse; }
+    .vl-lines { width: 100%; border-collapse: collapse; table-layout: fixed; }
     .vl-lines th {
       background: var(--green); color: #fff;
       font-size: 8px; font-weight: 800; letter-spacing: .07em; text-transform: uppercase;
       padding: 8px 6px; text-align: center; border-bottom: 1px solid var(--green);
+      position: relative;
     }
     .vl-lines th.left { text-align: left; padding-left: 9px; }
     .vl-lines td {
@@ -284,8 +286,30 @@
       display: inline-grid; place-items: center;
       color: #9ca3af; font-size: 18px; width: 64px; height: 64px;
     }
-    .vl-lines .col-notes { width: 22%; }
-    .vl-lines td.notes input { font-weight: 500; color: #374151; }
+    .vl-lines .col-desc { width: auto; }
+    .vl-lines .col-notes { width: 12%; min-width: 72px; }
+    .vl-lines td.desc, .vl-lines td.notes { vertical-align: top; }
+    .vl-lines td textarea.in-desc,
+    .vl-lines td textarea.in-notes {
+      width: 100%; border: 0; outline: none; background: transparent;
+      font: inherit; font-weight: 600; padding: 7px 7px;
+      color: var(--ink) !important;
+      -webkit-text-fill-color: var(--ink);
+      resize: none; overflow: hidden; min-height: 36px;
+      line-height: 1.35; white-space: pre-wrap; word-break: break-word;
+      display: block; box-sizing: border-box;
+    }
+    .vl-lines td textarea.in-notes {
+      font-weight: 500; color: #374151;
+      -webkit-text-fill-color: #374151;
+    }
+    .vl-lines td textarea:focus { background: var(--green-tint); }
+    .col-resizer {
+      position: absolute; top: 0; right: -3px;
+      width: 8px; height: 100%;
+      cursor: col-resize; z-index: 3; user-select: none;
+    }
+    .col-resizer:hover, .col-resizer.dragging { background: rgba(255,255,255,.4); }
     .vl-lines td.code { background: #f6faf6 !important; }
     .vl-lines td.code input {
       font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
@@ -431,10 +455,18 @@
       .vl-body { padding: 6px 0 4px !important; }
       .vl-signs-wrap { padding: 0 !important; }
       .vl-lines .col-del, .vl-lines td.del, .vl-lines .btn-del { display: none !important; }
-      .vl-cell .field input, .vl-cell .field textarea, .vl-lines input, .vl-sign input, .vl-total input {
+      .vl-cell .field input, .vl-cell .field textarea, .vl-lines input, .vl-lines textarea, .vl-sign input, .vl-total input {
         border: none !important; background: transparent !important;
         color: #111 !important; -webkit-text-fill-color: #111 !important;
       }
+      .vl-lines td textarea.in-desc,
+      .vl-lines td textarea.in-notes {
+        white-space: pre-wrap !important;
+        overflow: visible !important;
+        height: auto !important;
+        min-height: 28px !important;
+      }
+      .col-resizer { display: none !important; }
       .vl-lines td.code input { color: #14532d !important; -webkit-text-fill-color: #14532d !important; }
       .vl-thumb { width: 62px !important; height: 62px !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
       .vl-sign input { border-top: 1px dashed #9ca3af !important; }
@@ -586,7 +618,7 @@
                     <th>#</th>
                     <th class="col-code">Code</th>
                     <th class="col-photo">Photo</th>
-                    <th class="left">Description</th>
+                    <th class="left col-desc" title="Drag the right edge to widen">Description</th>
                     <th class="col-notes left">Notes</th>
                     <th class="col-qty">Qty</th>
                     <th class="col-unit">Unit</th>
@@ -755,11 +787,68 @@
       const aw = document.getElementById("amountWords");
       if (aw) aw.textContent = inWords(total);
     }
+    function autosizeField(el) {
+      if (!el) return;
+      el.style.height = "0px";
+      el.style.height = Math.max(36, el.scrollHeight) + "px";
+    }
+    function wireGrow(tr) {
+      if (!tr) return;
+      tr.querySelectorAll(".in-desc, .in-notes").forEach((el) => {
+        autosizeField(el);
+        el.addEventListener("input", () => autosizeField(el));
+      });
+    }
+    function enableColResize(table) {
+      if (!table || table.dataset.colResize === "1") return;
+      table.dataset.colResize = "1";
+      const heads = [...table.querySelectorAll("thead th")];
+      heads.forEach((th, i) => {
+        if (i === heads.length - 1) return;
+        const handle = document.createElement("span");
+        handle.className = "col-resizer no-print";
+        handle.title = "Drag to resize column";
+        th.appendChild(handle);
+        handle.addEventListener("mousedown", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          heads.forEach((other) => {
+            const w = other.getBoundingClientRect().width;
+            other.style.width = w + "px";
+            other.style.minWidth = w + "px";
+          });
+          table.style.width = "auto";
+          table.style.minWidth = "100%";
+          const startX = e.pageX;
+          const startW = th.getBoundingClientRect().width;
+          handle.classList.add("dragging");
+          document.body.style.cursor = "col-resize";
+          document.body.style.userSelect = "none";
+          const onMove = (ev) => {
+            const w = Math.max(40, startW + (ev.pageX - startX));
+            th.style.width = w + "px";
+            th.style.minWidth = w + "px";
+            th.style.maxWidth = w + "px";
+          };
+          const onUp = () => {
+            handle.classList.remove("dragging");
+            document.body.style.cursor = "";
+            document.body.style.userSelect = "";
+            document.removeEventListener("mousemove", onMove);
+            document.removeEventListener("mouseup", onUp);
+            document.querySelectorAll(".in-desc, .in-notes").forEach(autosizeField);
+          };
+          document.addEventListener("mousemove", onMove);
+          document.addEventListener("mouseup", onUp);
+        });
+      });
+    }
     function deleteRow(tr) {
       const body = document.getElementById("linesBody");
       if (!body || !tr) return;
       if (body.querySelectorAll("tr").length <= 1) {
-        tr.querySelectorAll("input").forEach((el) => { el.value = ""; });
+        tr.querySelectorAll("input, textarea").forEach((el) => { el.value = ""; });
+        tr.querySelectorAll(".in-desc, .in-notes").forEach(autosizeField);
         setRowPhoto(tr, "");
         recalc();
         return;
@@ -811,7 +900,10 @@
         let photo = "";
         if (d && d.found) {
           if ((force || descEmpty) && d.description && d.description !== "DESCRIPTION NOT FOUND" && d.hasDescription !== false) {
-            if (descEl) descEl.value = d.description;
+            if (descEl) {
+              descEl.value = d.description;
+              autosizeField(descEl);
+            }
           }
           if ((force || unitEmpty) && d.unit && unitEl) unitEl.value = d.unit;
           if ((force || rateEmpty) && Number(d.price) > 0 && rateEl) rateEl.value = d.price;
@@ -845,8 +937,8 @@
         '<td class="n"></td>' +
         '<td class="code"><input type="text" class="in-code" placeholder="I17-A" autocomplete="off"></td>' +
         '<td class="photo"><div class="vl-thumb empty" title="No photo"><i class="bi bi-image"></i></div></td>' +
-        '<td class="desc"><input type="text" class="in-desc" placeholder="Auto / edit" autocomplete="off"></td>' +
-        '<td class="notes"><input type="text" class="in-notes" placeholder="Remarks" autocomplete="off"></td>' +
+        '<td class="desc"><textarea class="in-desc" rows="2" placeholder="Auto / edit"></textarea></td>' +
+        '<td class="notes"><textarea class="in-notes" rows="2" placeholder="Remarks"></textarea></td>' +
         '<td class="qty"><input type="number" class="in-qty" min="0" step="any" inputmode="decimal" placeholder="1"></td>' +
         '<td class="unit"><input type="text" class="in-unit" placeholder="pcs" autocomplete="off"></td>' +
         '<td class="rate"><input type="number" class="in-rate" min="0" step="any" inputmode="decimal" placeholder="0.00"></td>' +
@@ -864,6 +956,7 @@
       tr.querySelectorAll(".in-qty, .in-rate").forEach((el) => el.addEventListener("input", recalc));
       tr.querySelector(".btn-del")?.addEventListener("click", (e) => { e.preventDefault(); deleteRow(tr); });
       wireToolCode(tr);
+      wireGrow(tr);
       body.appendChild(tr);
       renumber();
       recalc();
@@ -1008,6 +1101,7 @@
         else if (typeof TCI18N.apply === "function") TCI18N.apply(document);
       }
       clearForm();
+      enableColResize(document.querySelector(".vl-lines"));
       document.getElementById("extraCost")?.addEventListener("input", recalc);
       document.getElementById("btnAddRow")?.addEventListener("click", () => addRow(true));
       document.getElementById("btnAddRow2")?.addEventListener("click", () => addRow(true));
@@ -1015,7 +1109,10 @@
       document.getElementById("btnClear")?.addEventListener("click", () => {
         if (confirm(t("bcClearConfirm") || "Clear all fields?")) clearForm();
       });
-      window.addEventListener("beforeprint", preparePrintRows);
+      window.addEventListener("beforeprint", () => {
+        preparePrintRows();
+        document.querySelectorAll(".in-desc, .in-notes").forEach(autosizeField);
+      });
       window.addEventListener("afterprint", clearPrintRows);
       document.getElementById("btnPrint")?.addEventListener("click", (e) => {
         e.preventDefault();

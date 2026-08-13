@@ -11,7 +11,7 @@
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#0f766e">
   <script src="config.js?v=navperm2"></script>
-  <script src="i18n.js?v=formphoto2"></script>
+  <script src="i18n.js?v=formdesc1"></script>
   <script src="ui.js?v=catux1"></script>
   <style>
     /* ── toolbar ── */
@@ -315,12 +315,13 @@
       color: #9ca3af; font-size: 18px; width: 64px; height: 64px;
     }
 
-    .ed-lines-wrap { border: 1px solid #9ca3af; border-top: none; background: #fff; }
-    .ed-lines { width: 100%; border-collapse: collapse; }
+    .ed-lines-wrap { border: 1px solid #9ca3af; border-top: none; background: #fff; overflow-x: auto; }
+    .ed-lines { width: 100%; border-collapse: collapse; table-layout: fixed; }
     .ed-lines th {
       background: #14532d; color: #fff;
       font-size: 8px; font-weight: 800; letter-spacing: .07em; text-transform: uppercase;
       padding: 7px 6px; text-align: center;
+      position: relative;
     }
     .ed-lines th.left { text-align: left; padding-left: 9px; }
     .ed-lines td {
@@ -333,7 +334,19 @@
       background: #f9fafb; font-size: 10px; padding: 5px 2px;
     }
     .ed-lines td.photo { text-align: center; padding: 4px 3px; width: 76px; background: #f6faf6; }
-    .ed-lines td.notes input { font-weight: 500; color: #374151; }
+    .ed-lines .col-desc { width: auto; }
+    .ed-lines .col-notes { width: 16%; min-width: 80px; }
+    .ed-lines td.desc, .ed-lines td.notes { vertical-align: top; }
+    .ed-lines td textarea.in-desc,
+    .ed-lines td textarea.in-notes {
+      width: 100%; border: 0; outline: none; background: transparent;
+      font: inherit; font-weight: 600; padding: 7px 7px; color: #111;
+      resize: none; overflow: hidden; min-height: 36px;
+      line-height: 1.35; white-space: pre-wrap; word-break: break-word;
+      display: block; box-sizing: border-box;
+    }
+    .ed-lines td textarea.in-notes { font-weight: 500; color: #374151; }
+    .ed-lines td textarea:focus { background: #f0fdf4; }
     .ed-lines td.code { background: #f6faf6; width: 100px; }
     .ed-lines td input {
       width: 100%; border: 0; outline: none; background: transparent;
@@ -350,6 +363,12 @@
       width: 24px; height: 24px; border: 0; background: transparent;
       color: #9a3412; cursor: pointer; font-size: 12px;
     }
+    .col-resizer {
+      position: absolute; top: 0; right: -3px;
+      width: 8px; height: 100%;
+      cursor: col-resize; z-index: 3; user-select: none;
+    }
+    .col-resizer:hover, .col-resizer.dragging { background: rgba(255,255,255,.4); }
     .ed-addrow {
       padding: 7px 8px; background: #fff;
       border: 1px solid #9ca3af; border-top: 1px dashed #e5e7eb; border-bottom: none;
@@ -436,6 +455,14 @@
       .ed-sign input { border-top: 1px dashed #9ca3af !important; }
       .ed-cell .field textarea { resize: none !important; }
       .ed-addrow, .ed-lines td.del, .ed-lines .btn-del { display: none !important; }
+      .ed-lines td textarea.in-desc,
+      .ed-lines td textarea.in-notes,
+      #equipDesc {
+        white-space: pre-wrap !important;
+        overflow: visible !important;
+        height: auto !important;
+      }
+      .col-resizer { display: none !important; }
       .ed-thumb { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
       .ed-banner, .ed-header .docref-cell .drtitle, .ed-sec .sec-num, .ed-sec .sec-lbl,
       .ed-cost th, .ed-cost tr.total td.item,
@@ -597,9 +624,9 @@
                 <div id="equipPhoto" class="ed-thumb empty" title="No photo"><i class="bi bi-image"></i></div>
               </div>
             </div>
-            <div class="ed-cell span2">
+            <div class="ed-cell span2 tall">
               <div class="lbl">Catalog description</div>
-              <div class="field"><input id="equipDesc" type="text" placeholder="Fills from product code" autocomplete="off"></div>
+              <div class="field"><textarea id="equipDesc" rows="2" placeholder="Fills from product code"></textarea></div>
             </div>
           </div>
 
@@ -612,12 +639,12 @@
               <thead>
                 <tr>
                   <th>#</th>
-                  <th style="width:100px">Code</th>
-                  <th style="width:76px">Photo</th>
-                  <th class="left">Description</th>
-                  <th class="left">Notes</th>
+                  <th class="col-code" style="width:100px">Code</th>
+                  <th class="col-photo" style="width:76px">Photo</th>
+                  <th class="left col-desc" title="Drag the right edge to widen">Description</th>
+                  <th class="left col-notes">Notes</th>
                   <th style="width:56px">Qty</th>
-                  <th class="no-print" style="width:30px">✕</th>
+                  <th class="no-print col-del" style="width:30px">✕</th>
                 </tr>
               </thead>
               <tbody id="linesBody"></tbody>
@@ -1019,7 +1046,10 @@
         const hit = await lookupPhoto(code);
         setThumb(photoEl, hit.photo);
         const desc = document.getElementById("equipDesc");
-        if (desc && hit.description && !String(desc.value || "").trim()) desc.value = hit.description;
+        if (desc && hit.description && !String(desc.value || "").trim()) {
+          desc.value = hit.description;
+          autosizeField(desc);
+        }
         const make = document.getElementById("makeModel");
         if (make && hit.description && !String(make.value || "").trim()) make.value = hit.description;
       } catch (_) {}
@@ -1045,15 +1075,75 @@
       if (!force && !descEmpty && !photoEmpty) return;
       try {
         const hit = await lookupPhoto(code);
-        if ((force || descEmpty) && hit.description && descEl) descEl.value = hit.description;
+        if ((force || descEmpty) && hit.description && descEl) {
+          descEl.value = hit.description;
+          autosizeField(descEl);
+        }
         if (force || photoEmpty || hit.photo) setRowPhoto(tr, hit.photo);
       } catch (_) {}
+    }
+    function autosizeField(el) {
+      if (!el) return;
+      el.style.height = "0px";
+      el.style.height = Math.max(36, el.scrollHeight) + "px";
+    }
+    function wireGrow(tr) {
+      if (!tr) return;
+      tr.querySelectorAll(".in-desc, .in-notes").forEach((el) => {
+        autosizeField(el);
+        el.addEventListener("input", () => autosizeField(el));
+      });
+    }
+    function enableColResize(table) {
+      if (!table || table.dataset.colResize === "1") return;
+      table.dataset.colResize = "1";
+      const heads = [...table.querySelectorAll("thead th")];
+      heads.forEach((th, i) => {
+        if (i === heads.length - 1) return;
+        const handle = document.createElement("span");
+        handle.className = "col-resizer no-print";
+        handle.title = "Drag to resize column";
+        th.appendChild(handle);
+        handle.addEventListener("mousedown", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          heads.forEach((other) => {
+            const w = other.getBoundingClientRect().width;
+            other.style.width = w + "px";
+            other.style.minWidth = w + "px";
+          });
+          table.style.width = "auto";
+          table.style.minWidth = "100%";
+          const startX = e.pageX;
+          const startW = th.getBoundingClientRect().width;
+          handle.classList.add("dragging");
+          document.body.style.cursor = "col-resize";
+          document.body.style.userSelect = "none";
+          const onMove = (ev) => {
+            const w = Math.max(40, startW + (ev.pageX - startX));
+            th.style.width = w + "px";
+            th.style.minWidth = w + "px";
+            th.style.maxWidth = w + "px";
+          };
+          const onUp = () => {
+            handle.classList.remove("dragging");
+            document.body.style.cursor = "";
+            document.body.style.userSelect = "";
+            document.removeEventListener("mousemove", onMove);
+            document.removeEventListener("mouseup", onUp);
+            document.querySelectorAll(".in-desc, .in-notes, #equipDesc").forEach(autosizeField);
+          };
+          document.addEventListener("mousemove", onMove);
+          document.addEventListener("mouseup", onUp);
+        });
+      });
     }
     function deleteRow(tr) {
       const body = document.getElementById("linesBody");
       if (!body || !tr) return;
       if (body.querySelectorAll("tr").length <= 1) {
-        tr.querySelectorAll("input").forEach((el) => { el.value = ""; });
+        tr.querySelectorAll("input, textarea").forEach((el) => { el.value = ""; });
+        tr.querySelectorAll(".in-desc, .in-notes").forEach(autosizeField);
         setRowPhoto(tr, "");
         return;
       }
@@ -1068,8 +1158,8 @@
         '<td class="n"></td>' +
         '<td class="code"><input type="text" class="in-code" placeholder="I17-A" autocomplete="off"></td>' +
         '<td class="photo"><div class="ed-thumb empty" title="No photo"><i class="bi bi-image"></i></div></td>' +
-        '<td class="desc"><input type="text" class="in-desc" placeholder="Auto / edit" autocomplete="off"></td>' +
-        '<td class="notes"><input type="text" class="in-notes" placeholder="Remarks" autocomplete="off"></td>' +
+        '<td class="desc"><textarea class="in-desc" rows="2" placeholder="Auto / edit"></textarea></td>' +
+        '<td class="notes"><textarea class="in-notes" rows="2" placeholder="Remarks"></textarea></td>' +
         '<td class="qty"><input type="number" class="in-qty" min="0" step="any" inputmode="decimal" placeholder="1"></td>' +
         '<td class="del no-print"><button type="button" class="btn-del" title="Delete">✕</button></td>';
       if (data) {
@@ -1080,6 +1170,7 @@
         if (data.imageUrl) setRowPhoto(tr, data.imageUrl);
       }
       tr.querySelector(".btn-del")?.addEventListener("click", (e) => { e.preventDefault(); deleteRow(tr); });
+      wireGrow(tr);
       const codeEl = tr.querySelector(".in-code");
       if (codeEl) {
         codeEl.addEventListener("blur", () => fillFromCatalog(tr, false));
@@ -1125,6 +1216,9 @@
         else if(typeof TCI18N.apply==="function")TCI18N.apply(document);
       }
       clearForm();
+      enableColResize(document.querySelector(".ed-lines"));
+      const equipDesc = document.getElementById("equipDesc");
+      if (equipDesc) equipDesc.addEventListener("input", () => autosizeField(equipDesc));
       COST_IDS.forEach(id=>{
         const e=document.getElementById(id);
         if(e)e.addEventListener("input",recalc);
@@ -1139,7 +1233,9 @@
         if(confirm("Clear all fields?"))clearForm();
       });
       document.getElementById("btnPrint")?.addEventListener("click",e=>{
-        e.preventDefault();try{window.print();}catch(_){}
+        e.preventDefault();
+        document.querySelectorAll(".in-desc, .in-notes, #equipDesc").forEach(autosizeField);
+        try{window.print();}catch(_){}
       });
     },{pageId:"forms"});
   </script>
