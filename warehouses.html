@@ -1,0 +1,1307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>AbouAmjad Store System | Warehouses</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="app.css?v=navperm1">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f766e">
+  <script src="config.js?v=navperm1"></script>
+  <script src="i18n.js?v=themes1"></script>
+  <script src="ui.js?v=navperm1"></script>
+  <script src="export-utils.js?v=photos1"></script>
+  <style>
+    body.tc-page{font-family:"Plus Jakarta Sans",var(--tc-font)}
+    .wh-page{max-width:1100px}
+    .wh-page.prj-focus .wh-chrome{display:none}
+    .wh-page.prj-focus .wh-tabs{display:none}
+    .wh-hint{font-size:.82rem;color:var(--tc-muted);line-height:1.45;margin:0 0 1rem}
+    .wh-shortcuts{
+      display:flex;flex-wrap:wrap;gap:.45rem;margin:.85rem 0 0;
+    }
+    .wh-shortcuts .tc-btn{min-height:40px;font-weight:750;border-radius:12px}
+    .wh-tabs{
+      display:flex;gap:.35rem;margin-bottom:1rem;padding:.3rem;
+      border-radius:14px;background:var(--tc-surface-2);border:1px solid var(--tc-border);
+      overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;
+    }
+    .wh-tabs::-webkit-scrollbar{display:none}
+    .wh-tab{
+      border:0;background:transparent;color:var(--tc-muted);font-weight:800;font-size:.78rem;
+      padding:.62rem .85rem;border-radius:11px;cursor:pointer;display:inline-flex;align-items:center;gap:.35rem;
+      white-space:nowrap;flex:0 0 auto;min-height:42px;-webkit-tap-highlight-color:transparent;
+    }
+    .wh-tab:hover{color:var(--tc-text);background:color-mix(in srgb,var(--tc-accent) 8%,transparent)}
+    .wh-tab.active{background:var(--tc-surface);color:var(--tc-accent-2);box-shadow:0 2px 8px -4px rgba(15,118,110,.4)}
+    .wh-panel{display:none}
+    .wh-panel.active{display:block}
+    .wh-add{
+      display:flex;gap:.5rem;align-items:end;flex-wrap:wrap;margin-bottom:1rem;
+      padding:.85rem .9rem;border-radius:14px;border:1px dashed color-mix(in srgb,var(--tc-accent) 35%,var(--tc-border));
+      background:color-mix(in srgb,var(--tc-accent) 6%,transparent);
+    }
+    .wh-add .tc-field{flex:1;min-width:180px;margin:0}
+    .wh-item{
+      display:flex;align-items:center;justify-content:space-between;gap:.75rem;
+      padding:.75rem .35rem;border-bottom:1px solid var(--tc-border);
+    }
+    .wh-item:last-child{border-bottom:none}
+    .wh-item.clickable{cursor:pointer;border-radius:10px;padding:.75rem .55rem;margin:0 -.2rem}
+    .wh-item.clickable:hover{background:color-mix(in srgb,var(--tc-accent) 8%,transparent)}
+    .wh-item .meta{min-width:0;flex:1}
+    .wh-item .meta strong{display:block;font-size:.9rem}
+    .wh-item .meta small{color:var(--tc-muted);font-size:.72rem}
+    .wh-item .wh-open{font-size:.72rem;color:var(--tc-accent-2);font-weight:700;white-space:nowrap}
+    .wh-main-pill{
+      display:inline-flex;align-items:center;gap:.25rem;font-size:.68rem;font-weight:800;
+      padding:.15rem .45rem;border-radius:999px;margin-inline-start:.35rem;
+      background:var(--tc-accent-soft);color:var(--tc-accent-2);
+    }
+    .wh-loc-card{max-width:720px}
+    .wt-layout{display:grid;gap:1rem}
+    @media(min-width:992px){.wt-layout{grid-template-columns:1.1fr .9fr}}
+    .wt-line{
+      display:flex;align-items:center;gap:.55rem;padding:.55rem .2rem;
+      border-bottom:1px solid var(--tc-border);
+    }
+    .wt-line:last-child{border-bottom:none}
+    .wt-line .meta{flex:1;min-width:0}
+    .wt-line .meta strong{display:block;font-size:.85rem}
+    .wt-line .meta small{color:var(--tc-muted);font-size:.72rem}
+    .wt-qty{width:78px}
+    .wt-stock-item{
+      display:flex;justify-content:space-between;gap:.5rem;padding:.45rem .15rem;
+      border-bottom:1px solid var(--tc-border);font-size:.82rem;cursor:pointer;
+    }
+    .wt-stock-item:hover{background:var(--tc-accent-soft)}
+    .wt-stock-list{max-height:320px;overflow:auto}
+    .wt-hist{
+      display:flex;justify-content:space-between;gap:.5rem;padding:.55rem .15rem;
+      border-bottom:1px solid var(--tc-border);font-size:.8rem;cursor:pointer;border-radius:8px;
+    }
+    .wt-hist:hover{background:color-mix(in srgb,var(--tc-accent) 8%,transparent)}
+    .detail-line{
+      display:flex;justify-content:space-between;gap:.5rem;padding:.45rem 0;
+      border-bottom:1px solid var(--tc-border);font-size:.82rem;
+    }
+    .detail-line:last-child{border-bottom:none}
+    .detail-line .qty{font-weight:800;min-width:2.5rem;text-align:end}
+
+    /* Projects — mobile first */
+    .prj-hero{
+      display:none;border-radius:20px;overflow:hidden;margin-bottom:1rem;padding:1.1rem 1.15rem;
+      background:
+        radial-gradient(120% 90% at 100% 0%, rgba(15,118,110,.16), transparent 55%),
+        linear-gradient(165deg, var(--tc-surface) 0%, var(--tc-surface-2) 100%);
+      border:1px solid var(--tc-border);
+      box-shadow:0 16px 36px -26px rgba(20,32,51,.45);
+    }
+    .wh-page.prj-focus .prj-hero{display:block}
+    .prj-hero .kicker{
+      display:inline-flex;align-items:center;gap:.35rem;font-size:.68rem;font-weight:800;
+      letter-spacing:.08em;text-transform:uppercase;color:var(--tc-accent-2);margin-bottom:.35rem;
+    }
+    .prj-hero h1{font-size:clamp(1.45rem,6vw,1.85rem);font-weight:800;letter-spacing:-.03em;margin:0 0 .35rem;line-height:1.1}
+    .prj-hero p{margin:0;color:var(--tc-muted);font-size:.88rem;line-height:1.45}
+
+    .prj-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.55rem;margin-bottom:1rem}
+    @media(min-width:900px){.prj-stats{grid-template-columns:repeat(4,1fr);gap:.75rem}}
+    .prj-stat{
+      background:var(--tc-surface);border:1px solid var(--tc-border);border-radius:16px;padding:.75rem .85rem;
+      box-shadow:0 10px 28px -22px rgba(20,32,51,.45);position:relative;overflow:hidden;
+    }
+    .prj-stat::before{content:"";position:absolute;inset:0 auto 0 0;width:3px;background:var(--tc-accent)}
+    .prj-stat.warn::before{background:var(--tc-warning,#f59e0b)}
+    .prj-stat .k{font-size:.65rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--tc-muted)}
+    .prj-stat .v{font-size:clamp(1.3rem,5vw,1.65rem);font-weight:800;line-height:1.1;margin-top:.2rem;font-variant-numeric:tabular-nums}
+
+    .prj-panel{background:var(--tc-surface);border:1px solid var(--tc-border);border-radius:18px;overflow:hidden;box-shadow:0 14px 36px -24px rgba(20,32,51,.4)}
+    .prj-panel-head{display:flex;align-items:center;justify-content:space-between;gap:.65rem;flex-wrap:wrap;padding:.9rem 1rem;background:var(--tc-head-grad);border-bottom:1px solid var(--tc-border)}
+    .prj-panel-head h2{margin:0;font-size:.92rem;font-weight:800;display:flex;align-items:center;gap:.45rem}
+    .prj-panel-head h2 i{color:var(--tc-accent)}
+    .prj-panel-body{padding:.9rem}
+    #prjActionBtns{width:100%}
+    #prjActionBtns .tc-btn{min-height:44px;justify-content:center;border-radius:12px;font-weight:800}
+    @media(max-width:640px){
+      #prjActionBtns{display:grid!important;grid-template-columns:1fr;gap:.45rem;margin-top:.35rem}
+      .prj-panel-head{flex-direction:column;align-items:stretch}
+      .prj-panel-body{padding:.75rem}
+      .wh-page{padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important}
+    }
+    @media(min-width:641px){
+      #prjActionBtns{width:auto;display:flex!important}
+    }
+
+    .prj-toolbar{
+      position:sticky;top:calc(var(--tc-topbar-h,64px) + 4px);z-index:6;
+      display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;margin:0 -.15rem .85rem;padding:.45rem .15rem .35rem;
+      background:linear-gradient(180deg,var(--tc-bg) 60%,transparent);backdrop-filter:blur(8px);
+    }
+    .prj-toolbar .tc-search{flex:1;min-width:0;max-width:none!important;min-height:46px;border-radius:14px;font-size:16px}
+    .prj-toolbar .tc-select{min-height:46px;border-radius:12px;font-size:16px;flex:0 1 140px}
+    .prj-toolbar #btnRefresh{width:46px;height:46px;padding:0;display:grid;place-items:center;border-radius:14px;flex:0 0 46px}
+
+    .prj-list{display:flex;flex-direction:column;gap:.65rem}
+    .prj-row{
+      display:grid;grid-template-columns:1fr auto;gap:.75rem;align-items:start;
+      padding:1rem;border:1px solid var(--tc-border);border-radius:16px;
+      background:var(--tc-surface);text-decoration:none;color:inherit;
+      box-shadow:0 10px 28px -24px rgba(20,32,51,.4);
+      transition:border-color .15s, transform .15s, box-shadow .15s;
+      -webkit-tap-highlight-color:transparent;animation:prjIn .35s cubic-bezier(.22,1,.36,1) both;
+    }
+    .prj-row:active{transform:scale(.985)}
+    @media(hover:hover){
+      .prj-row:hover{border-color:color-mix(in srgb,var(--tc-accent) 40%,transparent);box-shadow:0 16px 36px -22px rgba(15,118,110,.3);transform:translateY(-1px)}
+    }
+    .prj-row .name{font-weight:800;font-size:1.02rem;margin:0 0 .25rem;line-height:1.2}
+    .prj-row .meta{display:flex;flex-wrap:wrap;gap:.3rem .55rem;font-size:.74rem;color:var(--tc-muted);font-weight:600}
+    .prj-chip{display:inline-flex;align-items:center;gap:.25rem;font-size:.7rem;font-weight:800;padding:.28rem .55rem;border-radius:999px;background:var(--tc-surface-2);color:var(--tc-muted);border:1px solid var(--tc-border)}
+    .prj-chip.on{background:#d1fae5;color:#047857;border-color:transparent}
+    .prj-chip.off{background:#f1f5f9;color:#64748b}
+    .prj-chip.stock{background:#ffedd5;color:#c2410c;border-color:transparent}
+    .prj-side{text-align:end;min-width:64px}
+    .prj-side .qty{font-size:1.4rem;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+    .prj-side .lbl{font-size:.65rem;font-weight:800;color:var(--tc-muted);text-transform:uppercase;letter-spacing:.04em;margin-top:.2rem}
+    .prj-foot{
+      grid-column:1 / -1;display:flex;justify-content:space-between;align-items:center;
+      margin-top:.15rem;padding-top:.65rem;border-top:1px solid var(--tc-border);
+      font-size:.75rem;font-weight:800;color:var(--tc-accent-2);
+    }
+    .prj-empty{text-align:center;padding:2.5rem 1rem;color:var(--tc-muted);border:1px dashed var(--tc-border);border-radius:16px;background:var(--tc-surface)}
+    .prj-empty i{font-size:2.1rem;color:var(--tc-accent);opacity:.55;display:block;margin-bottom:.5rem}
+    #projModal .tc-field{margin-bottom:.75rem}
+    #projModal .tc-input,#projModal .form-control,#projModal .form-select{min-height:44px;font-size:16px;border-radius:12px}
+
+    .ic-card{max-width:680px}
+    .ic-type-grid{display:grid;grid-template-columns:1fr 1fr;gap:.65rem}
+    @media(max-width:560px){.ic-type-grid{grid-template-columns:1fr}}
+    .ic-type-opt{position:relative;margin:0;cursor:pointer;display:block}
+    .ic-type-opt input{position:absolute;opacity:0;pointer-events:none}
+    .ic-type-card{
+      height:100%;border:1px solid var(--tc-border);border-radius:14px;padding:.85rem .9rem;
+      background:var(--tc-surface-2);transition:border-color .15s, background .15s, box-shadow .15s;
+      display:flex;gap:.7rem;align-items:flex-start;
+    }
+    .ic-type-icon{
+      width:40px;height:40px;border-radius:11px;flex-shrink:0;display:grid;place-items:center;
+      background:var(--tc-surface);border:1px solid var(--tc-border);color:var(--tc-muted);font-size:1.1rem;
+    }
+    .ic-type-text{min-width:0;flex:1}
+    .ic-type-text strong{display:block;font-size:.88rem;font-weight:800;line-height:1.25;margin-bottom:.2rem}
+    .ic-type-text small{display:block;font-size:.72rem;color:var(--tc-muted);line-height:1.35;font-weight:600}
+    .ic-type-opt input:checked + .ic-type-card{
+      border-color:color-mix(in srgb,var(--tc-accent) 55%,transparent);
+      background:linear-gradient(160deg,var(--tc-accent-soft),var(--tc-surface-2) 70%);
+      box-shadow:0 0 0 1px color-mix(in srgb,var(--tc-accent) 25%,transparent);
+    }
+    .ic-type-opt input:checked + .ic-type-card .ic-type-icon{background:var(--tc-accent);border-color:transparent;color:#fff}
+    .ic-type-opt input:focus-visible + .ic-type-card{outline:2px solid var(--tc-accent);outline-offset:2px}
+    .ic-type-opt:hover .ic-type-card{border-color:color-mix(in srgb,var(--tc-accent) 35%,var(--tc-border))}
+    #categoryWrap{
+      margin-top:.75rem;padding:.85rem .9rem;border-radius:14px;
+      border:1px dashed color-mix(in srgb,var(--tc-accent) 35%,var(--tc-border));
+      background:color-mix(in srgb,var(--tc-accent) 6%,transparent);
+    }
+    #categoryWrap .tc-field{margin:0}
+    @keyframes prjIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  </style>
+</head>
+<body class="tc-page">
+  <div class="tc-wrap">
+    <div class="tc-shell">
+      <div id="app-header"></div>
+      <div class="tc-card wh-page" id="whPage">
+        <div class="wh-chrome">
+          <span class="tc-section-badge"><i class="bi bi-building"></i> <span data-i18n="warehousesPage">Warehouses</span></span>
+          <p class="wh-hint mt-3" data-i18n="warehousesHint">
+            Manage locations, transfer stock, run inventory counts, and track project sites from one place.
+          </p>
+          <div class="wh-shortcuts" id="whShortcuts">
+            <a class="tc-btn" href="products.html"><i class="bi bi-box-seam"></i> <span data-i18n="products">Products</span></a>
+            <a class="tc-btn" href="receiving.html"><i class="bi bi-box-arrow-in-down"></i> <span data-i18n="receiving">Receiving</span></a>
+            <a class="tc-btn" href="damage.html"><i class="bi bi-exclamation-octagon"></i> <span data-i18n="damage">Damage</span></a>
+            <a class="tc-btn" href="repair.html"><i class="bi bi-wrench-adjustable"></i> <span data-i18n="repair">Repair</span></a>
+            <a class="tc-btn" href="requests.html"><i class="bi bi-clipboard-check"></i> <span data-i18n="requests">Requests</span></a>
+          </div>
+        </div>
+
+        <div class="wh-tabs" id="whTabs" role="tablist">
+          <button type="button" class="wh-tab active" data-tab="locations" id="tabLocations">
+            <i class="bi bi-building"></i> <span data-i18n="whTabLocations">Locations</span>
+          </button>
+          <button type="button" class="wh-tab" data-tab="transfer" id="tabTransfer">
+            <i class="bi bi-arrow-left-right"></i> <span data-i18n="whTransfer">Warehouse transfer</span>
+          </button>
+          <button type="button" class="wh-tab" data-tab="count" id="tabCount">
+            <i class="bi bi-clipboard2-check"></i> <span data-i18n="invCount">Inventory count</span>
+          </button>
+          <button type="button" class="wh-tab" data-tab="projects" id="tabProjects">
+            <i class="bi bi-buildings"></i> <span data-i18n="projects">Projects</span>
+          </button>
+        </div>
+
+        <!-- Locations -->
+        <div class="wh-panel active" id="panel-locations">
+          <div class="wh-loc-card">
+            <div class="wh-add">
+              <div class="tc-field">
+                <label data-i18n="warehouseNew">New warehouse</label>
+                <input id="warehouseName" class="form-control" autocomplete="off" data-i18n-placeholder="warehouseNewPh" placeholder="e.g. Site store / Yard B">
+              </div>
+              <button type="button" class="tc-btn tc-btn-primary" id="btnAdd">
+                <i class="bi bi-plus-lg"></i> <span data-i18n="warehouseAdd">Add</span>
+              </button>
+            </div>
+            <div id="list">
+              <div class="tc-text-muted small text-center py-3" data-i18n="loading">Loading…</div>
+            </div>
+            <div class="small tc-text-muted mt-2 text-center" id="statusMsg"></div>
+          </div>
+        </div>
+
+        <!-- Transfer -->
+        <div class="wh-panel" id="panel-transfer">
+          <div class="wt-layout">
+            <div>
+              <p class="wh-hint" data-i18n="whTransferHint">
+                Move stock from the main warehouse to another warehouse (or back). Qty is deducted from the source and added to the destination.
+              </p>
+              <div class="row g-2 mb-2">
+                <div class="col-md-6">
+                  <div class="tc-field mb-0">
+                    <label data-i18n="whFrom">From warehouse</label>
+                    <select id="fromWh" class="form-select"></select>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="tc-field mb-0">
+                    <label data-i18n="whTo">To warehouse</label>
+                    <select id="toWh" class="form-select"></select>
+                  </div>
+                </div>
+              </div>
+              <div class="row g-2 mb-2 align-items-end">
+                <div class="col-5">
+                  <div class="tc-field mb-0">
+                    <label data-i18n="code">Code</label>
+                    <input id="lineCode" class="form-control" placeholder="CODE" autocomplete="off">
+                  </div>
+                </div>
+                <div class="col-3">
+                  <div class="tc-field mb-0">
+                    <label data-i18n="qty">Qty</label>
+                    <input id="lineQty" type="number" min="1" step="1" value="1" class="form-control">
+                  </div>
+                </div>
+                <div class="col-4">
+                  <button type="button" class="tc-btn w-100" id="btnAddLine"><i class="bi bi-plus"></i> <span data-i18n="add">Add</span></button>
+                </div>
+              </div>
+              <div class="small tc-text-muted mb-2" id="availHint"></div>
+              <div id="cartList" class="mb-2">
+                <div class="tc-text-muted small text-center py-3" data-i18n="whCartEmpty">No lines yet — pick from stock or type a code.</div>
+              </div>
+              <div class="tc-field">
+                <label data-i18n="note">Note</label>
+                <input id="note" class="form-control" data-i18n-placeholder="whNotePh" placeholder="Reason / site / job">
+              </div>
+              <button type="button" class="tc-btn tc-btn-primary w-100" id="btnTransfer">
+                <i class="bi bi-check2"></i> <span data-i18n="whDoTransfer">Transfer stock</span>
+              </button>
+              <div class="small tc-text-muted mt-2 text-center" id="xferStatus"></div>
+            </div>
+            <div>
+              <div class="tc-card mb-3">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <strong data-i18n="whSourceStock">Source stock</strong>
+                  <button type="button" class="tc-btn tc-btn-sm" id="btnReloadStock"><i class="bi bi-arrow-clockwise"></i></button>
+                </div>
+                <div id="stockList" class="wt-stock-list">
+                  <div class="tc-text-muted small text-center py-3" data-i18n="loading">Loading…</div>
+                </div>
+              </div>
+              <div class="tc-card">
+                <strong data-i18n="whRecentTransfers">Recent transfers</strong>
+                <div id="histList" class="mt-2">
+                  <div class="tc-text-muted small text-center py-2" data-i18n="whNoTransfers">No transfers yet.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Inventory count -->
+        <div class="wh-panel" id="panel-count">
+          <div class="ic-card">
+            <p class="wh-hint" data-i18n="invCountHint">
+              Print a blank count sheet for a warehouse or project. For printing only — nothing is saved on the server.
+            </p>
+            <div class="tc-field mb-2">
+              <label data-i18n="invCountLocation">Count location</label>
+              <div class="ic-type-grid">
+                <label class="ic-type-opt">
+                  <input type="radio" name="countLocation" value="warehouse" checked>
+                  <div class="ic-type-card">
+                    <span class="ic-type-icon"><i class="bi bi-building"></i></span>
+                    <span class="ic-type-text">
+                      <strong data-i18n="warehouse">Warehouse</strong>
+                      <small data-i18n="invCountLocWhHint">Main or site store</small>
+                    </span>
+                  </div>
+                </label>
+                <label class="ic-type-opt">
+                  <input type="radio" name="countLocation" value="project">
+                  <div class="ic-type-card">
+                    <span class="ic-type-icon"><i class="bi bi-buildings"></i></span>
+                    <span class="ic-type-text">
+                      <strong data-i18n="projects">Projects</strong>
+                      <small data-i18n="invCountLocPrjHint">Tools currently at a project</small>
+                    </span>
+                  </div>
+                </label>
+              </div>
+            </div>
+            <div class="tc-field mb-3" id="countWarehouseWrap">
+              <label data-i18n="warehouse">Warehouse</label>
+              <select id="countWarehouse" class="form-select"></select>
+            </div>
+            <div class="tc-field mb-3" id="countProjectWrap" style="display:none">
+              <label data-i18n="project">Project</label>
+              <select id="countProject" class="form-select"></select>
+            </div>
+            <div class="tc-field mb-2">
+              <label data-i18n="invCountType">Count type</label>
+              <div class="ic-type-grid" id="countTypeRow">
+                <label class="ic-type-opt">
+                  <input type="radio" name="countType" value="full" checked>
+                  <div class="ic-type-card">
+                    <span class="ic-type-icon"><i class="bi bi-grid-3x3-gap-fill"></i></span>
+                    <span class="ic-type-text">
+                      <strong data-i18n="invCountFull">Full inventory</strong>
+                      <small data-i18n="invCountFullHint">All products in the selected location</small>
+                    </span>
+                  </div>
+                </label>
+                <label class="ic-type-opt">
+                  <input type="radio" name="countType" value="category">
+                  <div class="ic-type-card">
+                    <span class="ic-type-icon"><i class="bi bi-tags-fill"></i></span>
+                    <span class="ic-type-text">
+                      <strong data-i18n="invCountByCategory">By category</strong>
+                      <small data-i18n="invCountCatHint">Only products from one category</small>
+                    </span>
+                  </div>
+                </label>
+              </div>
+            </div>
+            <div id="categoryWrap" style="display:none">
+              <div class="tc-field">
+                <label data-i18n="category">Category</label>
+                <select id="category" class="form-select"></select>
+              </div>
+            </div>
+            <button type="button" class="tc-btn tc-btn-primary w-100 mt-3" id="btnCreateCount">
+              <i class="bi bi-file-earmark-pdf"></i>
+              <span data-i18n="invCountCreateSheet">Print count sheet</span>
+            </button>
+            <div class="small tc-text-muted mt-2 text-center" id="icStatusMsg"></div>
+          </div>
+        </div>
+
+        <!-- Projects -->
+        <div class="wh-panel" id="panel-projects">
+          <section class="prj-hero">
+            <div class="kicker"><i class="bi bi-buildings"></i> <span data-i18n="projects">Projects</span></div>
+            <h1 data-i18n="projects">Projects</h1>
+            <p data-i18n="projectsSub">Dispatch tools to job sites · printable handover</p>
+          </section>
+          <div class="prj-stats">
+            <div class="prj-stat"><div class="k" data-i18n="prjKpiActive">Active projects</div><div class="v" id="kActive">0</div></div>
+            <div class="prj-stat warn"><div class="k" data-i18n="prjKpiTools">Tools at projects</div><div class="v" id="kTools">0</div></div>
+            <div class="prj-stat"><div class="k" data-i18n="prjKpiWithStock">Sites with tools</div><div class="v" id="kSites">0</div></div>
+            <div class="prj-stat"><div class="k" data-i18n="prjKpiTotal">All projects</div><div class="v" id="kTotal">0</div></div>
+          </div>
+          <section class="prj-panel">
+            <div class="prj-panel-head">
+              <h2><i class="bi bi-buildings"></i> <span data-i18n="projects">Projects</span></h2>
+              <div class="d-flex gap-2 flex-wrap" id="prjActionBtns">
+                <a class="tc-btn" id="btnDispatchTools" href="project-dispatch.html"><i class="bi bi-box-arrow-up"></i> <span data-i18n="prjNewDispatch">Dispatch tools</span></a>
+                <button type="button" class="tc-btn tc-btn-primary" id="btnNewProj"><i class="bi bi-plus-lg"></i> <span data-i18n="prjNew">New project</span></button>
+              </div>
+            </div>
+            <div class="prj-panel-body">
+              <div class="prj-toolbar">
+                <input id="q" class="tc-search" data-i18n-placeholder="searchPlaceholder" placeholder="Search…">
+                <select id="filterStatus" class="tc-select">
+                  <option value="" data-i18n="prjAllStatus">All statuses</option>
+                  <option value="active" data-i18n="prjStatusActive">Active</option>
+                  <option value="closed" data-i18n="prjStatusClosed">Closed</option>
+                </select>
+                <button type="button" class="tc-btn" id="btnRefresh" aria-label="Refresh"><i class="bi bi-arrow-clockwise"></i></button>
+              </div>
+              <div id="prjBody" class="prj-list"></div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tc-modal-backdrop" id="projModal">
+    <div class="tc-modal" style="max-width:480px">
+      <div class="tc-modal-head">
+        <div>
+          <h3 class="h5 mb-1" id="projModalTitle" data-i18n="prjNew">New project</h3>
+          <p class="tc-text-muted small mb-0" data-i18n="prjFormHint">Code, name and site for job tracking.</p>
+        </div>
+        <button type="button" class="tc-btn tc-btn-sm" id="btnCloseProj"><i class="bi bi-x-lg"></i></button>
+      </div>
+      <div class="tc-modal-body">
+        <input type="hidden" id="pId" value="">
+        <div class="tc-field"><label data-i18n="prjCode">Project code</label><input id="pCode" class="form-control" placeholder="PRJ0001"></div>
+        <div class="tc-field"><label data-i18n="prjName">Project name</label><input id="pName" class="form-control" required></div>
+        <div class="tc-field"><label data-i18n="prjSite">Site / location</label><input id="pSite" class="form-control"></div>
+        <div class="tc-field"><label data-i18n="prjClient">Client</label><input id="pClient" class="form-control"></div>
+        <div class="tc-field"><label data-i18n="prjStatus">Status</label>
+          <select id="pStatus" class="form-select">
+            <option value="active" data-i18n="prjStatusActive">Active</option>
+            <option value="closed" data-i18n="prjStatusClosed">Closed</option>
+          </select>
+        </div>
+        <div class="tc-field"><label data-i18n="notes">Notes</label><textarea id="pNotes" class="form-control" rows="2"></textarea></div>
+        <div class="d-flex justify-content-end gap-2 mt-2">
+          <button type="button" class="tc-btn" id="btnCancelProj" data-i18n="cancel">Cancel</button>
+          <button type="button" class="tc-btn tc-btn-primary" id="btnSaveProj"><i class="bi bi-check-lg"></i> <span data-i18n="save">Save</span></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tc-modal-backdrop" id="stockModal" style="display:none">
+    <div class="tc-modal" style="max-width:560px">
+      <div class="tc-modal-head">
+        <div>
+          <h3 class="h5 mb-1" id="stockModalTitle" data-i18n="whStockTitle">Warehouse stock</h3>
+          <p class="tc-text-muted small mb-0" id="stockModalSub"></p>
+        </div>
+        <button type="button" class="tc-btn tc-btn-sm" id="btnCloseStock"><i class="bi bi-x-lg"></i></button>
+      </div>
+      <div class="tc-modal-body">
+        <div id="stockModalBody"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tc-modal-backdrop" id="xferModal" style="display:none">
+    <div class="tc-modal" style="max-width:560px">
+      <div class="tc-modal-head">
+        <div>
+          <h3 class="h5 mb-1" id="xferModalTitle" data-i18n="whTransferDetail">Transfer details</h3>
+          <p class="tc-text-muted small mb-0" id="xferModalSub"></p>
+        </div>
+        <button type="button" class="tc-btn tc-btn-sm" id="btnCloseXfer"><i class="bi bi-x-lg"></i></button>
+      </div>
+      <div class="tc-modal-body">
+        <div id="xferModalBody"></div>
+        <div class="d-flex justify-content-end gap-2 mt-3">
+          <button type="button" class="tc-btn tc-btn-primary" id="btnPrintXfer">
+            <i class="bi bi-printer"></i> <span data-i18n="whPrintInvoice">Print invoice</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => TCUI.bootPage(async () => {
+      const canFn = (p) => typeof can === "function" && can(p);
+      const isAdmin = typeof getRole === "function" && getRole() === "admin";
+      const canProjects = () =>
+        canFn("projects.view") || canFn("projects.manage") || canFn("projects.dispatch") || canFn("projects.return") || isAdmin;
+      const canManageProjects = () => canFn("projects.manage") || isAdmin;
+      const canDispatchProjects = () => canFn("projects.dispatch") || canFn("projects.manage") || isAdmin;
+      const canReturnProjects = () => canFn("projects.return") || canFn("projects.dispatch") || canFn("projects.manage") || isAdmin;
+      const canWhStock = () =>
+        canFn("inventory.view") || canFn("inventory.count") || canFn("inventory.transfer") || isAdmin;
+      const canTransfer = () => canFn("inventory.transfer") || isAdmin;
+      const canCount = () => canFn("inventory.count") || isAdmin;
+      const projectsOnly = canProjects() && !canWhStock();
+      const whPage = document.getElementById("whPage");
+      if (whPage && projectsOnly) whPage.classList.add("prj-focus");
+
+      TCUI.mountHeader("app-header", {
+        active: projectsOnly || (location.hash || "").replace("#", "") === "projects" ? "projects" : "warehouses",
+        titleKey: projectsOnly ? "projects" : "warehousesPage",
+        subtitleKey: projectsOnly ? "projectsSub" : "warehousesSub",
+        icon: projectsOnly ? "bi-buildings" : "bi-building"
+      });
+
+      const shortcutHost = document.getElementById("whShortcuts");
+      if (shortcutHost) {
+        const show = (pageId, el) => {
+          if (!el) return;
+          const ok = typeof canAccessPage === "function" ? canAccessPage(pageId) : true;
+          el.hidden = !ok;
+        };
+        show("products", shortcutHost.querySelector('a[href="products.html"]'));
+        show("receiving", shortcutHost.querySelector('a[href="receiving.html"]'));
+        show("damage", shortcutHost.querySelector('a[href="damage.html"]'));
+        show("repair", shortcutHost.querySelector('a[href="repair.html"]'));
+        show("requests", shortcutHost.querySelector('a[href="requests.html"]'));
+        const anyVisible = [...shortcutHost.querySelectorAll("a")].some((a) => !a.hidden);
+        shortcutHost.hidden = !anyVisible || projectsOnly;
+      }
+
+      const t = (k, fb) => {
+        if (typeof TCI18N !== "undefined") {
+          const v = TCI18N.t(k);
+          if (v && v !== k) return v;
+        }
+        return fb || k;
+      };
+      const $ = (id) => document.getElementById(id);
+
+      function esc(s) {
+        return typeof escHtml === "function" ? escHtml(s) : String(s || "")
+          .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+      }
+
+      /* ── Tabs ── */
+      let transferReady = false;
+      let projectsReady = false;
+      let countReady = false;
+      let projectItems = [];
+
+      function showTab(name) {
+        const allowed = ["locations", "transfer", "count", "projects"];
+        if (!allowed.includes(name)) name = projectsOnly ? "projects" : "locations";
+        if (name === "locations" && !canWhStock()) name = canProjects() ? "projects" : "locations";
+        if (name === "transfer" && !canTransfer()) name = projectsOnly ? "projects" : "locations";
+        if (name === "count" && !canCount()) name = projectsOnly ? "projects" : "locations";
+        if (name === "projects" && !canProjects()) name = "locations";
+
+        document.querySelectorAll(".wh-tab").forEach((btn) => {
+          btn.classList.toggle("active", btn.getAttribute("data-tab") === name);
+        });
+        document.querySelectorAll(".wh-panel").forEach((p) => {
+          p.classList.toggle("active", p.id === "panel-" + name);
+        });
+        if (location.hash.replace("#", "") !== name) {
+          history.replaceState(null, "", "#" + name);
+        }
+        if (name === "transfer" && !transferReady) {
+          transferReady = true;
+          initTransfer().catch(() => {});
+        }
+        if (name === "count" && !countReady) {
+          countReady = true;
+          initCount().catch(() => {});
+        }
+        if (name === "projects" && !projectsReady) {
+          projectsReady = true;
+          loadProjects().catch(() => {});
+        }
+        if (typeof TCUI.mountHeader === "function") {
+          TCUI.mountHeader("app-header", {
+            active: name === "projects" ? "projects" : "warehouses",
+            titleKey: name === "projects" && projectsOnly ? "projects" : "warehousesPage",
+            subtitleKey: name === "projects" && projectsOnly ? "projectsSub" : "warehousesSub",
+            icon: name === "projects" ? "bi-buildings" : "bi-building"
+          });
+        }
+      }
+
+      if (!canWhStock()) $("tabLocations").style.display = "none";
+      if (!canTransfer()) $("tabTransfer").style.display = "none";
+      if (!canCount()) $("tabCount").style.display = "none";
+      if (!canProjects()) $("tabProjects").style.display = "none";
+
+      document.querySelectorAll(".wh-tab").forEach((btn) => {
+        btn.addEventListener("click", () => showTab(btn.getAttribute("data-tab")));
+      });
+
+      /* ── Locations ── */
+      const statusMsg = $("statusMsg");
+      const nameInput = $("warehouseName");
+
+      async function loadLocations() {
+        const data = await apiGet({ action: "listWarehouses" });
+        const items = (data && data.items) || [];
+        const host = $("list");
+        if (!items.length) {
+          host.innerHTML = `<div class="tc-text-muted small text-center py-3">${t("warehousesEmpty", "No warehouses yet.")}</div>`;
+          return;
+        }
+        host.innerHTML = items.map((w) => {
+          const main = w.isMain
+            ? `<span class="wh-main-pill"><i class="bi bi-star-fill"></i> ${t("warehouseMain", "Main warehouse")}</span>`
+            : "";
+          const del = w.isMain
+            ? ""
+            : `<button type="button" class="tc-btn tc-btn-sm" data-del="${w.id}" data-name="${esc(w.name)}">
+                <i class="bi bi-trash"></i> <span data-i18n="warehouseRemove">Remove</span>
+              </button>`;
+          return `<div class="wh-item clickable" data-open="${w.id}" data-name="${esc(w.name)}">
+            <div class="meta">
+              <strong>${esc(w.name)}${main}</strong>
+              <small>#${w.id} · ${t("whClickToView", "Click to view stock")}</small>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              <span class="wh-open"><i class="bi bi-box-seam"></i> ${t("whViewStock", "Stock")}</span>
+              ${del}
+            </div>
+          </div>`;
+        }).join("");
+        host.querySelectorAll("[data-del]").forEach((btn) => {
+          btn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            removeWarehouse(
+              Number(btn.getAttribute("data-del")),
+              btn.getAttribute("data-name") || ""
+            );
+          });
+        });
+        host.querySelectorAll("[data-open]").forEach((row) => {
+          row.addEventListener("click", () => openWarehouseStock(
+            Number(row.getAttribute("data-open")),
+            row.getAttribute("data-name") || ""
+          ));
+        });
+      }
+
+      let lastTransfer = null;
+
+      async function openWarehouseStock(id, name) {
+        if (!id) return;
+        $("stockModalTitle").textContent = name || t("whStockTitle", "Warehouse stock");
+        $("stockModalSub").textContent = t("loading", "Loading…");
+        $("stockModalBody").innerHTML = "";
+        $("stockModal").style.display = "block";
+        try {
+          const data = await apiGet({ action: "listWarehouseStock", warehouseId: id });
+          const items = (data && data.items) || [];
+          const totalQty = items.reduce((s, i) => s + (Number(i.qty) || 0), 0);
+          $("stockModalSub").textContent = t("whStockSummary", "{n} item(s) · qty {q}")
+            .replace("{n}", String(items.length))
+            .replace("{q}", String(totalQty));
+          if (!items.length) {
+            $("stockModalBody").innerHTML = `<div class="tc-text-muted small text-center py-3">${t("whStockEmpty", "No stock in this warehouse.")}</div>`;
+            return;
+          }
+          $("stockModalBody").innerHTML = items.map((i) =>
+            `<div class="detail-line">
+              <div><strong>${esc(i.code)}</strong><div class="small tc-text-muted">${esc(i.description || "")}</div></div>
+              <div class="qty">${i.qty}</div>
+            </div>`
+          ).join("");
+        } catch (e) {
+          $("stockModalSub").textContent = "";
+          $("stockModalBody").innerHTML = `<div class="text-danger small">${esc(e.message || t("error"))}</div>`;
+        }
+      }
+
+      function closeStockModal() {
+        $("stockModal").style.display = "none";
+      }
+
+      async function openTransferDetail(id) {
+        if (!id) return;
+        lastTransfer = null;
+        $("xferModalTitle").textContent = t("whTransferDetail", "Transfer details");
+        $("xferModalSub").textContent = t("loading", "Loading…");
+        $("xferModalBody").innerHTML = "";
+        $("btnPrintXfer").disabled = true;
+        $("xferModal").style.display = "block";
+        try {
+          const data = await apiGet({ action: "getWarehouseTransfer", id });
+          if (!data || !data.success || !data.transfer) throw new Error((data && data.error) || "NOT_FOUND");
+          lastTransfer = data.transfer;
+          const tr = lastTransfer;
+          const d = tr.createdAt ? new Date(tr.createdAt).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" }) : "";
+          $("xferModalTitle").textContent = tr.formNo || t("whTransferDetail", "Transfer details");
+          $("xferModalSub").textContent = `${tr.fromWarehouse || ""} → ${tr.toWarehouse || ""} · ${d}`;
+          const lines = tr.lines || [];
+          $("xferModalBody").innerHTML = `
+            <div class="small tc-text-muted mb-2">
+              ${t("createdBy", "Created by")}: <strong>${esc(tr.byUser || "—")}</strong>
+              ${tr.note ? ` · ${t("note", "Note")}: ${esc(tr.note)}` : ""}
+            </div>
+            ${lines.length
+              ? lines.map((l) =>
+                `<div class="detail-line">
+                  <div><strong>${esc(l.code)}</strong><div class="small tc-text-muted">${esc(l.description || "")}</div></div>
+                  <div class="qty">${l.qty}</div>
+                </div>`
+              ).join("")
+              : `<div class="tc-text-muted small text-center py-2">${t("whCartEmpty", "No lines")}</div>`}
+          `;
+          $("btnPrintXfer").disabled = false;
+        } catch (e) {
+          $("xferModalSub").textContent = "";
+          $("xferModalBody").innerHTML = `<div class="text-danger small">${esc(e.message || t("error"))}</div>`;
+        }
+      }
+
+      function closeXferModal() {
+        $("xferModal").style.display = "none";
+      }
+
+      function printLastTransfer() {
+        if (!lastTransfer || typeof TCExport === "undefined" || !TCExport.printWarehouseTransfer) {
+          TCUI.toast(t("error", "Export module missing"), "err");
+          return;
+        }
+        TCExport.printWarehouseTransfer(lastTransfer);
+      }
+
+      async function addWarehouse() {
+        const name = String(nameInput.value || "").trim();
+        if (!name) {
+          statusMsg.textContent = t("warehouseNeedName", "Enter warehouse name");
+          nameInput.focus();
+          return;
+        }
+        const btn = $("btnAdd");
+        btn.disabled = true;
+        try {
+          const data = await apiGet({ action: "createWarehouse", name });
+          if (!data || !data.success) throw new Error((data && data.error) || "FAILED");
+          nameInput.value = "";
+          statusMsg.textContent = data.existed
+            ? t("warehouseExists", "Warehouse already exists — selected")
+            : t("warehouseSaved", "Warehouse added");
+          TCUI.toast(statusMsg.textContent, "ok");
+          await loadLocations();
+        } catch (e) {
+          statusMsg.textContent = t("error", "Error") + ": " + (e.message || e);
+          TCUI.toast(statusMsg.textContent, "err");
+        } finally {
+          btn.disabled = false;
+        }
+      }
+
+      async function removeWarehouse(id, name) {
+        if (!id) return;
+        if (!confirm(t("warehouseRemoveConfirm", "Remove warehouse \"{name}\"?").replace("{name}", name))) return;
+        try {
+          const data = await apiGet({ action: "deleteWarehouse", id });
+          if (!data || !data.success) {
+            const err = (data && data.error) || "FAILED";
+            let msg = err;
+            if (err === "LAST_WAREHOUSE") {
+              msg = t("warehouseLast", "Cannot remove the last warehouse");
+            } else if (err === "CANNOT_DELETE_MAIN") {
+              msg = t("warehouseMainLocked", "Cannot remove the main warehouse");
+            } else if (err === "HAS_STOCK") {
+              msg = t(
+                "warehouseHasStock",
+                "This warehouse still has {n} tool(s). Transfer tools back to the main store before deleting. Consumables alone are OK."
+              ).replace("{n}", String(data.itemCount || data.totalQty || ""));
+            }
+            throw new Error(msg);
+          }
+          statusMsg.textContent = t("warehouseRemoved", "Warehouse removed");
+          TCUI.toast(statusMsg.textContent, "ok");
+          await loadLocations();
+        } catch (e) {
+          statusMsg.textContent = t("error", "Error") + ": " + (e.message || e);
+          TCUI.toast(statusMsg.textContent, "err");
+        }
+      }
+
+      $("btnAdd").addEventListener("click", addWarehouse);
+      nameInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") { e.preventDefault(); addWarehouse(); }
+      });
+      $("btnCloseStock").onclick = closeStockModal;
+      $("stockModal").addEventListener("click", (e) => {
+        if (e.target.id === "stockModal") closeStockModal();
+      });
+      $("btnCloseXfer").onclick = closeXferModal;
+      $("xferModal").addEventListener("click", (e) => {
+        if (e.target.id === "xferModal") closeXferModal();
+      });
+      $("btnPrintXfer").onclick = printLastTransfer;
+
+      /* ── Inventory count ── */
+      async function initCount() {
+        const categoryWrap = $("categoryWrap");
+        const categorySel = $("category");
+        const warehouseSel = $("countWarehouse");
+        const projectSel = $("countProject");
+        const warehouseWrap = $("countWarehouseWrap");
+        const projectWrap = $("countProjectWrap");
+        const icStatus = $("icStatusMsg");
+
+        function countType() {
+          const el = document.querySelector('input[name="countType"]:checked');
+          return el ? el.value : "full";
+        }
+        function countLocation() {
+          const el = document.querySelector('input[name="countLocation"]:checked');
+          return el ? el.value : "warehouse";
+        }
+        function syncCategoryVisibility() {
+          categoryWrap.style.display = countType() === "category" ? "" : "none";
+        }
+        function syncLocationVisibility() {
+          const loc = countLocation();
+          warehouseWrap.style.display = loc === "warehouse" ? "" : "none";
+          projectWrap.style.display = loc === "project" ? "" : "none";
+        }
+        document.querySelectorAll('input[name="countType"]').forEach((el) => {
+          el.addEventListener("change", syncCategoryVisibility);
+        });
+        document.querySelectorAll('input[name="countLocation"]').forEach((el) => {
+          el.addEventListener("change", syncLocationVisibility);
+        });
+
+        async function loadCountWarehouses() {
+          const data = await apiGet({ action: "listWarehouses" });
+          const items = (data && data.items) || [];
+          warehouseSel.innerHTML = items.map((w) =>
+            `<option value="${w.id}">${esc(w.name)}${w.isMain ? " ★" : ""}</option>`
+          ).join("") || `<option value="">—</option>`;
+        }
+        async function loadCountProjects() {
+          const data = await apiGet({ action: "listProjects" });
+          const items = ((data && data.items) || []).filter((p) => p.status !== "closed");
+          projectSel.innerHTML = items.length
+            ? items.map((p) => {
+              const label = p.site ? `${p.name} · ${p.site}` : (p.code ? `${p.code} — ${p.name}` : p.name);
+              const stock = p.toolsQty > 0 ? ` (${p.toolsQty})` : "";
+              return `<option value="${p.id}">${esc(label)}${stock}</option>`;
+            }).join("")
+            : `<option value="">${esc(t("invCountNoProjects", "No active projects"))}</option>`;
+        }
+        async function loadCategories() {
+          const data = await apiGet({ action: "listCategories" });
+          const cats = (data && data.categories) || [];
+          categorySel.innerHTML = `<option value="">${t("selectCategory", "Select category")}</option>` +
+            cats.map((c) => {
+              const name = c.name || c;
+              return `<option value="${esc(name).replace(/"/g, "&quot;")}">${esc(name)}</option>`;
+            }).join("");
+        }
+        async function createSheet() {
+          const type = countType();
+          const loc = countLocation();
+          const category = String(categorySel.value || "").trim();
+          if (type === "category" && !category) {
+            icStatus.textContent = t("invCountNeedCategory", "Select a category");
+            return;
+          }
+          const payload = {
+            action: "createInventoryCountSheet",
+            locationType: loc,
+            countType: type,
+            category: type === "category" ? category : ""
+          };
+          if (loc === "project") {
+            const projectId = Number(projectSel.value) || 0;
+            if (!projectId) {
+              icStatus.textContent = t("invCountNeedProject", "Select a project");
+              return;
+            }
+            payload.projectId = projectId;
+          } else {
+            const warehouseId = Number(warehouseSel.value) || 0;
+            if (!warehouseId) {
+              icStatus.textContent = t("invCountNeedWarehouse", "Select a warehouse");
+              return;
+            }
+            payload.warehouseId = warehouseId;
+          }
+          const btn = $("btnCreateCount");
+          btn.disabled = true;
+          icStatus.textContent = t("invCountCreating", "Creating count sheet…");
+          try {
+            const data = await apiGet(payload);
+            if (!data || !data.success) {
+              const err = (data && data.error) || "FAILED";
+              const msg = err === "NO_PRODUCTS"
+                ? t("invCountNoProducts", "No stock in this location for the selected filter")
+                : err === "CATEGORY_REQUIRED"
+                  ? t("invCountNeedCategory", "Select a category")
+                  : err === "PROJECT_REQUIRED"
+                    ? t("invCountNeedProject", "Select a project")
+                    : err;
+              throw new Error(msg);
+            }
+            if (typeof TCExport === "undefined" || !TCExport.printInventoryCountSheet) {
+              throw new Error("Export module missing");
+            }
+            TCExport.printInventoryCountSheet({ count: data.count, lines: data.lines });
+            icStatus.textContent = t("invCountSheetReady", "Count sheet opened for print")
+              + ` · ${data.count.formNo} · ${data.lines.length} ${t("items", "items")}`;
+          } catch (e) {
+            icStatus.textContent = t("error", "Error") + ": " + (e.message || e);
+          } finally {
+            btn.disabled = false;
+          }
+        }
+
+        $("btnCreateCount").addEventListener("click", createSheet);
+        syncCategoryVisibility();
+        syncLocationVisibility();
+        await Promise.all([loadCountWarehouses(), loadCountProjects(), loadCategories()]);
+      }
+
+      /* ── Transfer ── */
+      let warehouses = [];
+      let sourceStock = [];
+      let cart = [];
+
+      async function initTransfer() {
+        await loadWarehouses();
+        await Promise.all([loadSourceStock(), loadHistory()]);
+        $("fromWh").addEventListener("change", () => {
+          cart = [];
+          renderCart();
+          loadSourceStock().catch(() => {});
+        });
+        $("btnReloadStock").onclick = () => loadSourceStock().catch(() => {});
+        $("btnAddLine").onclick = addLine;
+        $("lineCode").addEventListener("input", updateAvailHint);
+        $("lineCode").addEventListener("keydown", (e) => {
+          if (e.key === "Enter") { e.preventDefault(); addLine(); }
+        });
+        $("btnTransfer").onclick = doTransfer;
+      }
+
+      async function loadWarehouses() {
+        const data = await apiGet({ action: "listWarehouses" });
+        warehouses = (data && data.items) || [];
+        const from = $("fromWh");
+        const to = $("toWh");
+        const opts = warehouses.map((w) =>
+          `<option value="${w.id}">${esc(w.name)}${w.isMain ? " ★" : ""}</option>`
+        ).join("");
+        from.innerHTML = opts;
+        to.innerHTML = opts;
+        const main = warehouses.find((w) => w.isMain) || warehouses[0];
+        const other = warehouses.find((w) => !w.isMain) || warehouses[1] || warehouses[0];
+        if (main) from.value = String(main.id);
+        if (other) to.value = String(other.id);
+      }
+
+      async function loadSourceStock() {
+        const warehouseId = Number($("fromWh").value) || 0;
+        const host = $("stockList");
+        if (!warehouseId) {
+          host.innerHTML = `<div class="tc-text-muted small text-center py-3">—</div>`;
+          sourceStock = [];
+          return;
+        }
+        const data = await apiGet({ action: "listWarehouseStock", warehouseId });
+        sourceStock = (data && data.items) || [];
+        if (!sourceStock.length) {
+          host.innerHTML = `<div class="tc-text-muted small text-center py-3">${t("whStockEmpty", "No stock in this warehouse.")}</div>`;
+          return;
+        }
+        host.innerHTML = sourceStock.map((i) =>
+          `<div class="wt-stock-item" data-code="${esc(i.code)}" data-qty="${i.qty}">
+            <span><strong>${esc(i.code)}</strong> · ${esc(i.description)}</span>
+            <span>${i.qty}</span>
+          </div>`
+        ).join("");
+        host.querySelectorAll("[data-code]").forEach((el) => {
+          el.addEventListener("click", () => {
+            $("lineCode").value = el.getAttribute("data-code") || "";
+            $("lineQty").value = "1";
+            updateAvailHint();
+            $("lineQty").focus();
+          });
+        });
+      }
+
+      function availFor(code) {
+        const row = sourceStock.find((i) => String(i.code).toUpperCase() === String(code).toUpperCase());
+        return row ? Number(row.qty) || 0 : 0;
+      }
+
+      function updateAvailHint() {
+        const code = String($("lineCode").value || "").trim().toUpperCase();
+        if (!code) { $("availHint").textContent = ""; return; }
+        $("availHint").textContent = t("whAvailableAtSource", "Available at source: {n}").replace("{n}", String(availFor(code)));
+      }
+
+      function renderCart() {
+        const host = $("cartList");
+        if (!cart.length) {
+          host.innerHTML = `<div class="tc-text-muted small text-center py-3">${t("whCartEmpty", "No lines yet — pick from stock or type a code.")}</div>`;
+          return;
+        }
+        host.innerHTML = cart.map((l, idx) =>
+          `<div class="wt-line">
+            <div class="meta">
+              <strong>${esc(l.code)}</strong>
+              <small>${esc(l.description || "")} · ${t("whAvailableAtSource", "Available at source: {n}").replace("{n}", String(l.available))}</small>
+            </div>
+            <input type="number" min="1" class="form-control form-control-sm wt-qty" data-idx="${idx}" value="${l.qty}">
+            <button type="button" class="tc-btn tc-btn-sm" data-del="${idx}"><i class="bi bi-trash"></i></button>
+          </div>`
+        ).join("");
+        host.querySelectorAll("[data-del]").forEach((btn) => {
+          btn.onclick = () => { cart.splice(Number(btn.getAttribute("data-del")), 1); renderCart(); };
+        });
+        host.querySelectorAll("[data-idx]").forEach((inp) => {
+          inp.onchange = () => {
+            const i = Number(inp.getAttribute("data-idx"));
+            const max = cart[i].available;
+            let q = Math.max(1, Number(inp.value) || 1);
+            if (q > max) q = max;
+            cart[i].qty = q;
+            inp.value = String(q);
+          };
+        });
+      }
+
+      function addLine() {
+        const code = String($("lineCode").value || "").trim().toUpperCase();
+        let qty = Math.max(1, Number($("lineQty").value) || 1);
+        if (!code) { $("xferStatus").textContent = t("codeRequired", "Code required"); return; }
+        const avail = availFor(code);
+        if (avail <= 0) { $("xferStatus").textContent = t("whNoQty", "No quantity available at source"); return; }
+        if (qty > avail) qty = avail;
+        const stock = sourceStock.find((i) => String(i.code).toUpperCase() === code);
+        const existing = cart.find((c) => c.code === code);
+        if (existing) existing.qty = Math.min(avail, existing.qty + qty);
+        else cart.push({ code, qty, available: avail, description: (stock && stock.description) || code });
+        $("lineCode").value = "";
+        $("lineQty").value = "1";
+        $("availHint").textContent = "";
+        $("xferStatus").textContent = "";
+        renderCart();
+      }
+
+      async function loadHistory() {
+        const data = await apiGet({ action: "listWarehouseTransfers" });
+        const items = (data && data.items) || [];
+        const host = $("histList");
+        if (!items.length) {
+          host.innerHTML = `<div class="tc-text-muted small text-center py-2">${t("whNoTransfers", "No transfers yet.")}</div>`;
+          return;
+        }
+        host.innerHTML = items.map((row) => {
+          const d = row.createdAt ? new Date(row.createdAt).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" }) : "";
+          return `<div class="wt-hist" data-xfer="${row.id}" title="${esc(t("whClickTransfer", "Click to view items / print invoice"))}">
+            <div>
+              <strong>${esc(row.formNo)}</strong><br>
+              <small>${esc(row.fromWarehouse)} → ${esc(row.toWarehouse)}</small>
+            </div>
+            <div class="text-end">
+              <div>${row.totalQty || 0} · ${row.lineCount || 0} ${t("items", "items")}</div>
+              <small class="tc-text-muted">${esc(d)}</small>
+            </div>
+          </div>`;
+        }).join("");
+        host.querySelectorAll("[data-xfer]").forEach((el) => {
+          el.addEventListener("click", () => openTransferDetail(Number(el.getAttribute("data-xfer"))));
+        });
+      }
+
+      async function doTransfer() {
+        const fromWarehouseId = Number($("fromWh").value) || 0;
+        const toWarehouseId = Number($("toWh").value) || 0;
+        if (!fromWarehouseId || !toWarehouseId) {
+          $("xferStatus").textContent = t("whNeedWarehouses", "Select from and to warehouses");
+          return;
+        }
+        if (fromWarehouseId === toWarehouseId) {
+          $("xferStatus").textContent = t("whSameWarehouse", "From and To must be different");
+          return;
+        }
+        if (!cart.length) {
+          $("xferStatus").textContent = t("whCartEmpty", "No lines yet");
+          return;
+        }
+        const btn = $("btnTransfer");
+        btn.disabled = true;
+        $("xferStatus").textContent = t("whTransferring", "Transferring…");
+        try {
+          const data = await apiGet({
+            action: "createWarehouseTransfer",
+            fromWarehouseId,
+            toWarehouseId,
+            note: $("note").value.trim(),
+            lines: JSON.stringify(cart.map((l) => ({ code: l.code, qty: l.qty })))
+          });
+          if (!data || !data.success) {
+            const err = (data && data.error) || "FAILED";
+            if (err === "INSUFFICIENT_STOCK") {
+              throw new Error(t("whInsufficient", "Insufficient stock for {code}").replace("{code}", data.code || ""));
+            }
+            throw new Error(err);
+          }
+          $("xferStatus").textContent = t("whTransferOk", "Transfer completed") + " · " + data.transfer.formNo;
+          TCUI.toast($("xferStatus").textContent, "ok");
+          cart = [];
+          $("note").value = "";
+          renderCart();
+          await Promise.all([loadSourceStock(), loadHistory()]);
+          if (data.transfer && data.transfer.id) {
+            await openTransferDetail(data.transfer.id);
+          }
+        } catch (e) {
+          $("xferStatus").textContent = t("error", "Error") + ": " + (e.message || e);
+          TCUI.toast($("xferStatus").textContent, "err");
+        } finally {
+          btn.disabled = false;
+        }
+      }
+
+      /* ── Projects ── */
+      function initProjectsUi() {
+        const btnDispatch = $("btnDispatchTools");
+        const btnNew = $("btnNewProj");
+        if (btnDispatch) btnDispatch.style.display = canDispatchProjects() || canReturnProjects() ? "" : "none";
+        if (btnNew) btnNew.style.display = canManageProjects() ? "" : "none";
+
+        $("btnRefresh").onclick = () => loadProjects().catch(() => {});
+        $("q").oninput = renderProjects;
+        $("filterStatus").onchange = renderProjects;
+        if (btnNew) {
+          btnNew.onclick = () => {
+            if (!canManageProjects()) return TCUI.toast("FORBIDDEN", "err");
+            openProjModal();
+          };
+        }
+        $("btnCloseProj").onclick = closeProjModal;
+        $("btnCancelProj").onclick = closeProjModal;
+        $("btnSaveProj").onclick = saveProject;
+        $("projModal").addEventListener("click", (e) => {
+          if (e.target.id === "projModal") closeProjModal();
+        });
+      }
+
+      async function loadProjects() {
+        try {
+          const data = await apiGet({ action: "listProjects" });
+          if (data && data.error) throw new Error(data.error);
+          projectItems = (data && data.items) || [];
+          const totals = (data && data.totals) || {};
+          $("kActive").textContent = totals.active || 0;
+          $("kTools").textContent = totals.toolsAtProjects || 0;
+          $("kSites").textContent = totals.projectsWithStock || 0;
+          $("kTotal").textContent = totals.projects || projectItems.length;
+          renderProjects();
+        } catch (e) {
+          $("prjBody").innerHTML = `<div class="prj-empty text-danger">${esc(e.message || t("error"))}</div>`;
+        }
+      }
+
+      function filteredProjects() {
+        const q = $("q").value.trim().toLowerCase();
+        const st = $("filterStatus").value;
+        return projectItems.filter((i) => {
+          if (st && i.status !== st) return false;
+          if (!q) return true;
+          return (i.code + " " + i.name + " " + i.site + " " + i.client).toLowerCase().includes(q);
+        });
+      }
+
+      function renderProjects() {
+        const list = filteredProjects();
+        const body = $("prjBody");
+        if (!list.length) {
+          body.innerHTML = `<div class="prj-empty"><i class="bi bi-building"></i>${
+            canManageProjects()
+              ? t("prjEmpty", "No projects yet — create one to dispatch tools.")
+              : t("prjEmptyView", "No projects to show.")
+          }</div>`;
+          return;
+        }
+        body.innerHTML = list.map((i, idx) => {
+          const stChip = i.status === "closed"
+            ? `<span class="prj-chip off">${t("prjStatusClosed", "Closed")}</span>`
+            : `<span class="prj-chip on">${t("prjStatusActive", "Active")}</span>`;
+          const stockChip = i.toolsQty > 0
+            ? `<span class="prj-chip stock"><i class="bi bi-tools"></i> ${i.toolsQty}</span>`
+            : "";
+          return `<a class="prj-row" href="project.html?id=${encodeURIComponent(i.id)}" style="animation-delay:${Math.min(idx, 8) * 0.03}s">
+            <div>
+              <div class="name">${esc(i.name)}</div>
+              <div class="meta">
+                <span class="prj-chip">${esc(i.code)}</span>
+                ${i.site ? `<span><i class="bi bi-geo-alt"></i> ${esc(i.site)}</span>` : ""}
+                ${i.client ? `<span><i class="bi bi-briefcase"></i> ${esc(i.client)}</span>` : ""}
+                ${stChip}${stockChip}
+              </div>
+            </div>
+            <div class="prj-side">
+              <div class="qty">${i.toolsQty || 0}</div>
+              <div class="lbl">${t("prjOnSite", "On site")}</div>
+            </div>
+            <div class="prj-foot">
+              <span>${t("prjViewStock", "View on-site stock")}</span>
+              <span><i class="bi bi-chevron-right"></i></span>
+            </div>
+          </a>`;
+        }).join("");
+      }
+
+      function openProjModal(item) {
+        $("pId").value = item ? item.id : "";
+        $("pCode").value = item ? item.code : "";
+        $("pName").value = item ? item.name : "";
+        $("pSite").value = item ? item.site : "";
+        $("pClient").value = item ? item.client : "";
+        $("pStatus").value = item ? item.status : "active";
+        $("pNotes").value = item ? item.notes : "";
+        $("projModalTitle").textContent = item ? t("prjEdit", "Edit project") : t("prjNew", "New project");
+        $("projModal").style.display = "block";
+      }
+
+      function closeProjModal() {
+        $("projModal").style.display = "none";
+      }
+
+      async function saveProject() {
+        const name = $("pName").value.trim();
+        if (!name) return TCUI.toast(t("prjNameRequired", "Project name required"), "err");
+        if (!canManageProjects()) {
+          return TCUI.toast("FORBIDDEN", "err");
+        }
+        try {
+          const payload = {
+            action: "upsertProject",
+            id: $("pId").value || "",
+            code: $("pCode").value.trim(),
+            name,
+            site: $("pSite").value.trim(),
+            client: $("pClient").value.trim(),
+            status: $("pStatus").value,
+            notes: $("pNotes").value.trim()
+          };
+          const data = await apiPostPlain(payload);
+          if (!data || data.error || !data.success) throw new Error((data && data.error) || t("error"));
+          TCUI.toast(t("prjSaved", "Project saved"), "ok");
+          closeProjModal();
+          await loadProjects();
+        } catch (e) {
+          TCUI.toast(e.message || t("error"), "err");
+        }
+      }
+
+      initProjectsUi();
+      if (canWhStock()) await loadLocations();
+
+      const hash = (location.hash || "").replace("#", "").toLowerCase();
+      const start = ["transfer", "count", "projects", "locations"].includes(hash)
+        ? hash
+        : (projectsOnly ? "projects" : "locations");
+      showTab(start);
+      window.addEventListener("hashchange", () => {
+        const h = (location.hash || "").replace("#", "").toLowerCase();
+        showTab(h || (projectsOnly ? "projects" : "locations"));
+      });
+    }, { pageId: (typeof canAccessPage === "function" && canAccessPage("warehouses")) ? "warehouses" : "projects" }));
+  </script>
+</body>
+</html>
