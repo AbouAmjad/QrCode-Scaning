@@ -6,12 +6,12 @@
   <title>AbouAmjad Store System | Roles & Permissions</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-  <link rel="stylesheet" href="app.css?v=rolesave1">
+  <link rel="stylesheet" href="app.css?v=rolesfix2">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#0f766e">
   <script src="config.js?v=mcrole1"></script>
   <script src="i18n.js?v=mcrole1"></script>
-  <script src="ui.js?v=rolesave1"></script>
+  <script src="ui.js?v=rolesfix2"></script>
   <style>
     .rp-layout {
       display: grid;
@@ -216,6 +216,7 @@
             <div class="d-flex gap-2 flex-wrap">
               <button type="button" class="tc-btn" id="btnSelectVisible"><i class="bi bi-check2-square"></i> Select shown</button>
               <button type="button" class="tc-btn" id="btnClearVisible"><i class="bi bi-square"></i> Clear shown</button>
+              <button type="button" class="tc-btn" id="btnResetDefaults"><i class="bi bi-arrow-counterclockwise"></i> Defaults</button>
               <button type="button" class="tc-btn" id="btnReload"><i class="bi bi-arrow-clockwise"></i></button>
               <button type="button" class="tc-btn tc-btn-primary" id="btnSave"><i class="bi bi-check2"></i> Save</button>
             </div>
@@ -244,9 +245,11 @@
   <script>
     let catalog = [];
     let roleMaps = {};
+    let roleDefaults = {};
     let roleMeta = {};
     let editableRoles = ["employee", "logistics", "engineer", "qc"];
     let expandedModules = new Set();
+    let cardsBuilt = false;
 
     document.addEventListener("DOMContentLoaded", () => TCUI.bootPage(() => {
       TCUI.mountHeader("app-header", {
@@ -257,12 +260,28 @@
       });
       document.getElementById("btnSave").onclick = saveRole;
       document.getElementById("btnReload").onclick = load;
-      document.getElementById("btnSelectVisible").onclick = () => toggleVisible(true);
-      document.getElementById("btnClearVisible").onclick = () => toggleVisible(false);
-      document.getElementById("btnExpandAll").onclick = () => { expandedModules = new Set(groupedModules().map((g) => g.module)); render(); };
-      document.getElementById("btnCollapseAll").onclick = () => { expandedModules = new Set(); render(); };
-      document.getElementById("roleSelect").onchange = () => { renderCards(); render(); };
-      document.getElementById("permSearch").addEventListener("input", render);
+      document.getElementById("btnResetDefaults").onclick = resetToDefaults;
+      document.getElementById("btnSelectVisible").onclick = () => toggleShown(true);
+      document.getElementById("btnClearVisible").onclick = () => toggleShown(false);
+      document.getElementById("btnExpandAll").onclick = () => {
+        flushUiToMap();
+        expandedModules = new Set(allModuleNames());
+        render();
+      };
+      document.getElementById("btnCollapseAll").onclick = () => {
+        flushUiToMap();
+        expandedModules = new Set();
+        render();
+      };
+      document.getElementById("roleSelect").onchange = () => {
+        flushUiToMap();
+        highlightActiveCard();
+        render();
+      };
+      document.getElementById("permSearch").addEventListener("input", () => {
+        flushUiToMap();
+        render();
+      });
       load();
     }, { pageId: "roles" }));
 
@@ -270,11 +289,15 @@
 
     function currentRole() {
       const sel = document.getElementById("roleSelect");
-      return sel.value || editableRoles[0] || "";
+      return (sel && sel.value) || editableRoles[0] || "";
     }
 
     function selectedSet() {
       return new Set(roleMaps[currentRole()] || []);
+    }
+
+    function allModuleNames() {
+      return [...new Set(catalog.map((p) => p.module || "Other"))];
     }
 
     function groupedModules() {
@@ -295,12 +318,46 @@
         .sort((a, b) => a.module.localeCompare(b.module));
     }
 
-    function renderCards() {
-      const host = document.getElementById("roleCards");
-      const sel = document.getElementById("roleSelect");
-      const preferred = sel.value || editableRoles[0];
+    /** Pull checkbox state into roleMaps without rebuilding the page. */
+    function flushUiToMap() {
+      const role = currentRole();
+      if (!role) return;
+      const prev = new Set(roleMaps[role] || []);
+      const boxes = document.querySelectorAll("#permModules input[data-code]");
+      // If the permission grid isn't mounted yet, keep memory as-is.
+      if (!boxes.length) return;
+      for (const el of boxes) {
+        const code = el.getAttribute("data-code");
+        if (!code) continue;
+        if (el.checked) prev.add(code);
+        else prev.delete(code);
+      }
+      roleMaps[role] = [...prev];
+      updateCountsUi();
+    }
+
+    function updateCountsUi() {
+      const role = currentRole();
+      const count = (roleMaps[role] || []).length;
+      const kpi = document.getElementById("kpiSelected");
+      if (kpi) kpi.textContent = String(count);
+      document.querySelectorAll(".rp-role-card[data-role]").forEach((btn) => {
+        const r = btn.getAttribute("data-role");
+        const n = (roleMaps[r] || []).length;
+        const el = btn.querySelector(".rp-role-count");
+        if (el) el.innerHTML = `<i class="bi bi-key"></i> ${n} permission${n === 1 ? "" : "s"}`;
+      });
+      document.querySelectorAll(".rp-module").forEach((section) => {
+        const codes = [...section.querySelectorAll("input[data-code]")].map((i) => i.getAttribute("data-code"));
+        const checked = codes.filter((c) => (roleMaps[role] || []).includes(c)).length;
+        const meta = section.querySelector(".rp-module-meta");
+        if (meta) meta.textContent = `${checked}/${codes.length} selected`;
+      });
+    }
+
+    function orderedEditableRoles() {
       const optionOrder = Array.isArray(AppConfig?.ROLE_OPTIONS) ? AppConfig.ROLE_OPTIONS.map((x) => x.value) : [];
-      const orderedRoles = [...editableRoles].sort((a, b) => {
+      return [...editableRoles].sort((a, b) => {
         const ia = optionOrder.indexOf(a);
         const ib = optionOrder.indexOf(b);
         if (ia >= 0 && ib >= 0) return ia - ib;
@@ -308,10 +365,22 @@
         if (ib >= 0) return 1;
         return a.localeCompare(b);
       });
+    }
+
+    function buildRolePicker() {
+      const host = document.getElementById("roleCards");
+      const sel = document.getElementById("roleSelect");
+      const preferred = sel.value || editableRoles[0];
+      const orderedRoles = orderedEditableRoles();
+      // Rebuild <select> options without firing change loops.
+      const prevOnChange = sel.onchange;
+      sel.onchange = null;
       sel.innerHTML = orderedRoles.map((r) =>
         `<option value="${r}" ${r === preferred ? "selected" : ""}>${escHtml(t("role_" + r))}</option>`
       ).join("");
       if (!orderedRoles.includes(sel.value)) sel.value = orderedRoles[0] || "";
+      sel.onchange = prevOnChange;
+
       host.innerHTML = orderedRoles.map((r) => {
         const meta = roleMeta[r] || {};
         const count = (roleMaps[r] || []).length;
@@ -325,10 +394,19 @@
       }).join("");
       host.querySelectorAll(".rp-role-card").forEach((btn) => {
         btn.onclick = () => {
+          flushUiToMap();
           sel.value = btn.getAttribute("data-role");
-          renderCards();
+          highlightActiveCard();
           render();
         };
+      });
+      cardsBuilt = true;
+    }
+
+    function highlightActiveCard() {
+      const role = currentRole();
+      document.querySelectorAll(".rp-role-card").forEach((btn) => {
+        btn.classList.toggle("active", btn.getAttribute("data-role") === role);
       });
     }
 
@@ -336,13 +414,14 @@
       try {
         const data = await apiGet({ action: "listPermissions" });
         catalog = (data && data.items) || [];
-        roleMaps = (data && data.roles) || {};
+        roleMaps = { ...((data && data.roles) || {}) };
+        roleDefaults = { ...((data && data.roleDefaults) || {}) };
         roleMeta = (data && data.roleMeta) || {};
         if (Array.isArray(data.editableRoles) && data.editableRoles.length) {
           editableRoles = data.editableRoles.filter((r) => r !== "admin" && r !== "storekeeper");
         }
-        expandedModules = new Set(groupedModules().slice(0, 4).map((g) => g.module));
-        renderCards();
+        expandedModules = new Set(allModuleNames());
+        buildRolePicker();
         render();
       } catch (e) {
         document.getElementById("permModules").innerHTML =
@@ -360,8 +439,9 @@
       document.getElementById("kpiModules").textContent = String(groups.length);
       document.getElementById("kpiSelected").textContent = String(selected.size);
       document.getElementById("kpiTotal").textContent = String(catalog.length);
+      const visibleCount = groups.reduce((n, g) => n + g.items.length, 0);
       document.getElementById("filterMeta").textContent = groups.length
-        ? `${groups.reduce((n, g) => n + g.items.length, 0)} visible permission${groups.reduce((n, g) => n + g.items.length, 0) === 1 ? "" : "s"}`
+        ? `${visibleCount} visible permission${visibleCount === 1 ? "" : "s"}`
         : "No matching permissions";
 
       const host = document.getElementById("permModules");
@@ -409,14 +489,19 @@
       }).join("");
 
       bindPermissionUi();
+      highlightActiveCard();
+      updateCountsUi();
     }
 
     function bindPermissionUi() {
-      document.querySelectorAll("input[data-code]").forEach((el) => {
-        el.onchange = syncSelectionsFromUi;
+      document.querySelectorAll("#permModules input[data-code]").forEach((el) => {
+        el.onchange = () => {
+          flushUiToMap();
+        };
       });
       document.querySelectorAll("[data-module-toggle]").forEach((btn) => {
         btn.onclick = () => {
+          flushUiToMap();
           const m = btn.getAttribute("data-module-toggle");
           if (expandedModules.has(m)) expandedModules.delete(m);
           else expandedModules.add(m);
@@ -431,50 +516,86 @@
       });
     }
 
-    function syncSelectionsFromUi() {
-      const role = currentRole();
-      const prev = new Set(roleMaps[role] || []);
-      const visible = [...document.querySelectorAll("#permModules input[data-code]")];
-      for (const el of visible) {
-        const code = el.getAttribute("data-code");
-        if (!code) continue;
-        if (el.checked) prev.add(code);
-        else prev.delete(code);
-      }
-      roleMaps[role] = [...prev];
-      document.getElementById("kpiSelected").textContent = String(roleMaps[role].length);
-      renderCards();
-      for (const el of document.querySelectorAll(".rp-module")) {
-        const codes = [...el.querySelectorAll("input[data-code]")].map((i) => i.getAttribute("data-code"));
-        const checked = codes.filter((c) => roleMaps[role].includes(c)).length;
-        const meta = el.querySelector(".rp-module-meta");
-        if (meta) meta.textContent = `${checked}/${codes.length} selected`;
-      }
-    }
-
     function setModuleState(moduleName, on) {
+      const role = currentRole();
+      const set = new Set(roleMaps[role] || []);
       const section = [...document.querySelectorAll(".rp-module")].find((el) => el.getAttribute("data-module") === moduleName);
       if (!section) return;
-      section.querySelectorAll("input[data-code]").forEach((el) => { el.checked = on; });
-      syncSelectionsFromUi();
+      section.querySelectorAll("input[data-code]").forEach((el) => {
+        el.checked = on;
+        const code = el.getAttribute("data-code");
+        if (!code) return;
+        if (on) set.add(code);
+        else set.delete(code);
+      });
+      roleMaps[role] = [...set];
+      updateCountsUi();
     }
 
-    function toggleVisible(on) {
-      document.querySelectorAll("#permModules input[data-code]").forEach((el) => { el.checked = on; });
-      syncSelectionsFromUi();
+    /** Only touch expanded (actually shown) checkboxes — never wipe collapsed modules. */
+    function shownCheckboxes() {
+      return [...document.querySelectorAll(".rp-module")].flatMap((section) => {
+        const body = section.querySelector(".rp-module-body");
+        if (!body || body.style.display === "none") return [];
+        return [...body.querySelectorAll("input[data-code]")];
+      });
+    }
+
+    function toggleShown(on) {
+      const role = currentRole();
+      const boxes = shownCheckboxes();
+      if (!boxes.length) {
+        TCUI.toast("Expand a module first", "err");
+        return;
+      }
+      if (!on && boxes.length >= 8) {
+        const ok = confirm(`Clear ${boxes.length} shown permissions for ${t("role_" + role) || role}?`);
+        if (!ok) return;
+      }
+      const set = new Set(roleMaps[role] || []);
+      for (const el of boxes) {
+        el.checked = on;
+        const code = el.getAttribute("data-code");
+        if (!code) continue;
+        if (on) set.add(code);
+        else set.delete(code);
+      }
+      roleMaps[role] = [...set];
+      updateCountsUi();
     }
 
     async function saveRole() {
+      flushUiToMap();
       const role = currentRole();
-      syncSelectionsFromUi();
+      if (!role) return TCUI.toast("No role selected", "err");
       const codes = [...(roleMaps[role] || [])];
+      if (!codes.length) {
+        const ok = confirm(`Save ZERO permissions for ${t("role_" + role) || role}? Users with this role will lose menu access.`);
+        if (!ok) return;
+      }
       try {
         const res = await apiPostPlain({ action: "setRolePermissions", role, permissions: codes });
         if (!res || res.success === false) throw new Error((res && res.error) || "Failed");
         roleMaps[role] = Array.isArray(res.permissions) ? res.permissions : codes;
-        renderCards();
+        updateCountsUi();
+        TCUI.toast((t("permissionsSaved") || "Saved") + " · " + (t("role_" + role) || role) + " · " + roleMaps[role].length, "ok");
+      } catch (e) {
+        TCUI.toast(e.message || "Error", "err");
+      }
+    }
+
+    async function resetToDefaults() {
+      const role = currentRole();
+      if (!role) return;
+      const defaults = roleDefaults[role] || [];
+      const ok = confirm(`Reset ${t("role_" + role) || role} to ${defaults.length} default permissions?`);
+      if (!ok) return;
+      try {
+        const res = await apiPostPlain({ action: "resetRolePermissions", role });
+        if (!res || res.success === false) throw new Error((res && res.error) || "Failed");
+        roleMaps[role] = Array.isArray(res.permissions) ? res.permissions : [...defaults];
         render();
-        TCUI.toast((t("permissionsSaved") || "Saved") + " · " + t("role_" + role), "ok");
+        TCUI.toast("Defaults restored · " + (t("role_" + role) || role) + " · " + roleMaps[role].length, "ok");
       } catch (e) {
         TCUI.toast(e.message || "Error", "err");
       }

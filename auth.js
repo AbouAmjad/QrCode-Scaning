@@ -222,9 +222,15 @@ async function updateUser(ctx) {
   if (!target) return { success: false, error: "NOT_FOUND" };
 
   const requestedRole = params.newRole !== undefined ? params.newRole : params.role;
-  const nextRole = requestedRole !== undefined && requestedRole !== ""
-    ? permissions.normalizeRoleLocal(requestedRole)
-    : undefined;
+  let nextRole;
+  if (requestedRole !== undefined && String(requestedRole).trim() !== "") {
+    nextRole = permissions.normalizeRoleStrict(requestedRole);
+    if (!nextRole || !permissions.ALL_ROLES.includes(nextRole)) {
+      return { success: false, error: "UNKNOWN_ROLE" };
+    }
+  } else {
+    nextRole = undefined;
+  }
   if (nextRole !== undefined) {
     const adminLock = guardAdminRoleAssignment(target.username, nextRole);
     if (adminLock) return adminLock;
@@ -362,6 +368,7 @@ async function listPermissions(ctx) {
   return {
     items: permissions.PERMISSIONS,
     roles,
+    roleDefaults: permissions.DEFAULT_ROLE_PERMISSIONS,
     roleMeta: permissions.ROLE_META,
     editableRoles: permissions.EDITABLE_ROLES,
   };
@@ -370,7 +377,8 @@ async function listPermissions(ctx) {
 async function setRolePermissions(ctx) {
   ctx.require("roles.manage");
   const { params, query } = ctx;
-  const role = permissions.normalizeRoleLocal(params.role);
+  const role = permissions.normalizeRoleStrict(params.role);
+  if (!role) return { success: false, error: "UNKNOWN_ROLE" };
   if (role === "admin") return { success: false, error: "ADMIN_ROLE_LOCKED" };
   if (!permissions.EDITABLE_ROLES.includes(role)) return { success: false, error: "UNKNOWN_ROLE" };
 
@@ -387,6 +395,32 @@ async function setRolePermissions(ctx) {
   }
   await ctx.audit({
     action: "ROLE_PERMISSIONS_SET",
+    before: JSON.stringify(before),
+    after: JSON.stringify(codes),
+    detail: role,
+  });
+  return { success: true, role, permissions: codes };
+}
+
+async function resetRolePermissions(ctx) {
+  ctx.require("roles.manage");
+  const { params, query } = ctx;
+  const role = permissions.normalizeRoleStrict(params.role);
+  if (!role) return { success: false, error: "UNKNOWN_ROLE" };
+  if (role === "admin") return { success: false, error: "ADMIN_ROLE_LOCKED" };
+  if (!permissions.EDITABLE_ROLES.includes(role)) return { success: false, error: "UNKNOWN_ROLE" };
+
+  const codes = [...(permissions.DEFAULT_ROLE_PERMISSIONS[role] || [])];
+  const before = await permissions.getPermissionsForRole(query, role);
+  await query(`DELETE FROM role_permissions WHERE role = $1`, [role]);
+  for (const code of codes) {
+    await query(
+      `INSERT INTO role_permissions (role, permission_code) VALUES ($1,$2) ON CONFLICT DO NOTHING`,
+      [role, code]
+    );
+  }
+  await ctx.audit({
+    action: "ROLE_PERMISSIONS_RESET",
     before: JSON.stringify(before),
     after: JSON.stringify(codes),
     detail: role,
@@ -487,6 +521,7 @@ module.exports = {
   rejectUser,
   listPermissions,
   setRolePermissions,
+  resetRolePermissions,
   getMyPermissions,
   getMyProfile,
   updateMyProfile,

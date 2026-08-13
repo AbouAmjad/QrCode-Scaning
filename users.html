@@ -6,12 +6,12 @@
   <title>AbouAmjad Store System | Users</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-  <link rel="stylesheet" href="app.css?v=rolesave1">
+  <link rel="stylesheet" href="app.css?v=rolesfix2">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#0f766e">
   <script src="config.js?v=mcrole1"></script>
   <script src="i18n.js?v=mcrole1"></script>
-  <script src="ui.js?v=rolesave1"></script>
+  <script src="ui.js?v=rolesfix2"></script>
   <style>
     .users-pending-card { margin-bottom: 1rem; }
     .users-pending-badge {
@@ -526,7 +526,7 @@
         TCUI.toast(deleteUserErrorMsg("CANNOT_DEMOTE_SOLE_ADMIN"), "err");
         return;
       }
-      const sel = document.querySelector(`[data-role-user="${username}"]`);
+      const sel = document.querySelector(`[data-role-user="${CSS.escape(username)}"]`);
       const role = sel ? sel.value : "employee";
       if (role === "admin") {
         TCUI.toast(deleteUserErrorMsg("ONLY_BOSS_CAN_BE_ADMIN"), "err");
