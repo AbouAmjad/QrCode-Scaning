@@ -11,7 +11,7 @@
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#0f766e">
   <script src="config.js?v=navperm2"></script>
-  <script src="i18n.js?v=formphoto1"></script>
+  <script src="i18n.js?v=formphoto2"></script>
   <script src="ui.js?v=catux1"></script>
   <style>
     /* ── toolbar ── */
@@ -306,13 +306,13 @@
     .ed-photo span { font-size: 8.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
 
     .ed-thumb {
-      width: 44px; height: 44px; object-fit: cover;
+      width: 64px; height: 64px; object-fit: cover;
       border: 1px solid #d5dbd6; background: #fff;
       display: inline-block; vertical-align: middle;
     }
     .ed-thumb.empty {
       display: inline-grid; place-items: center;
-      color: #9ca3af; font-size: 16px; width: 44px; height: 44px;
+      color: #9ca3af; font-size: 18px; width: 64px; height: 64px;
     }
 
     .ed-lines-wrap { border: 1px solid #9ca3af; border-top: none; background: #fff; }
@@ -332,7 +332,8 @@
       width: 28px; text-align: center; font-weight: 800; color: #6b7280;
       background: #f9fafb; font-size: 10px; padding: 5px 2px;
     }
-    .ed-lines td.photo { text-align: center; padding: 3px 2px; width: 52px; background: #f6faf6; }
+    .ed-lines td.photo { text-align: center; padding: 4px 3px; width: 76px; background: #f6faf6; }
+    .ed-lines td.notes input { font-weight: 500; color: #374151; }
     .ed-lines td.code { background: #f6faf6; width: 100px; }
     .ed-lines td input {
       width: 100%; border: 0; outline: none; background: transparent;
@@ -612,8 +613,9 @@
                 <tr>
                   <th>#</th>
                   <th style="width:100px">Code</th>
-                  <th style="width:52px">Photo</th>
+                  <th style="width:76px">Photo</th>
                   <th class="left">Description</th>
+                  <th class="left">Notes</th>
                   <th style="width:56px">Qty</th>
                   <th class="no-print" style="width:30px">✕</th>
                 </tr>
@@ -1067,11 +1069,13 @@
         '<td class="code"><input type="text" class="in-code" placeholder="I17-A" autocomplete="off"></td>' +
         '<td class="photo"><div class="ed-thumb empty" title="No photo"><i class="bi bi-image"></i></div></td>' +
         '<td class="desc"><input type="text" class="in-desc" placeholder="Auto / edit" autocomplete="off"></td>' +
+        '<td class="notes"><input type="text" class="in-notes" placeholder="Remarks" autocomplete="off"></td>' +
         '<td class="qty"><input type="number" class="in-qty" min="0" step="any" inputmode="decimal" placeholder="1"></td>' +
         '<td class="del no-print"><button type="button" class="btn-del" title="Delete">✕</button></td>';
       if (data) {
         const c = tr.querySelector(".in-code"); if (c) c.value = data.code || "";
         const d = tr.querySelector(".in-desc"); if (d) d.value = data.description || "";
+        const note = tr.querySelector(".in-notes"); if (note && data.notes) note.value = data.notes;
         const q = tr.querySelector(".in-qty"); if (q && data.qty != null) q.value = data.qty;
         if (data.imageUrl) setRowPhoto(tr, data.imageUrl);
       }

@@ -11,7 +11,7 @@
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#185020">
   <script src="config.js?v=navperm2"></script>
-  <script src="i18n.js?v=formphoto1"></script>
+  <script src="i18n.js?v=formphoto2"></script>
   <script src="ui.js?v=catux1"></script>
   <style>
     /* Official AICS document layout — print-first */
@@ -300,20 +300,22 @@
     }
     .vl-lines td input:focus { background: var(--green-tint); }
     .vl-lines .col-code { width: 110px; }
-    .vl-lines .col-photo { width: 48px; }
+    .vl-lines .col-photo { width: 76px; }
     .vl-lines td.photo {
-      text-align: center; padding: 3px 2px; background: #f6faf6 !important;
-      width: 48px;
+      text-align: center; padding: 4px 3px; background: #f6faf6 !important;
+      width: 76px;
     }
     .vl-thumb {
-      width: 38px; height: 38px; object-fit: cover;
+      width: 64px; height: 64px; object-fit: cover;
       border: 1px solid #d5dbd6; background: #fff;
       display: inline-block; vertical-align: middle;
     }
     .vl-thumb.empty {
       display: inline-grid; place-items: center;
-      color: #9ca3af; font-size: 15px; width: 38px; height: 38px;
+      color: #9ca3af; font-size: 18px; width: 64px; height: 64px;
     }
+    .vl-lines .col-notes { width: 22%; }
+    .vl-lines td.notes input { font-weight: 500; color: #374151; }
     .vl-lines td.code { background: #f6faf6 !important; }
     .vl-lines td.code input {
       font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
@@ -572,7 +574,7 @@
         color: #14532d !important; -webkit-text-fill-color: #14532d !important;
         font-size: 12px !important;
       }
-      .vl-thumb { width: 40px !important; height: 40px !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+      .vl-thumb { width: 62px !important; height: 62px !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
       .vl-sign input { border-top: 1px dashed #9ca3af !important; }
       .vl-lines .col-del, .vl-lines td.del, .vl-lines .btn-del { display: none !important; }
       .vl-banner, .vl-header .drtitle, .vl-sec .sec-num, .vl-sec .sec-lbl,
@@ -732,6 +734,7 @@
                 <th class="col-code">Product code</th>
                 <th class="col-photo">Photo</th>
                 <th class="left">Description</th>
+                <th class="col-notes left">Notes</th>
                 <th class="col-qty">Qty</th>
                 <th class="col-days">Days out</th>
                 <th class="col-cost">Est. cost</th>
@@ -988,6 +991,7 @@
         '<td class="code"><input type="text" class="in-code" placeholder="I17-A" autocomplete="off"></td>'+
         '<td class="photo"><div class="vl-thumb empty" title="No photo"><i class="bi bi-image"></i></div></td>'+
         '<td class="desc"><input type="text" class="in-desc" placeholder="Auto / edit" autocomplete="off"></td>'+
+        '<td class="notes"><input type="text" class="in-notes" placeholder="Remarks" autocomplete="off"></td>'+
         '<td class="qty"><input type="number" class="in-qty" min="0" step="1" inputmode="numeric" placeholder="1"></td>'+
         '<td class="days"><input type="number" class="in-days" min="0" step="1" inputmode="numeric" placeholder="0"></td>'+
         '<td class="cost"><input type="number" class="in-cost" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></td>'+
@@ -995,6 +999,7 @@
       if(data){
         const c=tr.querySelector(".in-code"); if(c)c.value=data.code||"";
         const d=tr.querySelector(".in-desc"); if(d)d.value=data.description||"";
+        const note=tr.querySelector(".in-notes"); if(note && data.notes) note.value=data.notes;
         const q=tr.querySelector(".in-qty"); if(q)q.value=data.qty!=null?data.qty:1;
         const days=tr.querySelector(".in-days"); if(days)days.value=data.daysOut!=null?data.daysOut:"";
         const cost=tr.querySelector(".in-cost"); if(cost && data.cost!=null) cost.value=data.cost;
@@ -1147,7 +1152,8 @@
           const desc=String(tr.querySelector(".in-desc")?.value||"").trim();
           const qty=String(tr.querySelector(".in-qty")?.value||"").trim();
           const cost=String(tr.querySelector(".in-cost")?.value||"").trim();
-          return !!(code||desc||qty||cost);
+          const notes=String(tr.querySelector(".in-notes")?.value||"").trim();
+          return !!(code||desc||qty||cost||notes);
         });
         const keep=filled.length?filled:rows.slice(0,1);
         rows.forEach((tr)=>{ if(!keep.includes(tr)) tr.classList.add("print-hide-empty"); });
