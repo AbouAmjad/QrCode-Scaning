@@ -470,7 +470,8 @@ const THEME_PRESETS = [
   { id: "forest", mode: "dark", labelKey: "themeForest", swatch: "#34d399", meta: "#04140e", color: "#04140e" },
   { id: "graphite", mode: "dark", labelKey: "themeGraphite", swatch: "#cbd5e1", meta: "#0a0a0b", color: "#0a0a0b" },
   { id: "sky", mode: "light", labelKey: "themeSky", swatch: "#0284c7", meta: "#eef6fb", color: "#0284c7" },
-  { id: "sand", mode: "light", labelKey: "themeSand", swatch: "#57534e", meta: "#f3f1ec", color: "#57534e" }
+  { id: "sand", mode: "light", labelKey: "themeSand", swatch: "#57534e", meta: "#f3f1ec", color: "#57534e" },
+  { id: "crimson", mode: "dark", labelKey: "themeCrimson", swatch: "#f43f5e", meta: "#14080c", color: "#14080c" }
 ];
 
 const THEME_BY_ID = THEME_PRESETS.reduce((acc, t) => {
@@ -486,7 +487,8 @@ function normalizeThemeId(id) {
   const raw = String(id || "").trim().toLowerCase();
   if (THEME_BY_ID[raw]) return raw;
   /* legacy values */
-  if (raw === "black" || raw === "red") return "dark";
+  if (raw === "black") return "dark";
+  if (raw === "red") return "crimson";
   return "dark";
 }
 
