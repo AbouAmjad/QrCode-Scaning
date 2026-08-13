@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>AbouAmjad Store System | Settings</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="app.css?v=themes1">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f766e">
+  <script src="config.js?v=themes1"></script>
+  <script src="i18n.js?v=themes1"></script>
+  <script src="ui.js?v=live"></script>
+</head>
+<body class="tc-page">
+  <div class="tc-wrap narrow">
+    <div class="tc-shell">
+      <div id="app-header"></div>
+
+      <div class="tc-card mb-3">
+        <span class="tc-section-badge"><i class="bi bi-palette"></i> <span data-i18n="settingsAppearance">Appearance</span></span>
+        <p class="tc-text-muted small mt-2 mb-0" data-i18n="settingsThemeHint">Your theme is saved on this device only — each user can pick their own.</p>
+        <div class="st-theme" role="group" aria-label="Theme" id="themeGrid"></div>
+      </div>
+
+      <div class="tc-card mb-3">
+        <span class="tc-section-badge"><i class="bi bi-key"></i> <span data-i18n="profilePassword">Change password</span></span>
+        <div class="tc-field mt-3">
+          <label data-i18n="profileCurrentPass">Current password</label>
+          <input type="password" id="curPass" class="tc-input w-100" autocomplete="current-password">
+        </div>
+        <div class="tc-field">
+          <label data-i18n="profileNewPass">New password</label>
+          <input type="password" id="newPass" class="tc-input w-100" autocomplete="new-password">
+        </div>
+        <div class="tc-field">
+          <label data-i18n="regConfirmPass">Confirm password</label>
+          <input type="password" id="newPass2" class="tc-input w-100" autocomplete="new-password">
+        </div>
+        <p class="tc-text-muted small" data-i18n="profilePassHint">Minimum 8 characters. Other sessions will be signed out.</p>
+        <button type="button" class="tc-btn tc-btn-primary" id="btnChangePass">
+          <i class="bi bi-shield-lock"></i> <span data-i18n="profileChangePass">Update password</span>
+        </button>
+      </div>
+
+      <!-- Terminal prefs: only keys that index.html actually reads -->
+      <div class="tc-card mb-3" id="opsTerminal" hidden>
+        <span class="tc-section-badge"><i class="bi bi-sliders"></i> <span data-i18n="settingsTerminal">Terminal</span></span>
+        <div class="tc-field mt-3">
+          <label data-i18n="autoDirectionMode">Auto direction mode</label>
+          <select id="autoDirectionMode" class="tc-select w-100">
+            <option value="manual" data-i18n="dirManual">Manual</option>
+            <option value="last" data-i18n="dirRemember">Remember last IN/OUT</option>
+          </select>
+        </div>
+        <div class="form-check mb-2">
+          <input class="form-check-input" type="checkbox" id="soundEnabled">
+          <label class="form-check-label" for="soundEnabled" data-i18n="scanSounds">Scan sounds</label>
+        </div>
+        <div class="form-check mb-2">
+          <input class="form-check-input" type="checkbox" id="hotkeysEnabled">
+          <label class="form-check-label" for="hotkeysEnabled" data-i18n="hotkeys">Hotkeys</label>
+        </div>
+        <div class="form-check mb-3">
+          <input class="form-check-input" type="checkbox" id="autoHideWarning">
+          <label class="form-check-label" for="autoHideWarning" data-i18n="autoHideWarning">Auto-hide scan warnings</label>
+        </div>
+      </div>
+
+      <!-- Ops: only overdueDays is consumed by outstanding/worker pages -->
+      <div class="tc-card mb-3" id="opsAlerts" hidden>
+        <span class="tc-section-badge"><i class="bi bi-bell"></i> <span data-i18n="settingsAlerts">Alerts &amp; ops</span></span>
+        <div class="tc-field mt-3 mb-0">
+          <label data-i18n="overdueDays">Overdue after (days)</label>
+          <input id="overdueDays" type="number" min="1" max="90" class="tc-input w-100" value="1">
+          <p class="tc-text-muted small mt-1 mb-0" data-i18n="overdueDaysHint">Used for notifications and outstanding hints</p>
+        </div>
+      </div>
+
+      <div class="tc-card mb-3" id="opsSystem" hidden>
+        <span class="tc-section-badge"><i class="bi bi-link-45deg"></i> <span data-i18n="settingsSystem">System</span></span>
+        <p class="mt-3 mb-1"><strong data-i18n="role">Role</strong>: <span id="roleInfo"></span></p>
+        <p class="mb-0 tc-text-muted small" data-i18n="settingsLinksHint">Users · Roles · Audit</p>
+        <div class="ops-admin-links d-flex flex-wrap gap-2 mt-3">
+          <a class="tc-btn tc-btn-primary" href="users.html"><i class="bi bi-people"></i> <span data-i18n="users">Users</span></a>
+          <a class="tc-btn tc-btn-primary" href="roles.html"><i class="bi bi-shield-lock"></i> <span data-i18n="roles">Roles</span></a>
+          <a class="tc-btn tc-btn-primary" href="audit.html"><i class="bi bi-journal-text"></i> <span data-i18n="audit">Audit</span></a>
+        </div>
+      </div>
+
+      <button type="button" class="tc-btn tc-btn-primary" id="btnSave" hidden>
+        <i class="bi bi-check2"></i> <span data-i18n="saveSettings">Save settings</span>
+      </button>
+    </div>
+  </div>
+  <script>
+    function themeDesc(id) {
+      const map = {
+        light: "Bright workspace",
+        dark: "Low-glare night",
+        ocean: "Deep teal waters",
+        midnight: "Cool navy night",
+        forest: "Green operations",
+        graphite: "Neutral charcoal",
+        sky: "Cool daylight blue",
+        sand: "Warm stone light"
+      };
+      return map[id] || "";
+    }
+
+    function renderThemeGrid() {
+      const grid = document.getElementById("themeGrid");
+      if (!grid || typeof listThemes !== "function") return;
+      const current = typeof getTheme === "function" ? getTheme() : "dark";
+      grid.innerHTML = listThemes().map((meta) => {
+        const label = (typeof t === "function" && meta.labelKey) ? t(meta.labelKey) : meta.id;
+        const sw = meta.swatch || "var(--tc-accent)";
+        const bg = meta.meta || "var(--tc-bg)";
+        return `<button type="button" class="st-theme-btn ${meta.id === current ? "active" : ""}" data-theme="${meta.id}">
+          <span class="st-swatch" style="--swatch:${sw};--swatch-bg:${bg}"></span>
+          <strong>${label}</strong>
+          <small>${themeDesc(meta.id)}</small>
+        </button>`;
+      }).join("");
+      grid.querySelectorAll(".st-theme-btn").forEach((btn) => {
+        btn.onclick = () => {
+          if (typeof setThemeId === "function") setThemeId(btn.getAttribute("data-theme"));
+          else {
+            localStorage.setItem(AppConfig.THEME_KEY, btn.getAttribute("data-theme"));
+            if (typeof applyTheme === "function") applyTheme();
+          }
+          grid.querySelectorAll(".st-theme-btn").forEach((b) => {
+            b.classList.toggle("active", b.getAttribute("data-theme") === getTheme());
+          });
+        };
+      });
+    }
+
+    async function changePassword() {
+      const cur = document.getElementById("curPass").value;
+      const neu = document.getElementById("newPass").value;
+      const neu2 = document.getElementById("newPass2").value;
+      if (!cur || !neu) return TCUI.toast(t("profilePassNeed"), "err");
+      if (neu.length < 8) return TCUI.toast(t("PASSWORD_TOO_SHORT") || "Password must be at least 8 characters", "err");
+      if (neu !== neu2) return TCUI.toast(t("regPassMismatch"), "err");
+
+      const btn = document.getElementById("btnChangePass");
+      btn.disabled = true;
+      try {
+        const res = await apiGet({
+          action: "changeMyPassword",
+          currentPassword: cur,
+          newPassword: neu
+        });
+        if (!res || res.success === false || res.error) {
+          const map = {
+            CURRENT_PASSWORD_WRONG: t("profilePassWrong"),
+            WRONG_PASSWORD: t("profilePassWrong"),
+            PASSWORD_TOO_SHORT: t("PASSWORD_TOO_SHORT") || "Password must be at least 8 characters",
+            PASSWORD_UNCHANGED: t("profilePassSame")
+          };
+          TCUI.toast(map[res && res.error] || (res && res.error) || t("error"), "err");
+          return;
+        }
+        if (res.token) setSession({ token: res.token });
+        document.getElementById("curPass").value = "";
+        document.getElementById("newPass").value = "";
+        document.getElementById("newPass2").value = "";
+        TCUI.toast(t("profilePassChanged"), "ok");
+      } catch (e) {
+        TCUI.toast(e.message || t("error"), "err");
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => TCUI.bootPage(() => {
+      TCUI.mountHeader("app-header", {
+        active: "settings",
+        titleKey: "settings",
+        subtitleKey: "settingsSub",
+        icon: "bi-gear"
+      });
+
+      const canManage = typeof can === "function" && (
+        can("settings.manage") || can("users.manage") || can("roles.manage") || getRole() === "admin"
+      );
+
+      if (typeof applyTheme === "function") applyTheme();
+      renderThemeGrid();
+      document.getElementById("btnChangePass").onclick = changePassword;
+
+      if (canManage) {
+        document.getElementById("opsTerminal").hidden = false;
+        document.getElementById("opsAlerts").hidden = false;
+        document.getElementById("opsSystem").hidden = false;
+        document.getElementById("btnSave").hidden = false;
+
+        const s = getSettings();
+        document.getElementById("autoDirectionMode").value = s.autoDirectionMode || "manual";
+        document.getElementById("soundEnabled").checked = !!s.soundEnabled;
+        document.getElementById("hotkeysEnabled").checked = !!s.hotkeysEnabled;
+        document.getElementById("autoHideWarning").checked = !!s.autoHideWarning;
+        document.getElementById("overdueDays").value = s.overdueDays || AppConfig.OVERDUE_DAYS || 1;
+        document.getElementById("roleInfo").textContent =
+          (typeof TCI18N !== "undefined" ? TCI18N.roleLabelI18n(getRole()) : getRole()) +
+          " · " + getPermissions().length + " permissions";
+
+        document.getElementById("btnSave").onclick = () => {
+          // Only persist keys that the app actually reads. Leave unused keys untouched in storage.
+          setSettings({
+            autoDirectionMode: document.getElementById("autoDirectionMode").value,
+            soundEnabled: document.getElementById("soundEnabled").checked,
+            hotkeysEnabled: document.getElementById("hotkeysEnabled").checked,
+            autoHideWarning: document.getElementById("autoHideWarning").checked,
+            overdueDays: Math.max(1, Number(document.getElementById("overdueDays").value) || 1)
+          });
+          TCUI.toast(t("settingsSaved"), "ok");
+        };
+      }
+    }, { pageId: "settings" }));
+  </script>
+</body>
+</html>
