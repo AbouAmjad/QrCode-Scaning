@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="app.css?v=navux1">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#0f766e">
-  <script src="config.js?v=navperm2"></script>
+  <script src="config.js?v=keeperfilter1"></script>
   <script src="i18n.js?v=navux1"></script>
   <script src="ui.js?v=navux1"></script>
 
@@ -502,7 +502,7 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-  <script src="export-utils.js?v=keeper2"></script>
+  <script src="export-utils.js?v=keeper3"></script>
   <script>
     let items = [];
     let filterMode = "all";
@@ -521,11 +521,14 @@
     /** Roles that operate warehouse checkout (used for self-scope). Admin is NOT included. */
     const STORE_KEEPER_ROLES = new Set(["employee", "store_manager", "material_controller"]);
     /**
-     * Admin “Store keeper” filter options — only classic Store Keeper (`employee`).
-     * Material Controller / Store Manager are separate roles and must not linger here
-     * after a demotion/reassignment from Store Keeper.
+     * Admin “Store keeper” filter — classic Store Keeper only.
+     * Source of truth: AppConfig.STORE_KEEPER_FILTER_ROLES (must stay employee-only).
      */
-    const FILTER_KEEPER_ROLES = new Set(["employee"]);
+    const FILTER_KEEPER_ROLES = new Set(
+      (typeof AppConfig !== "undefined" && Array.isArray(AppConfig.STORE_KEEPER_FILTER_ROLES) && AppConfig.STORE_KEEPER_FILTER_ROLES.length)
+        ? AppConfig.STORE_KEEPER_FILTER_ROLES.map((r) => String(r).toLowerCase())
+        : [(typeof AppConfig !== "undefined" && AppConfig.STORE_KEEPER_ROLE) || "employee"]
+    );
     const userRoles = Object.create(null);
     /** Server-enforced scope: { mode: "self"|"all", keeper: "" } */
     let listScope = { mode: "all", keeper: "" };
@@ -741,13 +744,13 @@
     }
 
     async function loadKeeperDirectory() {
+      // Always wipe first so a failed/partial reload cannot keep demoted keepers.
+      dbKeepers.clear();
+      Object.keys(userRoles).forEach((k) => { delete userRoles[k]; });
+      Object.keys(keeperLabels).forEach((k) => { delete keeperLabels[k]; });
       try {
         const data = await apiGet({ action: "listUsers" });
         if (!data || data.error) return;
-        // Rebuild from current DB roles every time (role changes must drop former keepers).
-        dbKeepers.clear();
-        Object.keys(userRoles).forEach((k) => { delete userRoles[k]; });
-        Object.keys(keeperLabels).forEach((k) => { delete keeperLabels[k]; });
         (data.items || []).forEach((u) => {
           if (!u || !u.username) return;
           if (u.active === false) return;
@@ -755,27 +758,28 @@
           const username = String(u.username);
           const role = String(u.role || "").trim().toLowerCase();
           userRoles[username] = role;
-          // Filter dropdown: classic Store Keeper only (employee).
+          // Current classic Store Keeper role only — never historical scan.created_by.
           if (!FILTER_KEEPER_ROLES.has(role)) return;
           dbKeepers.add(username);
           keeperLabels[username] = formatKeeperLabel(username, u.fullName);
         });
       } catch (_) {
-        /* listUsers may require users.manage — fall back to scan keepers only */
+        /* No scan-history fallback: empty filter is safer than stale former keepers. */
       }
     }
 
     function refreshFilterOptions() {
       const suppliers = new Set();
       const supervisors = new Set();
-      // Picker shows ONLY real users from users table (store-keeper roles).
-      // Do NOT inject legacy scan.created_by names like abouamjad / amjad.
+      // Picker = current FILTER_KEEPER_ROLES users only. Never merge outstanding lot keepers.
       const keepers = new Set([...dbKeepers]);
       items.forEach((p) => {
         if (p.supplierName) suppliers.add(String(p.supplierName));
         if (p.supervisorName) supervisors.add(String(p.supervisorName));
       });
       ["damage-auto", "system", "auto"].forEach((x) => keepers.delete(x));
+      const el = document.getElementById("filterKeeper");
+      if (el && el.value && !keepers.has(el.value) && !isSelfScoped()) el.value = "";
       fillKeeperSelect(keepers);
       fillSelect("filterSupplier", suppliers, tt("allSuppliers", "All suppliers"));
       fillSelect("filterSupervisor", supervisors, tt("allSupervisors", "All supervisors"));

@@ -136,6 +136,13 @@ const AppConfig = {
     qc: ["qc"],
     admin: ["*"]
   },
+  /**
+   * Classic Store Keeper role key (`employee`).
+   * Outstanding admin filter must use ONLY STORE_KEEPER_FILTER_ROLES — never
+   * store_manager / material_controller, or former keepers linger after reassignment.
+   */
+  STORE_KEEPER_ROLE: "employee",
+  STORE_KEEPER_FILTER_ROLES: ["employee"],
   ROLE_OPTIONS: [
     { value: "employee", labelKey: "role_employee", descKey: "role_employee_desc" },
     { value: "store_manager", labelKey: "role_store_manager", descKey: "role_store_manager_desc" },

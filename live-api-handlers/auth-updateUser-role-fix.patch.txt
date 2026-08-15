@@ -1,22 +1,12 @@
-Apply on live: /opt/toolcustody-api/src/handlers/auth.js → updateUser()
+Live /opt/toolcustody-api/src/handlers/auth.js updateUser hardening (deployed):
 
-Replace:
-  if (params.role !== undefined) push("role", permissions.normalizeRoleLocal(params.role));
+1) Accept params.role OR params.newRole
+2) After UPDATE, re-read user from DB
+3) If a role was requested but DB role != requested → { success:false, error:"ROLE_UPDATE_FAILED" }
+4) Always return { role } on success
 
-With:
-  // Accept both `role` and legacy UI key `newRole`.
-  const nextRoleRaw = params.role !== undefined ? params.role : params.newRole;
-  let nextRole = undefined;
-  if (nextRoleRaw !== undefined) {
-    nextRole = permissions.normalizeRoleLocal(nextRoleRaw);
-    push("role", nextRole);
-  }
-
-And change the success return to include the role:
-  const effectiveRole = nextRole !== undefined ? nextRole : target.role;
-  ...
-  return { success: true, username: target.username, role: effectiveRole };
-
-Root cause: users.html saveRole used to POST { newRole } while the API only read params.role,
-so updateUser returned success:true with zero column changes. Outstanding filter kept listing
-them because users.role was still employee/store_manager/material_controller.
+Frontend guards:
+- users.html saveRole sends both role + newRole, then verifies response/listUsers
+- outstanding filter uses AppConfig.STORE_KEEPER_FILTER_ROLES = ["employee"] only
+- never merges historical scan.created_by into the Store keeper dropdown
+- clears selected keeper if they are no longer in FILTER_KEEPER_ROLES

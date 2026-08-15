@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="app.css?v=navux1">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#0f766e">
-  <script src="config.js?v=navperm2"></script>
+  <script src="config.js?v=keeperfilter1"></script>
   <script src="i18n.js?v=navux1"></script>
   <script src="ui.js?v=rolefix1"></script>
   <style>
@@ -529,16 +529,30 @@
         return;
       }
       try {
-        // API updateUser expects `role` (not legacy `newRole`). Sending the wrong
-        // key still returns success:true with no DB change — Outstanding then keeps
-        // the user in the store-keeper filter.
-        const data = await apiPostPlain({ action: "updateUser", username, role });
+        // Send both keys: live API accepts newRole|role; never rely on one alone.
+        const data = await apiPostPlain({ action: "updateUser", username, role, newRole: role });
         if (!data || data.success === false) {
-          TCUI.toast(deleteUserErrorMsg((data && data.error) || data.error || "Failed"), "err");
+          TCUI.toast(deleteUserErrorMsg((data && data.error) || "Failed"), "err");
           loadUsers();
           return;
         }
-        TCUI.toast("Role updated: " + roleLabel(data.role || role), "ok");
+        const saved = String(data.role || "").trim().toLowerCase();
+        const wanted = String(role || "").trim().toLowerCase();
+        if (!saved || saved !== wanted) {
+          // Re-check DB via listUsers so a silent no-op cannot look like success.
+          let confirmed = "";
+          try {
+            const listed = await apiGet({ action: "listUsers" });
+            const row = ((listed && listed.items) || []).find((u) => u && u.username === username);
+            confirmed = String((row && row.role) || "").trim().toLowerCase();
+          } catch (_) {}
+          if (confirmed !== wanted) {
+            TCUI.toast(deleteUserErrorMsg("ROLE_UPDATE_FAILED") || "Role did not save — try again", "err");
+            loadUsers();
+            return;
+          }
+        }
+        TCUI.toast("Role updated: " + roleLabel(saved || role), "ok");
         loadUsers();
       } catch (e) {
         TCUI.toast(e.message || "Error", "err");
@@ -587,6 +601,8 @@
         CANNOT_DISABLE_SOLE_ADMIN: "Cannot disable the sole admin account (boss)",
         CANNOT_MODIFY_SOLE_ADMIN: "Cannot modify the sole admin account (boss)",
         ONLY_BOSS_CAN_BE_ADMIN: "Only user \"boss\" can have the admin role",
+        ROLE_UPDATE_FAILED: "Role did not save — refresh and try again",
+        UNKNOWN_ROLE: "Unknown role",
         USER_HAS_LINKED_RECORDS: "User still has linked records — refresh and try again",
         NOT_FOUND: "User not found",
         FORBIDDEN: "No permission to delete users",
