@@ -1,0 +1,22 @@
+Apply on live: /opt/toolcustody-api/src/handlers/auth.js → updateUser()
+
+Replace:
+  if (params.role !== undefined) push("role", permissions.normalizeRoleLocal(params.role));
+
+With:
+  // Accept both `role` and legacy UI key `newRole`.
+  const nextRoleRaw = params.role !== undefined ? params.role : params.newRole;
+  let nextRole = undefined;
+  if (nextRoleRaw !== undefined) {
+    nextRole = permissions.normalizeRoleLocal(nextRoleRaw);
+    push("role", nextRole);
+  }
+
+And change the success return to include the role:
+  const effectiveRole = nextRole !== undefined ? nextRole : target.role;
+  ...
+  return { success: true, username: target.username, role: effectiveRole };
+
+Root cause: users.html saveRole used to POST { newRole } while the API only read params.role,
+so updateUser returned success:true with zero column changes. Outstanding filter kept listing
+them because users.role was still employee/store_manager/material_controller.

@@ -502,7 +502,7 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-  <script src="export-utils.js?v=keeper1"></script>
+  <script src="export-utils.js?v=keeper2"></script>
   <script>
     let items = [];
     let filterMode = "all";
@@ -738,6 +738,10 @@
       try {
         const data = await apiGet({ action: "listUsers" });
         if (!data || data.error) return;
+        // Rebuild from current DB roles every time (role changes must drop former keepers).
+        dbKeepers.clear();
+        Object.keys(userRoles).forEach((k) => { delete userRoles[k]; });
+        Object.keys(keeperLabels).forEach((k) => { delete keeperLabels[k]; });
         (data.items || []).forEach((u) => {
           if (!u || !u.username) return;
           if (u.active === false) return;
@@ -888,7 +892,7 @@
       if (!silent) host.innerHTML = `<div class="tc-text-muted text-center py-4">${t("loading")}</div>`;
       try {
         overdueDaysSetting = typeof getOverdueDays === "function" ? getOverdueDays() : 1;
-        if (!dbKeepers.size) await loadKeeperDirectory();
+        await loadKeeperDirectory();
         const params = { action: "getOutstanding", overdueDays: overdueDaysSetting };
         // Managers may pass optional keeper filter; store keepers are scoped on the server.
         if (canSeeAllKeepers()) {

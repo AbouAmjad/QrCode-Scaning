@@ -11,7 +11,7 @@
   <meta name="theme-color" content="#0f766e">
   <script src="config.js?v=navperm2"></script>
   <script src="i18n.js?v=navux1"></script>
-  <script src="ui.js?v=navux1"></script>
+  <script src="ui.js?v=rolefix1"></script>
   <style>
     .users-pending-card { margin-bottom: 1rem; }
     .users-pending-badge {
@@ -529,7 +529,10 @@
         return;
       }
       try {
-        const data = await apiPostPlain({ action: "updateUser", username, newRole: role });
+        // API updateUser expects `role` (not legacy `newRole`). Sending the wrong
+        // key still returns success:true with no DB change — Outstanding then keeps
+        // the user in the store-keeper filter.
+        const data = await apiPostPlain({ action: "updateUser", username, role });
         if (!data || data.success === false) {
           TCUI.toast(deleteUserErrorMsg((data && data.error) || data.error || "Failed"), "err");
           loadUsers();
