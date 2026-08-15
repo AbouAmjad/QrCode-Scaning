@@ -626,7 +626,6 @@
           <button type="button" id="modeCharge" data-mode="charge">مع خصم (SAR)</button>
         </div>
         <span class="sp"></span>
-        <button type="button" class="tc-btn" id="btnAddHeld" hidden><i class="bi bi-box-arrow-in-down"></i> <span data-i18n="bcAddHeldTools">Add held tools</span></button>
         <button type="button" class="tc-btn" id="btnAddRow"><i class="bi bi-plus-lg"></i> <span data-i18n="bcAddRow">Add row</span></button>
         <button type="button" class="tc-btn" id="btnClear"><i class="bi bi-eraser"></i> <span data-i18n="bcClear">Clear</span></button>
         <button type="button" class="tc-btn tc-btn-primary" id="btnPrint"><i class="bi bi-printer"></i> <span id="printLabel">طباعة الإشعار</span></button>
@@ -680,53 +679,12 @@
                 <div class="lbl">Site / Area</div>
                 <div class="field"><input id="location" type="text" placeholder="Zone / building" autocomplete="off"></div>
               </div>
-              <div class="vl-cell span2">
-                <div class="lbl">Reference / PO / DN</div>
-                <div class="field"><input id="refNo" type="text" placeholder="Optional commercial reference" autocomplete="off"></div>
-              </div>
-              <div class="vl-cell span2">
-                <div class="lbl">Cost code / WBS</div>
-                <div class="field"><input id="costCode" type="text" placeholder="Optional" autocomplete="off"></div>
-              </div>
             </div>
           </div>
 
           <div class="vl-block">
             <div class="vl-sec">
-              <span class="sec-num">① Charged party</span>
-              <span class="sec-lbl">enter P code — system fills name, company, iqama</span>
-            </div>
-            <div id="loadStatus" class="vl-status no-print"></div>
-            <div class="vl-grid">
-              <div class="vl-cell">
-                <div class="lbl red">Person Code — auto-fill</div>
-                <div class="field">
-                  <input id="personCode" type="text" placeholder="Scan / type P…" autocomplete="off" style="flex:1;min-width:0">
-                  <button type="button" class="vl-load-btn no-print" id="btnLoadPerson" data-i18n="bcLoadPerson">Load</button>
-                </div>
-              </div>
-              <div class="vl-cell">
-                <div class="lbl">Iqama / ID</div>
-                <div class="field"><input id="iqama" type="text" placeholder="Auto / edit" autocomplete="off"></div>
-              </div>
-              <div class="vl-cell">
-                <div class="lbl">Phone</div>
-                <div class="field"><input id="phone" type="text" placeholder="Auto / edit" autocomplete="off"></div>
-              </div>
-              <div class="vl-cell">
-                <div class="lbl">Company / Sub</div>
-                <div class="field"><input id="subcontractor" type="text" placeholder="Auto / edit" autocomplete="off"></div>
-              </div>
-              <div class="vl-cell span4">
-                <div class="lbl green">Full name (as on Iqama)</div>
-                <div class="field"><input id="personName" class="name-input" type="text" placeholder="Loads when you enter P code" autocomplete="off"></div>
-              </div>
-            </div>
-          </div>
-
-          <div class="vl-block">
-            <div class="vl-sec">
-              <span class="sec-num">② Charge type</span>
+              <span class="sec-num">① Charge type</span>
               <span class="sec-lbl">tick all that apply</span>
             </div>
             <div class="vl-chips" id="chargeTypes">
@@ -749,7 +707,7 @@
 
           <div class="vl-block">
             <div class="vl-sec green">
-              <span class="sec-num">③ Items</span>
+              <span class="sec-num">② Items</span>
               <span class="sec-lbl" id="secItemsLbl">scan product code — description and unit fill from catalog</span>
             </div>
             <div class="vl-lines-wrap">
@@ -779,7 +737,7 @@
           <div class="vl-print-tail">
           <div class="vl-block sec-money">
             <div class="vl-sec">
-              <span class="sec-num">④ Amount</span>
+              <span class="sec-num">③ Amount</span>
               <span class="sec-lbl">lines + extra cost = total charge to deduct</span>
             </div>
             <div class="vl-costbox">
@@ -806,13 +764,13 @@
 
           <div class="vl-decl decl-notice">
             <strong>Acknowledgement — </strong>
-            The person / subcontractor named above acknowledges the materials, tools, or items listed on this form
-            (issued, damaged, lost, or not returned). This copy is a store record only and does
+            The materials, tools, or items listed on this form (issued, damaged, lost, or not returned)
+            are recorded for store control. This copy does
             <strong>not</strong> authorize a financial deduction. A separate commercial backcharge is required for any money charge.
           </div>
           <div class="vl-decl decl-charge">
             <strong>Declaration — </strong>
-            The subcontractor / person named above is hereby charged the total amount for materials, tools, damage, loss, or work as described.
+            The total amount for materials, tools, damage, loss, or work as described is hereby charged.
             All parties confirm that the particulars on this form are true and correct. This document forms part of the project commercial record
             and may be deducted from the subcontractor’s account.
           </div>
@@ -868,7 +826,7 @@
         banSub: "Materials · Tools · Damage · Lost items · Work deduction (SAR)",
         banMeta: "Store Control / Commercial Record / Internal Use",
         secItems: "scan product code — description, unit and rate fill from catalog",
-        secAuth: "⑤ Authorizations",
+        secAuth: "④ Authorizations",
         printLabel: "طباعة الخصم",
         hint: "نسخة تجارية مع أسعار ومبالغ — طباعة A4 عمودية؛ عمود الصورة يُخفى عند الطباعة لتسع الأعمدة المالية.",
         formPrefix: "BC"
@@ -878,12 +836,8 @@
       "Ten","Eleven","Twelve","Thirteen","Fourteen","Fifteen","Sixteen","Seventeen","Eighteen","Nineteen"];
     const TENS = ["","","Twenty","Thirty","Forty","Fifty","Sixty","Seventy","Eighty","Ninety"];
     const TEXT_IDS = [
-      "formNo","project","location","refNo","costCode","personCode","iqama","phone",
-      "subcontractor","personName","reason","extraCost"
+      "formNo","project","location","reason","extraCost"
     ];
-    let loadTimer = null;
-    let lastLoadedCode = "";
-    let lastHeldTools = [];
 
     function t(k) {
       return typeof TCI18N !== "undefined" ? TCI18N.t(k) : k;
@@ -1001,20 +955,6 @@
     function setVal(id, value) {
       const el = document.getElementById(id);
       if (el) el.value = value == null ? "" : String(value);
-    }
-    function setStatus(msg, ok, extraBtn) {
-      const el = document.getElementById("loadStatus");
-      const heldBtn = document.getElementById("btnAddHeld");
-      if (!el) return;
-      if (!msg) {
-        el.className = "vl-status no-print";
-        el.innerHTML = "";
-        if (heldBtn) heldBtn.hidden = true;
-        return;
-      }
-      el.className = "vl-status no-print show " + (ok ? "ok" : "err");
-      el.innerHTML = `<span>${escHtml(msg)}</span>`;
-      if (heldBtn) heldBtn.hidden = !extraBtn;
     }
 
     function renumber() {
@@ -1225,30 +1165,6 @@
       return tr;
     }
 
-    async function addHeldTools() {
-      const list = Array.isArray(lastHeldTools) ? lastHeldTools : [];
-      if (!list.length) return;
-      const body = document.getElementById("linesBody");
-      const existing = [...body.querySelectorAll("tr")];
-      const empty = existing.filter((tr) => {
-        const code = String(tr.querySelector(".in-code")?.value || "").trim();
-        const desc = String(tr.querySelector(".in-desc")?.value || "").trim();
-        return !code && !desc;
-      });
-      empty.forEach((tr) => tr.remove());
-      for (const tool of list) {
-        const tr = addRow(false, {
-          code: tool.code || "",
-          description: tool.description || "",
-          qty: tool.qty || 1
-        });
-        await fillFromCatalog(tr, false);
-      }
-      if (!document.querySelectorAll("#linesBody tr").length) addRow();
-      tickChip("chargeTypes", ["tools not returned"]);
-      recalc();
-    }
-
     function tickChip(rootId, labelIncludes) {
       const needles = [].concat(labelIncludes || []).map((s) => String(s).toLowerCase());
       document.querySelectorAll("#" + rootId + " .vl-chip").forEach((lab) => {
@@ -1260,66 +1176,11 @@
       });
     }
 
-    async function loadPersonFromSystem(force) {
-      const codeEl = document.getElementById("personCode");
-      let code = String(codeEl?.value || "").trim().toUpperCase();
-      if (code && !code.startsWith("P")) code = "P" + code.replace(/^P/i, "");
-      if (codeEl) codeEl.value = code;
-      if (!code || code.length < 2) {
-        setStatus("Enter a person code (P…)", false);
-        return;
-      }
-      if (!force && code === lastLoadedCode) return;
-      if (typeof apiGet !== "function") {
-        setStatus("API not available", false);
-        return;
-      }
-      setStatus("Loading " + code + " …", true);
-      try {
-        const data = await apiGet({
-          action: "getPersonCustody",
-          code,
-          overdueDays: typeof getOverdueDays === "function" ? getOverdueDays() : 1
-        });
-        if (!data || data.error) {
-          setStatus(data?.error === "NOT_FOUND" ? "Person " + code + " not found" : ("Load failed: " + (data?.error || "error")), false);
-          return;
-        }
-        lastLoadedCode = code;
-        lastHeldTools = data.toolsHeld || [];
-        setVal("personName", data.name || "");
-        setVal("iqama", data.residenceNo || "");
-        setVal("phone", data.phone || "");
-        setVal("subcontractor", data.supplierName || "");
-        const held = Number(data.toolsHeldQty || 0);
-        const nTools = lastHeldTools.length;
-        if (nTools) {
-          setStatus(
-            "Loaded " + (data.name || code) + " · holding " + held + " item(s)" + (data.overdue ? " · OVERDUE" : ""),
-            true,
-            true
-          );
-        } else {
-          setStatus("Loaded " + (data.name || code) + " · no tools currently held", true, false);
-        }
-      } catch (e) {
-        setStatus(e.message || "Network error", false);
-      }
-    }
-
-    function scheduleLoad() {
-      clearTimeout(loadTimer);
-      loadTimer = setTimeout(() => loadPersonFromSystem(false), 450);
-    }
-
     function clearForm() {
       TEXT_IDS.forEach((id) => { const e = document.getElementById(id); if (e) e.value = ""; });
       document.querySelectorAll("#chargeTypes input").forEach((el) => { el.checked = false; });
       document.querySelectorAll(".vl-sign input").forEach((el) => { el.value = ""; });
       document.getElementById("linesBody").innerHTML = "";
-      lastLoadedCode = "";
-      lastHeldTools = [];
-      setStatus("", true);
       for (let i = 0; i < ROWS; i++) addRow();
       const fn = document.getElementById("formNo"); if (fn) fn.value = suggestFormNo();
       const fd = document.getElementById("formDate"); if (fd) fd.value = todayIso();
@@ -1373,7 +1234,6 @@
       document.getElementById("extraCost")?.addEventListener("input", recalc);
       document.getElementById("btnAddRow")?.addEventListener("click", () => addRow(true));
       document.getElementById("btnAddRow2")?.addEventListener("click", () => addRow(true));
-      document.getElementById("btnAddHeld")?.addEventListener("click", addHeldTools);
       document.getElementById("btnClear")?.addEventListener("click", () => {
         if (confirm(t("bcClearConfirm") || "Clear all fields?")) clearForm();
       });
@@ -1385,16 +1245,6 @@
         try { window.print(); } catch (_) {}
         setTimeout(clearPrintLayout, 800);
       });
-      document.getElementById("btnLoadPerson")?.addEventListener("click", () => loadPersonFromSystem(true));
-      const pc = document.getElementById("personCode");
-      if (pc) {
-        pc.addEventListener("input", scheduleLoad);
-        pc.addEventListener("blur", () => loadPersonFromSystem(false));
-        pc.addEventListener("keydown", (e) => {
-          if (e.key === "Enter") { e.preventDefault(); loadPersonFromSystem(true); }
-        });
-        setTimeout(() => pc.focus(), 80);
-      }
       const dateEl = document.getElementById("formDate");
       if (dateEl) {
         dateEl.addEventListener("click", (e) => {
@@ -1406,6 +1256,7 @@
           } catch (_) { dateEl.focus(); }
         });
       }
+      setTimeout(() => document.getElementById("project")?.focus(), 80);
     }, { pageId: "forms" });
   </script>
 </body>
