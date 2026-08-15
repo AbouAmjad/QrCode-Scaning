@@ -1,0 +1,12 @@
+Live /opt/toolcustody-api/src/handlers/auth.js updateUser hardening (deployed):
+
+1) Accept params.role OR params.newRole
+2) After UPDATE, re-read user from DB
+3) If a role was requested but DB role != requested → { success:false, error:"ROLE_UPDATE_FAILED" }
+4) Always return { role } on success
+
+Frontend guards:
+- users.html saveRole sends both role + newRole, then verifies response/listUsers
+- outstanding filter uses AppConfig.STORE_KEEPER_FILTER_ROLES = ["employee"] only
+- never merges historical scan.created_by into the Store keeper dropdown
+- clears selected keeper if they are no longer in FILTER_KEEPER_ROLES

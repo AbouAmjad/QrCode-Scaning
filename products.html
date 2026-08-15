@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AbouAmjad Store System | Products</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="app.css?v=navux1">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f766e">
+  <script src="config.js?v=navperm2"></script>
+  <script src="i18n.js?v=navux1"></script>
+  <script src="ui.js?v=navux1"></script>
+  <style>
+    .prod-page .pp-stats { display:grid; grid-template-columns:repeat(2,1fr); gap:.85rem; margin-bottom:1.15rem; }
+    @media(min-width:900px){ .prod-page .pp-stats{ grid-template-columns:repeat(4,1fr);} }
+    .prod-page .pp-stat{
+      background: var(--tc-surface);border:1px solid var(--tc-border);border-radius:16px;padding:1rem 1.1rem;
+      box-shadow:0 10px 28px -22px rgba(20,32,51,.45);position:relative;overflow:hidden;
+    }
+    .prod-page .pp-stat::before{content:"";position:absolute;inset:0 auto 0 0;width:4px;background:var(--tc-accent);}
+    .prod-page .pp-stat.ok::before{background:var(--tc-success);}
+    .prod-page .pp-stat.danger::before{background:var(--tc-danger);}
+    .prod-page .pp-stat.warn::before{background:var(--tc-warning);}
+    .prod-page .pp-stat .k{font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--tc-muted);}
+    .prod-page .pp-stat .v{font-size:1.75rem;font-weight:800;line-height:1.15;margin-top:.2rem;}
+    .prod-page .pp-panel{background: var(--tc-surface);border:1px solid var(--tc-border);border-radius:18px;box-shadow:0 14px 36px -24px rgba(20,32,51,.4);overflow:hidden;}
+    .prod-page .pp-panel-head{display:flex;align-items:center;justify-content:space-between;gap:.75rem;flex-wrap:wrap;padding:1rem 1.15rem;background:var(--tc-head-grad);border-bottom:1px solid var(--tc-border);}
+    .prod-page .pp-panel-head h2{margin:0;font-size:.95rem;font-weight:800;display:flex;align-items:center;gap:.45rem;}
+    .prod-page .pp-panel-head h2 i{color:var(--tc-accent);}
+    .prod-page .pp-panel-body{padding:1.15rem;}
+    .prod-page .pp-head-actions{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;}
+    .prod-page .pp-toolbar{display:flex;flex-wrap:wrap;gap:.65rem;align-items:center;margin-bottom:1rem;}
+    .prod-page .pp-toolbar .tc-search{flex:1;min-width:160px;max-width:260px;}
+    .prod-page .pp-view-group{
+      display:inline-flex;gap:.2rem;padding:.2rem;border-radius:12px;
+      background:var(--tc-surface-2);border:1px solid var(--tc-border);
+    }
+    .prod-page .pp-view-group button{
+      border:0;background:transparent;color:var(--tc-muted);width:36px;height:32px;border-radius:9px;
+      display:grid;place-items:center;cursor:pointer;font-size:1rem;
+    }
+    .prod-page .pp-view-group button:hover{color:var(--tc-text);}
+    .prod-page .pp-view-group button.active{background:var(--tc-surface);color:var(--tc-accent-2);box-shadow:0 2px 8px -4px rgba(15,118,110,.45);}
+    .prod-page .pp-bulk{display:none;align-items:center;justify-content:space-between;gap:.75rem;flex-wrap:wrap;padding:.75rem 1rem;margin-bottom:1rem;border-radius:12px;background:linear-gradient(135deg,rgba(15,118,110,.08),rgba(30,58,95,.06));border:1px solid rgba(15,118,110,.2);}
+    .prod-page .pp-bulk.show{display:flex;}
+    .prod-page .pp-list{display:flex;flex-direction:column;gap:.65rem;}
+    .prod-page .pp-list.view-grid{
+      display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:.85rem;
+    }
+    .prod-page .pp-row{display:grid;grid-template-columns:auto auto 1fr auto;gap:.85rem;align-items:center;padding:.85rem 1rem;border:1px solid var(--tc-border);border-radius:14px;background: var(--tc-surface);transition:.15s;cursor:pointer;}
+    .prod-page .pp-row:hover{border-color:rgba(15,118,110,.28);box-shadow:0 10px 24px -18px rgba(15,118,110,.45);}
+    .prod-page .pp-row.selected{border-color:rgba(15,118,110,.45);background:linear-gradient(90deg,rgba(15,118,110,.06), var(--tc-surface) 40%);}
+    .prod-page .pp-row.low{border-color:rgba(180,83,9,.28);background:linear-gradient(90deg,var(--tc-warn-bg) 0%, var(--tc-surface) 30%);}
+    .prod-page .pp-list.view-grid .pp-row{
+      grid-template-columns:auto 1fr;grid-template-rows:auto auto auto;align-items:start;gap:.55rem .65rem;
+    }
+    .prod-page .pp-list.view-grid .pp-row .pp-check{grid-row:1;grid-column:1;}
+    .prod-page .pp-list.view-grid .pp-row .pp-thumb{grid-row:1;grid-column:2;justify-self:end;width:72px;height:72px;}
+    .prod-page .pp-list.view-grid .pp-row .pp-id{grid-row:2;grid-column:1 / -1;}
+    .prod-page .pp-list.view-grid .pp-row .pp-side{
+      grid-row:3;grid-column:1 / -1;flex-direction:row;justify-content:flex-end;align-items:center;min-width:0;width:100%;
+    }
+    .prod-page .pp-list.density-compact{gap:.4rem;}
+    .prod-page .pp-list.density-compact .pp-row{padding:.5rem .7rem;gap:.55rem;border-radius:11px;}
+    .prod-page .pp-list.density-compact .pp-thumb{width:40px;height:40px;border-radius:9px;font-size:1rem;}
+    .prod-page .pp-list.density-compact.view-grid .pp-thumb{width:56px;height:56px;}
+    .prod-page .pp-list.density-compact .pp-id .name{font-size:.86rem;}
+    .prod-page .pp-list.density-compact .pp-meta{font-size:.7rem;gap:.25rem .5rem;}
+    .prod-page .pp-list.density-compact .pp-chip{font-size:.66rem;padding:.18rem .42rem;}
+    .prod-page .pp-check{width:18px;height:18px;accent-color: var(--tc-accent);cursor:pointer;}
+    .prod-page .pp-thumb{width:56px;height:56px;border-radius:12px;object-fit:cover;background: var(--tc-thumb-bg);display:grid;place-items:center;color: var(--tc-muted);border: 2px solid var(--tc-surface);box-shadow:0 6px 14px -8px rgba(20,32,51,.35);font-size:1.2rem;}
+    .prod-page .pp-id .name{font-weight:800;font-size:.95rem;line-height:1.2;margin-bottom:.15rem;}
+    .prod-page .pp-id .code{display:inline-flex;font-size:.72rem;font-weight:700;color:var(--tc-accent-2);background:var(--tc-accent-soft);padding:.12rem .5rem;border-radius:999px;margin-bottom:.35rem;}
+    .prod-page .pp-meta{display:flex;flex-wrap:wrap;gap:.35rem .75rem;font-size:.76rem;color:var(--tc-muted);}
+    .prod-page .pp-meta span{display:inline-flex;align-items:center;gap:.28rem;}
+    .prod-page .pp-side{display:flex;flex-direction:column;align-items:flex-end;gap:.4rem;min-width:130px;}
+    .prod-page .pp-stock{display:flex;gap:.35rem;flex-wrap:wrap;justify-content:flex-end;}
+    .prod-page .pp-chip{display:inline-flex;align-items:center;gap:.25rem;font-size:.72rem;font-weight:700;padding:.26rem .55rem;border-radius:999px;background: var(--tc-surface-2);color: var(--tc-muted);white-space:nowrap;}
+    .prod-page .pp-chip.avail{background:#d1fae5;color:#047857;}
+    .prod-page .pp-chip.store{background:#ccfbf1;color:#0f766e;}
+    .prod-page .pp-chip.total{background:#e0f2fe;color:#0369a1;}
+    .prod-page .pp-chip.out{background:#fee2e2;color:#b91c1c;}
+    .prod-page .pp-chip.low{background:#ffedd5;color:#c2410c;}
+    .prod-page .pp-chip.item-type{background:#e0e7ff;color:#3730a3;}
+    .prod-page .pp-chip.qc-expired{background:#fee2e2;color:#b91c1c;}
+    .prod-page .pp-chip.qc-due{background:#ffedd5;color:#c2410c;}
+    .prod-page .pp-chip.qc-ok{background:#dbeafe;color:#1d4ed8;}
+    .prod-page .pp-empty{text-align:center;padding:2.5rem 1rem;color:var(--tc-muted);}
+    .prod-page .pp-empty i{font-size:2rem;color:var(--tc-accent);opacity:.55;display:block;margin-bottom:.5rem;}
+    #exportModal .export-opt-grid{display:grid;grid-template-columns:1fr 1fr;gap:.65rem;margin-bottom:.85rem;}
+    @media(max-width:520px){#exportModal .export-opt-grid{grid-template-columns:1fr;}}
+    #exportModal .export-opt{
+      border:1px solid var(--tc-border);border-radius:12px;padding:.75rem .85rem;background:var(--tc-surface-2);
+      text-align:start;cursor:pointer;color:var(--tc-text);transition:.15s;
+    }
+    #exportModal .export-opt:hover{border-color:color-mix(in srgb,var(--tc-accent) 40%,transparent);}
+    #exportModal .export-opt.active{
+      border-color:color-mix(in srgb,var(--tc-accent) 55%,transparent);
+      background:linear-gradient(135deg,rgba(15,118,110,.1),var(--tc-surface));
+      box-shadow:0 0 0 1px color-mix(in srgb,var(--tc-accent) 25%,transparent);
+    }
+    #exportModal .export-opt .lbl{font-weight:800;font-size:.88rem;display:flex;align-items:center;gap:.4rem;}
+    #exportModal .export-opt .sub{font-size:.72rem;color:var(--tc-muted);margin-top:.2rem;font-weight:600;}
+    #exportModal .export-section-ttl,
+    #importModal .export-section-ttl{
+      font-size:.68rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--tc-muted);margin:.15rem 0 .45rem;
+    }
+    #importModal .import-drop{
+      border:1.5px dashed color-mix(in srgb,var(--tc-accent) 45%,var(--tc-border));
+      border-radius:14px;padding:1.1rem;text-align:center;background:var(--tc-surface-2);cursor:pointer;
+      transition:.15s;
+    }
+    #importModal .import-drop:hover,#importModal .import-drop.drag{
+      border-color:var(--tc-accent);background:color-mix(in srgb,var(--tc-accent) 8%,var(--tc-surface));
+    }
+    #importModal .import-drop .ttl{font-weight:800;font-size:.92rem;margin:.35rem 0 .15rem;}
+    #importModal .import-drop .sub{font-size:.75rem;color:var(--tc-muted);font-weight:600;}
+    #importModal .import-file-name{font-size:.78rem;font-weight:700;color:var(--tc-accent-2);margin-top:.45rem;}
+    #importModal .import-preview{
+      max-height:min(36vh,320px);overflow:auto;border:1px solid var(--tc-border);border-radius:12px;
+      background:var(--tc-surface);margin-top:.65rem;
+    }
+    #importModal .import-preview table{width:100%;border-collapse:collapse;font-size:.78rem;}
+    #importModal .import-preview th,#importModal .import-preview td{
+      padding:.4rem .55rem;border-bottom:1px solid var(--tc-border);text-align:start;vertical-align:top;
+    }
+    #importModal .import-preview th{position:sticky;top:0;background:var(--tc-surface-2);font-weight:800;font-size:.68rem;text-transform:uppercase;letter-spacing:.04em;color:var(--tc-muted);}
+    #importModal .import-preview tr.err td{background:#fef2f2;}
+    #importModal .import-stats{display:flex;flex-wrap:wrap;gap:.45rem;margin-top:.55rem;}
+    #importModal .import-stats .chip{
+      font-size:.72rem;font-weight:700;padding:.22rem .55rem;border-radius:999px;background:var(--tc-surface-2);color:var(--tc-muted);
+    }
+    #importModal .import-stats .chip.ok{background:#d1fae5;color:#047857;}
+    #importModal .import-stats .chip.err{background:#fee2e2;color:#b91c1c;}
+    #importModal .export-opt-grid{display:grid;grid-template-columns:1fr 1fr;gap:.65rem;margin-bottom:.85rem;}
+    #importModal .export-opt{
+      border:1px solid var(--tc-border);border-radius:12px;padding:.75rem .85rem;background:var(--tc-surface-2);
+      text-align:start;cursor:pointer;color:var(--tc-text);
+    }
+    #importModal .export-opt.active{
+      border-color:color-mix(in srgb,var(--tc-accent) 55%,transparent);
+      background:linear-gradient(135deg,rgba(15,118,110,.1),var(--tc-surface));
+    }
+    #importModal .export-opt .lbl{font-weight:800;font-size:.88rem;display:flex;align-items:center;gap:.4rem;}
+    #importModal .export-opt .sub{font-size:.72rem;color:var(--tc-muted);margin-top:.2rem;font-weight:600;}
+    @media(max-width:700px){
+      .prod-page .pp-list.view-list .pp-row{grid-template-columns:auto auto 1fr;}
+      .prod-page .pp-list.view-list .pp-side{grid-column:1/-1;flex-direction:row;justify-content:space-between;align-items:center;min-width:0;}
+    }
+  </style>
+</head>
+<body class="tc-page prod-page">
+  <div class="tc-wrap">
+    <div class="tc-shell">
+      <div id="app-header"></div>
+
+      <div class="pp-stats">
+        <div class="pp-stat"><div class="k" data-i18n="productsTotal">Products</div><div class="v" id="kTotal">0</div></div>
+        <div class="pp-stat ok"><div class="k" data-i18n="qtyAvailable">Available</div><div class="v" id="kAvail">0</div></div>
+        <div class="pp-stat danger"><div class="k" data-i18n="qtyOut">Out</div><div class="v" id="kOut">0</div></div>
+        <div class="pp-stat warn"><div class="k" data-i18n="lowStock">Low stock</div><div class="v" id="kLow">0</div></div>
+      </div>
+
+      <section class="pp-panel">
+        <div class="pp-panel-head">
+          <h2><i class="bi bi-boxes"></i> <span data-i18n="catalog">Catalog + stock</span></h2>
+          <div class="pp-head-actions">
+            <button type="button" class="tc-btn" id="btnImport"><i class="bi bi-download"></i> <span data-i18n="importProducts">Import</span></button>
+            <button type="button" class="tc-btn" id="btnExport"><i class="bi bi-upload"></i> <span data-i18n="export">Export</span></button>
+            <button type="button" class="tc-btn" id="btnRefresh"><i class="bi bi-arrow-clockwise"></i></button>
+            <a class="tc-btn tc-btn-primary" href="product-form.html"><i class="bi bi-plus-lg"></i> <span data-i18n="addProductBtn">Add product</span></a>
+          </div>
+        </div>
+        <div class="pp-panel-body">
+          <div class="pp-toolbar">
+            <select id="filterCat" class="tc-select" title="Category">
+              <option value="" data-i18n="allCategories">All categories</option>
+            </select>
+            <select id="filterSub" class="tc-select" title="Subcategory">
+              <option value="" data-i18n="allSubcategories">All subcategories</option>
+            </select>
+            <select id="filterQc" class="tc-select" title="Calibration">
+              <option value="" data-i18n="all">All products</option>
+              <option value="cal" data-i18n="qcNeedsCal">Needs calibration</option>
+              <option value="overdue" data-i18n="qcOverdue">Overdue</option>
+              <option value="dueSoon" data-i18n="qcDueSoon">Due soon</option>
+              <option value="ok" data-i18n="qcOk">Calibration OK</option>
+            </select>
+            <input id="q" class="tc-search" data-i18n-placeholder="searchPlaceholder" placeholder="Search…">
+            <div class="pp-view-group" id="viewLayoutGroup" title="Layout">
+              <button type="button" data-layout="list" class="active" title="List"><i class="bi bi-list-ul"></i></button>
+              <button type="button" data-layout="grid" title="Grid"><i class="bi bi-grid-3x3-gap"></i></button>
+            </div>
+            <div class="pp-view-group" id="viewDensityGroup" title="Density">
+              <button type="button" data-density="comfortable" class="active" title="Comfortable"><i class="bi bi-arrows-expand"></i></button>
+              <button type="button" data-density="compact" title="Compact"><i class="bi bi-arrows-collapse"></i></button>
+            </div>
+          </div>
+
+          <div class="pp-bulk" id="bulkBar">
+            <div>
+              <label class="d-inline-flex align-items-center gap-2 mb-0">
+                <input type="checkbox" class="pp-check" id="chkAll">
+                <strong id="bulkLabel">0 selected</strong>
+              </label>
+            </div>
+            <div class="d-flex gap-2 flex-wrap">
+              <button type="button" class="tc-btn" id="btnClearSel" data-i18n="clearSelection">Clear</button>
+              <button type="button" class="tc-btn tc-btn-danger" id="btnBulkDelete">
+                <i class="bi bi-trash"></i> <span data-i18n="deleteSelected">Delete selected</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="pp-list view-list density-comfortable" id="body"></div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div class="tc-modal-backdrop" id="exportModal">
+    <div class="tc-modal" style="max-width:460px">
+      <div class="tc-modal-head">
+        <div>
+          <h3 class="h5 mb-1" data-i18n="exportProducts">Export products</h3>
+          <p class="tc-text-muted small mb-0" id="exportModalHint" data-i18n="chooseExportFormat">Choose Excel or PDF</p>
+        </div>
+        <button type="button" class="tc-btn tc-btn-sm" id="btnCloseExport"><i class="bi bi-x-lg"></i></button>
+      </div>
+      <div class="tc-modal-body">
+        <div class="export-section-ttl" data-i18n="exportFormat">Format</div>
+        <div class="export-opt-grid" id="exportFormatOpts">
+          <button type="button" class="export-opt active" data-format="xlsx">
+            <div class="lbl"><i class="bi bi-file-earmark-spreadsheet"></i> <span data-i18n="exportExcel">Excel (.xlsx)</span></div>
+            <div class="sub" data-i18n="exportExcelHint">Spreadsheet for filters & stock</div>
+          </button>
+          <button type="button" class="export-opt" data-format="pdf">
+            <div class="lbl"><i class="bi bi-file-earmark-pdf"></i> <span data-i18n="exportPdf">PDF</span></div>
+            <div class="sub" data-i18n="exportPdfHint">Print-ready report</div>
+          </button>
+        </div>
+        <div class="export-section-ttl" data-i18n="exportImages">Images</div>
+        <div class="export-opt-grid" id="exportImageOpts">
+          <button type="button" class="export-opt active" data-images="0">
+            <div class="lbl"><i class="bi bi-file-text"></i> <span data-i18n="exportWithoutImages">Without images</span></div>
+            <div class="sub" data-i18n="exportWithoutImagesHint">Faster · text & stock only</div>
+          </button>
+          <button type="button" class="export-opt" data-images="1">
+            <div class="lbl"><i class="bi bi-image"></i> <span data-i18n="exportWithImages">With images</span></div>
+            <div class="sub" data-i18n="exportWithImagesHint">PDF: photos · Excel: image URLs</div>
+          </button>
+        </div>
+        <div class="export-section-ttl" data-i18n="exportScope">Scope</div>
+        <div class="export-opt-grid" id="exportScopeOpts">
+          <button type="button" class="export-opt active" data-scope="filtered">
+            <div class="lbl"><i class="bi bi-funnel"></i> <span data-i18n="exportFiltered">Filtered list</span></div>
+            <div class="sub" id="exportFilteredHint">Current filters</div>
+          </button>
+          <button type="button" class="export-opt" data-scope="selected" id="exportScopeSelected">
+            <div class="lbl"><i class="bi bi-check2-square"></i> <span data-i18n="exportSelected">Selected only</span></div>
+            <div class="sub" id="exportSelectedHint">0 selected</div>
+          </button>
+        </div>
+        <div class="d-flex justify-content-end gap-2 mt-3">
+          <button type="button" class="tc-btn" id="btnCancelExport" data-i18n="cancel">Cancel</button>
+          <button type="button" class="tc-btn tc-btn-primary" id="btnDoExport"><i class="bi bi-upload"></i> <span data-i18n="exportNow">Export now</span></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tc-modal-backdrop" id="importModal">
+    <div class="tc-modal" style="max-width:720px">
+      <div class="tc-modal-head">
+        <div>
+          <h3 class="h5 mb-1" data-i18n="importProductsTitle">Import products</h3>
+          <p class="tc-text-muted small mb-0" data-i18n="importProductsHint">Upload CSV or Excel — preview, then import all at once.</p>
+        </div>
+        <button type="button" class="tc-btn tc-btn-sm" id="btnCloseImport"><i class="bi bi-x-lg"></i></button>
+      </div>
+      <div class="tc-modal-body">
+        <div class="d-flex flex-wrap gap-2 mb-2">
+          <button type="button" class="tc-btn" id="btnImportTemplate"><i class="bi bi-file-earmark-spreadsheet"></i> <span data-i18n="downloadImportTemplate">Download template</span></button>
+        </div>
+        <div class="import-drop" id="importDrop" tabindex="0">
+          <i class="bi bi-cloud-arrow-up" style="font-size:1.6rem;color:var(--tc-accent)"></i>
+          <div class="ttl" data-i18n="importDropTitle">Drop file here or click to browse</div>
+          <div class="sub" data-i18n="importDropHint">Excel (.xlsx / .xls) or CSV · Code + Description required</div>
+          <div class="import-file-name" id="importFileName"></div>
+          <input type="file" id="importFile" accept=".xlsx,.xls,.csv,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" hidden>
+        </div>
+
+        <div class="export-section-ttl mt-3" data-i18n="importMode">If code already exists</div>
+        <div class="export-opt-grid" id="importModeOpts">
+          <button type="button" class="export-opt active" data-mode="upsert">
+            <div class="lbl"><i class="bi bi-arrow-repeat"></i> <span data-i18n="importModeUpsert">Update existing</span></div>
+            <div class="sub" data-i18n="importModeUpsertHint">Overwrite name, category, stock if provided</div>
+          </button>
+          <button type="button" class="export-opt" data-mode="createOnly">
+            <div class="lbl"><i class="bi bi-plus-circle"></i> <span data-i18n="importModeCreateOnly">Create new only</span></div>
+            <div class="sub" data-i18n="importModeCreateOnlyHint">Skip codes that already exist</div>
+          </button>
+        </div>
+
+        <div class="import-stats" id="importStats" style="display:none"></div>
+        <div class="import-preview" id="importPreview" style="display:none"></div>
+
+        <div class="d-flex justify-content-end gap-2 mt-3">
+          <button type="button" class="tc-btn" id="btnCancelImport" data-i18n="cancel">Cancel</button>
+          <button type="button" class="tc-btn tc-btn-primary" id="btnDoImport" disabled>
+            <i class="bi bi-download"></i> <span data-i18n="importNow">Import now</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="export-utils.js?v=photos1"></script>
+  <script>
+    let items = [];
+    const selected = new Set();
+    const VIEW_KEY = "abouamjad_products_view_v1";
+    let viewLayout = "list";
+    let viewDensity = "comfortable";
+    let exportFormat = "xlsx";
+    let exportWithImages = false;
+    let exportScope = "filtered";
+    let importMode = "upsert";
+    let importRows = [];
+    let importErrors = [];
+    let importBusy = false;
+
+    function loadViewPrefs() {
+      try {
+        const raw = localStorage.getItem(VIEW_KEY);
+        if (!raw) return;
+        const p = JSON.parse(raw);
+        if (p.layout === "grid" || p.layout === "list") viewLayout = p.layout;
+        if (p.density === "compact" || p.density === "comfortable") viewDensity = p.density;
+      } catch (_) { /* ignore */ }
+    }
+
+    function saveViewPrefs() {
+      try { localStorage.setItem(VIEW_KEY, JSON.stringify({ layout: viewLayout, density: viewDensity })); } catch (_) { /* ignore */ }
+    }
+
+    function applyViewClasses() {
+      const body = document.getElementById("body");
+      body.classList.toggle("view-list", viewLayout === "list");
+      body.classList.toggle("view-grid", viewLayout === "grid");
+      body.classList.toggle("density-comfortable", viewDensity === "comfortable");
+      body.classList.toggle("density-compact", viewDensity === "compact");
+      document.querySelectorAll("#viewLayoutGroup button").forEach((b) =>
+        b.classList.toggle("active", b.getAttribute("data-layout") === viewLayout)
+      );
+      document.querySelectorAll("#viewDensityGroup button").forEach((b) =>
+        b.classList.toggle("active", b.getAttribute("data-density") === viewDensity)
+      );
+    }
+
+    document.addEventListener("DOMContentLoaded", () => TCUI.bootPage(() => {
+      TCUI.mountHeader("app-header", {
+        active: "products",
+        titleKey: "products",
+        subtitleKey: "productsSubFull",
+        icon: "bi-box-seam"
+      });
+      loadViewPrefs();
+      applyViewClasses();
+      document.getElementById("btnRefresh").onclick = load;
+      document.getElementById("btnImport").onclick = openImportModal;
+      document.getElementById("btnCloseImport").onclick = closeImportModal;
+      document.getElementById("btnCancelImport").onclick = closeImportModal;
+      document.getElementById("btnDoImport").onclick = doImport;
+      document.getElementById("btnImportTemplate").onclick = () => {
+        try {
+          TCExport.downloadCatalogImportTemplate();
+          TCUI.toast(t("importTemplateDownloaded") || "Template downloaded", "ok");
+        } catch (e) {
+          TCUI.toast(e.message || t("error"), "err");
+        }
+      };
+      document.getElementById("importModal").addEventListener("click", (e) => {
+        if (e.target.id === "importModal") closeImportModal();
+      });
+      document.querySelectorAll("#importModeOpts .export-opt").forEach((btn) => {
+        btn.onclick = () => {
+          importMode = btn.getAttribute("data-mode") || "upsert";
+          document.querySelectorAll("#importModeOpts .export-opt").forEach((b) => b.classList.toggle("active", b === btn));
+        };
+      });
+      const drop = document.getElementById("importDrop");
+      const fileInput = document.getElementById("importFile");
+      drop.onclick = () => fileInput.click();
+      drop.addEventListener("dragover", (e) => { e.preventDefault(); drop.classList.add("drag"); });
+      drop.addEventListener("dragleave", () => drop.classList.remove("drag"));
+      drop.addEventListener("drop", (e) => {
+        e.preventDefault();
+        drop.classList.remove("drag");
+        const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+        if (f) handleImportFile(f);
+      });
+      fileInput.onchange = () => {
+        const f = fileInput.files && fileInput.files[0];
+        if (f) handleImportFile(f);
+        fileInput.value = "";
+      };
+      document.getElementById("btnExport").onclick = openExportModal;
+      document.getElementById("btnCloseExport").onclick = closeExportModal;
+      document.getElementById("btnCancelExport").onclick = closeExportModal;
+      document.getElementById("btnDoExport").onclick = doExport;
+      document.getElementById("exportModal").addEventListener("click", (e) => {
+        if (e.target.id === "exportModal") closeExportModal();
+      });
+      document.querySelectorAll("#exportFormatOpts .export-opt").forEach((btn) => {
+        btn.onclick = () => {
+          exportFormat = btn.getAttribute("data-format") || "xlsx";
+          document.querySelectorAll("#exportFormatOpts .export-opt").forEach((b) => b.classList.toggle("active", b === btn));
+        };
+      });
+      document.querySelectorAll("#exportImageOpts .export-opt").forEach((btn) => {
+        btn.onclick = () => {
+          exportWithImages = btn.getAttribute("data-images") === "1";
+          document.querySelectorAll("#exportImageOpts .export-opt").forEach((b) => b.classList.toggle("active", b === btn));
+        };
+      });
+      document.querySelectorAll("#exportScopeOpts .export-opt").forEach((btn) => {
+        btn.onclick = () => {
+          if (btn.id === "exportScopeSelected" && !selected.size) {
+            TCUI.toast(t("pickAtLeastOne") || "Select at least one product", "err");
+            return;
+          }
+          exportScope = btn.getAttribute("data-scope") || "filtered";
+          document.querySelectorAll("#exportScopeOpts .export-opt").forEach((b) => b.classList.toggle("active", b === btn));
+        };
+      });
+      document.querySelectorAll("#viewLayoutGroup button").forEach((btn) => {
+        btn.onclick = () => {
+          viewLayout = btn.getAttribute("data-layout") || "list";
+          saveViewPrefs();
+          applyViewClasses();
+        };
+      });
+      document.querySelectorAll("#viewDensityGroup button").forEach((btn) => {
+        btn.onclick = () => {
+          viewDensity = btn.getAttribute("data-density") || "comfortable";
+          saveViewPrefs();
+          applyViewClasses();
+        };
+      });
+      document.getElementById("q").oninput = render;
+      document.getElementById("filterCat").onchange = () => {
+        fillSubcategoryOptions();
+        render();
+      };
+      document.getElementById("filterSub").onchange = render;
+      document.getElementById("filterQc").onchange = render;
+      const qcParam = new URLSearchParams(location.search).get("qc");
+      if (qcParam && ["cal", "overdue", "dueSoon", "ok"].includes(qcParam)) {
+        document.getElementById("filterQc").value = qcParam;
+      }
+      document.getElementById("chkAll").onchange = (e) => {
+        if (e.target.checked) visibleCodes().forEach((c) => selected.add(c));
+        else visibleCodes().forEach((c) => selected.delete(c));
+        syncSelectionUI();
+        render();
+      };
+      document.getElementById("btnClearSel").onclick = () => {
+        selected.clear();
+        syncSelectionUI();
+        render();
+      };
+      document.getElementById("btnBulkDelete").onclick = bulkDelete;
+      load();
+    }, { pageId: "products" }));
+
+    window.addEventListener("pageshow", (e) => {
+      if (e.persisted) load();
+    });
+
+    function visibleCodes() {
+      return filteredItems().map((i) => i.code);
+    }
+
+    function filteredItems() {
+      const q = document.getElementById("q").value.trim().toUpperCase();
+      const cat = document.getElementById("filterCat").value;
+      const sub = document.getElementById("filterSub").value;
+      const qc = document.getElementById("filterQc").value;
+      return items.filter((i) => {
+        if (cat && i.category !== cat) return false;
+        if (sub && i.subcategory !== sub) return false;
+        if (qc === "cal") {
+          if (!i.calibrationRequired) return false;
+        } else if (qc === "overdue") {
+          if (!(i.calibrationRequired && i.qcStatus === "Expired")) return false;
+        } else if (qc === "dueSoon") {
+          if (!(i.calibrationRequired && i.qcStatus === "Due soon")) return false;
+        } else if (qc === "ok") {
+          if (!(i.calibrationRequired && i.qcStatus && i.qcStatus !== "Expired" && i.qcStatus !== "Due soon")) return false;
+        }
+        if (!q) return true;
+        return [i.code, i.description, i.category, i.subcategory].join(" ").toUpperCase().includes(q);
+      });
+    }
+
+    function applyCatalogQueryFilters() {
+      if (window.__catFiltersApplied) return;
+      window.__catFiltersApplied = true;
+      const params = new URLSearchParams(location.search);
+      const cat = params.get("category") || "";
+      const sub = params.get("subcategory") || "";
+      const item = params.get("item") || "";
+      if (!cat && !sub && !item) return;
+      const selCat = document.getElementById("filterCat");
+      const selSub = document.getElementById("filterSub");
+      const q = document.getElementById("q");
+      if (cat && [...selCat.options].some((o) => o.value === cat)) {
+        selCat.value = cat;
+        fillSubcategoryOptions();
+      }
+      if (sub && [...selSub.options].some((o) => o.value === sub)) {
+        selSub.value = sub;
+      }
+      if (item && q && !q.value) q.value = item;
+    }
+
+    function fillCategoryOptions() {
+      const sel = document.getElementById("filterCat");
+      const cur = sel.value;
+      const cats = [...new Set(items.map((i) => i.category).filter(Boolean))].sort((a, b) =>
+        String(a).localeCompare(String(b), undefined, { sensitivity: "base" })
+      );
+      sel.innerHTML = `<option value="">${t("allCategories") || "All categories"}</option>` +
+        cats.map((c) => `<option value="${escHtml(c)}">${escHtml(c)}</option>`).join("");
+      if (cats.includes(cur)) sel.value = cur;
+      fillSubcategoryOptions();
+    }
+
+    function fillSubcategoryOptions() {
+      const cat = document.getElementById("filterCat").value;
+      const sel = document.getElementById("filterSub");
+      const cur = sel.value;
+      const pool = cat ? items.filter((i) => i.category === cat) : items;
+      const subs = [...new Set(pool.map((i) => i.subcategory).filter(Boolean))].sort((a, b) =>
+        String(a).localeCompare(String(b), undefined, { sensitivity: "base" })
+      );
+      sel.innerHTML = `<option value="">${t("allSubcategories") || "All subcategories"}</option>` +
+        subs.map((s) => `<option value="${escHtml(s)}">${escHtml(s)}</option>`).join("");
+      if (subs.includes(cur)) sel.value = cur;
+      else sel.value = "";
+    }
+
+    function exportRows() {
+      if (exportScope === "selected" && selected.size) {
+        return items.filter((i) => selected.has(i.code));
+      }
+      return filteredItems();
+    }
+
+    function syncSelectionUI() {
+      const n = selected.size;
+      document.getElementById("bulkBar").classList.toggle("show", n > 0);
+      document.getElementById("bulkLabel").textContent = t("selectedCountN", { n });
+      const codes = visibleCodes();
+      document.getElementById("chkAll").checked = codes.length > 0 && codes.every((c) => selected.has(c));
+    }
+
+    function openExportModal() {
+      const filtered = filteredItems();
+      if (!filtered.length && !selected.size) {
+        TCUI.toast(t("noProducts"), "err");
+        return;
+      }
+      exportFormat = "xlsx";
+      exportWithImages = false;
+      exportScope = selected.size ? "selected" : "filtered";
+      document.querySelectorAll("#exportFormatOpts .export-opt").forEach((b) =>
+        b.classList.toggle("active", b.getAttribute("data-format") === exportFormat)
+      );
+      document.querySelectorAll("#exportImageOpts .export-opt").forEach((b) =>
+        b.classList.toggle("active", (b.getAttribute("data-images") === "1") === exportWithImages)
+      );
+      document.querySelectorAll("#exportScopeOpts .export-opt").forEach((b) =>
+        b.classList.toggle("active", b.getAttribute("data-scope") === exportScope)
+      );
+      document.getElementById("exportFilteredHint").textContent =
+        t("exportFilteredHintN", { n: filtered.length }) || `${filtered.length} in current filters`;
+      document.getElementById("exportSelectedHint").textContent =
+        t("exportSelectedHintN", { n: selected.size }) || `${selected.size} selected`;
+      document.getElementById("exportModalHint").textContent =
+        t("exportProductsHint") || "Choose format, images, and scope";
+      document.getElementById("exportModal").style.display = "block";
+    }
+
+    function closeExportModal() {
+      document.getElementById("exportModal").style.display = "none";
+    }
+
+    function openImportModal() {
+      if (!can("tool.create") && !can("tool.edit") && !can("tool.receive") && !can("inventory.adjust")) {
+        TCUI.toast("FORBIDDEN", "err");
+        return;
+      }
+      importRows = [];
+      importErrors = [];
+      importMode = "upsert";
+      document.querySelectorAll("#importModeOpts .export-opt").forEach((b) =>
+        b.classList.toggle("active", b.getAttribute("data-mode") === importMode)
+      );
+      document.getElementById("importFileName").textContent = "";
+      document.getElementById("importStats").style.display = "none";
+      document.getElementById("importPreview").style.display = "none";
+      document.getElementById("importPreview").innerHTML = "";
+      document.getElementById("btnDoImport").disabled = true;
+      document.getElementById("importModal").style.display = "block";
+    }
+
+    function closeImportModal() {
+      if (importBusy) return;
+      document.getElementById("importModal").style.display = "none";
+    }
+
+    function renderImportPreview() {
+      const stats = document.getElementById("importStats");
+      const preview = document.getElementById("importPreview");
+      const okN = importRows.length;
+      const errN = importErrors.length;
+      const cols = TCExport.IMPORT_COLUMN_ORDER || [
+        "code", "category", "subcategory", "item", "description",
+        "minStock", "stockQty", "price", "unit", "imageUrl"
+      ];
+      const colLabel = {
+        code: t("code") || "Code",
+        category: t("category") || "Category",
+        subcategory: t("subcategory") || "Subcategory",
+        item: t("item") || "Item",
+        description: t("description") || "Description",
+        minStock: t("minStock") || "Min stock",
+        stockQty: t("stockQty") || "Stock qty",
+        price: t("price") || "Price",
+        unit: t("unit") || "Unit",
+        imageUrl: t("imageUrl") || "Image URL"
+      };
+      stats.style.display = "flex";
+      stats.innerHTML =
+        `<span class="chip ok">${okN} ${t("importReadyRows") || "ready"}</span>` +
+        (errN ? `<span class="chip err">${errN} ${t("importIssueRows") || "issues"}</span>` : "") +
+        `<span class="chip">${t("importColumnsHint") || "Code · Category · Subcategory · Item · Description · …"}</span>`;
+
+      const previewRows = [
+        ...importErrors.slice(0, 40).map((e) => {
+          const blank = {};
+          cols.forEach((k) => { blank[k] = ""; });
+          return {
+            err: true,
+            row: e.row,
+            code: e.code || "",
+            description: e.error + (e.detail ? ` (${e.detail})` : ""),
+            ...blank
+          };
+        }),
+        ...importRows.slice(0, 80).map((r) => ({
+          err: false,
+          row: r.row,
+          code: r.code,
+          category: r.category || "—",
+          subcategory: r.subcategory || "—",
+          item: r.item || "—",
+          description: r.description,
+          minStock: r.minStock != null ? r.minStock : "—",
+          stockQty: r.stockQty != null ? r.stockQty : "—",
+          price: r.price || "—",
+          unit: r.unit || "—",
+          imageUrl: r.imageUrl ? "✓" : "—"
+        }))
+      ];
+
+      if (!previewRows.length) {
+        preview.style.display = "none";
+        preview.innerHTML = "";
+        document.getElementById("btnDoImport").disabled = true;
+        return;
+      }
+
+      preview.style.display = "block";
+      preview.innerHTML = `<table>
+        <thead><tr>
+          <th>#</th>${cols.map((k) => `<th>${escHtml(colLabel[k] || k)}</th>`).join("")}
+        </tr></thead>
+        <tbody>${previewRows.map((r) => `<tr class="${r.err ? "err" : ""}">
+          <td>${escHtml(r.row)}</td>
+          ${cols.map((k) => `<td>${escHtml(r[k] != null ? r[k] : "—")}</td>`).join("")}
+        </tr>`).join("")}</tbody>
+      </table>`;
+      document.getElementById("btnDoImport").disabled = !importRows.length || importBusy;
+    }
+
+    async function handleImportFile(file) {
+      try {
+        document.getElementById("importFileName").textContent = file.name || "";
+        const parsed = await TCExport.parseCatalogImportFile(file);
+        importRows = parsed.rows || [];
+        importErrors = [];
+        (parsed.errors || []).forEach((e) => {
+          if (typeof e === "string") importErrors.push({ row: "—", error: e });
+          else importErrors.push(e);
+        });
+        if (!importRows.length && !importErrors.length) {
+          TCUI.toast(t("importEmptyFile") || "No product rows found", "err");
+        }
+        renderImportPreview();
+      } catch (e) {
+        console.error(e);
+        importRows = [];
+        importErrors = [{ row: "—", error: e.message || String(e) }];
+        renderImportPreview();
+        TCUI.toast(e.message || t("error"), "err");
+      }
+    }
+
+    async function doImport() {
+      if (!importRows.length || importBusy) return;
+      importBusy = true;
+      const btn = document.getElementById("btnDoImport");
+      btn.disabled = true;
+      btn.innerHTML = `<span class="spinner-border spinner-border-sm"></span> ${t("importing") || "Importing…"}`;
+      try {
+        const data = await apiPostPlain({
+          action: "bulkUpsertProducts",
+          mode: importMode,
+          rows: importRows
+        });
+        if (!data || data.error) throw new Error((data && data.error) || t("error"));
+        const created = data.created || 0;
+        const updated = data.updated || 0;
+        const skipped = data.skipped || 0;
+        const failed = data.failed || 0;
+        TCUI.toast(
+          t("importDoneSummary", { created, updated, skipped, failed }) ||
+            `Imported: ${created} new, ${updated} updated, ${skipped} skipped, ${failed} failed`,
+          failed ? "err" : "ok"
+        );
+        if (failed && Array.isArray(data.results)) {
+          const failRows = data.results.filter((r) => !r.ok).slice(0, 20);
+          if (failRows.length) {
+            importErrors = failRows.map((r) => ({
+              row: r.row,
+              code: r.code,
+              error: r.error || "FAILED"
+            }));
+            renderImportPreview();
+          } else {
+            importBusy = false;
+            closeImportModal();
+          }
+        } else {
+          importBusy = false;
+          closeImportModal();
+        }
+        await load();
+      } catch (e) {
+        console.error(e);
+        TCUI.toast(e.message || t("error"), "err");
+      } finally {
+        importBusy = false;
+        btn.innerHTML = `<i class="bi bi-download"></i> <span>${t("importNow") || "Import now"}</span>`;
+        btn.disabled = !importRows.length;
+      }
+    }
+
+    function doExport() {
+      const rows = exportRows();
+      if (!rows.length) {
+        TCUI.toast(t("noProducts"), "err");
+        return;
+      }
+      try {
+        const label = TCExport.stamp();
+        if (exportFormat === "pdf") {
+          TCExport.exportCatalogPdf(rows, { withImages: exportWithImages, label });
+        } else {
+          TCExport.exportCatalogExcel(rows, { withImages: exportWithImages, label });
+        }
+        closeExportModal();
+        TCUI.toast(t("exportDone") || `Exported ${rows.length}`, "ok");
+      } catch (e) {
+        console.error(e);
+        TCUI.toast(e.message || t("error"), "err");
+      }
+    }
+
+    async function load() {
+      try {
+        const data = await apiGet({ action: "getCatalogStock" });
+        if (data && data.error) throw new Error(data.error);
+        items = (data && data.items) || [];
+        const totals = (data && data.totals) || {};
+        document.getElementById("kTotal").textContent = totals.products || 0;
+        document.getElementById("kAvail").textContent = totals.available || 0;
+        document.getElementById("kOut").textContent = totals.out || 0;
+        document.getElementById("kLow").textContent = totals.lowStock || 0;
+        fillCategoryOptions();
+        applyCatalogQueryFilters();
+        [...selected].forEach((c) => { if (!items.some((i) => i.code === c)) selected.delete(c); });
+        syncSelectionUI();
+        render();
+      } catch (e) {
+        document.getElementById("body").innerHTML = `<div class="pp-empty text-danger">${escHtml(e.message || "Error")}</div>`;
+      }
+    }
+
+    function thumbHtml(i) {
+      if (i.imageUrl) return `<img class="pp-thumb" src="${escHtml(i.imageUrl)}" alt="">`;
+      return `<div class="pp-thumb"><i class="bi bi-box-seam"></i></div>`;
+    }
+
+    function qcChipHtml(i) {
+      if (!i.calibrationRequired || !i.calibrationNextDue || i.qcStatus == null) return "";
+      const days = i.qcDaysLeft;
+      if (i.qcStatus === "Expired") {
+        return `<span class="pp-chip qc-expired" title="${escHtml(t("qcExpired"))}"><i class="bi bi-exclamation-octagon"></i> ${t("qcExpired")}: ${Math.abs(days)}d</span>`;
+      }
+      if (i.qcStatus === "Due soon") {
+        return `<span class="pp-chip qc-due" title="${escHtml(t("qcDueSoon"))}"><i class="bi bi-exclamation-triangle"></i> ${t("qcDueSoon")}: ${days}d</span>`;
+      }
+      return `<span class="pp-chip qc-ok" title="${escHtml(t("qc"))}"><i class="bi bi-clipboard2-check"></i> ${days}d</span>`;
+    }
+
+    function render() {
+      const filtered = filteredItems();
+      const body = document.getElementById("body");
+      applyViewClasses();
+      if (!filtered.length) {
+        body.innerHTML = `<div class="pp-empty"><i class="bi bi-box-seam"></i>${t("noProducts")}</div>`;
+        syncSelectionUI();
+        return;
+      }
+      body.innerHTML = filtered.map((i) => {
+        const isSel = selected.has(i.code);
+        const out = i.out || i.issued || 0;
+        const inStore = Number(i.available || 0);
+        return `<article class="pp-row${i.lowStock ? " low" : ""}${isSel ? " selected" : ""}" data-edit="${escHtml(i.code)}" title="${escHtml(t("modeEdit") || "Edit")}">
+          <input type="checkbox" class="pp-check" data-sel="${escHtml(i.code)}" ${isSel ? "checked" : ""}>
+          ${thumbHtml(i)}
+          <div class="pp-id">
+            <div class="name">${escHtml(i.description || i.code)}</div>
+            <div class="code">${escHtml(i.code)}</div>
+            <div class="pp-meta">
+              <span><i class="bi bi-folder"></i> ${escHtml(i.category || "—")}</span>
+              <span><i class="bi bi-tag"></i> ${escHtml(i.subcategory || "—")}</span>
+              ${i.item ? `<span><i class="bi bi-box-seam"></i> ${escHtml(i.item)}</span>` : ""}
+            </div>
+          </div>
+          <div class="pp-side">
+            <div class="pp-stock">
+              <span class="pp-chip store" title="${escHtml(t("inStore") || "In store")}"><i class="bi bi-shop"></i> ${inStore}</span>
+              <span class="pp-chip out" title="${escHtml(t("qtyOut") || "Out")}"><i class="bi bi-box-arrow-up"></i> ${out}</span>
+              ${(i.projectOut || 0) > 0 ? `<span class="pp-chip kind" title="${escHtml(t("atProject") || "At project")}"><i class="bi bi-building"></i> ${i.projectOut}</span>` : ""}
+              ${qcChipHtml(i)}
+              ${i.lowStock ? `<span class="pp-chip low"><i class="bi bi-exclamation-triangle"></i></span>` : ""}
+            </div>
+          </div>
+        </article>`;
+      }).join("");
+      body.querySelectorAll("[data-sel]").forEach((chk) => {
+        chk.onclick = (e) => e.stopPropagation();
+        chk.onchange = () => {
+          const code = chk.getAttribute("data-sel");
+          if (chk.checked) selected.add(code); else selected.delete(code);
+          syncSelectionUI();
+          render();
+        };
+      });
+      body.querySelectorAll("[data-edit]").forEach((row) => {
+        row.onclick = () => {
+          const code = row.getAttribute("data-edit");
+          if (!code) return;
+          location.href = "product-form.html?code=" + encodeURIComponent(code);
+        };
+      });
+      syncSelectionUI();
+    }
+
+    async function bulkDelete() {
+      if (!can("tool.delete")) return TCUI.toast("FORBIDDEN", "err");
+      const codes = [...selected];
+      if (!codes.length) return;
+      if (!confirm(t("deleteSelectedProductsConfirm", { n: codes.length }))) return;
+      let deleted = 0;
+      for (const code of codes) {
+        const res = await apiGet({ action: "deleteProduct", code });
+        if (res && res.success) {
+          selected.delete(code);
+          deleted++;
+        } else {
+          TCUI.toast((res && res.error) || code, "err");
+        }
+      }
+      TCUI.toast(t("bulkDeleteProductsDone", { n: deleted }), deleted ? "ok" : "err");
+      await load();
+    }
+  </script>
+</body>
+</html>
