@@ -731,12 +731,6 @@
               <label class="vl-chip"><input type="checkbox"><span class="cb"></span>Transport / handling</label>
               <label class="vl-chip"><input type="checkbox"><span class="cb"></span>Other</label>
             </div>
-            <div class="vl-grid">
-              <div class="vl-cell span4 xtall">
-                <div class="lbl">Reason — what is being charged and why</div>
-                <div class="field"><textarea id="reason" placeholder="State the reason clearly: what was issued, damaged, lost, or deducted…"></textarea></div>
-              </div>
-            </div>
           </div>
 
           <div class="vl-block">
@@ -871,7 +865,7 @@
     const TENS = ["","","Twenty","Thirty","Forty","Fifty","Sixty","Seventy","Eighty","Ninety"];
     const TEXT_IDS = [
       "formNo","project","location","personCode","iqama","phone",
-      "subcontractor","personName","reason","extraCost"
+      "subcontractor","personName","extraCost"
     ];
     let loadTimer = null;
     let lastLoadedCode = "";
