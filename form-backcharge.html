@@ -598,19 +598,19 @@
       .vl-sheet.mode-notice .col-qty { width: 7% !important; }
       .vl-sheet.mode-notice .col-unit { width: 7% !important; }
 
-      /*
-        Charge stays portrait too (landscape was splitting pages badly).
-        Hide photo column on print to free width for Rate/Amount + description.
-      */
+      /* Charge: keep Photo + money columns — compact widths for A4 portrait */
+      .vl-sheet.mode-charge .col-code { width: 9% !important; }
       .vl-sheet.mode-charge .col-photo,
-      .vl-sheet.mode-charge td.photo { display: none !important; }
-      .vl-sheet.mode-charge .col-code { width: 11% !important; }
-      .vl-sheet.mode-charge .col-desc { width: 34% !important; }
-      .vl-sheet.mode-charge .col-notes { width: 16% !important; }
-      .vl-sheet.mode-charge .col-qty { width: 7% !important; }
-      .vl-sheet.mode-charge .col-unit { width: 7% !important; }
-      .vl-sheet.mode-charge .col-rate { width: 10% !important; }
-      .vl-sheet.mode-charge .col-amt { width: 11% !important; }
+      .vl-sheet.mode-charge td.photo { display: table-cell !important; width: 44px !important; }
+      .vl-sheet.mode-charge .col-desc { width: 26% !important; }
+      .vl-sheet.mode-charge .col-notes { width: 14% !important; }
+      .vl-sheet.mode-charge .col-qty { width: 6% !important; }
+      .vl-sheet.mode-charge .col-unit { width: 6% !important; }
+      .vl-sheet.mode-charge .col-rate { width: 9% !important; }
+      .vl-sheet.mode-charge .col-amt { width: 10% !important; }
+      .vl-sheet.mode-charge .vl-thumb {
+        width: 36px !important; height: 36px !important;
+      }
     }
   </style>
 </head>
@@ -856,7 +856,7 @@
         secItems: "scan product code — description, unit and rate fill from catalog",
         secAuth: "⑤ Authorizations",
         printLabel: "طباعة الخصم",
-        hint: "نسخة تجارية مع أسعار ومبالغ — طباعة A4 عمودية؛ عمود الصورة يُخفى عند الطباعة لتسع الأعمدة المالية.",
+        hint: "نسخة تجارية مع أسعار ومبالغ — طباعة A4 عمودية مع عمود الصورة والأعمدة المالية.",
         formPrefix: "BC"
       }
     };
