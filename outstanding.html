@@ -518,8 +518,14 @@
      * is itself a listed store keeper).
      */
     const KEEPER_ALIASES = {};
-    /** Roles that operate the warehouse terminal (Store Keepers). Admin is NOT a store keeper. */
+    /** Roles that operate warehouse checkout (used for self-scope). Admin is NOT included. */
     const STORE_KEEPER_ROLES = new Set(["employee", "store_manager", "material_controller"]);
+    /**
+     * Admin “Store keeper” filter options — only classic Store Keeper (`employee`).
+     * Material Controller / Store Manager are separate roles and must not linger here
+     * after a demotion/reassignment from Store Keeper.
+     */
+    const FILTER_KEEPER_ROLES = new Set(["employee"]);
     const userRoles = Object.create(null);
     /** Server-enforced scope: { mode: "self"|"all", keeper: "" } */
     let listScope = { mode: "all", keeper: "" };
@@ -749,8 +755,8 @@
           const username = String(u.username);
           const role = String(u.role || "").trim().toLowerCase();
           userRoles[username] = role;
-          // Only real warehouse / store-keeper roles — not qc, worker, logistics, etc.
-          if (!STORE_KEEPER_ROLES.has(role)) return;
+          // Filter dropdown: classic Store Keeper only (employee).
+          if (!FILTER_KEEPER_ROLES.has(role)) return;
           dbKeepers.add(username);
           keeperLabels[username] = formatKeeperLabel(username, u.fullName);
         });
