@@ -7,7 +7,7 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+Arabic:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="app.css?v=navux1">
+  <link rel="stylesheet" href="app.css?v=bcprint1">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#185020">
   <script src="config.js?v=navperm2"></script>
@@ -31,7 +31,7 @@
       background: #14532d; color: #fff;
     }
     .vl-mode-hint {
-      width: 100%; max-width: 216mm; margin: -0.35rem auto 0.85rem;
+      width: 100%; max-width: 297mm; margin: -0.35rem auto 0.85rem;
       font-size: 11px; color: #6b7280; line-height: 1.4;
     }
 
@@ -54,6 +54,7 @@
       box-shadow: 0 16px 42px -24px rgba(0,0,0,.22);
       -webkit-print-color-adjust: exact; print-color-adjust: exact;
     }
+    .vl-sheet.mode-charge { width: 297mm; max-width: 100%; }
     .vl-sheet::before {
       content: "";
       position: absolute;
@@ -452,41 +453,114 @@
     }
 
     @media print {
-      @page { size: A4 portrait; margin: 7mm 8mm; }
-      html, body { background: #fff !important; height: auto !important; overflow: visible !important; }
+      @page { size: A4 portrait; margin: 8mm 9mm; }
+      html, body {
+        background: #fff !important;
+        height: auto !important;
+        min-height: 0 !important;
+        overflow: visible !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
       .no-print, .vl-toolbar, .vl-mode-hint, .vl-addrow, .vl-load-btn,
       .tc-topbar, .tc-sidebar, .tc-sidebar-backdrop,
       .tc-menu-btn, #app-header, #tc-topbar, #tc-sidebar, #tc-sidebar-backdrop { display: none !important; }
-      .tc-wrap, .tc-shell, #tc-app-layout, .tc-app-layout {
+      .tc-wrap, .tc-shell, #tc-app-layout, .tc-app-layout, .tc-main, .tc-content {
         display: block !important; margin: 0 !important; padding: 0 !important;
         max-width: none !important; width: 100% !important;
-        height: auto !important; overflow: visible !important; position: static !important;
+        height: auto !important; min-height: 0 !important;
+        overflow: visible !important; position: static !important;
+        grid-template: none !important; gap: 0 !important;
       }
       .vl-sheet {
         width: 100% !important; max-width: none !important;
         border: none !important; box-shadow: none !important; margin: 0 !important;
-        font-size: 11.5px !important; line-height: 1.35 !important;
+        font-size: 10.5px !important; line-height: 1.3 !important;
       }
+      .vl-sheet.mode-charge { width: 100% !important; }
       .vl-sheet::before { display: none !important; }
-      .vl-block, .vl-costbox, .vl-decl, .vl-signs-wrap, .vl-header, .vl-banner {
-        break-inside: avoid-page; page-break-inside: avoid;
+
+      /*
+        Page-break policy (professional):
+        - Allow the items table to flow across pages (thead repeats)
+        - Never force a whole large .vl-block onto the next page (causes huge blank gaps)
+        - Keep only compact units together: header, money/declaration/signatures
+      */
+      .vl-block { break-inside: auto; page-break-inside: auto; }
+      .vl-header,
+      .vl-banner,
+      .vl-print-meta,
+      .vl-costbox,
+      .vl-decl,
+      .vl-print-tail {
+        break-inside: avoid;
+        page-break-inside: avoid;
       }
-      .vl-sec { break-after: avoid-page; page-break-after: avoid; margin-top: 8px !important; }
-      .vl-lines-wrap { overflow: visible !important; border-left: 0 !important; border-right: 0 !important; }
+      .vl-sec {
+        break-after: avoid;
+        page-break-after: avoid;
+        margin-top: 6px !important;
+      }
+      .vl-sec + .vl-chips,
+      .vl-sec + .vl-lines-wrap,
+      .vl-sec + .vl-grid,
+      .vl-sec + .vl-costbox,
+      .vl-sec + .vl-signs,
+      .vl-sec + .vl-status {
+        break-before: avoid;
+        page-break-before: avoid;
+      }
+
+      .vl-lines-wrap {
+        overflow: visible !important;
+        border-left: 0 !important;
+        border-right: 0 !important;
+      }
       .vl-lines {
         table-layout: fixed !important;
         width: 100% !important;
         min-width: 0 !important;
+        border-collapse: collapse !important;
       }
       .vl-lines thead { display: table-header-group; }
+      .vl-lines tfoot { display: table-footer-group; }
+      .vl-lines tbody { display: table-row-group; }
       .vl-lines tr { break-inside: avoid; page-break-inside: avoid; }
       .print-hide-empty { display: none !important; }
-      .vl-header { grid-template-columns: 70px 1fr 132px !important; }
-      .vl-banner { padding: 8px 0 8px !important; gap: 8px !important; }
-      .vl-banner::after { left: 0 !important; right: 0 !important; }
+
+      .vl-header { grid-template-columns: 58px 1fr 118px !important; }
+      .vl-header .logo-cell { padding: 6px 4px !important; }
+      .vl-header .logo-cell img,
+      .vl-header .logo-cell .fallback { width: 46px !important; height: 46px !important; }
+      .vl-header .co-cell { padding: 6px 10px !important; }
+      .vl-header .co-en { font-size: 12px !important; }
+      .vl-header .co-ar { font-size: 11px !important; margin-top: 2px !important; }
+      .vl-header .co-sub { margin-top: 2px !important; font-size: 8px !important; }
+      .vl-header .docref-cell { margin: 4px 0 !important; }
+      .vl-header .drtitle { padding: 3px 6px !important; font-size: 8px !important; }
+      .vl-header .drrow .drlbl,
+      .vl-header .drrow .drval { padding: 3px 5px !important; font-size: 8px !important; }
+
+      .vl-banner { padding: 6px 0 6px !important; }
+      .vl-banner::after { left: 0 !important; right: 0 !important; height: 2px !important; }
       .vl-banner .ban-kicker, .vl-banner .ban-meta { display: none !important; }
-      .vl-body { padding: 6px 0 4px !important; }
+      .vl-banner .ban-en { font-size: 14px !important; letter-spacing: .05em !important; }
+      .vl-banner .ban-sub { font-size: 9px !important; margin-top: 2px !important; }
+
+      .vl-body { padding: 4px 0 2px !important; }
       .vl-signs-wrap { padding: 0 !important; }
+      .vl-sec .sec-num,
+      .vl-sec .sec-lbl { padding: 3px 8px !important; font-size: 8px !important; }
+      .vl-cell { min-height: 26px !important; }
+      .vl-cell.xtall { min-height: 48px !important; }
+      .vl-cell .lbl { padding: 2px 6px !important; font-size: 7px !important; }
+      .vl-cell .field input,
+      .vl-cell .field textarea { padding: 4px 6px !important; font-size: 10px !important; }
+      .vl-chips { padding: 5px 6px !important; gap: 3px !important; }
+      .vl-chip { padding: 3px 7px 3px 6px !important; font-size: 9px !important; }
+      .vl-lines th { padding: 5px 4px !important; font-size: 7.5px !important; }
+      .vl-lines td input,
+      .vl-lines td textarea { padding: 4px 5px !important; font-size: 9.5px !important; }
       .vl-lines .col-del, .vl-lines td.del, .vl-lines .btn-del { display: none !important; }
       .vl-cell .field input, .vl-cell .field textarea, .vl-lines input, .vl-lines textarea, .vl-sign input, .vl-total input {
         border: none !important; background: transparent !important;
@@ -497,36 +571,46 @@
         white-space: pre-wrap !important;
         overflow: visible !important;
         height: auto !important;
-        min-height: 28px !important;
+        min-height: 0 !important;
+        max-height: none !important;
       }
       .col-resizer { display: none !important; }
       .vl-lines td.code input { color: #14532d !important; -webkit-text-fill-color: #14532d !important; }
-      .vl-thumb { width: 48px !important; height: 48px !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-      .vl-lines .col-photo, .vl-lines td.photo { width: 54px !important; }
+      .vl-thumb {
+        width: 34px !important; height: 34px !important;
+        -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;
+      }
+      .vl-lines .col-photo, .vl-lines td.photo { width: 40px !important; padding: 2px !important; }
+      .vl-sign { min-height: 72px !important; padding: 6px 7px !important; }
       .vl-sign input { border-top: 1px dashed #9ca3af !important; }
+      .vl-decl { margin-top: 8px !important; padding: 6px 8px !important; font-size: 8.5px !important; }
+      .vl-foot { padding: 5px 0 !important; font-size: 7px !important; }
       .vl-header .drtitle, .vl-sec .sec-num, .vl-sec .sec-lbl,
       .vl-lines th, .vl-total tr.grand th, .vl-chip:has(input:checked),
       .vl-chip input:checked + .cb, .vl-cell .lbl.green, .vl-cell .lbl.red {
         -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;
       }
 
-      /* Notice = portrait, more room for description/notes */
-      .vl-sheet.mode-notice .col-code { width: 12% !important; }
-      .vl-sheet.mode-notice .col-desc { width: 40% !important; }
+      /* Notice: more room for text columns */
+      .vl-sheet.mode-notice .col-code { width: 11% !important; }
+      .vl-sheet.mode-notice .col-desc { width: 42% !important; }
       .vl-sheet.mode-notice .col-notes { width: 24% !important; }
-      .vl-sheet.mode-notice .col-qty { width: 8% !important; }
-      .vl-sheet.mode-notice .col-unit { width: 8% !important; }
-      .vl-sheet.mode-notice .vl-banner .ban-en { font-size: 16px !important; }
+      .vl-sheet.mode-notice .col-qty { width: 7% !important; }
+      .vl-sheet.mode-notice .col-unit { width: 7% !important; }
 
-      /* Charge = landscape page (set via #printPageStyle) + balanced money columns */
-      .vl-sheet.mode-charge .col-code { width: 10% !important; }
-      .vl-sheet.mode-charge .col-desc { width: 30% !important; }
+      /*
+        Charge stays portrait too (landscape was splitting pages badly).
+        Hide photo column on print to free width for Rate/Amount + description.
+      */
+      .vl-sheet.mode-charge .col-photo,
+      .vl-sheet.mode-charge td.photo { display: none !important; }
+      .vl-sheet.mode-charge .col-code { width: 11% !important; }
+      .vl-sheet.mode-charge .col-desc { width: 34% !important; }
       .vl-sheet.mode-charge .col-notes { width: 16% !important; }
-      .vl-sheet.mode-charge .col-qty { width: 6% !important; }
-      .vl-sheet.mode-charge .col-unit { width: 6% !important; }
-      .vl-sheet.mode-charge .col-rate { width: 9% !important; }
-      .vl-sheet.mode-charge .col-amt { width: 10% !important; }
-      .vl-sheet.mode-charge { font-size: 11px !important; }
+      .vl-sheet.mode-charge .col-qty { width: 7% !important; }
+      .vl-sheet.mode-charge .col-unit { width: 7% !important; }
+      .vl-sheet.mode-charge .col-rate { width: 10% !important; }
+      .vl-sheet.mode-charge .col-amt { width: 11% !important; }
     }
   </style>
 </head>
@@ -547,7 +631,7 @@
         <button type="button" class="tc-btn" id="btnClear"><i class="bi bi-eraser"></i> <span data-i18n="bcClear">Clear</span></button>
         <button type="button" class="tc-btn tc-btn-primary" id="btnPrint"><i class="bi bi-printer"></i> <span id="printLabel">طباعة الإشعار</span></button>
       </div>
-      <p class="vl-mode-hint no-print" id="modeHint">إشعار مواد/عهدة بدون مبالغ — الطباعة عمودية A4 مع مساحة أوسع للوصف والملاحظات.</p>
+      <p class="vl-mode-hint no-print" id="modeHint">إشعار مواد/عهدة بدون مبالغ — طباعة A4 عمودية مضغوطة بدون تقسيم قبيح للصفحات.</p>
 
       <div class="vl-sheet mode-notice" id="bcSheet">
         <div class="vl-header">
@@ -692,6 +776,7 @@
             </div>
           </div>
 
+          <div class="vl-print-tail">
           <div class="vl-block sec-money">
             <div class="vl-sec">
               <span class="sec-num">④ Amount</span>
@@ -731,7 +816,6 @@
             All parties confirm that the particulars on this form are true and correct. This document forms part of the project commercial record
             and may be deducted from the subcontractor’s account.
           </div>
-        </div>
 
         <div class="vl-signs-wrap">
           <div class="vl-block">
@@ -745,6 +829,8 @@
               <div class="vl-sign"><div class="stitle">Approved by</div><div class="sspace"></div><input type="text" placeholder="Name" autocomplete="off"><div class="shint">Commercial / PM</div></div>
               <div class="vl-sign"><div class="stitle">Subcontractor</div><div class="sspace"></div><input type="text" placeholder="Name" autocomplete="off"><div class="shint">Acknowledgement</div></div>
             </div>
+          </div>
+        </div>
           </div>
         </div>
 
@@ -771,7 +857,7 @@
         secItems: "scan product code — description and unit fill from catalog",
         secAuth: "④ Authorizations",
         printLabel: "طباعة الإشعار",
-        hint: "إشعار مواد/عهدة بدون مبالغ — طباعة عمودية A4 مع مساحة أوسع للوصف والملاحظات.",
+        hint: "إشعار مواد/عهدة بدون مبالغ — طباعة A4 عمودية مضغوطة، والجدول يكمل على صفحة ثانية فقط عند الحاجة.",
         formPrefix: "BCN"
       },
       charge: {
@@ -784,7 +870,7 @@
         secItems: "scan product code — description, unit and rate fill from catalog",
         secAuth: "⑤ Authorizations",
         printLabel: "طباعة الخصم",
-        hint: "نسخة تجارية مع أسعار ومبالغ — الطباعة أفقية (Landscape) حتى تتسع كل الأعمدة بشكل احترافي.",
+        hint: "نسخة تجارية مع أسعار ومبالغ — طباعة A4 عمودية؛ عمود الصورة يُخفى عند الطباعة لتسع الأعمدة المالية.",
         formPrefix: "BC"
       }
     };
@@ -846,10 +932,25 @@
         s.id = "printPageStyle";
         document.head.appendChild(s);
       }
-      // Charge mode needs landscape so Rate/Amount + description/notes all fit.
-      s.textContent = formMode === "charge"
-        ? "@media print { @page { size: A4 landscape; margin: 8mm; } }"
-        : "@media print { @page { size: A4 portrait; margin: 7mm 8mm; } }";
+      // Always portrait — landscape caused ugly multi-page splits.
+      s.textContent = "@media print { @page { size: A4 portrait; margin: 8mm 9mm; } }";
+    }
+    function preparePrintLayout() {
+      document.body.classList.add("is-printing");
+      applyPrintPageStyle();
+      preparePrintRows();
+      document.querySelectorAll(".in-desc, .in-notes").forEach((el) => {
+        if (!el) return;
+        el.style.height = "auto";
+        el.style.height = Math.max(18, el.scrollHeight) + "px";
+      });
+      // Update printed page label to "1 / …" only when content clearly overflows one sheet.
+      const pageEl = document.querySelector(".vl-header .drrow:last-child .drval");
+      if (pageEl) pageEl.textContent = "1 / 1";
+    }
+    function clearPrintLayout() {
+      document.body.classList.remove("is-printing");
+      clearPrintRows();
     }
     function resetColWidths() {
       const table = document.getElementById("linesTable") || document.querySelector(".vl-lines");
@@ -1276,18 +1377,13 @@
       document.getElementById("btnClear")?.addEventListener("click", () => {
         if (confirm(t("bcClearConfirm") || "Clear all fields?")) clearForm();
       });
-      window.addEventListener("beforeprint", () => {
-        applyPrintPageStyle();
-        preparePrintRows();
-        document.querySelectorAll(".in-desc, .in-notes").forEach(autosizeField);
-      });
-      window.addEventListener("afterprint", clearPrintRows);
+      window.addEventListener("beforeprint", preparePrintLayout);
+      window.addEventListener("afterprint", clearPrintLayout);
       document.getElementById("btnPrint")?.addEventListener("click", (e) => {
         e.preventDefault();
-        applyPrintPageStyle();
-        preparePrintRows();
+        preparePrintLayout();
         try { window.print(); } catch (_) {}
-        setTimeout(clearPrintRows, 800);
+        setTimeout(clearPrintLayout, 800);
       });
       document.getElementById("btnLoadPerson")?.addEventListener("click", () => loadPersonFromSystem(true));
       const pc = document.getElementById("personCode");
