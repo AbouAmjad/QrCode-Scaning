@@ -1,0 +1,25 @@
+export const CHAPTERS = [
+  { id: '01', title: 'The real world' },
+  { id: '02', title: 'The invisible problem' },
+  { id: '03', title: 'The question' },
+  { id: '04', title: 'The reveal' },
+  { id: '05', title: 'Follow one asset' },
+  { id: '06', title: 'Logistics' },
+  { id: '07', title: 'The site' },
+  { id: '08', title: 'Engineering' },
+  { id: '09', title: 'Quality' },
+  { id: '10', title: 'Safety' },
+  { id: '11', title: 'The connection' },
+  { id: '12', title: 'The differentiator' },
+  { id: '13', title: 'Full customization' },
+  { id: '14', title: 'Business rules' },
+  { id: '15', title: 'Roles & permissions' },
+  { id: '16', title: 'Operations to management' },
+  { id: '17', title: 'Executive view' },
+  { id: '18', title: 'The digital thread' },
+  { id: '19', title: 'Web application' },
+  { id: '20', title: 'The platform evolves' },
+  { id: '21', title: 'From the warehouse to the CEO' },
+] as const
+
+export const LIVE = 'https://aics.iskndr.com'
