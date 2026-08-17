@@ -1,5 +1,5 @@
 import { useLayoutEffect, useState } from 'react'
-import { Dossier, Flow, OrgTree, ProductShell, Reveal, Sequence, Spine, Stagger, Tag, BrandLockup } from '../components/Bits'
+import { Dossier, Flow, OrgTree, Reveal, Sequence, Spine, Stagger, Tag, BrandLockup } from '../components/Bits'
 import { COMPANY, LIVE } from '../data/story'
 
 type P = { on: boolean }
@@ -117,8 +117,8 @@ export function Ch04({ on: _on }: P) {
           <div className="reveal-frame">
             <img src={`${import.meta.env.BASE_URL}ui-login-aics.png`} alt="Live AICS login" />
           </div>
-          <div className="reveal-shell">
-            <ProductShell />
+          <div className="reveal-frame">
+            <img src={`${import.meta.env.BASE_URL}ui-dashboard-aics.png`} alt="Live AICS inventory dashboard" />
           </div>
         </div>
       </Reveal>
@@ -559,6 +559,11 @@ export function Ch17({ on: _on }: P) {
         <p className="lede pause">…to the few decisions that matter.</p>
       </Reveal>
       <Tag kind="live">Inventory dashboard — stock, value, alerts, movement</Tag>
+      <Reveal delay={0.4}>
+        <div className="reveal-frame dashboard-frame">
+          <img src={`${import.meta.env.BASE_URL}ui-dashboard-aics.png`} alt="AICS inventory dashboard — KPIs, health score, charts" />
+        </div>
+      </Reveal>
       <div className="kpis exec" style={{ marginTop: 18 }}>
         <div className="kpi">
           <span>Inventory</span>

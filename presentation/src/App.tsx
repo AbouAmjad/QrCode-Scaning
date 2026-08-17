@@ -2,6 +2,7 @@ import { useCallback, useEffect, useLayoutEffect, useState } from 'react'
 import gsap from 'gsap'
 import { ARC_PHASES, CHAPTERS, LIVE } from './data/story'
 import { VIEWS } from './sections/Chapters'
+import { AmbientAudio } from './components/AmbientAudio'
 import './index.css'
 
 export default function App() {
@@ -95,6 +96,7 @@ export default function App() {
             </div>
           </div>
           <div className="actions">
+            <AmbientAudio />
             <a className="icon-btn live-link" href={LIVE} title="Open live system">
               ↗
             </a>
@@ -134,7 +136,7 @@ export default function App() {
           <span className="progress-count">{String(i + 1).padStart(2, '0')} / {String(CHAPTERS.length).padStart(2, '0')}</span>
         </div>
 
-        <div className="hint">Scroll · arrows · space · F fullscreen · #chapter in URL</div>
+        <div className="hint">Scroll · swipe · arrows · space · F fullscreen · ambient ♫</div>
       </div>
 
       <div className="stage" key={chapter.id}>

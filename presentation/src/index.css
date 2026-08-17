@@ -440,6 +440,16 @@ body { overflow: hidden; -webkit-font-smoothing: antialiased; }
   object-fit: cover;
   object-position: center top;
 }
+.reveal-frame.dashboard-frame img {
+  height: min(42vh, 520px);
+  object-fit: cover;
+  object-position: left top;
+}
+.icon-btn.ambient-btn.on {
+  border-color: rgba(92, 184, 58, 0.55);
+  color: var(--accent-2);
+  box-shadow: 0 0 18px rgba(92, 184, 58, 0.22);
+}
 .reveal-duo {
   display: grid;
   grid-template-columns: 1.05fr 1fr;
@@ -705,12 +715,17 @@ body { overflow: hidden; -webkit-font-smoothing: antialiased; }
 
 @media (max-width: 980px) {
   .grid.dept, .grid.roles, .grid.blocks, .kpis, .dossier, .site, .reveal-duo { grid-template-columns: 1fr; }
+  .reveal-frame img { height: min(28vh, 280px); }
+  .reveal-frame.dashboard-frame img { height: min(32vh, 320px); }
   .reveal-shell .shell { transform: none; width: 100%; }
   .shell { grid-template-columns: 1fr; min-height: 0; }
   .shell nav { display: none; }
   .sheet-h, .sheet-r { grid-template-columns: 1fr 1fr; }
   .journey { grid-template-columns: 1fr; }
   .dots, .arc-rail { display: none; }
+  .topbar { left: 1rem; right: 1rem; top: 0.85rem; }
+  .actions { gap: 0.35rem; }
+  .icon-btn, .live-link { width: 36px; height: 36px; font-size: 0.92rem; }
   .progress-col {
     top: auto;
     bottom: 3.2rem;
@@ -724,13 +739,18 @@ body { overflow: hidden; -webkit-font-smoothing: antialiased; }
   .progress-bar { width: 72px; height: 4px; }
   .progress-fill { height: 100% !important; width: var(--pct, 50%); transition: width 520ms var(--ease); }
   .progress-meta { display: none; }
-  .display { max-width: 12ch; }
+  .display { max-width: 12ch; font-size: clamp(2rem, 9vw, 3.2rem); }
+  .display.wide { max-width: 100%; }
+  .lede { font-size: 0.95rem; max-width: 36ch; }
   .zoom-words { flex-direction: column; gap: 0.4rem; }
   .mark-text span { display: none; }
+  .hint { font-size: 0.62rem; bottom: 0.85rem; padding: 0 1rem; text-align: center; width: 100%; }
 }
 
 @media (max-width: 720px) {
   .grid.dept, .grid.frag, .grid.roles { grid-template-columns: 1fr 1fr; }
+  .kpis.exec { grid-template-columns: 1fr 1fr; }
   .devices { flex-wrap: wrap; }
-  .stage { padding: 10vh 6vw 12vh; }
+  .stage { padding: 8vh 5vw 14vh; }
+  .chapter { max-height: none; }
 }
