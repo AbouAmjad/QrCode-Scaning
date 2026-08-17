@@ -114,14 +114,14 @@ export function Ch04({ on: _on }: P) {
         <h2 className="display">One platform.</h2>
       </Reveal>
       <Reveal delay={0.7}>
-        <p className="lede">The live AICS operating environment — not a mockup of a future product.</p>
+        <p className="lede">AICS — Arabian Integrated Construction Services. The live operating environment, not a mockup.</p>
         <div style={{ marginTop: 10 }}>
           <Tag kind="live">QR terminal, inventory, projects, QC, timesheet, roles</Tag>
         </div>
       </Reveal>
       <Reveal delay={1.1}>
         <div className="reveal-frame">
-          <img src={`${import.meta.env.BASE_URL}ui-login-aics.png`} alt="Live AICS System login" />
+          <img src={`${import.meta.env.BASE_URL}ui-login-aics.png`} alt="Live AICS login" />
         </div>
       </Reveal>
       <Stagger className="pills" step={0.09} delay={1.6}>

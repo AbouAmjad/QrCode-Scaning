@@ -74,7 +74,7 @@ export default function App() {
         <div className="topbar">
           <div className="mark">
             <img src={`${import.meta.env.BASE_URL}aics-logo.png`} alt="AICS" />
-            <span>From the warehouse to the CEO</span>
+            <span>AICS · Arabian Integrated Construction Services</span>
           </div>
           <div className="actions">
             <button className="icon-btn" title="Fullscreen (F)" onClick={toggleFs}>
