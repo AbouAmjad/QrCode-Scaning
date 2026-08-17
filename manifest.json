@@ -1,0 +1,25 @@
+{
+  "name": "AICS System",
+  "short_name": "AICS",
+  "description": "AICS digital operations platform",
+  "start_url": "./login.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0b1220",
+  "theme_color": "#0b1220",
+  "icons": [
+    {
+      "src": "aics-logo.png",
+      "sizes": "200x200",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "aics-logo.png",
+      "sizes": "200x200",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

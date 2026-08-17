@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AICS System | Login</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="app.css?v=aics1">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f766e">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="apple-touch-icon" href="aics-logo.png">
+  <script src="config.js?v=navperm2"></script>
+  <script src="i18n.js?v=aics1"></script>
+  <script src="ui.js?v=aics1"></script>
+</head>
+<body class="tc-page tc-login">
+  <div class="tc-wrap">
+    <div class="tc-shell tc-auth-shell">
+      <div id="app-header"></div>
+
+      <div class="tc-auth-card">
+        <div class="tc-auth-hero">
+          <div class="tc-auth-logo"><img src="aics-logo.png" alt="AICS"></div>
+          <h1 class="tc-auth-title" data-i18n="brand">AICS System</h1>
+          <p class="tc-auth-sub" id="authSubtitle" data-i18n="loginSubNew">Sign in to your account</p>
+        </div>
+
+        <div class="tc-auth-tabs" role="tablist">
+          <button type="button" class="tc-auth-tab active" id="tabLogin" data-tab="login" role="tab" aria-selected="true">
+            <i class="bi bi-box-arrow-in-right"></i> <span data-i18n="loginTab">Login</span>
+          </button>
+          <button type="button" class="tc-auth-tab" id="tabRegister" data-tab="register" role="tab" aria-selected="false">
+            <i class="bi bi-person-plus"></i> <span data-i18n="registerTab">Register</span>
+          </button>
+        </div>
+
+        <div class="tc-auth-panel" id="panelLogin" role="tabpanel">
+          <div class="tc-field">
+            <label for="loginUser" data-i18n="loginUser">Username</label>
+            <input type="text" id="loginUser" autocomplete="username" data-i18n-placeholder="loginUserPh" placeholder="Enter username">
+          </div>
+          <div class="tc-field">
+            <label for="loginPass" data-i18n="loginPass">Password</label>
+            <input type="password" id="loginPass" autocomplete="current-password" data-i18n-placeholder="loginPassPh" placeholder="Enter password">
+          </div>
+          <button class="tc-btn tc-btn-primary w-100" id="loginBtn" type="button">
+            <i class="bi bi-shield-lock"></i> <span data-i18n="loginBtn">Secure Login</span>
+          </button>
+          <div class="tc-error" id="errorMessage"></div>
+        </div>
+
+        <div class="tc-auth-panel" id="panelRegister" role="tabpanel" hidden>
+          <div class="tc-field">
+            <label for="regFullName" data-i18n="regFullName">Full name</label>
+            <input type="text" id="regFullName" autocomplete="name">
+          </div>
+          <div class="tc-field">
+            <label for="regUsername" data-i18n="loginUser">Username</label>
+            <input type="text" id="regUsername" autocomplete="username">
+          </div>
+          <div class="tc-field">
+            <label for="regPhone" data-i18n="regPhone">Phone</label>
+            <input type="tel" id="regPhone" autocomplete="tel">
+          </div>
+          <div class="tc-field">
+            <label for="regEmail" data-i18n="regEmail">Email (optional)</label>
+            <input type="email" id="regEmail" autocomplete="email">
+          </div>
+          <div class="tc-field">
+            <label for="regRole" data-i18n="regPosition">Position</label>
+            <select id="regRole" class="tc-select w-100">
+              <option value="employee" data-i18n="role_employee">Storekeeper</option>
+              <option value="engineer" data-i18n="role_engineer">Engineer</option>
+              <option value="qc" data-i18n="role_qc">Quality Control</option>
+            </select>
+          </div>
+          <div class="tc-field">
+            <label for="regPass" data-i18n="regPassword">Password</label>
+            <input type="password" id="regPass" autocomplete="new-password">
+          </div>
+          <div class="tc-field">
+            <label for="regPass2" data-i18n="regConfirmPass">Confirm password</label>
+            <input type="password" id="regPass2" autocomplete="new-password">
+          </div>
+          <button class="tc-btn tc-btn-primary w-100" id="registerBtn" type="button">
+            <i class="bi bi-send"></i> <span data-i18n="regSubmit">Submit request</span>
+          </button>
+          <div class="tc-error" id="registerError"></div>
+          <div class="tc-auth-success" id="registerSuccess" hidden>
+            <i class="bi bi-check-circle-fill"></i>
+            <strong data-i18n="regSuccess">Request submitted</strong>
+            <p data-i18n="regPendingMsg">Your account is pending admin approval.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let activeTab = "login";
+
+    function showAuthTab(tab) {
+      activeTab = tab;
+      document.getElementById("tabLogin").classList.toggle("active", tab === "login");
+      document.getElementById("tabRegister").classList.toggle("active", tab === "register");
+      document.getElementById("tabLogin").setAttribute("aria-selected", tab === "login" ? "true" : "false");
+      document.getElementById("tabRegister").setAttribute("aria-selected", tab === "register" ? "true" : "false");
+      document.getElementById("panelLogin").hidden = tab !== "login";
+      document.getElementById("panelRegister").hidden = tab !== "register";
+      const sub = document.getElementById("authSubtitle");
+      if (sub) sub.setAttribute("data-i18n", tab === "login" ? "loginSubNew" : "registerSub");
+      if (typeof TCI18N !== "undefined") TCI18N.applyDocumentLang();
+      if (tab === "login") document.getElementById("loginUser").focus();
+      else document.getElementById("regFullName").focus();
+    }
+
+    function loginErrorMessage(err) {
+      if (err === "ACCOUNT_PENDING") return t("loginPending");
+      if (err === "ACCOUNT_REJECTED") return t("loginRejected");
+      if (err === "ACCOUNT_DISABLED") return t("loginDisabled");
+      return t("loginBad");
+    }
+
+    async function login() {
+      const user = document.getElementById("loginUser").value.trim();
+      const pass = document.getElementById("loginPass").value;
+      const button = document.getElementById("loginBtn");
+      const errorDiv = document.getElementById("errorMessage");
+
+      errorDiv.style.display = "none";
+      if (!user || !pass) {
+        errorDiv.textContent = t("loginNeedBoth");
+        errorDiv.style.display = "block";
+        return;
+      }
+
+      button.disabled = true;
+      button.innerHTML = '<i class="bi bi-hourglass-split"></i> ' + t("loginBusy");
+
+      try {
+        const result = await loginRequest(user, pass);
+        if (result.ok && result.token) {
+          const role = normalizeRole(result.role || "employee");
+          setSession({
+            token: result.token,
+            role,
+            user: result.user || user,
+            permissions: result.permissions || [],
+            avatarUrl: result.avatarUrl || "",
+            fullName: result.fullName || ""
+          });
+          button.innerHTML = '<i class="bi bi-check-circle"></i> ' + t("loginOk");
+          setTimeout(() => { window.location = homePageForRole(role); }, 800);
+        } else if (result.badCreds) {
+          errorDiv.textContent = loginErrorMessage(result.error);
+          errorDiv.style.display = "block";
+          resetLoginButton();
+        } else {
+          errorDiv.textContent = t("networkError");
+          errorDiv.style.display = "block";
+          resetLoginButton();
+        }
+      } catch {
+        errorDiv.textContent = t("networkError");
+        errorDiv.style.display = "block";
+        resetLoginButton();
+      }
+    }
+
+    function resetLoginButton() {
+      const button = document.getElementById("loginBtn");
+      button.disabled = false;
+      button.innerHTML = '<i class="bi bi-shield-lock"></i> <span data-i18n="loginBtn">' + t("loginBtn") + '</span>';
+    }
+
+    async function register() {
+      const fullName = document.getElementById("regFullName").value.trim();
+      const username = document.getElementById("regUsername").value.trim();
+      const phone = document.getElementById("regPhone").value.trim();
+      const email = document.getElementById("regEmail").value.trim();
+      const role = document.getElementById("regRole").value;
+      const password = document.getElementById("regPass").value;
+      const password2 = document.getElementById("regPass2").value;
+      const errDiv = document.getElementById("registerError");
+      const okDiv = document.getElementById("registerSuccess");
+      const btn = document.getElementById("registerBtn");
+
+      errDiv.style.display = "none";
+      okDiv.hidden = true;
+      if (!fullName || !username || !phone || !password) {
+        errDiv.textContent = t("regNeedFields");
+        errDiv.style.display = "block";
+        return;
+      }
+      if (password.length < 8) {
+        errDiv.textContent = t("PASSWORD_TOO_SHORT") || "Password must be at least 8 characters";
+        errDiv.style.display = "block";
+        return;
+      }
+      if (password !== password2) {
+        errDiv.textContent = t("regPassMismatch");
+        errDiv.style.display = "block";
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = '<i class="bi bi-hourglass-split"></i> ' + t("loginBusy");
+      try {
+        const result = await registerRequest({ fullName, username, phone, email, role, password });
+        if (result.ok && result.pending) {
+          document.getElementById("panelRegister").querySelectorAll(".tc-field, #registerBtn").forEach((el) => {
+            if (el.id !== "registerSuccess") el.style.display = el.classList.contains("tc-field") ? "none" : "none";
+          });
+          okDiv.hidden = false;
+        } else if (result.network) {
+          errDiv.textContent = t("networkError");
+          errDiv.style.display = "block";
+          btn.disabled = false;
+          btn.innerHTML = '<i class="bi bi-send"></i> <span data-i18n="regSubmit">' + t("regSubmit") + '</span>';
+        } else {
+          const map = {
+            USERNAME_EXISTS: t("USERNAME_EXISTS") || "Username already exists",
+            FULLNAME_REQUIRED: t("regNeedFields"),
+            PHONE_REQUIRED: t("regNeedFields"),
+            PASSWORD_TOO_SHORT: "Password must be at least 8 characters",
+            INVALID_ROLE: t("error")
+          };
+          errDiv.textContent = map[result.error] || result.error || t("error");
+          errDiv.style.display = "block";
+          btn.disabled = false;
+          btn.innerHTML = '<i class="bi bi-send"></i> <span data-i18n="regSubmit">' + t("regSubmit") + '</span>';
+        }
+      } catch {
+        errDiv.textContent = t("networkError");
+        errDiv.style.display = "block";
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-send"></i> <span data-i18n="regSubmit">' + t("regSubmit") + '</span>';
+      }
+    }
+
+    document.getElementById("tabLogin").onclick = () => showAuthTab("login");
+    document.getElementById("tabRegister").onclick = () => showAuthTab("register");
+    document.getElementById("loginBtn").onclick = login;
+    document.getElementById("registerBtn").onclick = register;
+
+    document.addEventListener("keypress", (e) => {
+      if (e.key !== "Enter") return;
+      if (activeTab === "login") login();
+      else register();
+    });
+
+    window.onload = () => {
+      if (typeof clearSession === "function" && !getToken()) clearSession();
+      TCUI.mountLoginPage("app-header");
+      TCUI.registerPWA();
+      if (typeof TCI18N !== "undefined") TCI18N.applyDocumentLang();
+      if (getToken()) { window.location = homePageForRole(); return; }
+      document.getElementById("loginUser").focus();
+    };
+  </script>
+</body>
+</html>
