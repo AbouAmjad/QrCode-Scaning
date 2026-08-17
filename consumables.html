@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>AICS | Consumables</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="app.css?v=aics3">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#14532d">
+  <link rel="apple-touch-icon" href="aics-logo.png">
+  <script src="config.js?v=aics2"></script>
+  <script src="i18n.js?v=aics3"></script>
+  <script src="ui.js?v=aics2"></script>
+</head>
+<body class="tc-page">
+  <div class="tc-wrap">
+    <div class="tc-shell">
+      <div id="app-header"></div>
+
+      <div class="cons-hero">
+        <div class="cons-stat"><small data-i18n="consDatesSelected">Dates selected</small><strong id="statDates">0</strong></div>
+        <div class="cons-stat"><small data-i18n="consIssuanceRows">Issuance rows</small><strong id="statRows">0</strong></div>
+        <div class="cons-stat"><small data-i18n="consPeople">People</small><strong id="statPeople">0</strong></div>
+        <div class="cons-stat"><small data-i18n="consProductCodes">Product codes</small><strong id="statCodes">0</strong></div>
+      </div>
+
+      <div class="cons-layout">
+        <div>
+          <div class="tc-card">
+            <div class="d-flex align-items-center justify-content-between gap-2 mb-3">
+              <span class="tc-section-badge mb-0"><i class="bi bi-calendar3"></i> <span data-i18n="consSelectDates">Select dates</span></span>
+            </div>
+            <div class="d-flex flex-wrap gap-2 mb-3">
+              <button type="button" class="tc-btn tc-btn-sm" id="btnSelectAll"><i class="bi bi-check2-all"></i> <span data-i18n="consAll">All</span></button>
+              <button type="button" class="tc-btn tc-btn-sm" id="btnClear"><i class="bi bi-x-lg"></i> <span data-i18n="consClear">Clear</span></button>
+              <button type="button" class="tc-btn tc-btn-sm tc-btn-primary" id="btnPreview"><i class="bi bi-eye"></i> <span data-i18n="consPreview">Preview</span></button>
+            </div>
+            <div id="monthGroups">
+              <div class="text-center tc-text-muted py-4"><div class="tc-spinner"></div></div>
+            </div>
+          </div>
+          <div class="tc-card mt-3">
+            <p class="tc-text-muted small mb-0"><i class="bi bi-info-circle"></i> <span data-i18n="consHint">Codes starting with C are consumables — OUT issues stock; IN returns unused quantity.</span></p>
+          </div>
+        </div>
+
+        <div>
+          <div class="cons-preview-head">
+            <span class="tc-section-badge mb-0"><i class="bi bi-box-seam"></i> <span data-i18n="consPreviewTitle">Issuance preview</span></span>
+            <input type="search" class="tc-search" id="previewSearch" data-i18n-placeholder="consPreviewSearch" placeholder="Search person, code, description…" disabled>
+          </div>
+          <div class="tc-table-wrap">
+            <div class="table-responsive">
+              <table class="tc-table">
+                <thead><tr>
+                  <th data-i18n="when">Date</th>
+                  <th data-i18n="time">Time</th>
+                  <th data-i18n="person">Person</th>
+                  <th data-i18n="code">Code</th>
+                  <th data-i18n="description">Description</th>
+                </tr></thead>
+                <tbody id="previewBody">
+                  <tr><td colspan="5" class="text-center tc-text-muted py-5"><i class="bi bi-calendar-check"></i> <span data-i18n="consPreviewEmpty">Select dates and click Preview</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="cons-sticky">
+            <span class="tc-text-muted small" id="stickyHint" data-i18n="consSelectToExport">Select dates to export</span>
+            <button type="button" class="tc-btn tc-btn-primary" id="btnExport" disabled>
+              <i class="bi bi-download"></i> <span data-i18n="export">Export selected…</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tc-modal-backdrop" id="exportModal">
+    <div class="tc-modal" style="max-width:420px">
+      <div class="tc-modal-head">
+        <div>
+          <h3 class="h5 mb-1" data-i18n="consExportTitle">Export consumables</h3>
+          <p class="tc-text-muted small mb-0" id="exportModalHint" data-i18n="consExportHint">Choose file format</p>
+        </div>
+        <button type="button" class="tc-btn tc-btn-sm" onclick="closeExportModal()"><i class="bi bi-x-lg"></i></button>
+      </div>
+      <div class="tc-modal-body d-grid gap-2">
+        <button type="button" class="tc-btn tc-btn-primary" onclick="doExport('csv')"><i class="bi bi-filetype-csv"></i> <span data-i18n="consExportCsv">CSV (Excel compatible)</span></button>
+        <button type="button" class="tc-btn" onclick="doExport('xlsx')"><i class="bi bi-file-earmark-spreadsheet"></i> <span data-i18n="consExportXlsx">Excel (.xlsx)</span></button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="parser.js?v=live"></script>
+  <script>
+    let allDates = [];
+    let historyRows = [];
+    let previewIssues = [];
+    let previewFilter = "";
+    const selectedDates = new Set();
+
+    document.addEventListener("DOMContentLoaded", () => TCUI.bootPage(() => {
+      TCUI.mountHeader("app-header", {
+        active: "consumables",
+        titleKey: "consumables",
+        subtitleKey: "consumablesSub",
+        icon: "bi-box-seam"
+      });
+      init();
+    }, { pageId: "consumables" }));
+
+    function monthKeyFromDate(d) {
+      const m = String(d).match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+      if (!m) return "";
+      return `${m[3]}-${m[2].padStart(2, "0")}`;
+    }
+
+    function monthLabel(key) {
+      if (!key) return "";
+      const [y, mo] = key.split("-");
+      const names = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+      return `${names[+mo - 1] || mo} ${y}`;
+    }
+
+    function updateStats() {
+      document.getElementById("statDates").textContent = String(selectedDates.size);
+      document.getElementById("statRows").textContent = String(previewIssues.length);
+      const people = new Set(previewIssues.map((r) => r.person).filter(Boolean));
+      const codes = new Set(previewIssues.map((r) => r.code).filter(Boolean));
+      document.getElementById("statPeople").textContent = String(people.size);
+      document.getElementById("statCodes").textContent = String(codes.size);
+      document.getElementById("btnExport").disabled = selectedDates.size === 0;
+      document.getElementById("stickyHint").textContent = selectedDates.size
+        ? `${selectedDates.size} date(s) · ${previewIssues.length} row(s) ready`
+        : "Select dates to export";
+    }
+
+    function renderMonthGroups() {
+      const host = document.getElementById("monthGroups");
+      if (!allDates.length) {
+        host.innerHTML = `<div class="text-center tc-text-muted py-4"><i class="bi bi-calendar-x"></i> No dates found</div>`;
+        return;
+      }
+      const byMonth = new Map();
+      allDates.forEach((d) => {
+        const k = monthKeyFromDate(d) || "other";
+        if (!byMonth.has(k)) byMonth.set(k, []);
+        byMonth.get(k).push(d);
+      });
+      const keys = [...byMonth.keys()].sort().reverse();
+      host.innerHTML = keys.map((k, idx) => {
+        const dates = byMonth.get(k);
+        const selectedInMonth = dates.filter((d) => selectedDates.has(d)).length;
+        return `<div class="cons-month">
+          <div class="cons-month-head" data-month="${escHtml(k)}" role="button" tabindex="0">
+            <span>${escHtml(k === "other" ? "Other" : monthLabel(k))}</span>
+            <span class="tc-text-muted small">${selectedInMonth}/${dates.length}</span>
+          </div>
+          <div class="cons-month-body" ${idx === 0 ? "" : "hidden"}>
+            ${dates.map((d) => `<label class="tc-date-chip"><input type="checkbox" value="${escHtml(d)}" ${selectedDates.has(d) ? "checked" : ""}><span>${escHtml(d)}</span></label>`).join("")}
+          </div>
+        </div>`;
+      }).join("");
+
+      host.querySelectorAll(".cons-month-head").forEach((head) => {
+        head.onclick = () => {
+          const body = head.nextElementSibling;
+          if (body) body.hidden = !body.hidden;
+        };
+      });
+      host.querySelectorAll('input[type="checkbox"]').forEach((cb) => {
+        cb.onchange = () => {
+          if (cb.checked) selectedDates.add(cb.value);
+          else selectedDates.delete(cb.value);
+          updateStats();
+          renderMonthGroups();
+        };
+      });
+    }
+
+    async function loadHistory() {
+      const data = await apiGet({ action: "getData", date: allDates[0] || "" });
+      if (data && data.error) throw new Error(data.error);
+      historyRows = Array.isArray(data) ? data : [];
+    }
+
+    function filteredPreview() {
+      const q = previewFilter.trim().toLowerCase();
+      if (!q) return previewIssues;
+      return previewIssues.filter((r) =>
+        [r.date, r.time, r.person, r.code, r.description].some((v) => String(v || "").toLowerCase().includes(q))
+      );
+    }
+
+    function renderPreviewTable() {
+      const rows = filteredPreview();
+      const tbody = document.getElementById("previewBody");
+      if (!previewIssues.length) {
+        tbody.innerHTML = `<tr><td colspan="5" class="text-center tc-text-muted py-5">${selectedDates.size ? "No consumable OUT scans for selected dates" : "Select at least one date"}</td></tr>`;
+        return;
+      }
+      if (!rows.length) {
+        tbody.innerHTML = `<tr><td colspan="5" class="text-center tc-text-muted py-5">No rows match your search</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = rows.map((r) => `<tr>
+        <td>${escHtml(r.date)}</td>
+        <td>${escHtml(r.time)}</td>
+        <td>${escHtml(r.person)}</td>
+        <td class="fw-bold">${escHtml(r.code)}</td>
+        <td>${escHtml(r.description)}</td>
+      </tr>`).join("");
+    }
+
+    function runPreview() {
+      if (!selectedDates.size) {
+        previewIssues = [];
+        document.getElementById("previewSearch").disabled = true;
+        updateStats();
+        renderPreviewTable();
+        return;
+      }
+      previewIssues = CustodyParser.parseConsumableIssues(historyRows, selectedDates);
+      document.getElementById("previewSearch").disabled = false;
+      updateStats();
+      renderPreviewTable();
+    }
+
+    function exportLabel() {
+      const arr = [...selectedDates].sort();
+      if (arr.length === 1) return arr[0].replace(/[{}]/g, "").replace(/\//g, "-");
+      return `${arr.length}-dates`;
+    }
+
+    function openExportModal() {
+      if (!selectedDates.size) return;
+      runPreview();
+      document.getElementById("exportModalHint").textContent = `${previewIssues.length} issuance(s) · ${selectedDates.size} date(s)`;
+      document.getElementById("exportModal").style.display = "block";
+    }
+
+    function closeExportModal() {
+      document.getElementById("exportModal").style.display = "none";
+    }
+
+    function doExport(format) {
+      closeExportModal();
+      if (!previewIssues.length) runPreview();
+      const label = exportLabel();
+      if (format === "xlsx") CustodyParser.exportConsumablesXlsx(previewIssues, label);
+      else CustodyParser.exportConsumablesCsv(previewIssues, label);
+    }
+
+    async function init() {
+      allDates = await loadDateOptions(document.createElement("select"));
+      if (allDates.length) selectedDates.add(allDates[0]);
+      renderMonthGroups();
+      updateStats();
+      try {
+        await loadHistory();
+        if (selectedDates.size) runPreview();
+      } catch (e) {
+        document.getElementById("previewBody").innerHTML = `<tr><td colspan="5" class="text-center text-danger py-4">${escHtml(e.message)}</td></tr>`;
+      }
+
+      document.getElementById("btnSelectAll").onclick = () => {
+        allDates.forEach((d) => selectedDates.add(d));
+        renderMonthGroups();
+        updateStats();
+        runPreview();
+      };
+      document.getElementById("btnClear").onclick = () => {
+        selectedDates.clear();
+        renderMonthGroups();
+        updateStats();
+        runPreview();
+      };
+      document.getElementById("btnPreview").onclick = runPreview;
+      document.getElementById("btnExport").onclick = openExportModal;
+      document.getElementById("previewSearch").oninput = (e) => {
+        previewFilter = e.target.value;
+        renderPreviewTable();
+      };
+      document.getElementById("exportModal").onclick = (e) => {
+        if (e.target.id === "exportModal") closeExportModal();
+      };
+    }
+  </script>
+</body>
+</html>

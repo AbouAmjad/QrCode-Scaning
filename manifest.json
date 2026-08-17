@@ -1,0 +1,25 @@
+{
+  "name": "AICS",
+  "short_name": "AICS",
+  "description": "Arabian Integrated Construction Services",
+  "start_url": "./login.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#06140a",
+  "theme_color": "#14532d",
+  "icons": [
+    {
+      "src": "aics-logo.png",
+      "sizes": "200x200",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "aics-logo.png",
+      "sizes": "200x200",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
