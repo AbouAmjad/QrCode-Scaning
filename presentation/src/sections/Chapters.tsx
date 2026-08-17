@@ -121,7 +121,7 @@ export function Ch04({ on: _on }: P) {
       </Reveal>
       <Reveal delay={1.1}>
         <div className="reveal-frame">
-          <img src={`${import.meta.env.BASE_URL}ui-login.png`} alt="Live AICS web application" />
+          <img src={`${import.meta.env.BASE_URL}ui-login-aics.png`} alt="Live AICS System login" />
         </div>
       </Reveal>
       <Stagger className="pills" step={0.09} delay={1.6}>

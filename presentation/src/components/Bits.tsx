@@ -129,8 +129,8 @@ export function ProductShell() {
         <div className="brand-row">
           <img src={`${import.meta.env.BASE_URL}aics-logo.png`} alt="" />
           <div>
-            <strong>AbouAmjad Store</strong>
-            <small>AICS operations</small>
+            <strong>AICS System</strong>
+            <small>Digital operations</small>
           </div>
         </div>
         {[

@@ -458,7 +458,7 @@ body { overflow: hidden; -webkit-font-smoothing: antialiased; }
 .device .screen.real {
   background:
     linear-gradient(180deg, rgba(5,8,15,0.08), rgba(5,8,15,0.55)),
-    url('/presentation/ui-login.png') center top / cover no-repeat;
+    url('/presentation/ui-login-aics.png') center top / cover no-repeat;
 }
 
 .chrome {
