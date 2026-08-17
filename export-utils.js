@@ -193,7 +193,7 @@ ${printCreditBlock()}
   @media print { .noprint { display: none; } }
 </style></head><body>
 <button class="noprint" onclick="window.print()" style="margin-bottom:12px;padding:8px 14px;font-weight:700;cursor:pointer">Print / Save PDF</button>
-<h1>Not returned · AICS System</h1>
+<h1>Not returned · AICS</h1>
 <div class="sub">${rows.length} row(s) · ${safeHtml(label || stamp())}</div>
 <table>
   <thead><tr>
@@ -680,7 +680,7 @@ ${printCreditBlock()}
   @media print { .noprint { display: none; } }
 </style></head><body>
 <button class="noprint" onclick="window.print()" style="margin-bottom:12px;padding:8px 14px;font-weight:700;cursor:pointer">Print / Save PDF</button>
-<h1>Products catalog · AICS System</h1>
+<h1>Products catalog · AICS</h1>
 <div class="sub">${list.length} product(s) · ${safeHtml(label)}</div>
 <table>
   <thead><tr>
@@ -990,7 +990,7 @@ ${printCreditBlock()}
 </style></head><body>
 <button class="noprint" onclick="window.print()" style="margin-bottom:12px;padding:8px 14px;font-weight:700;cursor:pointer;border-radius:8px;border:0;background:#0f766e;color:#fff">Print / Save PDF</button>
 <div class="top">
-  <div class="brand">Store Request #${safe(req.id || "—")}<small>AICS System</small></div>
+  <div class="brand">Store Request #${safe(req.id || "—")}<small>AICS</small></div>
   <div class="meta">
     <div><span class="badge ${safe(status)}">${safe(status)}</span></div>
     <div style="margin-top:6px">${safe(req.byUser || "")}</div>
@@ -1700,7 +1700,7 @@ ${req.note ? `<p class="note"><strong>Note:</strong> ${safe(req.note)}</p>` : ""
 </style></head><body>
 <button class="noprint" onclick="window.print()" style="margin-bottom:12px;padding:8px 14px;font-weight:700;cursor:pointer">Print / Save PDF</button>
 <h1>Scrap list</h1>
-<div class="sub">AICS System · ${safeHtml(label || stamp())} · ${list.length} item(s)</div>
+<div class="sub">AICS · ${safeHtml(label || stamp())} · ${list.length} item(s)</div>
 <table>
   <thead><tr>
     <th class="photo">Photo</th><th>Code</th><th>Description</th><th>State</th><th>Updated</th><th>Note</th><th>By</th>

@@ -56,35 +56,35 @@ body.tc-page {
 html.theme-dark,
 body.theme-dark {
   color-scheme: dark;
-  --tc-bg: #0b1220;
-  --tc-bg-accent: radial-gradient(1200px 500px at 10% -10%, rgba(45, 212, 191, 0.10), transparent 55%),
-                  radial-gradient(900px 400px at 100% 0%, rgba(56, 189, 248, 0.08), transparent 50%),
-                  #0b1220;
-  --tc-surface: #121a2b;
-  --tc-surface-2: #182234;
-  --tc-text: #e8eef7;
-  --tc-muted: #94a3b8;
-  --tc-border: rgba(148, 163, 184, 0.16);
-  --tc-accent: #2dd4bf;
-  --tc-accent-2: #5eead4;
-  --tc-accent-soft: rgba(45, 212, 191, 0.14);
+  --tc-bg: #06140a;
+  --tc-bg-accent: radial-gradient(1200px 500px at 10% -10%, rgba(92, 184, 58, 0.16), transparent 55%),
+                  radial-gradient(900px 400px at 100% 0%, rgba(31, 107, 50, 0.18), transparent 50%),
+                  #06140a;
+  --tc-surface: #0c1c12;
+  --tc-surface-2: #122418;
+  --tc-text: #e8f6ea;
+  --tc-muted: #8fb896;
+  --tc-border: rgba(111, 191, 58, 0.18);
+  --tc-accent: #5cb83a;
+  --tc-accent-2: #8fd45a;
+  --tc-accent-soft: rgba(92, 184, 58, 0.16);
   --tc-danger: #fb923c;
-  --tc-success: #34d399;
+  --tc-success: #4ade80;
   --tc-warning: #fbbf24;
-  --tc-info: #60a5fa;
+  --tc-info: #86efac;
   --tc-shadow: 0 8px 24px -16px rgba(0, 0, 0, 0.55);
   --tc-shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.2), 0 8px 24px -12px rgba(0, 0, 0, 0.45);
-  --tc-nav-active: linear-gradient(135deg, #0f766e, #1e3a5f);
-  --tc-topbar-bg: rgba(18, 26, 43, 0.78);
-  --tc-sidebar-bg: #121a2b;
-  --tc-head-grad: linear-gradient(180deg, #182234 0%, #121a2b 100%);
-  --tc-overlay: rgba(2, 6, 23, 0.62);
-  --tc-input-bg: #0f172a;
+  --tc-nav-active: linear-gradient(135deg, #1f6b32, #4a9c2e);
+  --tc-topbar-bg: rgba(12, 28, 18, 0.82);
+  --tc-sidebar-bg: #0c1c12;
+  --tc-head-grad: linear-gradient(180deg, #122418 0%, #0c1c12 100%);
+  --tc-overlay: rgba(4, 16, 8, 0.62);
+  --tc-input-bg: #08150c;
   --tc-warn-bg: rgba(251, 191, 36, 0.12);
   --tc-danger-bg: rgba(251, 146, 60, 0.12);
-  --tc-ok-bg: rgba(52, 211, 153, 0.12);
-  --tc-info-bg: rgba(96, 165, 250, 0.12);
-  --tc-thumb-bg: #1e293b;
+  --tc-ok-bg: rgba(74, 222, 128, 0.12);
+  --tc-info-bg: rgba(134, 239, 172, 0.12);
+  --tc-thumb-bg: #16351c;
 }
 
 html { scroll-behavior: smooth; }
@@ -193,23 +193,24 @@ body.tc-rtl {
 }
 
 .tc-topbar-logo {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  background: #05080f;
+  width: 42px;
+  height: 42px;
+  border-radius: 0;
+  background: transparent;
   color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.1rem;
-  overflow: hidden;
-  border: 1px solid var(--tc-border);
+  overflow: visible;
+  border: 0;
+  box-shadow: none;
 }
 .tc-topbar-logo img {
-  width: 100%;
-  height: 100%;
+  width: 42px;
+  height: 42px;
   object-fit: contain;
   display: block;
+  background: transparent;
 }
 
 .tc-topbar-brand-text {
@@ -229,9 +230,12 @@ body.tc-rtl {
 }
 
 .tc-topbar-brand-text small {
-  font-size: 0.68rem;
+  font-size: 0.62rem;
   color: var(--tc-muted);
   font-weight: 600;
+  white-space: normal;
+  max-width: 16rem;
+  line-height: 1.25;
 }
 
 .tc-topbar-actions {
@@ -1661,30 +1665,40 @@ body.tc-login .tc-wrap {
 }
 
 .tc-auth-logo {
-  width: 5.75rem;
-  height: 5.75rem;
-  margin: 0 auto 0.85rem;
-  border-radius: 20px;
+  width: 7.25rem;
+  height: 7.25rem;
+  margin: 0 auto 0.7rem;
+  border-radius: 0;
   display: grid;
   place-items: center;
-  overflow: hidden;
-  background: #05080f;
-  border: 1px solid rgba(15, 118, 110, 0.28);
-  box-shadow: 0 12px 28px -14px rgba(15, 118, 110, 0.55);
+  overflow: visible;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
 }
 .tc-auth-logo img {
   width: 100%;
   height: 100%;
   object-fit: contain;
   display: block;
+  background: transparent;
 }
 
 .tc-auth-title {
-  font-size: 1.25rem;
+  font-size: 2rem;
   font-weight: 800;
-  letter-spacing: -0.02em;
+  letter-spacing: 0.18em;
   margin: 0;
   color: var(--tc-text);
+}
+.tc-auth-company {
+  margin: 0.45rem auto 0;
+  max-width: 22rem;
+  font-size: 0.82rem;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+  line-height: 1.35;
+  color: var(--tc-accent-2);
 }
 
 .tc-auth-sub {
@@ -2905,6 +2919,29 @@ html.theme-dark body.tc-terminal .tc-held-row.overdue {
    Extra user themes (additive). Keep theme-dark|light classes so
    existing html.theme-dark rules continue to work unchanged.
    ═══════════════════════════════════════════════════════════════ */
+
+html.theme-dark[data-theme="aics"],
+body.theme-dark[data-theme="aics"] {
+  color-scheme: dark;
+  --tc-bg: #06140a;
+  --tc-bg-accent: radial-gradient(1200px 500px at 10% -10%, rgba(92, 184, 58, 0.16), transparent 55%),
+                  radial-gradient(900px 400px at 100% 0%, rgba(31, 107, 50, 0.18), transparent 50%),
+                  #06140a;
+  --tc-surface: #0c1c12;
+  --tc-surface-2: #122418;
+  --tc-text: #e8f6ea;
+  --tc-muted: #8fb896;
+  --tc-border: rgba(111, 191, 58, 0.18);
+  --tc-accent: #5cb83a;
+  --tc-accent-2: #8fd45a;
+  --tc-accent-soft: rgba(92, 184, 58, 0.16);
+  --tc-nav-active: linear-gradient(135deg, #1f6b32, #4a9c2e);
+  --tc-topbar-bg: rgba(12, 28, 18, 0.82);
+  --tc-sidebar-bg: #0c1c12;
+  --tc-head-grad: linear-gradient(180deg, #122418 0%, #0c1c12 100%);
+  --tc-input-bg: #08150c;
+  --tc-thumb-bg: #16351c;
+}
 
 html.theme-dark[data-theme="ocean"],
 body.theme-dark[data-theme="ocean"] {

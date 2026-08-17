@@ -1,13 +1,13 @@
 {
-  "name": "AICS System",
+  "name": "AICS",
   "short_name": "AICS",
-  "description": "AICS digital operations platform",
+  "description": "Arabian Integrated Construction Services",
   "start_url": "./login.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "background_color": "#0b1220",
-  "theme_color": "#0b1220",
+  "background_color": "#06140a",
+  "theme_color": "#14532d",
   "icons": [
     {
       "src": "aics-logo.png",

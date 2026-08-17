@@ -4,13 +4,15 @@ const TCI18N = (() => {
 
   const dict = {
     en: {
-      brand: "AICS System",
-      brandSub: "Digital operations",
+      brand: "AICS",
+      brandSub: "Arabian Integrated Construction Services",
+      brandCompany: "Arabian Integrated Construction Services",
       logout: "Logout",
       menu: "Menu",
       lang: "العربية",
       themeDark: "Dark",
       themeLight: "Light",
+      themeAics: "AICS",
       themeOcean: "Ocean",
       themeMidnight: "Midnight",
       themeForest: "Forest",
@@ -1324,13 +1326,15 @@ const TCI18N = (() => {
       popupBlocked: "Popup blocked — allow popups to print"
     },
     ar: {
-      brand: "نظام AICS",
-      brandSub: "العمليات الرقمية",
+      brand: "AICS",
+      brandSub: "الخدمات العربية المتكاملة للإنشاءات",
+      brandCompany: "الخدمات العربية المتكاملة للإنشاءات",
       logout: "خروج",
       menu: "القائمة",
       lang: "English",
       themeDark: "داكن",
       themeLight: "فاتح",
+      themeAics: "AICS",
       themeOcean: "محيطي",
       themeMidnight: "منتصف الليل",
       themeForest: "غابة",

@@ -662,7 +662,7 @@ const TCUI = (() => {
             <h1 class="tc-topbar-page-title">${esc(title)}</h1>
           </div>` : `
           <a href="${home}" class="tc-topbar-brand" aria-hidden="true" tabindex="-1">
-            <span class="tc-topbar-logo"><img src="aics-logo.png" alt="AICS"></span>
+            <span class="tc-topbar-logo"><img src="aics-logo.png?v=aics2" alt="AICS"></span>
             <span class="tc-topbar-brand-text">
               <strong data-i18n="brand">${tt("brand")}</strong>
               <small data-i18n="brandSub">${tt("brandSub")}</small>
