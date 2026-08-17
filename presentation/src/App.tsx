@@ -1,15 +1,25 @@
 import { useCallback, useEffect, useLayoutEffect, useState } from 'react'
 import gsap from 'gsap'
-import { CHAPTERS } from './data/story'
+import { ARC_PHASES, CHAPTERS, LIVE } from './data/story'
 import { VIEWS } from './sections/Chapters'
 import './index.css'
 
 export default function App() {
   const [i, setI] = useState(0)
   const last = CHAPTERS.length - 1
+
   const go = useCallback((n: number) => {
-    setI(Math.max(0, Math.min(last, n)))
+    const next = Math.max(0, Math.min(last, n))
+    setI(next)
+    const id = CHAPTERS[next].id
+    history.replaceState(null, '', `#${id}`)
   }, [last])
+
+  useEffect(() => {
+    const hash = location.hash.replace('#', '')
+    const idx = CHAPTERS.findIndex((c) => c.id === hash)
+    if (idx >= 0) setI(idx)
+  }, [])
 
   useEffect(() => {
     let cool = 0
@@ -17,7 +27,11 @@ export default function App() {
       const now = Date.now()
       if (now - cool < 640) return
       cool = now
-      setI((v) => Math.max(0, Math.min(last, v + d)))
+      setI((v) => {
+        const n = Math.max(0, Math.min(last, v + d))
+        history.replaceState(null, '', `#${CHAPTERS[n].id}`)
+        return n
+      })
     }
     const onKey = (e: KeyboardEvent) => {
       if (['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement)?.tagName)) return
@@ -58,14 +72,15 @@ export default function App() {
     }
   }, [go, last])
 
+  const chapter = CHAPTERS[i]
   const View = VIEWS[i]
-  const id = CHAPTERS[i].id
   const voidOpen = i === 0
+  const pct = ((i + 1) / CHAPTERS.length) * 100
 
   useLayoutEffect(() => {
     const el = document.querySelector('.stage-inner')
     if (!el) return
-    gsap.fromTo(el, { opacity: 0 }, { opacity: 1, duration: voidOpen ? 1.1 : 0.7, ease: 'power2.out' })
+    gsap.fromTo(el, { opacity: 0, y: voidOpen ? 0 : 12 }, { opacity: 1, y: 0, duration: voidOpen ? 1.1 : 0.65, ease: 'power2.out' })
   }, [i, voidOpen])
 
   return (
@@ -74,30 +89,55 @@ export default function App() {
         <div className="topbar">
           <div className="mark">
             <img src={`${import.meta.env.BASE_URL}aics-logo.png`} alt="AICS" />
-            <span>AICS · Arabian Integrated Construction Services</span>
+            <div className="mark-text">
+              <strong>AICS</strong>
+              <span>Arabian Integrated Construction Services</span>
+            </div>
           </div>
           <div className="actions">
+            <a className="icon-btn live-link" href={LIVE} title="Open live system">
+              ↗
+            </a>
             <button className="icon-btn" title="Fullscreen (F)" onClick={toggleFs}>
               ⛶
             </button>
           </div>
         </div>
+
+        <div className="arc-rail" aria-label="Story arc">
+          {ARC_PHASES.map((phase) => (
+            <span key={phase} className={chapter.arc === phase ? 'on' : ''}>
+              {phase}
+            </span>
+          ))}
+        </div>
+
         <div className="dots" aria-label="Chapters">
           {CHAPTERS.map((c, n) => (
             <button
               key={c.id}
               className={n === i ? 'on' : ''}
-              title={`${c.id} ${c.title}`}
+              title={`${c.id} · ${c.title}`}
               onClick={() => go(n)}
             />
           ))}
         </div>
-        <div className="progress">
-          {id} / {String(CHAPTERS.length).padStart(2, '0')}
+
+        <div className="progress-col">
+          <div className="progress-meta">
+            <span className="progress-id">{chapter.id}</span>
+            <span className="progress-title">{chapter.title}</span>
+          </div>
+          <div className="progress-bar" aria-hidden="true">
+            <div className="progress-fill" style={{ height: `${pct}%`, ['--pct' as string]: `${pct}%` }} />
+          </div>
+          <span className="progress-count">{String(i + 1).padStart(2, '0')} / {String(CHAPTERS.length).padStart(2, '0')}</span>
         </div>
-        <div className="hint">Scroll · arrows · space · F fullscreen</div>
+
+        <div className="hint">Scroll · arrows · space · F fullscreen · #chapter in URL</div>
       </div>
-      <div className="stage" key={id}>
+
+      <div className="stage" key={chapter.id}>
         <div className="stage-inner">
           <View on />
         </div>

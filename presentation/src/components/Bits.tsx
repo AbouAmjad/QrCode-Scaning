@@ -122,6 +122,46 @@ export function Flow({ steps, liveUntil }: { steps: string[]; liveUntil?: number
   )
 }
 
+export function Spine({ steps }: { steps: string[] }) {
+  const ref = useRef<HTMLDivElement>(null)
+  useLayoutEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const nodes = el.querySelectorAll('.spine-node')
+    const lines = el.querySelectorAll('.spine-line')
+    const tl = gsap.timeline()
+    gsap.set(nodes, { opacity: 0, scale: 0.92 })
+    gsap.set(lines, { scaleY: 0, transformOrigin: 'top center' })
+    tl.to(lines, { scaleY: 1, duration: 0.35, stagger: 0.12, ease: 'power2.out' }, 0.2)
+    tl.to(nodes, { opacity: 1, scale: 1, duration: 0.5, stagger: 0.14, ease: 'power3.out' }, 0.1)
+    return () => {
+      tl.kill()
+    }
+  }, [steps])
+  return (
+    <div ref={ref} className="spine">
+      {steps.map((n, idx) => (
+        <span key={n} style={{ display: 'contents' }}>
+          <div className="spine-node">{n}</div>
+          {idx < steps.length - 1 && <div className="spine-line" />}
+        </span>
+      ))}
+    </div>
+  )
+}
+
+export function BrandLockup({ large }: { large?: boolean }) {
+  return (
+    <div className={`brand-lockup ${large ? 'large' : ''}`}>
+      <img src={`${import.meta.env.BASE_URL}aics-logo.png`} alt="AICS" />
+      <div>
+        <strong>AICS</strong>
+        <span>Arabian Integrated Construction Services</span>
+      </div>
+    </div>
+  )
+}
+
 export function ProductShell() {
   return (
     <div className="shell" aria-hidden="true">
@@ -241,8 +281,25 @@ export function Dossier({
 }
 
 export function OrgTree() {
+  const ref = useRef<HTMLDivElement>(null)
+  useLayoutEffect(() => {
+    const root = ref.current
+    if (!root) return
+    const nodes = root.querySelectorAll('.org-node')
+    const lines = root.querySelectorAll('.org-line')
+    const tl = gsap.timeline()
+    gsap.set(nodes, { opacity: 0, y: 10 })
+    gsap.set(lines, { scaleY: 0, transformOrigin: 'top center' })
+    tl.to(lines, { scaleY: 1, duration: 0.32, stagger: 0.1, ease: 'power2.out' })
+    tl.to(nodes, { opacity: 1, y: 0, duration: 0.42, stagger: 0.11, ease: 'power3.out' }, 0.05)
+    tl.to(nodes, { opacity: 0.14, duration: 0.75, ease: 'power2.inOut' }, '+=1.4')
+    tl.fromTo('.hub-final', { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.85, ease: 'power3.out' }, '-=0.15')
+    return () => {
+      tl.kill()
+    }
+  }, [])
   return (
-    <div className="org">
+    <div className="org" ref={ref}>
       <div className="org-node">Inventory</div>
       <div className="org-line" />
       <div className="org-split">

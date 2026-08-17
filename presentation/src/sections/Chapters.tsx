@@ -1,7 +1,6 @@
-import { useLayoutEffect, useRef, useState } from 'react'
-import gsap from 'gsap'
-import { LIVE } from '../data/story'
-import { Dossier, Flow, OrgTree, Reveal, Sequence, Stagger, Tag } from '../components/Bits'
+import { useLayoutEffect, useState } from 'react'
+import { Dossier, Flow, OrgTree, ProductShell, Reveal, Sequence, Spine, Stagger, Tag, BrandLockup } from '../components/Bits'
+import { COMPANY, LIVE } from '../data/story'
 
 type P = { on: boolean }
 
@@ -76,15 +75,9 @@ export function Ch03({ on: _on }: P) {
         <h2 className="display center wide">What if every operation was connected?</h2>
       </Reveal>
       <Reveal delay={1.4} className="spine-wrap">
-        <div className="spine">
-          {['Warehouse', 'Logistics', 'Site', 'Engineering', 'Quality', 'Safety', 'Management', 'Executive'].map(
-            (n) => (
-              <div key={n} className="spine-node">
-                {n}
-              </div>
-            ),
-          )}
-        </div>
+        <Spine
+          steps={['Warehouse', 'Logistics', 'Site', 'Engineering', 'Quality', 'Safety', 'Management', 'Executive']}
+        />
       </Reveal>
       <Reveal delay={2.8}>
         <p className="subline">One digital operating environment.</p>
@@ -120,8 +113,13 @@ export function Ch04({ on: _on }: P) {
         </div>
       </Reveal>
       <Reveal delay={1.1}>
-        <div className="reveal-frame">
-          <img src={`${import.meta.env.BASE_URL}ui-login-aics.png`} alt="Live AICS login" />
+        <div className="reveal-duo">
+          <div className="reveal-frame">
+            <img src={`${import.meta.env.BASE_URL}ui-login-aics.png`} alt="Live AICS login" />
+          </div>
+          <div className="reveal-shell">
+            <ProductShell />
+          </div>
         </div>
       </Reveal>
       <Stagger className="pills" step={0.09} delay={1.6}>
@@ -400,22 +398,8 @@ export function Ch10({ on: _on }: P) {
 }
 
 export function Ch11({ on: _on }: P) {
-  const ref = useRef<HTMLDivElement>(null)
-  useLayoutEffect(() => {
-    const root = ref.current
-    if (!root) return
-    const labels = root.querySelectorAll('.org-node')
-    const tl = gsap.timeline()
-    gsap.set(labels, { opacity: 0, y: 10 })
-    tl.to(labels, { opacity: 1, y: 0, stagger: 0.14, duration: 0.45, ease: 'power2.out' })
-    tl.to(labels, { opacity: 0.12, duration: 0.8, ease: 'power2.inOut' }, '+=1.6')
-    tl.fromTo('.hub-final', { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.9, ease: 'power3.out' }, '-=0.2')
-    return () => {
-      tl.kill()
-    }
-  }, [])
   return (
-    <div className="chapter stack center" ref={ref}>
+    <div className="chapter stack center">
       <OrgTree />
       <p className="hub-final display center wide">One connected system.</p>
     </div>
@@ -639,8 +623,8 @@ export function Ch19({ on: _on }: P) {
       <p className="subline" style={{ marginTop: 22 }}>
         No fragmented tools.
       </p>
-      <a className="tag live" href={LIVE} style={{ textDecoration: 'none', marginTop: 12 }}>
-        Open live system
+      <a className="cta-live" href={LIVE} style={{ marginTop: 16 }}>
+        Open live system ↗
       </a>
     </div>
   )
@@ -686,14 +670,20 @@ export function Ch21({ on: _on }: P) {
         </p>
       </Reveal>
       <Reveal delay={14}>
-        <h2 className="display center wide closer">Fully customizable web application</h2>
+        <BrandLockup large />
+        <h2 className="display center wide closer" style={{ marginTop: '1.4rem' }}>
+          Fully customizable web application
+        </h2>
         <p className="lede" style={{ textAlign: 'center' }}>
           Designed around your workflows.
           <br />
-          Built around your business.
+          Built around {COMPANY}.
           <br />
           Ready to evolve with you.
         </p>
+        <a className="cta-live" href={LIVE}>
+          Open live system ↗
+        </a>
       </Reveal>
     </div>
   )
