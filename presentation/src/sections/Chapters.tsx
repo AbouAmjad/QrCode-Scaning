@@ -1,14 +1,15 @@
+import { useLayoutEffect, useRef, useState } from 'react'
+import gsap from 'gsap'
 import { LIVE } from '../data/story'
-import { Flow, Lines, ProductShell, Tag } from '../components/Bits'
+import { Dossier, Flow, OrgTree, Reveal, Sequence, Stagger, Tag } from '../components/Bits'
 
 type P = { on: boolean }
 
-export function Ch01({ on }: P) {
+export function Ch01({ on: _on }: P) {
   return (
-    <div className="chapter">
-      <div className="kicker">Chapter 01 · The real world</div>
-      <Lines
-        on={on}
+    <div className="chapter dark-open">
+      <Sequence
+        gap={1.18}
         items={[
           'A delivery arrives.',
           'A tool is issued.',
@@ -20,8 +21,14 @@ export function Ch01({ on }: P) {
           'A project moves forward.',
         ]}
       />
-      <h2 className="display" style={{ marginTop: '2.4rem' }}>Every operation creates information.</h2>
-      <p className="lede">But information alone isn’t enough.</p>
+      <Reveal delay={10.4}>
+        <h2 className="display wide" style={{ marginTop: '2.6rem' }}>
+          Every operation creates information.
+        </h2>
+      </Reveal>
+      <Reveal delay={12.8}>
+        <p className="lede pause">But information alone isn’t enough.</p>
+      </Reveal>
     </div>
   )
 }
@@ -32,20 +39,32 @@ export function Ch02({ on: _on }: P) {
   return (
     <div className="chapter">
       <div className="kicker">Chapter 02 · The invisible problem</div>
-      <div className="grid dept">
+      <Stagger className="grid dept" step={0.08}>
         {depts.map((d) => (
-          <div key={d} className="card"><h3>{d}</h3></div>
-        ))}
-      </div>
-      <div className="grid frag">
-        {mess.map((d, i) => (
-          <div key={d} className="card broken" style={{ ['--r' as string]: `${(i - 2.5) * 2.2}deg`, ['--x' as string]: `${(i % 3) * 4}px` }}>
+          <div key={d} className="card">
             <h3>{d}</h3>
           </div>
         ))}
-      </div>
-      <h2 className="display wide" style={{ marginTop: '2rem' }}>When operations are disconnected, decisions become slower.</h2>
-      <p className="lede">Visibility disappears between departments.</p>
+      </Stagger>
+      <Stagger className="grid frag" step={0.1} delay={1.1}>
+        {mess.map((d, i) => (
+          <div
+            key={d}
+            className="card broken"
+            style={{ ['--r' as string]: `${(i - 2.5) * 2.4}deg`, ['--x' as string]: `${(i % 3) * 6}px` }}
+          >
+            <h3>{d}</h3>
+          </div>
+        ))}
+      </Stagger>
+      <Reveal delay={2.2}>
+        <h2 className="display wide" style={{ marginTop: '2rem' }}>
+          When operations are disconnected, decisions become slower.
+        </h2>
+      </Reveal>
+      <Reveal delay={3.6}>
+        <p className="lede">Visibility disappears between departments.</p>
+      </Reveal>
     </div>
   )
 }
@@ -53,60 +72,195 @@ export function Ch02({ on: _on }: P) {
 export function Ch03({ on: _on }: P) {
   return (
     <div className="chapter stack center">
-      <div className="kicker">Chapter 03 · The question</div>
-      <h2 className="display center">What if every operation was connected?</h2>
-      <Flow
-        steps={['Warehouse', 'Logistics', 'Site', 'Engineering', 'Quality', 'Safety', 'Management', 'Executive']}
-      />
-      <p className="subline" style={{ marginTop: '2rem' }}>One digital operating environment.</p>
+      <Reveal>
+        <h2 className="display center wide">What if every operation was connected?</h2>
+      </Reveal>
+      <Reveal delay={1.4} className="spine-wrap">
+        <div className="spine">
+          {['Warehouse', 'Logistics', 'Site', 'Engineering', 'Quality', 'Safety', 'Management', 'Executive'].map(
+            (n) => (
+              <div key={n} className="spine-node">
+                {n}
+              </div>
+            ),
+          )}
+        </div>
+      </Reveal>
+      <Reveal delay={2.8}>
+        <p className="subline">One digital operating environment.</p>
+      </Reveal>
     </div>
   )
 }
+
+const MODULES = [
+  'Inventory',
+  'Logistics',
+  'Projects',
+  'Sites',
+  'Engineering',
+  'Quality',
+  'Safety',
+  'People',
+  'Assets',
+  'Management',
+  'Analytics',
+]
 
 export function Ch04({ on: _on }: P) {
   return (
     <div className="chapter">
-      <div className="kicker">Chapter 04 · The reveal</div>
-      <h2 className="display">One platform.</h2>
-      <p className="lede">AbouAmjad Store System — already running for AICS operations.</p>
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 12 }}>
-        <Tag kind="live">QR terminal, inventory, projects, QC, timesheet, roles</Tag>
-      </div>
-      <ProductShell />
-      <Flow
-        steps={['Inventory', 'Logistics', 'Projects', 'Sites', 'People', 'Assets', 'Quality', 'Management']}
-      />
-      <p className="subline" style={{ marginTop: 18 }}>All connected — where the work already lives.</p>
+      <Reveal>
+        <h2 className="display">One platform.</h2>
+      </Reveal>
+      <Reveal delay={0.7}>
+        <p className="lede">The live AICS operating environment — not a mockup of a future product.</p>
+        <div style={{ marginTop: 10 }}>
+          <Tag kind="live">QR terminal, inventory, projects, QC, timesheet, roles</Tag>
+        </div>
+      </Reveal>
+      <Reveal delay={1.1}>
+        <div className="reveal-frame">
+          <img src={`${import.meta.env.BASE_URL}ui-login.png`} alt="Live AICS web application" />
+        </div>
+      </Reveal>
+      <Stagger className="pills" step={0.09} delay={1.6}>
+        {MODULES.map((m) => (
+          <span key={m} className="pill">
+            {m}
+          </span>
+        ))}
+      </Stagger>
+      <Reveal delay={2.8}>
+        <p className="subline">All connected.</p>
+      </Reveal>
     </div>
   )
 }
 
+const ASSET_STEPS = [
+  {
+    stage: 'Received',
+    status: 'Received',
+    person: 'Store keeper',
+    location: 'Receiving dock',
+    project: '—',
+    time: '08:14',
+    record: 'Receiving record',
+  },
+  {
+    stage: 'Stored',
+    status: 'In stock',
+    person: 'Warehouse',
+    location: 'Main store',
+    project: '—',
+    time: '08:31',
+    record: 'Warehouse stock',
+  },
+  {
+    stage: 'Issued',
+    status: 'Out',
+    person: 'Worker · P-code',
+    location: 'Terminal',
+    project: 'AICS-04',
+    time: '09:02',
+    record: 'QR scan OUT',
+  },
+  {
+    stage: 'Assigned',
+    status: 'In custody',
+    person: 'Named holder',
+    location: 'Leaving store',
+    project: 'AICS-04',
+    time: '09:03',
+    record: 'Outstanding',
+  },
+  {
+    stage: 'Moved',
+    status: 'In transit',
+    person: 'Logistics',
+    location: 'Warehouse → site',
+    project: 'AICS-04',
+    time: '09:40',
+    record: 'Project dispatch',
+  },
+  {
+    stage: 'Used on site',
+    status: 'On site',
+    person: 'Site team',
+    location: 'Project site',
+    project: 'AICS-04',
+    time: '10:15',
+    record: 'Site stock',
+  },
+  {
+    stage: 'Returned',
+    status: 'Returned',
+    person: 'Store keeper',
+    location: 'Main store',
+    project: 'AICS-04',
+    time: '16:48',
+    record: 'Terminal IN / return',
+  },
+  {
+    stage: 'Inspected',
+    status: 'QC checked',
+    person: 'QC',
+    location: 'Store / lab',
+    project: '—',
+    time: 'Next due',
+    record: 'Calibration record',
+  },
+  {
+    stage: 'Tracked',
+    status: 'Traceable',
+    person: 'Any authorized role',
+    location: 'Anywhere it moved',
+    project: 'AICS-04',
+    time: 'Full history',
+    record: 'Scan log · audit',
+  },
+]
+
 export function Ch05({ on: _on }: P) {
-  const rows = [
-    ['Received', 'Receiving record · store keeper · warehouse'],
-    ['Stored', 'Location on warehouse stock'],
-    ['Issued', 'QR terminal OUT · person code P…'],
-    ['Assigned', 'Worker / subcontractor custody'],
-    ['On site', 'Project dispatch · site stock'],
-    ['Returned', 'Terminal IN or project return'],
-    ['Inspected', 'QC calibration where required'],
-    ['Tracked', 'Scan log · outstanding · audit'],
-  ]
+  const [i, setI] = useState(0)
+  const step = ASSET_STEPS[i]
+  useLayoutEffect(() => {
+    const id = window.setInterval(() => {
+      setI((v) => (v + 1) % ASSET_STEPS.length)
+    }, 1600)
+    return () => window.clearInterval(id)
+  }, [])
   return (
     <div className="chapter">
       <div className="kicker">Chapter 05 · Follow one asset</div>
-      <h2 className="display">Tool I17-A</h2>
-      <p className="lede">A representative catalog item. Status, person, location, project and time attach to each movement.</p>
+      <h2 className="display">Tool #1048</h2>
+      <p className="lede">A representative asset. At every stage: status, person, location, project, time, record.</p>
       <Tag kind="live">Terminal · outstanding · receiving · project dispatch · QC</Tag>
-      <div className="journey">
-        {rows.map(([a, b]) => (
-          <div key={a} className="contents-row" style={{ display: 'contents' }}>
-            <div className="step">{a}</div>
-            <div className="meta"><strong>{a}.</strong> {b}</div>
-          </div>
-        ))}
+      <div className="journey-live">
+        <div className="journey-rail">
+          {ASSET_STEPS.map((s, n) => (
+            <button key={s.stage} className={n === i ? 'on' : ''} type="button" onClick={() => setI(n)}>
+              {s.stage}
+            </button>
+          ))}
+        </div>
+        <Dossier
+          status={step.status}
+          person={step.person}
+          location={step.location}
+          project={step.project}
+          time={step.time}
+          record={step.record}
+        />
       </div>
-      <p className="subline" style={{ marginTop: 22 }}>One asset. One project. One company. Traceable.</p>
+      <Reveal delay={0.4}>
+        <div className="zoom-words">
+          <span>One asset.</span>
+          <span>One project.</span>
+          <span>One company.</span>
+        </div>
+      </Reveal>
     </div>
   )
 }
@@ -114,14 +268,22 @@ export function Ch05({ on: _on }: P) {
 export function Ch06({ on: _on }: P) {
   return (
     <div className="chapter">
-      <div className="kicker">Chapter 06 · Logistics</div>
       <p className="lede">But an operation doesn’t stop at the warehouse.</p>
       <h2 className="display wide">Logistics connects the operation.</h2>
-      <p className="subline" style={{ marginTop: 12 }}>The chain that exists today</p>
-      <Flow liveUntil={5} steps={['Store request', 'Receiving', 'Warehouse transfer', 'Project dispatch', 'Site stock', 'Return / outstanding']} />
-      <p className="subline" style={{ marginTop: 22 }}>Configurable extensions</p>
-      <Tag kind="concept">Planning · fleet assignment · GPS transport tracking</Tag>
-      <Flow liveUntil={-1} steps={['Planning', 'Assignment', 'Transportation', 'GPS arrival']} />
+      <p className="subline" style={{ marginTop: 16 }}>
+        The chain that exists today
+      </p>
+      <Flow
+        liveUntil={4}
+        steps={['Request', 'Receiving', 'Warehouse transfer', 'Project dispatch', 'Site arrival', 'Confirmation', 'Documentation', 'Tracking']}
+      />
+      <div style={{ marginTop: 18 }}>
+        <Tag kind="live">Store request · receiving · transfer · dispatch · outstanding</Tag>
+      </div>
+      <p className="subline" style={{ marginTop: 22 }}>
+        Planning, fleet assignment and GPS transport can be added as operating rules — they are not a separate GPS TMS today.
+      </p>
+      <Tag kind="concept">Planning · assignment · GPS transportation</Tag>
     </div>
   )
 }
@@ -129,15 +291,46 @@ export function Ch06({ on: _on }: P) {
 export function Ch07({ on: _on }: P) {
   return (
     <div className="chapter">
-      <div className="kicker">Chapter 07 · The site</div>
       <h2 className="display">The site.</h2>
-      <p className="lede">The operation has a place. Now it has a digital context.</p>
-      <div className="tree">
-        <div><b>Company</b> — AICS</div>
-        <div>↓ <b>Project</b> <Tag kind="live">code, name, site</Tag></div>
-        <div>↓ <b>Site stock</b> <Tag kind="live">dispatch / return</Tag></div>
-        <div>↓ Area / teams / inspections <Tag kind="concept">site operating layers</Tag></div>
+      <p className="lede">Not just a location record. A digital operating environment.</p>
+      <div className="site">
+        <div className="site-col">
+          <div>
+            <b>Company</b> AICS
+          </div>
+          <div>
+            ↓ <b>Project</b> <Tag kind="live">code, name, site</Tag>
+          </div>
+          <div>
+            ↓ <b>Site</b> <Tag kind="live">dispatch / site stock</Tag>
+          </div>
+          <div>
+            ↓ Area / location <Tag kind="concept">operating layers</Tag>
+          </div>
+        </div>
+        <div className="site-live">
+          <div className="pulse" />
+          <div className="event">
+            <b>Teams</b> people on the job
+          </div>
+          <div className="event">
+            <b>Assets</b> tools in custody
+          </div>
+          <div className="event">
+            <b>Materials</b> stock movement
+          </div>
+          <div className="event">
+            <b>Activities</b> work in motion
+          </div>
+          <div className="event dim">
+            <b>Inspections / issues</b> <Tag kind="concept">site HSE / QC loops</Tag>
+          </div>
+        </div>
       </div>
+      <p className="subline" style={{ marginTop: 22 }}>
+        The operation has a place.
+      </p>
+      <p className="lede">Now it has a digital context.</p>
     </div>
   )
 }
@@ -145,12 +338,20 @@ export function Ch07({ on: _on }: P) {
 export function Ch08({ on: _on }: P) {
   return (
     <div className="chapter">
-      <div className="kicker">Chapter 08 · Engineering</div>
       <h2 className="display wide">From activity to control.</h2>
       <p className="lede">Every decision has context — person, role, status, time, record.</p>
-      <Tag kind="live">Engineer role · permissions · consumables · project access</Tag>
+      <Tag kind="live">Engineer role · permissions · project access</Tag>
       <Flow steps={['Request', 'Engineer review', 'Approval', 'Execution', 'Verification']} liveUntil={-1} />
-      <p className="lede">The routing above is a customization pattern. Production already separates who can see and act.</p>
+      <Dossier
+        status="Pending approval"
+        person="Engineer"
+        location="Project AICS-04"
+        project="AICS-04"
+        time="Context stamped"
+        record="Role + permission, not a separate app"
+      />
+      <p className="lede">The five-step routing is a customization pattern. Production already decides who can see and act.</p>
+      <Tag kind="concept">Configurable engineering approval chain</Tag>
     </div>
   )
 }
@@ -158,12 +359,23 @@ export function Ch08({ on: _on }: P) {
 export function Ch09({ on: _on }: P) {
   return (
     <div className="chapter">
-      <div className="kicker">Chapter 09 · Quality</div>
       <h2 className="display wide">Quality is not a checkbox.</h2>
       <Tag kind="live">QC calibration · overdue · due soon · product flags</Tag>
-      <Flow steps={['Calibration due', 'Record calibration', 'Next due', 'Block or alert']} liveUntil={3} />
-      <p className="lede" style={{ marginTop: 18 }}>Inspection → finding → CAPA is how the platform can extend quality into the operation.</p>
-      <Tag kind="concept">Finding · corrective action · closure workflow</Tag>
+      <Flow steps={['Inspection', 'Finding', 'Corrective action', 'Assignment', 'Verification', 'Closure']} liveUntil={0} />
+      <p className="lede" style={{ marginTop: 16 }}>
+        Today quality is already tied to products, people and time. Inspection → finding → closure is how it extends into the full operation.
+      </p>
+      <div className="connect-row">
+        <span>Project</span>
+        <span>Site</span>
+        <span>People</span>
+        <span>Documents</span>
+        <span>Responsible party</span>
+      </div>
+      <p className="subline" style={{ marginTop: 18 }}>
+        Quality becomes part of the operation.
+      </p>
+      <Tag kind="concept">Finding · CAPA · closure workflow</Tag>
     </div>
   )
 }
@@ -171,31 +383,41 @@ export function Ch09({ on: _on }: P) {
 export function Ch10({ on: _on }: P) {
   return (
     <div className="chapter">
-      <div className="kicker">Chapter 10 · Safety</div>
       <h2 className="display wide">Safety is part of the operation.</h2>
-      <Tag kind="live">Safety role · damage reports · PPE re-issue cooldown</Tag>
-      <p className="lede">Gloves and glasses are controlled per SKU. Damage is a store record, not a separate universe.</p>
+      <Tag kind="live">Safety role · damage reports · PPE per-SKU cooldown</Tag>
+      <p className="lede">Not a separate application. People, site, project, engineering and management already share the same environment.</p>
+      <Flow steps={['Inspection', 'Finding', 'Risk', 'Corrective action', 'Responsible person', 'Verification', 'Close']} liveUntil={-1} />
+      <div className="connect-row">
+        <span>People</span>
+        <span>Site</span>
+        <span>Project</span>
+        <span>Engineering</span>
+        <span>Management</span>
+      </div>
       <Tag kind="concept">HSE inspection · risk register · verification loop</Tag>
-      <Flow liveUntil={-1} steps={['Inspection', 'Finding', 'Risk', 'Corrective action', 'Verification', 'Close']} />
     </div>
   )
 }
 
 export function Ch11({ on: _on }: P) {
+  const ref = useRef<HTMLDivElement>(null)
+  useLayoutEffect(() => {
+    const root = ref.current
+    if (!root) return
+    const labels = root.querySelectorAll('.org-node')
+    const tl = gsap.timeline()
+    gsap.set(labels, { opacity: 0, y: 10 })
+    tl.to(labels, { opacity: 1, y: 0, stagger: 0.14, duration: 0.45, ease: 'power2.out' })
+    tl.to(labels, { opacity: 0.12, duration: 0.8, ease: 'power2.inOut' }, '+=1.6')
+    tl.fromTo('.hub-final', { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.9, ease: 'power3.out' }, '-=0.2')
+    return () => {
+      tl.kill()
+    }
+  }, [])
   return (
-    <div className="chapter">
-      <div className="kicker">Chapter 11 · The connection</div>
-      <div className="net">
-        <div className="card"><h3>Inventory</h3><p>Stock, receiving, custody</p></div>
-        <div className="card"><h3>Logistics</h3><p>Transfer · dispatch</p></div>
-        <div className="card"><h3>Project / Site</h3><p>On-site tools</p></div>
-        <div className="card"><h3>Engineering</h3><p>Role + access</p></div>
-        <div className="hub">ONE CONNECTED SYSTEM</div>
-        <div className="card"><h3>QC</h3><p>Calibration</p></div>
-        <div className="card"><h3>Safety</h3><p>PPE · damage</p></div>
-        <div className="card"><h3>Management</h3><p>Dashboard · audit</p></div>
-        <div className="card"><h3>CEO</h3><p>The picture</p></div>
-      </div>
+    <div className="chapter stack center" ref={ref}>
+      <OrgTree />
+      <p className="hub-final display center wide">One connected system.</p>
     </div>
   )
 }
@@ -203,10 +425,24 @@ export function Ch11({ on: _on }: P) {
 export function Ch12({ on: _on }: P) {
   return (
     <div className="chapter stack center">
-      <div className="kicker">Chapter 12 · The differentiator</div>
-      <h2 className="display center">But there is one more thing.</h2>
-      <p className="lede" style={{ textAlign: 'center' }}>Your company doesn’t work like every other company.</p>
-      <h2 className="display center wide">So why should your software?</h2>
+      <Stagger className="pills center-pills" step={0.07}>
+        {MODULES.map((m) => (
+          <span key={m} className="pill">
+            {m}
+          </span>
+        ))}
+      </Stagger>
+      <Reveal delay={1.6}>
+        <h2 className="display center">But there is one more thing.</h2>
+      </Reveal>
+      <Reveal delay={3.3}>
+        <p className="lede" style={{ textAlign: 'center', maxWidth: '22ch' }}>
+          Your company doesn’t work like every other company.
+        </p>
+      </Reveal>
+      <Reveal delay={5.1}>
+        <h2 className="display center wide">So why should your software?</h2>
+      </Reveal>
     </div>
   )
 }
@@ -214,17 +450,24 @@ export function Ch12({ on: _on }: P) {
 export function Ch13({ on: _on }: P) {
   return (
     <div className="chapter">
-      <div className="kicker">Chapter 13 · Full customization</div>
       <Tag kind="concept">Visual workflow builder — not in production yet</Tag>
       <h2 className="display">Create workflow</h2>
-      <div className="wf" style={{ marginTop: 16 }}>
+      <div className="wf" style={{ marginTop: 18 }}>
         <div className="box">Safety inspection</div>
-        <div className="box">Engineer review → Safety approval → Manager approval</div>
-        <div className="box">Require photo · GPS · signature · notify supervisor · report</div>
+        <div className="box">Engineer review</div>
+        <div className="arrow-d">↓</div>
+        <div className="box">Safety approval</div>
+        <div className="arrow-d">↓</div>
+        <div className="box">Manager approval</div>
+        <div className="rules">
+          Require photo · Require GPS · Require signature · Notify supervisor · Generate report
+        </div>
         <div className="box publish">PUBLISH</div>
       </div>
-      <p className="subline" style={{ marginTop: 20 }}>Your workflow. Your rules. Your system.</p>
-      <p className="lede">Today this is configured through roles, permissions, forms and operational rules — the same philosophy, already live.</p>
+      <p className="subline" style={{ marginTop: 20 }}>
+        Your workflow. Your rules. Your system.
+      </p>
+      <p className="lede">Today the same philosophy is already live through roles, permissions, forms and operational rules.</p>
     </div>
   )
 }
@@ -232,27 +475,41 @@ export function Ch13({ on: _on }: P) {
 export function Ch14({ on: _on }: P) {
   return (
     <div className="chapter">
-      <div className="kicker">Chapter 14 · Business rules</div>
       <h2 className="display wide">Software that understands how your business works.</h2>
-      <div className="rule">
-        <div className="if">IF PPE re-issued inside cooldown</div>
-        <span className="arrow">→</span>
-        <div className="then">WARN / confirm on terminal <Tag kind="live">per SKU</Tag></div>
-      </div>
       <div className="rule">
         <div className="if">IF calibration expired</div>
         <span className="arrow">→</span>
-        <div className="then">Surface on QC + product flags <Tag kind="live">calendar</Tag></div>
+        <div className="then">
+          Surface on QC and product flags — issuance policy can be extended to block <Tag kind="live">calendar</Tag>
+        </div>
+      </div>
+      <div className="rule">
+        <div className="if">IF PPE re-issued inside cooldown</div>
+        <span className="arrow">→</span>
+        <div className="then">
+          Warn / confirm on the terminal <Tag kind="live">per SKU</Tag>
+        </div>
       </div>
       <div className="rule">
         <div className="if">IF role lacks permission</div>
         <span className="arrow">→</span>
-        <div className="then">Page and action denied <Tag kind="live">matrix</Tag></div>
+        <div className="then">
+          Page and action denied <Tag kind="live">matrix</Tag>
+        </div>
       </div>
       <div className="rule">
-        <div className="if">IF inspection failed</div>
+        <div className="if">IF inspection failed / critical finding</div>
         <span className="arrow">→</span>
-        <div className="then">Create corrective action <Tag kind="concept">extend</Tag></div>
+        <div className="then">
+          Create corrective action / escalate <Tag kind="concept">extend</Tag>
+        </div>
+      </div>
+      <div className="rule">
+        <div className="if">IF approval required</div>
+        <span className="arrow">→</span>
+        <div className="then">
+          Route to authorized role <Tag kind="live">permissions</Tag>
+        </div>
       </div>
     </div>
   )
@@ -260,25 +517,28 @@ export function Ch14({ on: _on }: P) {
 
 export function Ch15({ on: _on }: P) {
   const roles = [
-    ['Store keeper', 'Terminal, receiving, outstanding'],
-    ['Logistics', 'Projects, forms, movement'],
-    ['Material controller', 'Stock control'],
-    ['QC', 'Calibration'],
-    ['Engineer', 'Field / consumables'],
+    ['Admin', 'System, users, roles'],
+    ['Engineer', 'Field access, project work'],
+    ['QC', 'Calibration, quality flags'],
     ['Safety', 'Damage, PPE context'],
+    ['Store', 'Terminal, receiving, custody'],
+    ['Supervisor', 'Scoped operational view'],
     ['Management', 'Dashboard, audit'],
-    ['Admin', 'Users, roles, system'],
+    ['Executive', 'The picture, not the noise'],
   ]
   return (
     <div className="chapter">
-      <div className="kicker">Chapter 15 · Roles & permissions</div>
       <h2 className="display wide">One platform. Different experiences.</h2>
       <Tag kind="live">17 roles · permission matrix · warehouse & project scopes</Tag>
-      <div className="grid roles" style={{ marginTop: 18 }}>
+      <p className="lede">Access, dashboards, actions, permissions, approval authority — by role.</p>
+      <Stagger className="grid roles" step={0.07} delay={0.2}>
         {roles.map(([a, b]) => (
-          <div key={a} className="card"><h3>{a}</h3><p>{b}</p></div>
+          <div key={a} className="card">
+            <h3>{a}</h3>
+            <p>{b}</p>
+          </div>
         ))}
-      </div>
+      </Stagger>
     </div>
   )
 }
@@ -295,12 +555,14 @@ export function Ch16({ on: _on }: P) {
   ]
   return (
     <div className="chapter">
-      <div className="kicker">Chapter 16 · From operations to management</div>
-      <div className="levels">
-        {lv.map(([w, s]) => (
-          <div key={w} className="lvl"><div className="who">{w}</div><div className="see">{s}</div></div>
+      <Stagger className="levels" step={0.16}>
+        {lv.map(([w, s], i) => (
+          <div key={w} className="lvl" style={{ ['--s' as string]: String(1 + i * 0.04) }}>
+            <div className="who">{w} sees</div>
+            <div className="see">{s}</div>
+          </div>
         ))}
-      </div>
+      </Stagger>
     </div>
   )
 }
@@ -308,17 +570,30 @@ export function Ch16({ on: _on }: P) {
 export function Ch17({ on: _on }: P) {
   return (
     <div className="chapter">
-      <div className="kicker">Chapter 17 · CEO / Executive</div>
       <h2 className="display wide">From thousands of operations…</h2>
-      <p className="lede">…to the few decisions that matter.</p>
+      <Reveal delay={1.5}>
+        <p className="lede pause">…to the few decisions that matter.</p>
+      </Reveal>
       <Tag kind="live">Inventory dashboard — stock, value, alerts, movement</Tag>
-      <div className="kpis" style={{ marginTop: 18 }}>
-        <div className="kpi"><span>Inventory</span><strong>Exposure</strong></div>
-        <div className="kpi"><span>Outstanding</span><strong>Actions</strong></div>
-        <div className="kpi"><span>Quality</span><strong>Due / overdue</strong></div>
-        <div className="kpi"><span>Projects</span><strong>On site</strong></div>
+      <div className="kpis exec" style={{ marginTop: 18 }}>
+        <div className="kpi">
+          <span>Inventory</span>
+          <strong>Exposure</strong>
+        </div>
+        <div className="kpi">
+          <span>Outstanding</span>
+          <strong>Actions</strong>
+        </div>
+        <div className="kpi">
+          <span>Quality</span>
+          <strong>Due / overdue</strong>
+        </div>
+        <div className="kpi">
+          <span>Projects</span>
+          <strong>On site</strong>
+        </div>
       </div>
-      <p className="lede">Project, safety and logistics executive packs are how the same data can be composed for the CEO — without operational noise.</p>
+      <p className="lede">The CEO should not see operational noise. Project, safety and logistics packs compose from the same thread.</p>
       <Tag kind="concept">Executive KPI pack</Tag>
     </div>
   )
@@ -327,10 +602,15 @@ export function Ch17({ on: _on }: P) {
 export function Ch18({ on: _on }: P) {
   return (
     <div className="chapter stack center">
-      <div className="kicker">Chapter 18 · The digital thread</div>
       <h2 className="display center">One digital thread.</h2>
-      <Flow steps={['Supplier', 'Warehouse', 'Logistics', 'Project', 'Engineer', 'QC', 'Safety', 'Management', 'CEO']} />
-      <p className="lede" style={{ textAlign: 'center' }}>Every operational event can contribute to organizational visibility.</p>
+      <Reveal delay={0.5}>
+        <Flow
+          steps={['Supplier', 'Warehouse', 'Logistics', 'Project', 'Engineer', 'QC', 'Safety', 'Management', 'CEO']}
+        />
+      </Reveal>
+      <p className="lede" style={{ textAlign: 'center' }}>
+        Every operational event contributes to organizational visibility.
+      </p>
     </div>
   )
 }
@@ -338,16 +618,30 @@ export function Ch18({ on: _on }: P) {
 export function Ch19({ on: _on }: P) {
   return (
     <div className="chapter stack center">
-      <div className="kicker">Chapter 19 · Web application</div>
       <h2 className="display center">One web application.</h2>
-      <p className="lede" style={{ textAlign: 'center' }}>Runs in the browser — desktop, laptop, tablet. No extra client install.</p>
+      <p className="lede" style={{ textAlign: 'center' }}>
+        Runs in the browser on desktop, laptop and tablet. No extra client install.
+      </p>
       <div className="devices">
-        <div className="device desk"><div className="screen" /></div>
-        <div className="device lap"><div className="screen" /></div>
-        <div className="device tab"><div className="screen" /></div>
+        <div className="device desk">
+          <div className="screen real" />
+          <small>Desktop</small>
+        </div>
+        <div className="device lap">
+          <div className="screen" />
+          <small>Laptop</small>
+        </div>
+        <div className="device tab">
+          <div className="screen" />
+          <small>Tablet</small>
+        </div>
       </div>
-      <p className="subline" style={{ marginTop: 22 }}>No fragmented tools for the core operation.</p>
-      <a className="tag live" href={LIVE} style={{ textDecoration: 'none', marginTop: 12 }}>Open live system</a>
+      <p className="subline" style={{ marginTop: 22 }}>
+        No fragmented tools.
+      </p>
+      <a className="tag live" href={LIVE} style={{ textDecoration: 'none', marginTop: 12 }}>
+        Open live system
+      </a>
     </div>
   )
 }
@@ -356,36 +650,75 @@ export function Ch20({ on: _on }: P) {
   const blocks = ['New workflow', 'New department', 'New project', 'New business rule', 'New dashboard', 'New integration']
   return (
     <div className="chapter">
-      <div className="kicker">Chapter 20 · The platform evolves</div>
       <h2 className="display wide">And it doesn’t stop here.</h2>
-      <div className="grid blocks" style={{ marginTop: 20 }}>
+      <Stagger className="grid blocks" step={0.1} delay={0.3}>
         {blocks.map((b) => (
-          <div key={b} className="card"><h3>{b}</h3></div>
+          <div key={b} className="card block">
+            <h3>{b}</h3>
+          </div>
         ))}
-      </div>
-      <p className="subline" style={{ marginTop: 22 }}>The platform evolves with the business.</p>
+      </Stagger>
+      <p className="subline" style={{ marginTop: 22 }}>
+        The platform evolves with the business.
+      </p>
     </div>
   )
 }
 
-export function Ch21({ on }: P) {
+export function Ch21({ on: _on }: P) {
   return (
-    <div className="chapter stack center">
-      <div className="kicker">Chapter 21 · The final zoom</div>
-      <Lines
-        on={on}
-        items={['One tool.', 'One warehouse.', 'One site.', 'One project.', 'The company.', 'Executive view.']}
+    <div className="chapter stack center finale">
+      <Sequence
+        gap={1.25}
+        items={['One tool.', 'One warehouse.', 'One site.', 'One project.', 'Multiple projects.', 'The company.', 'Executive view.']}
       />
-      <h2 className="display center wide" style={{ marginTop: '2.2rem' }}>From the warehouse to the CEO.</h2>
-      <p className="subline">Every operation. Connected.</p>
-      <p className="lede" style={{ textAlign: 'center' }}>Your business is unique. Your software should be too.</p>
-      <h2 className="display center wide" style={{ fontSize: 'clamp(1.6rem, 3vw, 2.4rem)', marginTop: '1.4rem' }}>Fully customizable web application</h2>
-      <p className="lede" style={{ textAlign: 'center' }}>Designed around your workflows. Built around your business. Ready to evolve with you.</p>
+      <Reveal delay={9.4}>
+        <h2 className="display center wide" style={{ marginTop: '2.2rem' }}>
+          From the warehouse to the CEO.
+        </h2>
+      </Reveal>
+      <Reveal delay={11}>
+        <p className="subline">Every operation. Connected.</p>
+      </Reveal>
+      <Reveal delay={12.5}>
+        <p className="lede" style={{ textAlign: 'center' }}>
+          Your business is unique. Your software should be too.
+        </p>
+      </Reveal>
+      <Reveal delay={14}>
+        <h2 className="display center wide closer">Fully customizable web application</h2>
+        <p className="lede" style={{ textAlign: 'center' }}>
+          Designed around your workflows.
+          <br />
+          Built around your business.
+          <br />
+          Ready to evolve with you.
+        </p>
+      </Reveal>
     </div>
   )
 }
 
 export const VIEWS = [
-  Ch01, Ch02, Ch03, Ch04, Ch05, Ch06, Ch07, Ch08, Ch09, Ch10,
-  Ch11, Ch12, Ch13, Ch14, Ch15, Ch16, Ch17, Ch18, Ch19, Ch20, Ch21,
+  Ch01,
+  Ch02,
+  Ch03,
+  Ch04,
+  Ch05,
+  Ch06,
+  Ch07,
+  Ch08,
+  Ch09,
+  Ch10,
+  Ch11,
+  Ch12,
+  Ch13,
+  Ch14,
+  Ch15,
+  Ch16,
+  Ch17,
+  Ch18,
+  Ch19,
+  Ch20,
+  Ch21,
 ]
