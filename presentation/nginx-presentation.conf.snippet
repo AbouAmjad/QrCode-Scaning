@@ -1,0 +1,10 @@
+# Insert into the aics.iskndr.com server block. Does not change /api or app root.
+
+location = /presentation {
+    return 301 /presentation/;
+}
+location ^~ /presentation/ {
+    alias /var/www/aics-presentation/;
+    index index.html;
+    add_header Cache-Control "no-store, no-cache, must-revalidate, max-age=0" always;
+}
