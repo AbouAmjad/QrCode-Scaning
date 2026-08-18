@@ -338,17 +338,14 @@ export function Ch08({ on: _on }: P) {
     <div className="chapter">
       <h2 className="display wide">From activity to control.</h2>
       <p className="lede">Every decision has context — person, role, status, time, record.</p>
-      <Tag kind="live">Engineer role · permissions · project access</Tag>
+      <Tag kind="live">Engineer role · consumables issuance · project access</Tag>
+      <Reveal delay={0.35}>
+        <div className="reveal-frame dashboard-frame">
+          <img src={`${import.meta.env.BASE_URL}ui-consumables-aics.png`} alt="AICS consumables issuance — dates, preview, export" />
+        </div>
+      </Reveal>
       <Flow steps={['Request', 'Engineer review', 'Approval', 'Execution', 'Verification']} liveUntil={-1} />
-      <Dossier
-        status="Pending approval"
-        person="Engineer"
-        location="Project AICS-04"
-        project="AICS-04"
-        time="Context stamped"
-        record="Role + permission, not a separate app"
-      />
-      <p className="lede">The five-step routing is a customization pattern. Production already decides who can see and act.</p>
+      <p className="lede">Consumables (C codes) are issued from the same thread. The five-step routing is a customization pattern — production already decides who can see and act.</p>
       <Tag kind="concept">Configurable engineering approval chain</Tag>
     </div>
   )
